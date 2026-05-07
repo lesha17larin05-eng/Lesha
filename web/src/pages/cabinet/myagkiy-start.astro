@@ -1,0 +1,263 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+
+const user = (Astro.locals as any).user;
+if (!user) {
+  return Astro.redirect('/course', 302);
+}
+
+const lessons = [
+  {
+    num: 0,
+    title: 'Вводный урок',
+    tag: 'Введение',
+    desc: 'Знакомство с курсом, история Алексея и как правильно проходить уроки. Здесь вы узнаете, чего ожидать и как получить максимум от каждой практики.',
+  },
+  {
+    num: 1,
+    title: 'Суставная гимнастика',
+    tag: 'Всё тело',
+    desc: 'Комплекс на всё тело — мягко, приятно, работает с первого раза. Идеально для утра или начала рабочего дня. Тело начинает двигаться легче уже после первого занятия.',
+  },
+  {
+    num: 2,
+    title: 'Шея',
+    tag: 'Шея',
+    desc: 'Практика для тех, кто много сидит за компьютером. Снимает напряжение, убирает тяжесть и скованность. Голова становится яснее буквально за 15 минут.',
+  },
+  {
+    num: 3,
+    title: 'Здоровая спина',
+    tag: 'Спина',
+    desc: 'Упражнения, которые убирают напряжение со спины и укрепляют мышечный корсет. Подходят даже при хроническом дискомфорте — движения мягкие и безопасные.',
+  },
+  {
+    num: 4,
+    title: 'Стопы',
+    tag: 'Стопы',
+    desc: 'Неожиданно — но работа со стопами влияет на всё тело: осанку, колени, тазобедренные суставы. Короткая и очень ощутимая практика.',
+  },
+  {
+    num: 5,
+    title: 'Тазобедренные суставы',
+    tag: 'Суставы',
+    desc: 'Гибкость и здоровье малого таза. Практика снимает скованность, которая копится от долгого сидения, и возвращает свободу движений.',
+  },
+  {
+    num: 6,
+    title: 'Медитация',
+    tag: 'Медитация',
+    desc: 'Синхронизация с собой и снятие стресса. Помогает завершить физическую практику, успокоить ум и почувствовать целостность.',
+  },
+  {
+    num: 7,
+    title: 'Итоговый урок',
+    tag: 'Итог',
+    desc: 'Что делать дальше и как продолжить путь. Алексей рассказывает о следующих шагах, даёт рекомендации по регулярности и отвечает на самые частые вопросы.',
+  },
+];
+
+const tagColors: Record<string, { bg: string; color: string }> = {
+  'Введение':  { bg: '#dbeeff', color: '#1060a0' },
+  'Всё тело':  { bg: '#d4f0e4', color: '#0a6040' },
+  'Шея':       { bg: '#fdefd4', color: '#8a5010' },
+  'Спина':     { bg: '#fdefd4', color: '#8a5010' },
+  'Стопы':     { bg: '#ede8f8', color: '#5020a0' },
+  'Суставы':   { bg: '#d4f0e4', color: '#0a6040' },
+  'Медитация': { bg: '#e0f0ff', color: '#1060a0' },
+  'Итог':      { bg: '#f0f0f0', color: '#555'    },
+};
+---
+<SiteLayout title="Мягкий старт — уроки курса" active="course" padTop={true}>
+  <style>
+    /* ─── PAGE ─── */
+    .ms-cab-page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 56px 24px 100px;
+    }
+
+    /* ─── HEADER ─── */
+    .ms-cab-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; margin-bottom: 40px;
+      transition: color 0.2s;
+    }
+    .ms-cab-back:hover { color: var(--navy); }
+    .ms-cab-eyebrow {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--orange); margin-bottom: 12px;
+    }
+    .ms-cab-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4vw, 52px);
+      font-weight: 400; line-height: 1.1; color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .ms-cab-title em { font-style: italic; }
+    .ms-cab-subtitle {
+      font-size: 17px; color: var(--text-muted); margin-bottom: 48px;
+    }
+
+    /* ─── LESSONS ─── */
+    .ms-cab-lessons { display: flex; flex-direction: column; gap: 24px; }
+
+    .ms-cab-lesson {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .ms-cab-lesson:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    /* Lesson header */
+    .ms-cab-lesson-head {
+      padding: 24px 28px 20px;
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+    .ms-cab-lesson-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--navy); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+    .ms-cab-lesson-num.first { background: var(--orange); }
+    .ms-cab-lesson-meta { flex: 1; min-width: 0; }
+    .ms-cab-lesson-tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px; margin-bottom: 8px;
+    }
+    .ms-cab-lesson-title {
+      font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .ms-cab-lesson-desc {
+      font-size: 15px; color: var(--text-muted); line-height: 1.75;
+    }
+
+    /* Video placeholder */
+    .ms-cab-video-wrap {
+      margin: 0 28px 28px;
+      aspect-ratio: 16 / 9;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--cream) 0%, #e8e4db 100%);
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ms-cab-video-wrap::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 20px,
+        rgba(26,39,68,0.02) 20px,
+        rgba(26,39,68,0.02) 21px
+      );
+    }
+    .ms-cab-video-play-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(26,39,68,0.08); border: 2px solid rgba(26,39,68,0.12);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .ms-cab-video-play-icon svg { width: 20px; height: 20px; fill: rgba(26,39,68,0.3); margin-left: 3px; }
+    .ms-cab-video-placeholder-text {
+      font-size: 14px; font-weight: 500; color: var(--text-light);
+      position: relative; z-index: 1;
+    }
+
+    /* ─── FEEDBACK BUTTON ─── */
+    .ms-cab-feedback {
+      margin-top: 56px;
+      background: var(--navy);
+      border-radius: 20px;
+      padding: 36px 40px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      flex-wrap: wrap;
+    }
+    .ms-cab-feedback-text strong {
+      display: block; font-size: 18px; font-weight: 600; color: white; margin-bottom: 6px;
+    }
+    .ms-cab-feedback-text span {
+      font-size: 15px; color: rgba(255,255,255,0.5);
+    }
+    .ms-cab-feedback-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--orange); color: white; text-decoration: none;
+      padding: 14px 28px; border-radius: 100px;
+      font-size: 15px; font-weight: 600; font-family: 'Manrope', sans-serif;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(232,101,42,0.3);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .ms-cab-feedback-btn:hover, .ms-cab-feedback-btn:focus-visible {
+      background: var(--orange-warm); transform: translateY(-2px); outline: none;
+    }
+    .ms-cab-feedback-btn svg { width: 18px; height: 18px; fill: white; flex-shrink: 0; }
+
+    @media (max-width: 600px) {
+      .ms-cab-page { padding: 40px 16px 80px; }
+      .ms-cab-lesson-head { padding: 20px 20px 16px; }
+      .ms-cab-video-wrap { margin: 0 20px 20px; }
+      .ms-cab-feedback { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+      .ms-cab-feedback-btn { width: 100%; justify-content: center; }
+    }
+  </style>
+
+  <div class="ms-cab-page">
+
+    <a href="/course" class="ms-cab-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      О курсе
+    </a>
+
+    <h1 class="ms-cab-title">Мягкий <em>старт</em></h1>
+    <p class="ms-cab-subtitle">Все уроки курса — смотрите в любом порядке</p>
+
+    <div class="ms-cab-lessons">
+      {lessons.map(l => {
+        const tc = tagColors[l.tag] ?? { bg: '#f0f0f0', color: '#555' };
+        return (
+          <article class="ms-cab-lesson">
+            <div class="ms-cab-lesson-head">
+              <div class={`ms-cab-lesson-num${l.num === 0 ? ' first' : ''}`}>{l.num}</div>
+              <div class="ms-cab-lesson-meta">
+                <div class="ms-cab-lesson-title">{l.title}</div>
+                <div class="ms-cab-lesson-desc">{l.desc}</div>
+              </div>
+            </div>
+            <div class="ms-cab-video-wrap">
+              <div class="ms-cab-video-play-icon">
+                <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <span class="ms-cab-video-placeholder-text">Видео появится здесь</span>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <!-- Feedback -->
+    <div class="ms-cab-feedback">
+      <div class="ms-cab-feedback-text">
+        <strong>Есть вопрос или отзыв?</strong>
+        <span>Напишите Алексею напрямую — отвечает лично</span>
+      </div>
+      <a href="https://t.me/lesha_larin" target="_blank" rel="noopener noreferrer" class="ms-cab-feedback-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+        Написать в Telegram
+      </a>
+    </div>
+
+  </div>
+</SiteLayout>

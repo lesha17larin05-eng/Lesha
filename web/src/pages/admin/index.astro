@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data: stats } = await apiJson<any>('/api/admin/stats', { cookie });
@@ -8,6 +9,7 @@ const user = (Astro.locals as any).user;
 const recent = (orders || []).slice(0, 10);
 ---
 <Base title="Админка" user={user}>
+  <AdminNav active="dashboard" />
   <section class="container" style="padding:50px 0;">
     <h1>Админ-дашборд</h1>
     <div class="grid grid-3" style="margin-top:20px;">
@@ -16,13 +18,6 @@ const recent = (orders || []).slice(0, 10);
       <div class="card"><div class="muted">Выручка за день / неделю / месяц</div>
         <div>{stats?.revenue_day ?? 0} ₽ / {stats?.revenue_week ?? 0} ₽ / {stats?.revenue_month ?? 0} ₽</div>
       </div>
-    </div>
-    <div style="display:flex; gap:14px; margin-top:30px;">
-      <a class="btn secondary" href="/admin/users">Пользователи</a>
-      <a class="btn secondary" href="/admin/courses">Курсы</a>
-      <a class="btn secondary" href="/admin/blog">Блог</a>
-      <a class="btn secondary" href="/admin/orders">Оплаты</a>
-      <a class="btn secondary" href="/admin/online">Онлайн</a>
     </div>
     <h2 style="margin-top:40px;">Последние оплаты</h2>
     <table>

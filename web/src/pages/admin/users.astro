@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const search = Astro.url.searchParams.get('search') || '';
@@ -7,6 +8,7 @@ const { data } = await apiJson<any[]>(`/api/admin/users?search=${encodeURICompon
 const user = (Astro.locals as any).user;
 ---
 <Base title="Пользователи" user={user}>
+  <AdminNav active="users" />
   <section class="container" style="padding:50px 0;">
     <h1>Пользователи</h1>
     <form method="get" style="display:flex; gap:10px; margin:20px 0;">

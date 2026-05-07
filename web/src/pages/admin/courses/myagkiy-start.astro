@@ -1,0 +1,80 @@
+---
+import Base from '../../../layouts/Base.astro';
+import AdminNav from '../../../components/AdminNav.astro';
+const user = (Astro.locals as any).user;
+
+const lessons = [
+  { num: 0, title: 'Вводный урок',            slug: 'intro',      tag: 'Введение',  duration: '~10 мин' },
+  { num: 1, title: 'Суставная гимнастика',     slug: 'joints',     tag: 'Всё тело',  duration: '~20 мин' },
+  { num: 2, title: 'Шея',                      slug: 'neck',       tag: 'Шея',       duration: '~15 мин' },
+  { num: 3, title: 'Здоровая спина',           slug: 'back',       tag: 'Спина',     duration: '~20 мин' },
+  { num: 4, title: 'Стопы',                    slug: 'feet',       tag: 'Стопы',     duration: '~15 мин' },
+  { num: 5, title: 'Тазобедренные суставы',    slug: 'hips',       tag: 'Суставы',   duration: '~20 мин' },
+  { num: 6, title: 'Медитация',                slug: 'meditation', tag: 'Медитация', duration: '~15 мин' },
+  { num: 7, title: 'Итоговый урок',            slug: 'final',      tag: 'Итог',      duration: '~10 мин' },
+];
+---
+<Base title="Курс: Мягкий старт" user={user}>
+  <AdminNav active="courses" />
+  <section class="container" style="padding:40px 0;">
+    <a href="/admin/courses" class="muted">← Все курсы</a>
+    <h1 style="margin-top:8px;">Мягкий старт</h1>
+    <p class="muted"><code>myagkiy-start</code> · free · опубликован</p>
+
+    <div class="alert" style="margin-top:16px; background:#fff8e1; color:#7a5a00; border:1px solid #ffe082;">
+      Этот курс — статическая страница (не хранится в базе данных). Метаданные и уроки заданы в коде:
+      <code>web/src/pages/cabinet/myagkiy-start.astro</code>.
+      Для добавления видео — укажите video_id прямо в файле.
+    </div>
+
+    <details class="card" style="margin-top:20px;" open>
+      <summary style="cursor:pointer; font-size:18px; font-weight:600;">Метаданные курса</summary>
+      <div class="form" style="margin-top:14px; max-width:100%;">
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:14px;">
+          <div><label class="label">Slug</label><input class="input" value="myagkiy-start" readonly /></div>
+          <div><label class="label">Название</label><input class="input" value="Мягкий старт" readonly /></div>
+        </div>
+        <div><label class="label">Подзаголовок</label><input class="input" value="Бесплатный вводный курс суставной гимнастики" readonly /></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div><label class="label">Тип</label><input class="input" value="free" readonly /></div>
+          <div><label class="label">Цена (₽)</label><input class="input" value="—" readonly /></div>
+          <div><label class="label">Уроков</label><input class="input" value="8" readonly /></div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; margin-top:4px;">
+          <a class="btn" href="/cabinet/myagkiy-start" target="_blank" rel="noopener">Открыть страницу курса →</a>
+        </div>
+      </div>
+    </details>
+
+    <div class="card" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Уроки <span class="muted" style="font-size:14px; font-weight:400;">(8 уроков)</span></h2>
+      </div>
+      <table style="margin-top:14px;">
+        <thead>
+          <tr>
+            <th style="width:48px;">#</th>
+            <th>Название</th>
+            <th>Slug</th>
+            <th>Тег</th>
+            <th>Длительность</th>
+            <th>Видео</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lessons.map(l => (
+            <tr>
+              <td>{l.num}</td>
+              <td>{l.title}</td>
+              <td><code>{l.slug}</code></td>
+              <td>{l.tag}</td>
+              <td class="muted">{l.duration}</td>
+              <td class="muted">— <span style="font-size:12px;">(добавить в коде)</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+</Base>

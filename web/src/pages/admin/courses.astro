@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/admin/courses', { cookie });
@@ -7,6 +8,7 @@ const user = (Astro.locals as any).user;
 const courses = Array.isArray(data) ? data : [];
 ---
 <Base title="Курсы (админ)" user={user}>
+  <AdminNav active="courses" />
   <section class="container" style="padding:50px 0;">
     <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
       <h1>Курсы</h1>
@@ -16,7 +18,18 @@ const courses = Array.isArray(data) ? data : [];
     <table style="margin-top:20px;">
       <thead><tr><th>Slug</th><th>Название</th><th>Тип</th><th>Цена</th><th>Опубл.</th><th></th></tr></thead>
       <tbody>
-        {courses.length === 0 && <tr><td colspan="6" class="muted">Курсов пока нет.</td></tr>}
+        <tr>
+          <td><code>myagkiy-start</code></td>
+          <td>Мягкий старт</td>
+          <td>free</td>
+          <td>—</td>
+          <td>✅</td>
+          <td>
+            <a href="/admin/courses/myagkiy-start">Открыть →</a>
+            <span style="margin:0 6px; color:#ccc;">·</span>
+            <a href="/cabinet/myagkiy-start" target="_blank" rel="noopener">Просмотр</a>
+          </td>
+        </tr>
         {courses.map((c: any) => (
           <tr>
             <td><code>{c.slug}</code></td>

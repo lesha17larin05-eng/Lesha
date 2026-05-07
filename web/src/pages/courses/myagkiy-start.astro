@@ -1,0 +1,639 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { apiJson } from '../../lib/api';
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const user = (Astro.locals as any).user;
+
+// Try the canonical slug first, then fall back to the user's first free enrolled course.
+let slug = 'myagkiy-start';
+let enrolled = false;
+
+const { data, status } = await apiJson<any>(`/api/courses/${slug}`, { cookie });
+if (status === 200) {
+  enrolled = !!data.enrolled;
+} else if (user) {
+  // Course not in DB under this slug — check enrolled courses to show correct state
+  const { data: myCourses, status: myStatus } = await apiJson<any[]>('/api/me/courses', { cookie });
+  if (myStatus === 200 && Array.isArray(myCourses) && myCourses.length > 0) {
+    const freeCourse = myCourses.find((c: any) => c.kind === 'free') ?? myCourses[0];
+    slug = freeCourse.slug;
+    enrolled = true;
+  }
+}
+
+const course = status === 200 ? data?.course : null;
+const apiLessons: any[] = status === 200 ? (data?.lessons || []) : [];
+
+const lessons = [
+  {
+    num: 0,
+    slug: 'vvodnyy',
+    title: 'Вводный урок',
+    desc: 'Знакомство с курсом, история Алексея и простые правила: как заниматься, чтобы получить максимум.',
+    duration: '12 мин',
+    tag: 'Введение',
+    isFree: true,
+  },
+  {
+    num: 1,
+    slug: 'sustavnaya-gimnastika',
+    title: 'Суставная гимнастика',
+    desc: 'Комплекс на всё тело — мягко, приятно, работает с первого раза. Хорошо делать по утрам.',
+    duration: '25 мин',
+    tag: 'Всё тело',
+    isFree: true,
+  },
+  {
+    num: 2,
+    slug: 'sheya',
+    title: 'Шея',
+    desc: 'Снимает напряжение после долгой работы за компьютером. Голова становится яснее буквально за 15 минут.',
+    duration: '18 мин',
+    tag: 'Шея',
+    isFree: false,
+  },
+  {
+    num: 3,
+    slug: 'zdorovaya-spina',
+    title: 'Здоровая спина',
+    desc: 'Убирает напряжение и укрепляет мышечный корсет. Для тех, кто давно испытывает дискомфорт в спине.',
+    duration: '22 мин',
+    tag: 'Спина',
+    isFree: false,
+  },
+  {
+    num: 4,
+    slug: 'stopy',
+    title: 'Стопы',
+    desc: 'Неожиданно — но работа со стопами влияет на всё тело: осанку, колени, тазобедренные суставы.',
+    duration: '15 мин',
+    tag: 'Стопы',
+    isFree: false,
+  },
+  {
+    num: 5,
+    slug: 'tazobedrennyye-sustavy',
+    title: 'Тазобедренные суставы',
+    desc: 'Гибкость и здоровье малого таза. Практика снимает скованность и возвращает свободу движений.',
+    duration: '20 мин',
+    tag: 'Суставы',
+    isFree: false,
+  },
+  {
+    num: 6,
+    slug: 'meditatsiya',
+    title: 'Медитация',
+    desc: 'Синхронизация с собой и снятие стресса. Помогает завершить практику и почувствовать спокойствие.',
+    duration: '16 мин',
+    tag: 'Медитация',
+    isFree: false,
+  },
+  {
+    num: 7,
+    slug: 'itogovyy',
+    title: 'Итоговый урок',
+    desc: 'Что делать дальше и как продолжить путь. Алексей рассказывает о следующих шагах и отвечает на частые вопросы.',
+    duration: '10 мин',
+    tag: 'Итог',
+    isFree: false,
+  },
+];
+
+const tagColors: Record<string, string> = {
+  'Введение': '#dbeeff / #1060a0',
+  'Всё тело': '#d4f0e4 / #0a6040',
+  'Шея': '#fdefd4 / #8a5010',
+  'Спина': '#fdefd4 / #8a5010',
+  'Стопы': '#e8e0f8 / #5020a0',
+  'Суставы': '#d4f0e4 / #0a6040',
+  'Медитация': '#e0f0ff / #1060a0',
+  'Итог': '#f0f0f0 / #444',
+};
+---
+<SiteLayout title="Мягкий старт — бесплатный курс Алексея Ларина" active="course" padTop={false}>
+  <style>
+    /* ───── HERO ───── */
+    .ms-hero {
+      display: grid;
+      grid-template-columns: 55% 45%;
+      min-height: 100vh;
+      padding-top: 64px;
+    }
+    .ms-hero-left {
+      background: var(--navy);
+      padding: 80px 72px 80px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .ms-hero-left::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .ms-hero-left::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+    }
+    .ms-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .ms-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+    .ms-eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+
+    .ms-hero-left h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(44px, 4.5vw, 68px);
+      font-weight: 400;
+      line-height: 1.05;
+      color: white;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+    .ms-hero-left h1 em { font-style: italic; color: #8bb8f0; }
+
+    .ms-hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 300;
+      font-style: italic;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    .ms-hero-promise {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+    }
+    .ms-hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
+    .ms-hero-promise strong { color: white; font-weight: 600; }
+
+    .ms-hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+    .ms-btn-hero {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
+      padding: 18px 36px; border-radius: 100px; font-size: 17px; font-weight: 600; font-family: 'Manrope', sans-serif;
+      transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+    }
+    .ms-btn-hero:hover, .ms-btn-hero:focus-visible {
+      background: var(--orange-warm); transform: translateY(-2px);
+      outline: none;
+    }
+    .ms-hero-safety { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
+    .ms-hero-safety::before { content: '✓'; color: rgba(255,255,255,0.65); }
+
+    .ms-hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .ms-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
+    .ms-stat-label { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 4px; display: block; }
+
+    /* Hero right: lesson preview list */
+    .ms-hero-right {
+      background: var(--cream);
+      padding: 80px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .ms-hero-right::before {
+      content: '';
+      position: absolute; bottom: -60px; right: -60px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(232,101,42,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .ms-free-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3);
+      color: #16a34a; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 8px 16px; border-radius: 100px; margin-bottom: 24px;
+    }
+    .ms-hero-right-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px; font-weight: 400; color: var(--navy);
+      margin-bottom: 20px; line-height: 1.3;
+    }
+
+    .ms-lesson-list { display: flex; flex-direction: column; gap: 10px; }
+    .ms-lesson-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 14px; background: white; border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.2s;
+    }
+    .ms-lesson-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+    .ms-lesson-num {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 1px;
+    }
+    .ms-lesson-num.free { background: var(--orange); }
+    .ms-lesson-text strong { font-size: 14px; font-weight: 600; color: var(--navy); display: block; margin-bottom: 2px; }
+    .ms-lesson-text span { font-size: 13px; color: var(--text-muted); }
+
+    /* ───── COURSE SECTION ───── */
+    .ms-course { padding: 100px 80px; background: white; }
+    .ms-section-label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+    .ms-section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 3.5vw, 52px);
+      font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 16px;
+    }
+    .ms-section-title em { font-style: italic; }
+    .ms-section-desc { font-size: 17px; color: var(--text-muted); line-height: 1.85; max-width: 600px; margin-bottom: 56px; }
+
+    /* VIDEO GRID */
+    .ms-video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    .ms-video-card {
+      background: var(--cream);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .ms-video-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
+
+    /* Video stub */
+    .ms-video-stub {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #e8e4dc 0%, #dcd8cf 100%);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .ms-video-stub.locked {
+      background: linear-gradient(135deg, #e0dcd4 0%, #d4d0c8 100%);
+    }
+    .ms-video-play {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--navy); display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .ms-video-card:hover .ms-video-play { transform: scale(1.08); background: var(--orange); }
+    .ms-video-play svg { width: 22px; height: 22px; fill: white; margin-left: 3px; }
+    .ms-video-stub.locked .ms-video-play { background: rgba(26,39,68,0.35); }
+    .ms-video-card:hover .ms-video-stub.locked .ms-video-play { transform: none; background: rgba(26,39,68,0.35); }
+
+    .ms-video-lock {
+      position: absolute; top: 14px; right: 14px;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.75); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ms-video-lock svg { width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0; }
+
+    .ms-video-num {
+      position: absolute; bottom: 14px; left: 14px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px; font-weight: 300; line-height: 1;
+      color: rgba(26,39,68,0.12);
+      pointer-events: none; user-select: none;
+    }
+    .ms-video-duration {
+      position: absolute; bottom: 12px; right: 14px;
+      font-size: 12px; font-weight: 600; color: var(--text-muted);
+      background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
+      padding: 4px 10px; border-radius: 100px;
+    }
+
+    /* Card body */
+    .ms-video-body { padding: 22px 24px 24px; }
+    .ms-video-tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 100px; margin-bottom: 12px;
+    }
+    .ms-video-title { font-size: 19px; font-weight: 600; color: var(--navy); margin-bottom: 8px; line-height: 1.3; }
+    .ms-video-desc { font-size: 15px; color: var(--text-muted); line-height: 1.75; margin-bottom: 16px; }
+    .ms-video-footer { display: flex; align-items: center; justify-content: space-between; }
+    .ms-video-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; font-weight: 600; color: var(--orange);
+      text-decoration: none; transition: gap 0.2s;
+    }
+    .ms-video-link:hover, .ms-video-link:focus-visible { gap: 10px; outline: none; }
+    .ms-video-link-locked {
+      font-size: 14px; color: var(--text-light);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ms-video-link-locked svg { width: 14px; height: 14px; }
+
+    /* ───── BENEFITS ───── */
+    .ms-benefits { padding: 100px 80px; background: var(--cream); }
+    .ms-benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .ms-benefit-card {
+      background: white; border-radius: 20px; padding: 32px 28px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
+    }
+    .ms-benefit-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--navy); }
+    .ms-benefit-num {
+      font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300;
+      color: var(--border); line-height: 1; margin-bottom: 16px;
+    }
+    .ms-benefit-card h3 { font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
+    .ms-benefit-card p { font-size: 15px; color: var(--text-muted); line-height: 1.75; }
+
+    /* ───── ABOUT ───── */
+    .ms-about {
+      padding: 100px 80px; background: var(--navy);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .ms-about::before {
+      content: '"'; position: absolute; top: -20px; left: 60px;
+      font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03);
+      line-height: 1; pointer-events: none;
+    }
+    .ms-about-photo {
+      border-radius: 24px; overflow: hidden; aspect-ratio: 3/4;
+      background: linear-gradient(160deg, #2e3d6b 0%, #1a2744 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: rgba(255,255,255,0.3);
+    }
+    .ms-about .ms-section-label { color: #7ab0f0; }
+    .ms-about .ms-section-title { color: white; }
+    .ms-about-pull {
+      background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange);
+      padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0;
+      font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic;
+      font-weight: 300; color: rgba(255,255,255,0.75); line-height: 1.6;
+    }
+    .ms-about-text { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.85; margin-bottom: 16px; }
+
+    /* ───── CTA (enroll / not enrolled) ───── */
+    .ms-enroll { padding: 100px 80px; background: var(--navy); }
+    .ms-enroll-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+    .ms-enroll .ms-section-label { text-align: center; }
+    .ms-enroll .ms-section-title { color: white; }
+    .ms-enroll .ms-section-desc { color: rgba(255,255,255,0.5); margin: 0 auto 40px; max-width: none; }
+    .ms-enroll-box {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px; padding: 40px;
+    }
+    .ms-enroll-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; text-align: left; }
+    .ms-enroll-feat { display: flex; align-items: flex-start; gap: 10px; font-size: 16px; color: rgba(255,255,255,0.7); line-height: 1.6; }
+    .ms-enroll-feat-check { color: #4ade80; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .ms-enroll-btn-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
+    .ms-enroll-btn {
+      width: 100%; padding: 18px; background: var(--orange); color: white; border: none; cursor: pointer;
+      border-radius: 100px; font-size: 17px; font-weight: 600; font-family: 'Manrope', sans-serif;
+      transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.3); text-align: center;
+      text-decoration: none; display: block;
+    }
+    .ms-enroll-btn:hover, .ms-enroll-btn:focus-visible { background: var(--orange-warm); transform: translateY(-2px); outline: none; }
+    .ms-enroll-note { font-size: 14px; color: rgba(255,255,255,0.35); text-align: center; }
+
+    /* ───── ENROLLED BANNER ───── */
+    .ms-enrolled-banner {
+      background: linear-gradient(135deg, rgba(74,222,128,0.1) 0%, rgba(26,39,68,0.05) 100%);
+      border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 16px; padding: 20px 28px;
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 56px;
+    }
+    .ms-enrolled-icon { font-size: 24px; flex-shrink: 0; }
+    .ms-enrolled-text strong { font-size: 16px; font-weight: 600; color: var(--navy); display: block; }
+    .ms-enrolled-text span { font-size: 14px; color: var(--text-muted); }
+
+    /* ANIMATIONS */
+    @keyframes msfadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+    .ms-eyebrow { animation: msfadeUp 0.6s 0.1s both; }
+    .ms-hero-left h1 { animation: msfadeUp 0.6s 0.2s both; }
+    .ms-hero-sub { animation: msfadeUp 0.6s 0.3s both; }
+    .ms-hero-promise { animation: msfadeUp 0.6s 0.4s both; }
+    .ms-hero-cta { animation: msforeUp 0.6s 0.5s both; }
+    .ms-hero-stats { animation: msforeUp 0.6s 0.6s both; }
+
+    /* ───── MOBILE ───── */
+    @media (max-width: 900px) {
+      .ms-video-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .ms-hero { grid-template-columns: 1fr; min-height: unset; }
+      .ms-hero-left { padding: 60px 24px 48px; }
+      .ms-hero-right { padding: 48px 24px; }
+      .ms-course, .ms-benefits, .ms-about, .ms-enroll { padding: 60px 24px; }
+      .ms-about { grid-template-columns: 1fr; gap: 40px; }
+      .ms-about-photo { aspect-ratio: 4/3; max-height: 280px; }
+      .ms-benefits-grid { grid-template-columns: 1fr; gap: 16px; }
+      .ms-hero-stats { flex-wrap: wrap; gap: 24px; }
+    }
+  </style>
+
+  <!-- ═══════ HERO ═══════ -->
+  <section class="ms-hero">
+    <div class="ms-hero-left">
+      <div class="ms-eyebrow">
+        <div class="ms-eyebrow-dot"></div>
+        <span class="ms-eyebrow-text">Бесплатный курс · 8 уроков · онлайн</span>
+      </div>
+      <h1>Мягкий <em>старт</em></h1>
+      <p class="ms-hero-sub">Восемь практик для тех, кто давно хотел начать</p>
+      <div class="ms-hero-promise">
+        <p>Болит спина, нет энергии или просто давно не занимались? <strong>Курс создан для мягкого старта</strong> — в своём темпе, без изнурения и сложных программ.</p>
+      </div>
+      <div class="ms-hero-cta">
+        {enrolled
+          ? <a href="#lessons" class="ms-btn-hero">Смотреть уроки →</a>
+          : user
+            ? <button id="enroll-btn" class="ms-btn-hero">Получить доступ бесплатно →</button>
+            : <a href={`/auth/login?next=/courses/myagkiy-start`} class="ms-btn-hero">Войти и начать →</a>
+        }
+        <div class="ms-hero-safety">Бесплатно — навсегда</div>
+      </div>
+      <div class="ms-hero-stats">
+        <div><span class="ms-stat-num">6+2</span><span class="ms-stat-label">урока в курсе</span></div>
+        <div><span class="ms-stat-num">8000+</span><span class="ms-stat-label">человек через проекты</span></div>
+        <div><span class="ms-stat-num">8 лет</span><span class="ms-stat-label">практики</span></div>
+      </div>
+    </div>
+    <div class="ms-hero-right">
+      <div class="ms-free-badge">✓ Бесплатно</div>
+      <div class="ms-hero-right-title">Что внутри курса</div>
+      <div class="ms-lesson-list">
+        {lessons.map(l => (
+          <div class="ms-lesson-item">
+            <div class={`ms-lesson-num${l.isFree ? ' free' : ''}`}>{l.num}</div>
+            <div class="ms-lesson-text">
+              <strong>{l.title}</strong>
+              <span>{l.desc.split('.')[0]}.</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ VIDEO GRID ═══════ -->
+  <section class="ms-course" id="lessons">
+    <div class="container" style="max-width:1180px; margin:0 auto; padding:0;">
+      <div class="ms-section-label">Уроки курса</div>
+      <h2 class="ms-section-title">Восемь практик —<br><em>один мягкий старт</em></h2>
+      <p class="ms-section-desc">Каждый урок самостоятельный: можно начать с любого, который сейчас актуален. Видео добавляются в ближайшее время.</p>
+
+      {enrolled && (
+        <div class="ms-enrolled-banner">
+          <div class="ms-enrolled-icon">🎉</div>
+          <div class="ms-enrolled-text">
+            <strong>Вы зачислены на курс</strong>
+            <span>Все уроки доступны — начинайте с любого</span>
+          </div>
+        </div>
+      )}
+
+      <div class="ms-video-grid">
+        {lessons.map(l => {
+          const accessible = enrolled || l.isFree;
+          const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
+          const tagParts = tagColors[l.tag]?.split(' / ') ?? ['#f0f0f0', '#444'];
+          const tagBg = tagParts[0];
+          const tagColor = tagParts[1];
+          return (
+            <div class="ms-video-card">
+              <div class={`ms-video-stub${accessible ? '' : ' locked'}`}>
+                <div class="ms-video-num">{l.num}</div>
+                {accessible
+                  ? (
+                    <a href={lessonUrl} class="ms-video-play" aria-label={`Смотреть урок: ${l.title}`}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="white"/></svg>
+                    </a>
+                  )
+                  : (
+                    <>
+                      <div class="ms-video-play" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="rgba(255,255,255,0.4)"/></svg>
+                      </div>
+                      <div class="ms-video-lock" aria-label="Урок заблокирован">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                      </div>
+                    </>
+                  )
+                }
+                <div class="ms-video-duration">{l.duration}</div>
+              </div>
+              <div class="ms-video-body">
+                <div class="ms-video-tag" style={`background:${tagBg}; color:${tagColor};`}>{l.tag}</div>
+                <div class="ms-video-title">{l.title}</div>
+                <div class="ms-video-desc">{l.desc}</div>
+                <div class="ms-video-footer">
+                  {accessible
+                    ? (
+                      <a href={lessonUrl} class="ms-video-link">
+                        Смотреть урок
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      </a>
+                    )
+                    : (
+                      <div class="ms-video-link-locked">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Откроется после записи
+                      </div>
+                    )
+                  }
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ BENEFITS ═══════ -->
+  <section class="ms-benefits">
+    <div class="ms-section-label">Что вы получите</div>
+    <h2 class="ms-section-title">Простые практики —<br><em>понятный результат</em></h2>
+    <p class="ms-section-desc">Каждый урок короткий, самостоятельный и работающий. Можно начать с любого, который сейчас актуален.</p>
+    <div class="ms-benefits-grid">
+      <div class="ms-benefit-card">
+        <div class="ms-benefit-num">01</div>
+        <h3>Тело без боли</h3>
+        <p>Простые упражнения, которые убирают напряжение со спины, шеи и суставов. Без изнурения и резких нагрузок.</p>
+      </div>
+      <div class="ms-benefit-card">
+        <div class="ms-benefit-num">02</div>
+        <h3>Первый шаг в регулярность</h3>
+        <p>Курс построен так, чтобы тело привыкало постепенно. После него хочется продолжать — не потому что надо, а потому что приятно.</p>
+      </div>
+      <div class="ms-benefit-card">
+        <div class="ms-benefit-num">03</div>
+        <h3>Больше энергии</h3>
+        <p>Осознанное движение возвращает ощущение тела и заряжает. Многие говорят, что после занятий голова становится яснее.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ ABOUT ═══════ -->
+  <section class="ms-about">
+    <div class="ms-about-photo">Фото Алексея</div>
+    <div>
+      <div class="ms-section-label">Кто ведёт курс</div>
+      <h2 class="ms-section-title">Алексей Ларин</h2>
+      <div class="ms-about-pull">В 9 лет — перелом трёх позвонков. Именно через движение восстановился. С тех пор помогаю другим.</div>
+      <p class="ms-about-text">С 2017 года работаю с детьми, взрослыми и людьми старшего возраста. Магистр с отличием — Российский университет спорта. Более 8000 человек через проекты.</p>
+      <p class="ms-about-text">Этот курс — лучшее из того, что я умею, собранное в простой и понятный формат.</p>
+    </div>
+  </section>
+
+  <!-- ═══════ ENROLL / CTA ═══════ -->
+  {!enrolled && (
+    <section class="ms-enroll" id="get-access">
+      <div class="ms-enroll-inner">
+        <div class="ms-section-label">Получить доступ</div>
+        <h2 class="ms-section-title">Начните сегодня —<br><em>это бесплатно</em></h2>
+        <p class="ms-section-desc">Войдите или зарегистрируйтесь — и сразу получите доступ ко всем 8 урокам.</p>
+        <div class="ms-enroll-box">
+          <div class="ms-enroll-features">
+            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>8 видео-уроков с практиками</div>
+            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Доступ навсегда — в удобное время</div>
+            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Можно начать с любого урока</div>
+            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Без подписок и скрытых платежей</div>
+          </div>
+          <div class="ms-enroll-btn-wrap">
+            {user
+              ? <button id="enroll-btn-bottom" class="ms-enroll-btn">Записаться бесплатно →</button>
+              : <a href={`/auth/register?next=/courses/myagkiy-start`} class="ms-enroll-btn">Зарегистрироваться бесплатно →</a>
+            }
+          </div>
+          <p class="ms-enroll-note" style="margin-top:14px;">Бесплатно · без спама · отписаться в любой момент</p>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <script define:vars={{ slug }}>
+    async function enrollFree() {
+      const r = await fetch(`/api/courses/${slug}/enroll-free`, { method: 'POST' });
+      if (r.ok) location.reload();
+      else {
+        const j = await r.json().catch(() => ({}));
+        alert(j.error || 'Ошибка — попробуйте ещё раз');
+      }
+    }
+    document.getElementById('enroll-btn')?.addEventListener('click', enrollFree);
+    document.getElementById('enroll-btn-bottom')?.addEventListener('click', enrollFree);
+  </script>
+</SiteLayout>

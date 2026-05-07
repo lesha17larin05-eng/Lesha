@@ -3,42 +3,61 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import { extractLegacy } from '../lib/legacy';
 import rawHtml from '../legacy/course.html?raw';
 const { styles, body } = extractLegacy(rawHtml);
+const user = (Astro.locals as any).user;
 ---
 <SiteLayout title="Бесплатный курс — Алексей Ларин" active="course" pageStyles={styles}>
   <Fragment set:html={body} />
-  <script>
-    (async () => {
-      const form = document.getElementById('quick-signup-form') as HTMLFormElement | null;
-      if (!form) return;
-      const note = document.getElementById('quick-signup-note') as HTMLElement | null;
-      const btn = document.getElementById('quick-signup-submit') as HTMLButtonElement | null;
-
-      // Если уже залогинен и есть бесплатный курс — заменяем форму на CTA «Перейти к курсу».
-      const authed = /(?:^|;\s*)auth=1/.test(document.cookie);
-      if (authed) {
-        try {
-          const res = await fetch('/api/me/courses', { credentials: 'include' });
-          if (res.ok) {
-            const courses = await res.json();
-            const free = Array.isArray(courses)
-              ? courses.find((c: any) => c && (c.kind === 'free' || c.price_rub == null || c.price_rub === 0))
-              : null;
-            const target = free || (Array.isArray(courses) && courses[0]);
-            if (target) {
-              form.innerHTML =
-                '<div style="text-align:center;">' +
-                '<p style="margin:0 0 18px; color:rgba(255,255,255,0.7); font-size:15px;">У вас уже есть доступ к курсу</p>' +
-                '<a href="/courses/' + target.slug + '" class="btn-cta-full" style="text-decoration:none; display:inline-block;">Перейти к курсу →</a>' +
-                '<p class="form-note" style="margin-top:14px;"><a href="/cabinet" style="color:inherit; text-decoration:underline;">Открыть личный кабинет</a></p>' +
-                '</div>';
-              return;
-            }
-          }
-        } catch {}
+  <script define:vars={{ isAuthed: !!user }}>
+    (() => {
+      // Обновляем ссылку «Войти» → «Личный кабинет» для авторизованных
+      const navLink = document.getElementById('nav-login-link');
+      if (navLink && isAuthed) {
+        navLink.textContent = 'Личный кабинет';
+        navLink.setAttribute('href', '/cabinet');
       }
-      const setNote = (msg: string, color = 'rgba(255,255,255,0.55)') => {
+
+      const form = document.getElementById('quick-signup-form');
+      const accessBlock = document.getElementById('access-block');
+
+      if (isAuthed) {
+        // Скрываем форму и текст над ней, оставляем блок с оранжевой кнопкой
+        if (form) form.style.display = 'none';
+        if (accessBlock) accessBlock.style.display = 'block';
+        const ctaInner = document.querySelector('#get-access .cta-inner');
+        if (ctaInner) {
+          ctaInner.querySelector('.section-label')?.style.setProperty('display', 'none');
+          ctaInner.querySelector('.section-title')?.style.setProperty('display', 'none');
+          ctaInner.querySelector('.section-desc')?.style.setProperty('display', 'none');
+        }
+
+        // Обновляем левый герой-блок
+        const promise = document.querySelector('.hero-promise p');
+        if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 8 уроков открыты</strong> — переходите в личный кабинет и начинайте в любом порядке.';
+
+        const ctaBtn = document.querySelector('.btn-hero');
+        if (ctaBtn) {
+          ctaBtn.textContent = 'Перейти к урокам →';
+          ctaBtn.setAttribute('href', '/cabinet/myagkiy-start');
+        }
+
+        const safety = document.querySelector('.hero-safety');
+        if (safety) safety.style.display = 'none';
+
+        const eyebrow = document.querySelector('.eyebrow-text');
+        if (eyebrow) eyebrow.textContent = 'Доступ открыт · 8 уроков · онлайн';
+
+        return;
+      }
+
+      // Не авторизован — стандартная логика формы регистрации
+      if (!form) return;
+      const note = document.getElementById('quick-signup-note');
+      const btn = document.getElementById('quick-signup-submit');
+
+      const setNote = (msg, color = 'rgba(255,255,255,0.55)') => {
         if (note) { note.textContent = msg; note.style.color = color; }
       };
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData(form);
@@ -58,17 +77,17 @@ const { styles, body } = extractLegacy(rawHtml);
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {
-            setNote('Аккаунт создан, пароль отправлен на почту. Переходим в кабинет...');
-            window.location.href = '/cabinet';
+            setNote('Аккаунт создан, пароль отправлен на почту. Переходим...');
+            window.location.href = '/cabinet/myagkiy-start';
             return;
           }
           if (res.ok && data.exists) {
             setNote('Такой email уже есть — войдите в кабинет');
-            window.location.href = '/auth/login?email=' + encodeURIComponent(email);
+            window.location.href = '/auth/login?email=' + encodeURIComponent(email) + '&next=/cabinet/myagkiy-start';
             return;
           }
           setNote('Не получилось: ' + (data.error || res.status), '#ff8a8a');
-        } catch (err) {
+        } catch {
           setNote('Ошибка сети, попробуйте ещё раз', '#ff8a8a');
         } finally {
           if (btn) { btn.disabled = false; btn.textContent = 'Получить доступ →'; }

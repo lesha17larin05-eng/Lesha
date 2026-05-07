@@ -143,6 +143,29 @@ nav {
 .btn-cta-full:hover { background: var(--orange-warm); transform: translateY(-2px); }
 .form-note { font-size: 14px; color: rgba(255,255,255,0.35); margin-top: 14px; }
 
+/* ACCESS BLOCK (shown instead of form for authed users) */
+.access-block {
+  display: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+}
+.access-block-icon { font-size: 40px; margin-bottom: 16px; line-height: 1; }
+.access-block-title { font-size: 20px; font-weight: 600; color: white; margin-bottom: 8px; line-height: 1.4; }
+.access-block-sub { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 28px; line-height: 1.6; }
+.btn-access {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--orange); color: white; text-decoration: none;
+  padding: 18px 36px; border-radius: 100px;
+  font-size: 17px; font-weight: 600; font-family: 'Manrope', sans-serif;
+  transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+  border: none; cursor: pointer; width: 100%;
+}
+.btn-access:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.access-block-note { margin-top: 14px; font-size: 14px; color: rgba(255,255,255,0.35); }
+
 /* FOOTER */
 footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
@@ -190,7 +213,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <a href="results.html">Результаты</a>
     <a href="blog.html">Блог</a>
   </div>
-  <a href="#" class="nav-login">Войти</a>
+  <a href="/auth/login" class="nav-login" id="nav-login-link">Войти</a>
 </nav>
 
 <section class="hero">
@@ -325,6 +348,14 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <button type="submit" class="btn-cta-full" id="quick-signup-submit">Получить доступ →</button>
       <p class="form-note" id="quick-signup-note">Бесплатно · без спама · отписаться в любой момент</p>
     </form>
+
+    <div class="access-block" id="access-block">
+      <div class="access-block-icon">🎉</div>
+      <div class="access-block-title">У вас уже есть доступ к курсу</div>
+      <div class="access-block-sub">Все 8 уроков доступны в вашем личном кабинете</div>
+      <a href="/cabinet/myagkiy-start" class="btn-access">Перейти к урокам →</a>
+      <p class="access-block-note">Желаем приятной практики!</p>
+    </div>
   </div>
 </section>
 

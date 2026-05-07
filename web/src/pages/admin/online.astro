@@ -1,11 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/admin/online-users', { cookie });
 const user = (Astro.locals as any).user;
 ---
 <Base title="Онлайн" user={user}>
+  <AdminNav active="online" />
   <section class="container" style="padding:50px 0;">
     <h1>Онлайн (за последние 5 минут)</h1>
     <table>

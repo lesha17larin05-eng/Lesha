@@ -1,0 +1,33 @@
+---
+const { active = '' } = Astro.props as { active?: string };
+const links = [
+  { href: '/admin', label: 'Дашборд', key: 'dashboard' },
+  { href: '/admin/users', label: 'Пользователи', key: 'users' },
+  { href: '/admin/courses', label: 'Курсы', key: 'courses' },
+  { href: '/admin/blog', label: 'Блог', key: 'blog' },
+  { href: '/admin/orders', label: 'Оплаты', key: 'orders' },
+  { href: '/admin/online', label: 'Онлайн', key: 'online' },
+];
+---
+<nav class="admin-nav">
+  {links.map(l => (
+    <a href={l.href} class={`admin-nav-link${active === l.key ? ' active' : ''}`}>{l.label}</a>
+  ))}
+</nav>
+<style>
+  .admin-nav {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    padding: 12px 24px;
+    background: var(--navy);
+    position: sticky; top: 64px; z-index: 90;
+  }
+  .admin-nav-link {
+    padding: 7px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .admin-nav-link:hover { background: rgba(255,255,255,0.1); color: white; text-decoration: none; }
+  .admin-nav-link.active { background: rgba(255,255,255,0.15); color: white; }
+</style>
