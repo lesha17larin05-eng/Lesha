@@ -1,72 +1,21 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import { apiJson } from '../../lib/api';
 
 const user = (Astro.locals as any).user;
 if (!user) {
   return Astro.redirect('/course', 302);
 }
 
-const lessons = [
-  {
-    num: 0,
-    title: 'Вводный урок',
-    tag: 'Введение',
-    desc: 'Знакомство с курсом, история Алексея и как правильно проходить уроки. Здесь вы узнаете, чего ожидать и как получить максимум от каждой практики.',
-  },
-  {
-    num: 1,
-    title: 'Суставная гимнастика',
-    tag: 'Всё тело',
-    desc: 'Комплекс на всё тело — мягко, приятно, работает с первого раза. Идеально для утра или начала рабочего дня. Тело начинает двигаться легче уже после первого занятия.',
-  },
-  {
-    num: 2,
-    title: 'Шея',
-    tag: 'Шея',
-    desc: 'Практика для тех, кто много сидит за компьютером. Снимает напряжение, убирает тяжесть и скованность. Голова становится яснее буквально за 15 минут.',
-  },
-  {
-    num: 3,
-    title: 'Здоровая спина',
-    tag: 'Спина',
-    desc: 'Упражнения, которые убирают напряжение со спины и укрепляют мышечный корсет. Подходят даже при хроническом дискомфорте — движения мягкие и безопасные.',
-  },
-  {
-    num: 4,
-    title: 'Стопы',
-    tag: 'Стопы',
-    desc: 'Неожиданно — но работа со стопами влияет на всё тело: осанку, колени, тазобедренные суставы. Короткая и очень ощутимая практика.',
-  },
-  {
-    num: 5,
-    title: 'Тазобедренные суставы',
-    tag: 'Суставы',
-    desc: 'Гибкость и здоровье малого таза. Практика снимает скованность, которая копится от долгого сидения, и возвращает свободу движений.',
-  },
-  {
-    num: 6,
-    title: 'Медитация',
-    tag: 'Медитация',
-    desc: 'Синхронизация с собой и снятие стресса. Помогает завершить физическую практику, успокоить ум и почувствовать целостность.',
-  },
-  {
-    num: 7,
-    title: 'Итоговый урок',
-    tag: 'Итог',
-    desc: 'Что делать дальше и как продолжить путь. Алексей рассказывает о следующих шагах, даёт рекомендации по регулярности и отвечает на самые частые вопросы.',
-  },
-];
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data, status } = await apiJson<any>('/api/courses/myagkiy-start', { cookie });
+if (status !== 200) return Astro.redirect('/course', 302);
 
-const tagColors: Record<string, { bg: string; color: string }> = {
-  'Введение':  { bg: '#dbeeff', color: '#1060a0' },
-  'Всё тело':  { bg: '#d4f0e4', color: '#0a6040' },
-  'Шея':       { bg: '#fdefd4', color: '#8a5010' },
-  'Спина':     { bg: '#fdefd4', color: '#8a5010' },
-  'Стопы':     { bg: '#ede8f8', color: '#5020a0' },
-  'Суставы':   { bg: '#d4f0e4', color: '#0a6040' },
-  'Медитация': { bg: '#e0f0ff', color: '#1060a0' },
-  'Итог':      { bg: '#f0f0f0', color: '#555'    },
-};
+const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
+  num: i,
+  title: l.title,
+  desc: l.content_md || '',
+}));
 ---
 <SiteLayout title="Мягкий старт — уроки курса" active="course" padTop={true}>
   <style>
@@ -226,7 +175,6 @@ const tagColors: Record<string, { bg: string; color: string }> = {
 
     <div class="ms-cab-lessons">
       {lessons.map(l => {
-        const tc = tagColors[l.tag] ?? { bg: '#f0f0f0', color: '#555' };
         return (
           <article class="ms-cab-lesson">
             <div class="ms-cab-lesson-head">

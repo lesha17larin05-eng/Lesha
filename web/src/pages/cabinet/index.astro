@@ -11,19 +11,17 @@ const user = (Astro.locals as any).user;
     {!user?.email_verified && <div class="alert">Подтвердите email — иначе оплата платных курсов недоступна.</div>}
     <h2 style="margin-top:30px;">Мои курсы</h2>
     <div class="grid grid-3" style="margin-top:18px;">
-      <a class="card" href="/cabinet/myagkiy-start" style="color:inherit; display:block;">
-        <h3>Мягкий старт</h3>
-        <p class="muted">Бесплатный вводный курс суставной гимнастики</p>
-        <div class="muted" style="margin-top:6px;">8 уроков</div>
-      </a>
-      {(courses || []).map((c: any) => (
-        <a class="card" href={`/courses/${c.slug}`} style="color:inherit; display:block;">
-          <h3>{c.title}</h3>
-          <p class="muted">{c.subtitle}</p>
-          <div class="progress"><i style={`width:${c.progress_pct}%`}></i></div>
-          <div class="muted" style="margin-top:6px;">{c.lessons_done}/{c.lessons_total} уроков · {c.progress_pct}%</div>
-        </a>
-      ))}
+      {(courses || []).map((c: any) => {
+        const href = c.slug === 'myagkiy-start' ? '/cabinet/myagkiy-start' : `/courses/${c.slug}`;
+        return (
+          <a class="card" href={href} style="color:inherit; display:block;">
+            <h3>{c.title}</h3>
+            <p class="muted">{c.subtitle}</p>
+            <div class="progress"><i style={`width:${c.progress_pct}%`}></i></div>
+            <div class="muted" style="margin-top:6px;">{c.lessons_done}/{c.lessons_total} уроков · {c.progress_pct}%</div>
+          </a>
+        );
+      })}
     </div>
     <div style="margin-top:30px;">
       <a href="/cabinet/settings" class="muted">Настройки аккаунта →</a>

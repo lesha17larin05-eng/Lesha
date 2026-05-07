@@ -4,8 +4,13 @@ import { extractLegacy } from '../lib/legacy';
 import rawHtml from '../legacy/course.html?raw';
 const { styles, body } = extractLegacy(rawHtml);
 const user = (Astro.locals as any).user;
+
+const authedStyles = user ? `
+  .free-badge { display: none !important; }
+  .hero-right { justify-content: flex-start !important; padding-top: 80px !important; }
+` : '';
 ---
-<SiteLayout title="Бесплатный курс — Алексей Ларин" active="course" pageStyles={styles}>
+<SiteLayout title="Бесплатный курс — Алексей Ларин" active="course" pageStyles={styles + authedStyles}>
   <Fragment set:html={body} />
   <script define:vars={{ isAuthed: !!user }}>
     (() => {

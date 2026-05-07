@@ -5,111 +5,42 @@ import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const user = (Astro.locals as any).user;
 
-// Try the canonical slug first, then fall back to the user's first free enrolled course.
-let slug = 'myagkiy-start';
-let enrolled = false;
+const slug = 'myagkiy-start';
 
 const { data, status } = await apiJson<any>(`/api/courses/${slug}`, { cookie });
-if (status === 200) {
-  enrolled = !!data.enrolled;
-} else if (user) {
-  // Course not in DB under this slug — check enrolled courses to show correct state
-  const { data: myCourses, status: myStatus } = await apiJson<any[]>('/api/me/courses', { cookie });
-  if (myStatus === 200 && Array.isArray(myCourses) && myCourses.length > 0) {
-    const freeCourse = myCourses.find((c: any) => c.kind === 'free') ?? myCourses[0];
-    slug = freeCourse.slug;
-    enrolled = true;
-  }
-}
+if (status !== 200) return Astro.redirect('/course', 302);
 
-const course = status === 200 ? data?.course : null;
-const apiLessons: any[] = status === 200 ? (data?.lessons || []) : [];
+const enrolled: boolean = !!data.enrolled;
+const course = data.course;
+const rawLessons: any[] = data.lessons || [];
 
-const lessons = [
-  {
-    num: 0,
-    slug: 'vvodnyy',
-    title: 'Вводный урок',
-    desc: 'Знакомство с курсом, история Алексея и простые правила: как заниматься, чтобы получить максимум.',
-    duration: '12 мин',
-    tag: 'Введение',
-    isFree: true,
-  },
-  {
-    num: 1,
-    slug: 'sustavnaya-gimnastika',
-    title: 'Суставная гимнастика',
-    desc: 'Комплекс на всё тело — мягко, приятно, работает с первого раза. Хорошо делать по утрам.',
-    duration: '25 мин',
-    tag: 'Всё тело',
-    isFree: true,
-  },
-  {
-    num: 2,
-    slug: 'sheya',
-    title: 'Шея',
-    desc: 'Снимает напряжение после долгой работы за компьютером. Голова становится яснее буквально за 15 минут.',
-    duration: '18 мин',
-    tag: 'Шея',
-    isFree: false,
-  },
-  {
-    num: 3,
-    slug: 'zdorovaya-spina',
-    title: 'Здоровая спина',
-    desc: 'Убирает напряжение и укрепляет мышечный корсет. Для тех, кто давно испытывает дискомфорт в спине.',
-    duration: '22 мин',
-    tag: 'Спина',
-    isFree: false,
-  },
-  {
-    num: 4,
-    slug: 'stopy',
-    title: 'Стопы',
-    desc: 'Неожиданно — но работа со стопами влияет на всё тело: осанку, колени, тазобедренные суставы.',
-    duration: '15 мин',
-    tag: 'Стопы',
-    isFree: false,
-  },
-  {
-    num: 5,
-    slug: 'tazobedrennyye-sustavy',
-    title: 'Тазобедренные суставы',
-    desc: 'Гибкость и здоровье малого таза. Практика снимает скованность и возвращает свободу движений.',
-    duration: '20 мин',
-    tag: 'Суставы',
-    isFree: false,
-  },
-  {
-    num: 6,
-    slug: 'meditatsiya',
-    title: 'Медитация',
-    desc: 'Синхронизация с собой и снятие стресса. Помогает завершить практику и почувствовать спокойствие.',
-    duration: '16 мин',
-    tag: 'Медитация',
-    isFree: false,
-  },
-  {
-    num: 7,
-    slug: 'itogovyy',
-    title: 'Итоговый урок',
-    desc: 'Что делать дальше и как продолжить путь. Алексей рассказывает о следующих шагах и отвечает на частые вопросы.',
-    duration: '10 мин',
-    tag: 'Итог',
-    isFree: false,
-  },
-];
-
-const tagColors: Record<string, string> = {
-  'Введение': '#dbeeff / #1060a0',
-  'Всё тело': '#d4f0e4 / #0a6040',
-  'Шея': '#fdefd4 / #8a5010',
-  'Спина': '#fdefd4 / #8a5010',
-  'Стопы': '#e8e0f8 / #5020a0',
-  'Суставы': '#d4f0e4 / #0a6040',
-  'Медитация': '#e0f0ff / #1060a0',
-  'Итог': '#f0f0f0 / #444',
+// UI-only metadata keyed by lesson slug (colours/tags — not content)
+const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }> = {
+  'vvodnyy':               { tag: 'Введение',  tagBg: '#dbeeff', tagColor: '#1060a0' },
+  'sustavnaya-gimnastika': { tag: 'Всё тело',  tagBg: '#d4f0e4', tagColor: '#0a6040' },
+  'sheya':                 { tag: 'Шея',       tagBg: '#fdefd4', tagColor: '#8a5010' },
+  'zdorovaya-spina':       { tag: 'Спина',     tagBg: '#fdefd4', tagColor: '#8a5010' },
+  'stopy':                 { tag: 'Стопы',     tagBg: '#e8e0f8', tagColor: '#5020a0' },
+  'tazobedrennyye-sustavy':{ tag: 'Суставы',   tagBg: '#d4f0e4', tagColor: '#0a6040' },
+  'meditatsiya':           { tag: 'Медитация', tagBg: '#e0f0ff', tagColor: '#1060a0' },
+  'itogovyy':              { tag: 'Итог',      tagBg: '#f0f0f0', tagColor: '#444'    },
 };
+
+const lessons = rawLessons.map((l: any, i: number) => {
+  const meta = slugMeta[l.slug] ?? { tag: '', tagBg: '#f0f0f0', tagColor: '#444' };
+  const mins = l.duration_sec ? Math.round(l.duration_sec / 60) : 0;
+  return {
+    num: i,
+    slug: l.slug,
+    title: l.title,
+    desc: l.content_md || '',
+    duration: mins ? `${mins} мин` : '',
+    tag: meta.tag,
+    tagBg: meta.tagBg,
+    tagColor: meta.tagColor,
+    isFree: !!l.is_preview,
+  };
+});
 ---
 <SiteLayout title="Мягкий старт — бесплатный курс Алексея Ларина" active="course" padTop={false}>
   <style>
@@ -502,9 +433,6 @@ const tagColors: Record<string, string> = {
         {lessons.map(l => {
           const accessible = enrolled || l.isFree;
           const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
-          const tagParts = tagColors[l.tag]?.split(' / ') ?? ['#f0f0f0', '#444'];
-          const tagBg = tagParts[0];
-          const tagColor = tagParts[1];
           return (
             <div class="ms-video-card">
               <div class={`ms-video-stub${accessible ? '' : ' locked'}`}>
@@ -532,7 +460,7 @@ const tagColors: Record<string, string> = {
                 <div class="ms-video-duration">{l.duration}</div>
               </div>
               <div class="ms-video-body">
-                <div class="ms-video-tag" style={`background:${tagBg}; color:${tagColor};`}>{l.tag}</div>
+                <div class="ms-video-tag" style={`background:${l.tagBg}; color:${l.tagColor};`}>{l.tag}</div>
                 <div class="ms-video-title">{l.title}</div>
                 <div class="ms-video-desc">{l.desc}</div>
                 <div class="ms-video-footer">

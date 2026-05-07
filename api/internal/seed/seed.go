@@ -46,15 +46,21 @@ func Run(ctx context.Context, repo *db.Repo, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+	myagkiyID, err := ensureMyagkiyStart(ctx, repo)
+	if err != nil {
+		return err
+	}
 	if err := ensureFreeLessons(ctx, repo, freeID); err != nil {
 		return err
 	}
 	if err := ensurePaidLessons(ctx, repo, paidID); err != nil {
 		return err
 	}
-	// auto-enroll admin into both, user into free
+	// auto-enroll admin into all, user into free courses
+	_ = repo.Grant(ctx, adminID, myagkiyID, "admin", &adminID)
 	_ = repo.Grant(ctx, adminID, freeID, "admin", &adminID)
 	_ = repo.Grant(ctx, adminID, paidID, "admin", &adminID)
+	_ = repo.Grant(ctx, userID, myagkiyID, "free", nil)
 	_ = repo.Grant(ctx, userID, freeID, "free", nil)
 	if err := SeedArticles(ctx, repo, adminID); err != nil {
 		slog.Warn("articles seed", "err", err)
@@ -86,6 +92,74 @@ func ensureCourse(ctx context.Context, repo *db.Repo, in db.CourseInput) (uuid.U
 		return c.ID, nil
 	}
 	return repo.CreateCourse(ctx, in)
+}
+
+func ensureMyagkiyStart(ctx context.Context, repo *db.Repo) (uuid.UUID, error) {
+	courseID, err := ensureCourse(ctx, repo, db.CourseInput{
+		Slug:        "myagkiy-start",
+		Title:       "Мягкий старт",
+		Subtitle:    "Бесплатный вводный курс суставной гимнастики",
+		Description: "Восемь практик для тех, кто давно хотел начать — в своём темпе, без изнурения и сложных программ.",
+		Kind:        "free",
+		IsPublished: true,
+		SortOrder:   0,
+	})
+	if err != nil {
+		return uuid.Nil, err
+	}
+	existing, _ := repo.ListLessons(ctx, courseID)
+	if len(existing) > 0 {
+		return courseID, nil
+	}
+	lessons := []db.LessonInput{
+		{
+			Title: "Вводный урок", Slug: "vvodnyy",
+			ContentMD:   "Знакомство с курсом, история Алексея и как правильно проходить уроки. Здесь вы узнаете, чего ожидать и как получить максимум от каждой практики.",
+			DurationSec: 720, SortOrder: 1, IsPreview: true,
+		},
+		{
+			Title: "Суставная гимнастика", Slug: "sustavnaya-gimnastika",
+			ContentMD:   "Комплекс на всё тело — мягко, приятно, работает с первого раза. Идеально для утра или начала рабочего дня. Тело начинает двигаться легче уже после первого занятия.",
+			DurationSec: 1500, SortOrder: 2, IsPreview: true,
+		},
+		{
+			Title: "Шея", Slug: "sheya",
+			ContentMD:   "Практика для тех, кто много сидит за компьютером. Снимает напряжение, убирает тяжесть и скованность. Голова становится яснее буквально за 15 минут.",
+			DurationSec: 1080, SortOrder: 3,
+		},
+		{
+			Title: "Здоровая спина", Slug: "zdorovaya-spina",
+			ContentMD:   "Упражнения, которые убирают напряжение со спины и укрепляют мышечный корсет. Подходят даже при хроническом дискомфорте — движения мягкие и безопасные.",
+			DurationSec: 1320, SortOrder: 4,
+		},
+		{
+			Title: "Стопы", Slug: "stopy",
+			ContentMD:   "Неожиданно — но работа со стопами влияет на всё тело: осанку, колени, тазобедренные суставы. Короткая и очень ощутимая практика.",
+			DurationSec: 900, SortOrder: 5,
+		},
+		{
+			Title: "Тазобедренные суставы", Slug: "tazobedrennyye-sustavy",
+			ContentMD:   "Гибкость и здоровье малого таза. Практика снимает скованность, которая копится от долгого сидения, и возвращает свободу движений.",
+			DurationSec: 1200, SortOrder: 6,
+		},
+		{
+			Title: "Медитация", Slug: "meditatsiya",
+			ContentMD:   "Синхронизация с собой и снятие стресса. Помогает завершить физическую практику, успокоить ум и почувствовать целостность.",
+			DurationSec: 960, SortOrder: 7,
+		},
+		{
+			Title: "Итоговый урок", Slug: "itogovyy",
+			ContentMD:   "Что делать дальше и как продолжить путь. Алексей рассказывает о следующих шагах, даёт рекомендации по регулярности и отвечает на самые частые вопросы.",
+			DurationSec: 600, SortOrder: 8,
+		},
+	}
+	for _, l := range lessons {
+		l.CourseID = courseID
+		if _, err := repo.CreateLesson(ctx, l); err != nil {
+			return uuid.Nil, err
+		}
+	}
+	return courseID, nil
 }
 
 func ensureFreeLessons(ctx context.Context, repo *db.Repo, courseID uuid.UUID) error {
