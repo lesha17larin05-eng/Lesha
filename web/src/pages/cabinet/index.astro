@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data: courses } = await apiJson<any[]>('/api/me/courses', { cookie });
+const user = (Astro.locals as any).user;
+---
+<Base title="Личный кабинет" user={user}>
+  <section class="container" style="padding:60px 0;">
+    <h1>Здравствуйте, {user?.name || user?.email}</h1>
+    {!user?.email_verified && <div class="alert">Подтвердите email — иначе оплата платных курсов недоступна.</div>}
+    <h2 style="margin-top:30px;">Мои курсы</h2>
+    <div class="grid grid-3" style="margin-top:18px;">
+      {(courses || []).length === 0 && <p class="muted">Пока нет курсов. <a href="/courses">Перейти к каталогу →</a></p>}
+      {(courses || []).map((c: any) => (
+        <a class="card" href={`/courses/${c.slug}`} style="color:inherit; display:block;">
+          <h3>{c.title}</h3>
+          <p class="muted">{c.subtitle}</p>
+          <div class="progress"><i style={`width:${c.progress_pct}%`}></i></div>
+          <div class="muted" style="margin-top:6px;">{c.lessons_done}/{c.lessons_total} уроков · {c.progress_pct}%</div>
+        </a>
+      ))}
+    </div>
+    <div style="margin-top:30px;">
+      <a href="/cabinet/settings" class="muted">Настройки аккаунта →</a>
+    </div>
+  </section>
+</Base>

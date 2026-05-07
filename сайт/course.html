@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мягкий старт – бесплатный курс Алексея Ларина</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243058;
+  --navy-light: #2e3d6b;
+  --orange: #e8652a;
+  --orange-warm: #f07530;
+  --cream: #f8f5ef;
+  --warm-white: #fdfaf5;
+  --text: #1a1a1a;
+  --text-mid: #444;
+  --text-muted: #777;
+  --text-light: #aaa;
+  --border: #ece8e0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color: var(--text); overflow-x: hidden; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(253,250,245,0.94); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 64px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { flex-shrink: 0; max-width: 220px; overflow: hidden; text-decoration: none; }
+.nav-links { display: flex; gap: 32px; margin-left: auto; margin-right: 40px; }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; padding-bottom: 3px; }
+.nav-links a:hover { color: var(--navy); }
+.nav-links a.active { color: var(--navy); font-weight: 600; border-bottom: 2px solid var(--orange); }
+.nav-login { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+
+/* HERO */
+.hero { min-height: 100vh; display: grid; grid-template-columns: 55% 45%; padding-top: 64px; }
+.hero-left {
+  background: var(--navy); padding: 80px 72px 80px 80px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.hero-left::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-left::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+}
+.hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,62px); font-weight: 400; line-height: 1.1; color: white; margin-bottom: 12px; }
+.hero h1 em { font-style: italic; color: #8bb8f0; }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.45); margin-bottom: 32px; line-height: 1.5; }
+.hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+.hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
+.hero-promise strong { color: white; font-weight: 600; }
+.hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
+  padding: 18px 36px; border-radius: 100px; font-size: 17px; font-weight: 600; font-family: 'Manrope', sans-serif;
+  transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+}
+.btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.hero-safety { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
+.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.65); }
+.hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
+.stat-label { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 4px; display: block; }
+
+.hero-right { background: var(--cream); display: flex; flex-direction: column; justify-content: center; padding: 80px 64px; position: relative; overflow: hidden; }
+.hero-right::before {
+  content: ''; position: absolute; bottom: -60px; right: -60px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(232,101,42,0.06) 0%, transparent 65%);
+}
+.free-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: #16a34a; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 16px; border-radius: 100px; margin-bottom: 24px; }
+.hero-right-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--navy); margin-bottom: 24px; line-height: 1.3; }
+.hero-right-title em { font-style: italic; }
+
+/* LESSONS */
+.lessons-list { display: flex; flex-direction: column; gap: 12px; }
+.lesson-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; background: white; border-radius: 12px; border: 1px solid var(--border); }
+.lesson-num { width: 28px; height: 28px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 1px; }
+.lesson-num.free { background: var(--orange); }
+.lesson-text strong { font-size: 15px; font-weight: 600; color: var(--navy); display: block; margin-bottom: 2px; }
+.lesson-text span { font-size: 13px; color: var(--text-muted); }
+
+/* SECTIONS */
+.section-label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px,3.5vw,52px); font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 16px; }
+.section-title em { font-style: italic; }
+.section-desc { font-size: 17px; color: var(--text-muted); line-height: 1.85; max-width: 560px; margin-bottom: 48px; }
+
+/* ABOUT */
+.about { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; overflow: hidden; }
+.about::before { content: '"'; position: absolute; top: -20px; left: 60px; font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+.about-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; background: linear-gradient(160deg, #2e3d6b 0%, #1a2744 100%); display: flex; align-items: center; justify-content: center; font-size: 14px; color: rgba(255,255,255,0.3); }
+.about-content .section-label { color: #7ab0f0; }
+.about-content .section-title { color: white; }
+.about-pull { background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0; font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.75); line-height: 1.6; }
+.about-text { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.85; margin-bottom: 16px; }
+
+/* WHAT GET */
+.what-get { padding: 100px 80px; background: white; }
+.benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 60px; }
+.benefit-card { background: var(--cream); border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+.benefit-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--navy); }
+.benefit-num { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300; color: var(--border); line-height: 1; margin-bottom: 16px; }
+.benefit-card h3 { font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
+.benefit-card p { font-size: 15px; color: var(--text-muted); line-height: 1.75; }
+
+/* CTA */
+.cta-section { padding: 100px 80px; background: var(--navy); }
+.cta-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+.cta-inner .section-label { text-align: center; }
+.cta-inner .section-title { color: white; font-size: clamp(36px,3.5vw,52px); }
+.cta-inner .section-desc { color: rgba(255,255,255,0.5); margin: 0 auto 40px; }
+.cta-form { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 40px; margin-bottom: 0; }
+.form-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.form-input {
+  width: 100%; padding: 16px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.07); color: white; font-size: 16px; font-family: 'Manrope', sans-serif;
+  outline: none; transition: border-color 0.2s;
+}
+.form-input::placeholder { color: rgba(255,255,255,0.35); }
+.form-input:focus { border-color: rgba(255,255,255,0.35); }
+.btn-cta-full {
+  width: 100%; padding: 18px; background: var(--orange); color: white; border: none; cursor: pointer;
+  border-radius: 100px; font-size: 17px; font-weight: 600; font-family: 'Manrope', sans-serif;
+  transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.3);
+}
+.btn-cta-full:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.form-note { font-size: 14px; color: rgba(255,255,255,0.35); margin-top: 14px; }
+
+/* FOOTER */
+footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 15px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: white; }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+.hero-eyebrow{animation:fadeUp 0.6s 0.1s both;}
+.hero h1{animation:fadeUp 0.6s 0.2s both;}
+.hero-sub{animation:fadeUp 0.6s 0.3s both;}
+.hero-promise{animation:fadeUp 0.6s 0.4s both;}
+.hero-cta{animation:fadeUp 0.6s 0.5s both;}
+.hero-stats{animation:fadeUp 0.6s 0.6s both;}
+
+@media(max-width:700px){
+  nav{padding:0 20px;} .nav-links{display:none;}
+  .hero{grid-template-columns:1fr;}
+  .hero-left{padding:60px 24px;}
+  .hero-right{padding:48px 24px;}
+  .about,.what-get,.cta-section{padding:60px 24px;}
+  .about{grid-template-columns:1fr;}
+  .about-photo{aspect-ratio:4/3; max-height:280px;}
+  .benefits-grid{grid-template-columns:1fr; gap:16px;}
+  footer{flex-direction:column; gap:20px; padding:32px 24px; text-align:center;}
+}
+
+.footer-social { display: flex; flex-direction: row; gap: 8px; align-items: center; }
+.social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
+.social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo" style="flex-shrink:0; max-width:240px; overflow:hidden;">
+    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX9Ch0LvQvtC5XzEiIGRhdGEtbmFtZT0i0KHQu9C+0LlfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTc0NC4yOSAzMjcuNzgiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNlODY1MmE7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzFhMjc0NDsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGc+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xNzIuMjYsMjkwLjU3Yy0zLjEyLS4yNy02LjE5LS43My05LjI1LTEuNS0xLjg1LS40Ni0yLjA2LTEuMzItMS42MS0yLjcuOTMtMi44NywxLjkzLTUuNzEsMy4wMy04LjUyLjQ1LTEuMTQsMS4wNy0xLjc3LDIuNzItMS4xNiwyLjc2LDEuMDMsNS43OC41OCw4LjY5LjQsMS44OC0uMTIsMi45NC4wMiwzLjIzLDIuMzUuMzEsMi41MywxLjEsNS4wOCwyLjE0LDcuNDIuODksMS45OS4xMSwyLjY5LTEuNTIsMi44OC0yLjQ3LjI4LTQuODksMS4wNC03LjQyLjgzWiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTQzLjI4LDY4LjkzYzQuNjItNC42Nyw5LjM5LTkuMjEsMTMuODctMTQsMy4zMy0zLjU2LDcuNTctNS41MiwxMi4wMy02LjI0LDcuOTYtMS4yOCwxNC41OCwyLjAxLDIwLjI1LDcuNTcsOC40NSw4LjI5LDE3LjAxLDE2LjQ3LDI1LjY2LDI0LjgzLDEuNTEtMy4xMiwzLjIyLTYuNDcsNC43NS05LjkuNi0xLjM0LjM2LTIuNTMtLjk5LTMuNjktMi4zNi0yLjAxLTQuMzYtNC40NC02LjYyLTYuNTgtNi43Ny02LjM5LTEyLjU5LTEzLjgtMjAuMDktMTkuMzgtMTAuMjUtNy42My0yNS44MS03Ljk2LTM2LjgzLTEuNTItNS44MSwzLjM5LTEwLDguNDQtMTQuNzEsMTIuOTUtMi4yOCwyLjE5LTYuMTksNC4xOS02LjEsNy4wMS4wOSwyLjkxLDMuMDksNS43Miw0Ljc3LDguNTksMS41LDIuNTcsMi40OSwxLjg4LDQuMDEuMzRaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMjAuOTUsNzMuNjJjLjcsNC40NCwxLDguOTksMi4zNiwxMy4zMy41NSwxLjc4LS43NCwyLjYyLTEuNjcsMy41NS0xMS4zMiwxMS4zNi0yMi42OCwyMi42OC0zNC4wMiwzNC4wMS03Ljg0LDcuODMtMTUuNzEsMTUuNjQtMjMuNTIsMjMuNS04LjA3LDguMTItOC4xNiwyMS4zNi4wNCwyOS43OCwxMC4yMSwxMC40OSwyMC42NSwyMC43NywzMSwzMS4xMywxNi40MSwxNi40MiwzMi44MiwzMi44Myw0OS4yNyw0OS4yMSwxLjU5LDEuNTgsMi4zLDMuMTEsMS45Niw1LjQ1LS42Niw0LjUyLS4zNyw5LjEtLjEyLDEzLjg0LTIuMjUtLjI4LTMuMTQtMi4xOC00LjQtMy40NC0yNS43OC0yNS42OS01MS41Ny01MS4zNi03Ny4yMS03Ny4xOS01LjMzLTUuMzctMTEuMzMtMTAuMTMtMTUuMTUtMTYuOTYtNy42MS0xMy42MS01LjM5LTMwLjMzLDUuNy00MS40MiwyMS4xNy0yMS4xNyw0Mi4zMS00Mi4zNyw2My40Ni02My41Ni42LS42LDEuMTQtMS4yOSwyLjMxLTEuMjRaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yMDcuMzYsMTk2LjI4YzIuMDYtMTUuNjcsMy4xLTMxLjQ3LDMuMTgtNDcuMjguMDMtNi40Mi0uMDktMTIuODksMS4xNS0xOS4xOSwyLjE1LTEwLjk0LDguMjQtMjAuNjIsMTIuODMtMzAuNzgsNC42LTEwLjE2LDcuNzMtMjEuOTQsMy43Mi0zMi4zNC04Ljg3LDIwLjY0LTE5LjIxLDQxLjQzLTM2LjE0LDU2LjE5LS42Ny41OS0xLjQxLDEuMTktMi4zLDEuMy0xLjAzLjEzLTIuMDEtLjQyLTIuOS0uOTUtMTQuNDMtOC43NS0yNy40NC0xOS44LTM4LjQ3LTMyLjU2LTUuNTctNi40NC0xMC42NC0xMy4zMi0xNS4xNC0yMC41Ni0xLjA3LTEuNzItNC4zMS05LjUtNi4yNS03Ljc4LTEuODMsMS42Mi0uMzEsMTAuODQtLjAzLDEzLjA3LDEuNjIsMTMuMDYsMTEuNzYsMjMuNDQsMTkuNDMsMzQsMTAuNiwxNC41OSwyNC4zNywyNi41MiwzNi44MiwzOS41NywxMi40NSwxMy4wNSwxOS43NiwyOS44LDI0LjA5LDQ3LjMxWiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjg5LjUsMTM4LjFjLTEzLjQ0LTEzLjMzLTI2Ljc4LTI2Ljc2LTQwLjEzLTQwLjE5LTQuNjEtNC42NC05LjEtOS4zOS0xNC4xNy0xNC42My0uOTksNC43OC0xLjEyLDguNzYtMi43NCwxMi4zLTEuMDcsMi4zMy0uMzQsMy43MywxLjI1LDUuMzEsMTUuMzQsMTUuMjQsMzAuNjIsMzAuNTIsNDUuOTQsNDUuNzcsOS41MSw5LjQ2LDkuNzcsMjIuNzguMzIsMzIuMjUtMjUuNjQsMjUuNjctNTEuMzksNTEuMjMtNzcuMDIsNzYuOTEtMS45MywxLjk0LTQuODYsMy40LTUuMzUsNi4yNy0xLjA0LDYuMTYtMS41OSwxMi40MS0yLjM0LDE4LjYyLjI2LjEyLjUyLjI0Ljc5LjM2LjQ1LS40Mi45MS0uODMsMS4zNC0xLjI2LDMwLjkyLTMwLjg5LDYxLjk1LTYxLjY2LDkyLjcxLTkyLjcxLDEzLjUzLTEzLjY2LDEzLjU5LTM0LjkzLS41OS00OC45OVoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE3NS4wOCwxMDYuNDhjMi44LDQuNTgsNi41Myw3Ljc2LDEyLjMxLDcuMTYsNS4xNC0uNTQsNy45LTMuOTUsOS42LTguNDcsMi4yOS02LjEuMzgtMTQuMDYtNC40LTE4LjQ4LTUuMzQtNC45My0xMi4yMy00LjQ4LTE2LjcyLDEuMTUtMi4yNCwyLjgxLTMuMjYsNi4wMy0yLjg4LDkuNy0uMzYsMy4xOC40Miw2LjE5LDIuMDksOC45NFoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTIwMC4xOCwyMDYuNzRjLTEuMTUuODEtNC40NCwzLjUyLTQuOTMsMy45Ni0xLjk0LDEuNzUtMy42NiwzLjczLTUuNDQsNS42NS0zLjU1LDMuODUtNS4zNCw3Ljk3LTYuOTgsMTMtMy4zNSwxMC4yMS0yLjM4LDIxLjI3LTEuMTQsMzEuNzUsMS4wOSw5LjI0LDIuNDcsMTguNjYsNi44MSwyNi44OCwyLjIzLTI3LjUyLDExLTU5LjA4LDE4LjA5LTg1Ljc2LS4xOC42OC01LjAyLDMuNTUtNi40MSw0LjUyWiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTk5LjMzLDE4MS4zNWMtMS42MS00LjY1LTMuODEtOS4xMS02LjUyLTEzLjIyLTEuNDMtMi4xNy0yLjUxLDIuMTgtMi45OCwzLjE1LTEuMDgsMi4yLTIuMTgsNC4zOS0zLjI5LDYuNTctMi4yMyw0LjM2LTQuNTEsOC43LTYuNzgsMTMuMDQtNC41NCw4LjY3LTkuMDYsMTcuMzYtMTMuMDQsMjYuMy0xLjMxLDIuOTUtMi41Nyw1LjkyLTMuNzUsOC45My03Ljg4LDIwLjA4LTEyLjI3LDQyLjM0LTcuMDcsNjMuMjgsNC42Ni0zMS4yMiwxOC42OC02MC45NywzOS44LTg0LjQzLDIuNDctMi43NSw1LjE0LTUuNiw1Ljk0LTkuMjEuNTMtMi40LjE3LTQuOTEtLjM0LTcuMzEtLjUxLTIuNC0xLjE3LTQuNzctMS45Ny03LjA4WiIvPgogIDwvZz4KICA8Zz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTM0OS4wMiwyMTkuNjdsNDMuODctMTE0LjA0aDE2LjI4bDQ2Ljc1LDExNC4wNGgtMTcuMjJsLTEzLjMyLTM0LjU0aC00Ny43NmwtMTIuNTQsMzQuNTRoLTE2LjA1Wk0zODEuOTgsMTcyLjg0aDM4LjcybC0xMS45Mi0zMS41OGMtMy42NC05LjU5LTYuMzQtMTcuNDgtOC4xLTIzLjY1LTEuNDYsNy4zMS0zLjUxLDE0LjU3LTYuMTYsMjEuNzhsLTEyLjU0LDMzLjQ1WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNDgwLjMxLDEwNS42NGg3MS41MnYxMTQuMDRoLTE1LjExdi0xMDAuNThoLTQxLjI5djU4LjczYzAsMTEuOTMtLjU2LDIwLjY3LTEuNjcsMjYuMjEtMS4xMiw1LjU1LTMuNDcsOS44Ny03LjA1LDEyLjk1cy04LjEzLDQuNjMtMTMuNjMsNC42M2MtMy4zMywwLTcuMzItLjYyLTEyLTEuODdsMi41Ny0xMy4zOGMyLjQ5LDEuMDQsNC42MiwxLjU2LDYuMzksMS41NiwzLjQzLDAsNi0xLjI4LDcuNzEtMy44NSwxLjcxLTIuNTcsMi41Ny04LjYyLDIuNTctMTguMTZ2LTgwLjI4WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNTc3LjQ4LDIxOS42N3YtMTE0LjA0aDgyLjU5djEzLjQ2aC02Ny40N3YzNC45M2g2My4xOXYxMy4zOGgtNjMuMTl2MzguODJoNzAuMTJ2MTMuNDZoLTg1LjI0WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNjg0LjMxLDEwNS42NGgxNS4xMnY0OS45NGM2LjkxLDAsMTEuNzYtMS4zMywxNC41Ny00LjAxLDIuODEtMi42Nyw2LjM5LTkuMDksMTAuNzUtMTkuMjUsMy4xNy03LjQ3LDUuNzgtMTIuNzQsNy44My0xNS44MywyLjA1LTMuMDgsNC45Ny01LjY4LDguNzYtNy43OCwzLjc5LTIuMSw3Ljk3LTMuMTUsMTIuNTQtMy4xNSw1LjgyLDAsOC44OC4wNSw5LjE5LjE2djEzLjA3Yy0uNTIsMC0xLjUzLS4wMy0zLjA0LS4wOC0xLjY2LS4wNS0yLjY4LS4wOC0zLjA0LS4wOC00LjgzLDAtOC40MiwxLjE3LTEwLjc1LDMuNS0yLjM5LDIuMzMtNS4xMiw3LjMxLTguMTgsMTQuOTQtMy44NCw5LjY1LTcuMDksMTUuNzMtOS43NCwxOC4yNC0yLjY1LDIuNTItNS44Miw0LjUzLTkuNTEsNi4wMyw3LjM4LDIuMDIsMTQuNjUsOC44MiwyMS44MiwyMC4zOGwyMy41MywzNy45NmgtMTguNzhsLTE5LjA5LTMwLjk2Yy01LjI1LTguNTYtOS42NC0xNC40My0xMy4xNy0xNy42Mi0zLjUzLTMuMTktOC4xLTQuNzgtMTMuNzEtNC43OHY1My4zNmgtMTUuMTJ2LTExNC4wNFoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTg1Ny4yMSwxNzkuNjlsMTUuMTIsMy44MWMtMy4xNywxMi4zOS04Ljg3LDIxLjg1LTE3LjEsMjguMzUtOC4yMyw2LjUxLTE4LjMsOS43Ni0zMC4xOSw5Ljc2cy0yMi4zMi0yLjUtMzAuMDQtNy41MWMtNy43MS01LTEzLjU4LTEyLjI1LTE3LjYxLTIxLjc0LTQuMDMtOS40OS02LjA0LTE5LjY4LTYuMDQtMzAuNTcsMC0xMS44OCwyLjI3LTIyLjIzLDYuODItMzEuMDgsNC41NC04Ljg0LDExLjAxLTE1LjU2LDE5LjQtMjAuMTUsOC4zOS00LjU5LDE3LjYyLTYuODgsMjcuNy02Ljg4LDExLjQzLDAsMjEuMDQsMi45LDI4LjgzLDguNzEsNy43OSw1LjgxLDEzLjIyLDEzLjk4LDE2LjI4LDI0LjVsLTE0Ljg4LDMuNWMtMi42NS04LjMtNi40OS0xNC4zNC0xMS41My0xOC4xMi01LjA0LTMuNzktMTEuMzgtNS42OC0xOS4wMS01LjY4LTguNzgsMC0xNi4xMiwyLjEtMjIuMDEsNi4zLTUuOSw0LjItMTAuMDQsOS44NC0xMi40MywxNi45Mi0yLjM5LDcuMDgtMy41OCwxNC4zOC0zLjU4LDIxLjksMCw5LjcsMS40MSwxOC4xNiw0LjI1LDI1LjQsMi44Myw3LjIzLDcuMjMsMTIuNjQsMTMuMjEsMTYuMjIsNS45NywzLjU4LDEyLjQ0LDUuMzcsMTkuNCw1LjM3LDguNDcsMCwxNS42My0yLjQ0LDIxLjUtNy4zMSw1Ljg3LTQuODcsOS44NC0xMi4xMSwxMS45Mi0yMS43WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNODkxLjc0LDIxOS42N3YtMTE0LjA0aDgyLjU5djEzLjQ2aC02Ny40N3YzNC45M2g2My4xOXYxMy4zOGgtNjMuMTl2MzguODJoNzAuMTJ2MTMuNDZoLTg1LjI0WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNOTk4LjU3LDEwNS42NGgxMy43MXY5MC4zMWw2MC43Ny05MC4zMWgxNS4xOXYxMTQuMDRoLTEzLjcxdi05MC4wOGwtNjAuODUsOTAuMDhoLTE1LjEydi0xMTQuMDRaTTEwNTUuMzcsNzguNDloOS41OGMtLjc4LDYuNDgtMy4xNiwxMS40Ni03LjEzLDE0Ljk0LTMuOTcsMy40Ny05LjI2LDUuMjEtMTUuODYsNS4yMXMtMTEuOTYtMS43Mi0xNS45My01LjE3Yy0zLjk3LTMuNDUtNi4zNS04LjQ0LTcuMTMtMTQuOTdoOS41OGMuNzMsMy41MywyLjE3LDYuMTYsNC4zMiw3LjksMi4xNSwxLjc0LDUuMDUsMi42MSw4LjY5LDIuNjEsNC4yMSwwLDcuMzktLjg0LDkuNTQtMi41MywyLjE2LTEuNjgsMy42LTQuMzQsNC4zMi03Ljk3WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTE2Ni42NSwxMDUuNjRoNzEuNTJ2MTE0LjA0aC0xNS4xMXYtMTAwLjU4aC00MS4yOXY1OC43M2MwLDExLjkzLS41NiwyMC42Ny0xLjY3LDI2LjIxLTEuMTIsNS41NS0zLjQ3LDkuODctNy4wNSwxMi45NXMtOC4xMyw0LjYzLTEzLjYzLDQuNjNjLTMuMzMsMC03LjMyLS42Mi0xMi0xLjg3bDIuNTctMTMuMzhjMi40OSwxLjA0LDQuNjIsMS41Niw2LjM5LDEuNTYsMy40MywwLDYtMS4yOCw3LjcxLTMuODUsMS43MS0yLjU3LDIuNTctOC42MiwyLjU3LTE4LjE2di04MC4yOFoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTEyNTAuOTcsMjE5LjY3bDQzLjg3LTExNC4wNGgxNi4yOGw0Ni43NSwxMTQuMDRoLTE3LjIybC0xMy4zMi0zNC41NGgtNDcuNzZsLTEyLjU0LDM0LjU0aC0xNi4wNVpNMTI4My45MiwxNzIuODRoMzguNzJsLTExLjkyLTMxLjU4Yy0zLjY0LTkuNTktNi4zNC0xNy40OC04LjEtMjMuNjUtMS40Niw3LjMxLTMuNTEsMTQuNTctNi4xNiwyMS43OGwtMTIuNTQsMzMuNDVaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMzcwLjQyLDIxOS42N3YtMTE0LjA0aDQzLjA5YzcuNTgsMCwxMy4zNy4zNiwxNy4zNywxLjA5LDUuNjEuOTMsMTAuMzEsMi43MSwxNC4xLDUuMzMsMy43OSwyLjYyLDYuODQsNi4yOSw5LjE2LDExLjAxLDIuMzEsNC43MiwzLjQ3LDkuOTEsMy40NywxNS41NiwwLDkuNy0zLjA5LDE3LjktOS4yNywyNC42Mi02LjE4LDYuNzItMTcuMzUsMTAuMDctMzMuNSwxMC4wN2gtMjkuMjl2NDYuMzZoLTE1LjEyWk0xMzg1LjUzLDE1OS44NWgyOS41M2M5Ljc3LDAsMTYuNy0xLjgxLDIwLjgtNS40NSw0LjEtMy42Myw2LjE1LTguNzQsNi4xNS0xNS4zMiwwLTQuNzctMS4yMS04Ljg1LTMuNjItMTIuMjUtMi40Mi0zLjQtNS42LTUuNjQtOS41NC02LjczLTIuNTUtLjY3LTcuMjUtMS4wMS0xNC4xLTEuMDFoLTI5LjIydjQwLjc2WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTQ3Ny41NiwxMDUuNjRoMTMuNzF2OTAuMzFsNjAuNzctOTAuMzFoMTUuMTl2MTE0LjA0aC0xMy43MXYtOTAuMDhsLTYwLjg1LDkwLjA4aC0xNS4xMnYtMTE0LjA0WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTU5Mi45NiwyMTkuNjd2LTExNC4wNGgxNS4xMnY0Ni44M2g1OS4zN3YtNDYuODNoMTUuMTJ2MTE0LjA0aC0xNS4xMnYtNTMuNzVoLTU5LjM3djUzLjc1aC0xNS4xMloiLz4KICA8L2c+Cjwvc3ZnPg==" alt="Алексей Ларин" style="height:34px; width:auto; display:block;">
+  </a>
+  <div class="nav-links">
+    <a href="consultation.html">Консультация</a>
+    <a href="index.html">Личное ведение</a>
+    <a href="course.html" class="active">Бесплатный курс</a>
+    <a href="#">Здоровая спина</a>
+    <a href="results.html">Результаты</a>
+    <a href="blog.html">Блог</a>
+  </div>
+  <a href="#" class="nav-login">Войти</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-dot"></div>
+      <span class="eyebrow-text">Бесплатный курс · 6 практик + 2 урока · онлайн</span>
+    </div>
+    <h1>Мягкий <em>старт</em></h1>
+    <p class="hero-sub">Восемь уроков для мягкого старта</p>
+    <div class="hero-promise">
+      <p>Болит спина, нет энергии или просто давно не занимались? <strong>Курс создан для тех, кто хочет начать мягко</strong> – в своём темпе, без изнурения и сложных программ.</p>
+    </div>
+    <div class="hero-cta">
+      <a href="#get-access" class="btn-hero">Получить доступ бесплатно →</a>
+      <div class="hero-safety">Бесплатно – навсегда</div>
+    </div>
+    <div class="hero-stats">
+      <div><span class="stat-num">6+2</span><span class="stat-label">урока в курсе</span></div>
+      <div><span class="stat-num">8000+</span><span class="stat-label">человек через проекты</span></div>
+      <div><span class="stat-num">8 лет</span><span class="stat-label">практики</span></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="free-badge">✓ Бесплатно</div>
+    <div class="hero-right-title">Что внутри курса</div>
+    <div class="lessons-list">
+      <div class="lesson-item">
+        <div class="lesson-num free">0</div>
+        <div class="lesson-text">
+          <strong>Вводный урок</strong>
+          <span>Знакомство, история Алексея, как проходить курс</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">1</div>
+        <div class="lesson-text">
+          <strong>Суставная гимнастика</strong>
+          <span>Комплекс на всё тело – мягко, приятно, с первого раза</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">2</div>
+        <div class="lesson-text">
+          <strong>Шея</strong>
+          <span>Для тех, кто много сидит за компьютером</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">3</div>
+        <div class="lesson-text">
+          <strong>Здоровая спина</strong>
+          <span>Убрать напряжение и укрепить мышечный корсет</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">4</div>
+        <div class="lesson-text">
+          <strong>Стопы</strong>
+          <span>Неожиданно – но влияет на всё тело</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">5</div>
+        <div class="lesson-text">
+          <strong>Тазобедренные суставы</strong>
+          <span>Гибкость и здоровье малого таза</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">6</div>
+        <div class="lesson-text">
+          <strong>Медитация</strong>
+          <span>Синхронизация с собой и снятие стресса</span>
+        </div>
+      </div>
+      <div class="lesson-item">
+        <div class="lesson-num">7</div>
+        <div class="lesson-text">
+          <strong>Итоговый урок</strong>
+          <span>Что делать дальше и как продолжить путь</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="what-get" id="what-get">
+  <div class="section-label">Что вы получите</div>
+  <h2 class="section-title">Простые практики –<br><em>понятный результат</em></h2>
+  <p class="section-desc">Каждый урок – короткий, самостоятельный и работающий. Можно начать с любого, который сейчас актуален.</p>
+  <div class="benefits-grid">
+    <div class="benefit-card">
+      <div class="benefit-num">01</div>
+      <h3>Тело без боли</h3>
+      <p>Простые упражнения, которые убирают напряжение со спины, шеи и суставов. Без изнурения и резких нагрузок.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-num">02</div>
+      <h3>Первый шаг в регулярность</h3>
+      <p>Курс построен так, чтобы тело привыкало постепенно. После него хочется продолжать – не потому что надо, а потому что приятно.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-num">03</div>
+      <h3>Больше энергии</h3>
+      <p>Осознанное движение возвращает ощущение тела и заряжает. Многие говорят, что после занятий голова становится яснее.</p>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-photo">Фото Алексея</div>
+  <div class="about-content">
+    <div class="section-label">Кто ведёт курс</div>
+    <h2 class="section-title" style="color:white;">Алексей Ларин</h2>
+    <div class="about-pull">В 9 лет – перелом трёх позвонков. Именно через движение восстановился. С тех пор помогаю другим.</div>
+    <p class="about-text">С 2017 года работаю с детьми, взрослыми и людьми старшего возраста. Магистр с отличием – Российский университет спорта. Более 8000 человек через проекты.</p>
+    <p class="about-text">Этот курс – лучшее из того, что я умею, собранное в простой и понятный формат.</p>
+  </div>
+</section>
+
+<section class="cta-section" id="get-access">
+  <div class="cta-inner">
+    <div class="section-label">Получить доступ</div>
+    <h2 class="section-title">Начните сегодня –<br><em>это бесплатно</em></h2>
+    <p class="section-desc">Оставьте имя и почту – и сразу получите доступ ко всем 8 урокам.</p>
+    <div class="cta-form">
+      <div class="form-row">
+        <input type="text" class="form-input" placeholder="Ваше имя">
+        <input type="email" class="form-input" placeholder="Email">
+      </div>
+      <button class="btn-cta-full" onclick="window.location.href='https://t.me/larin_lesha'">Получить доступ →</button>
+      <p class="form-note">Бесплатно · без спама · отписаться в любой момент</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html" class="footer-logo">Алексей Ларин</a>
+  <div class="footer-social">
+    <a href="https://t.me/lesha_larin" target="_blank" class="social-btn" title="Telegram"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg></a>
+    <a href="https://vk.com/lesha_larin" target="_blank" class="social-btn" title="ВКонтакте"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg></a>
+    <a href="https://www.instagram.com/lesha_larin/" target="_blank" class="social-btn" title="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+    <a href="https://www.youtube.com/@lesha_larin" target="_blank" class="social-btn" title="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg></a>
+    <a href="mailto:les-larin@yandex.ru" class="social-btn" title="Email"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+  </div>
+  <div class="footer-copy">© 2026 Алексей Ларин</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { slug } = Astro.params;
+const { data, status } = await apiJson<any>(`/api/courses/${slug}`, { cookie });
+if (status !== 200) return new Response('Not found', { status: 404 });
+const course = data.course;
+const lessons = data.lessons || [];
+const enrolled = data.enrolled;
+const user = (Astro.locals as any).user;
+---
+<Base title={course.title} user={user}>
+  <section class="container" style="padding:50px 0;">
+    <a href="/courses" class="muted">← Все курсы</a>
+    <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:50px; margin-top:24px;">
+      <div>
+        <span class={`badge ${course.kind}`}>{course.kind === 'free' ? 'Бесплатный' : `${course.price_rub ?? ''} ₽`}</span>
+        <h1 style="font-size:40px; margin-top:14px;">{course.title}</h1>
+        <p class="muted">{course.subtitle}</p>
+        <p style="font-size:17px; line-height:1.6;">{course.description}</p>
+      </div>
+      <aside class="card" style="height:fit-content;">
+        {!user && (
+          <>
+            <p class="muted">Войдите, чтобы получить доступ.</p>
+            <a class="btn" href={`/auth/login?next=/courses/${course.slug}`}>Войти</a>
+          </>
+        )}
+        {user && enrolled && (
+          <a class="btn" href={`/courses/${course.slug}/lessons/${lessons[0]?.slug || ''}`}>Продолжить обучение</a>
+        )}
+        {user && !enrolled && course.kind === 'free' && (
+          <form id="enroll-free">
+            <button type="submit" class="btn">Начать бесплатно</button>
+          </form>
+        )}
+        {user && !enrolled && course.kind === 'paid' && (
+          <form id="checkout">
+            <button type="submit" class="btn">Купить за {course.price_rub} ₽</button>
+            <p class="muted" style="margin-top:10px;">Оплата через Продамус.</p>
+          </form>
+        )}
+      </aside>
+    </div>
+    <h2 style="margin-top:40px;">Программа</h2>
+    <ol style="line-height:2; padding-left:20px;">
+      {lessons.map((l: any) => (
+        <li class={!enrolled && course.kind === 'paid' && !l.is_preview ? 'lock' : ''}>
+          {(enrolled || course.kind === 'free' || l.is_preview)
+            ? <a href={`/courses/${course.slug}/lessons/${l.slug}`}>{l.title}</a>
+            : <>{l.title} <span class="muted">(после оплаты)</span></>}
+          {l.is_preview && <span class="badge free" style="margin-left:8px;">Превью</span>}
+        </li>
+      ))}
+    </ol>
+  </section>
+  <script define:vars={{ slug }}>
+    const ef = document.getElementById('enroll-free');
+    if (ef) ef.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const r = await fetch(`/api/courses/${slug}/enroll-free`, { method: 'POST' });
+      if (r.ok) location.reload();
+    });
+    const ck = document.getElementById('checkout');
+    if (ck) ck.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const r = await fetch(`/api/courses/${slug}/checkout`, { method: 'POST' });
+      const j = await r.json();
+      if (j.payment_url) location.href = j.payment_url;
+      else alert(j.error || 'Не удалось перейти к оплате');
+    });
+  </script>
+</Base>

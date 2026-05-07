@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data: stats } = await apiJson<any>('/api/admin/stats', { cookie });
+const { data: orders } = await apiJson<any[]>('/api/admin/orders?status=paid', { cookie });
+const user = (Astro.locals as any).user;
+const recent = (orders || []).slice(0, 10);
+---
+<Base title="Админка" user={user}>
+  <section class="container" style="padding:50px 0;">
+    <h1>Админ-дашборд</h1>
+    <div class="grid grid-3" style="margin-top:20px;">
+      <div class="card"><div class="muted">Всего пользователей</div><div style="font-size:36px; font-family:'Playfair Display',serif;">{stats?.users_total ?? 0}</div></div>
+      <div class="card"><div class="muted">Онлайн сейчас</div><div style="font-size:36px; font-family:'Playfair Display',serif;" id="online">{stats?.online ?? 0}</div></div>
+      <div class="card"><div class="muted">Выручка за день / неделю / месяц</div>
+        <div>{stats?.revenue_day ?? 0} ₽ / {stats?.revenue_week ?? 0} ₽ / {stats?.revenue_month ?? 0} ₽</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:14px; margin-top:30px;">
+      <a class="btn secondary" href="/admin/users">Пользователи</a>
+      <a class="btn secondary" href="/admin/courses">Курсы</a>
+      <a class="btn secondary" href="/admin/blog">Блог</a>
+      <a class="btn secondary" href="/admin/orders">Оплаты</a>
+      <a class="btn secondary" href="/admin/online">Онлайн</a>
+    </div>
+    <h2 style="margin-top:40px;">Последние оплаты</h2>
+    <table>
+      <thead><tr><th>№</th><th>Курс</th><th>Юзер</th><th>Сумма</th><th>Дата</th></tr></thead>
+      <tbody>
+        {recent.map((o: any) => (
+          <tr>
+            <td>{o.OrderNum ?? o.order_num}</td>
+            <td>{o.CourseID ?? o.course_id}</td>
+            <td>{o.UserID ?? o.user_id}</td>
+            <td>{o.AmountRub ?? o.amount_rub} ₽</td>
+            <td>{(o.CreatedAt ?? o.created_at)?.toString?.().slice(0,16)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+  <script>
+    setInterval(async () => {
+      const r = await fetch('/api/admin/stats');
+      if (r.ok) { const s = await r.json(); document.getElementById('online').textContent = s.online; }
+    }, 30000);
+  </script>
+</Base>

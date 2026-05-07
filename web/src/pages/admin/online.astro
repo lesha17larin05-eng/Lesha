@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data } = await apiJson<any[]>('/api/admin/online-users', { cookie });
+const user = (Astro.locals as any).user;
+---
+<Base title="Онлайн" user={user}>
+  <section class="container" style="padding:50px 0;">
+    <h1>Онлайн (за последние 5 минут)</h1>
+    <table>
+      <thead><tr><th>Email</th><th>Имя</th><th>Last seen</th></tr></thead>
+      <tbody>
+        {(data || []).map((u: any) => (
+          <tr><td>{u.email}</td><td>{u.name}</td><td>{u.last_seen_at?.toString?.().slice(0,19)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+</Base>

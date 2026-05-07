@@ -1,0 +1,60 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data } = await apiJson<any[]>('/api/admin/articles', { cookie });
+const user = (Astro.locals as any).user;
+const articles = Array.isArray(data) ? data : [];
+---
+<Base title="Блог (админ)" user={user}>
+  <section class="container" style="padding:50px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+      <h1>Блог</h1>
+      <a class="btn" href="/admin/blog/new">+ Новая статья</a>
+    </div>
+    <p class="muted">Управление статьями. Контент — HTML с предпросмотром. Админка ставит CSRF автоматически.</p>
+    <table style="margin-top:20px;">
+      <thead>
+        <tr>
+          <th>Slug</th>
+          <th>Заголовок</th>
+          <th>Тег</th>
+          <th>Опубликован</th>
+          <th>Обновлено</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {articles.length === 0 && <tr><td colspan="6" class="muted">Статей пока нет.</td></tr>}
+        {articles.map((a: any) => (
+          <tr>
+            <td><code>{a.slug}</code></td>
+            <td>{a.title}</td>
+            <td>{a.tag || '—'}</td>
+            <td>{a.is_published ? '✅' : '—'}</td>
+            <td>{(a.updated_at || '').toString().slice(0, 16).replace('T', ' ')}</td>
+            <td>
+              <a href={`/admin/blog/${a.id}`}>Редактировать →</a>
+              <span style="margin: 0 6px; color:#ccc;">·</span>
+              {a.is_published && <a href={`/blog/${a.slug}`} target="_blank" rel="noopener">Открыть</a>}
+              <span style="margin: 0 6px; color:#ccc;">·</span>
+              <a href="#" data-del-id={a.id} class="del-btn" style="color:#a00;">Удалить</a>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+  <script>
+    document.querySelectorAll('.del-btn').forEach((el) => {
+      el.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!confirm('Удалить статью?')) return;
+        const id = (e.currentTarget as HTMLElement).getAttribute('data-del-id');
+        const r = await fetch(`/api/admin/articles/${id}`, { method: 'DELETE' });
+        if (r.ok) location.reload();
+        else alert('Ошибка удаления');
+      });
+    });
+  </script>
+</Base>

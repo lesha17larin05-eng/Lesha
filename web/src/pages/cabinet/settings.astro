@@ -1,0 +1,37 @@
+---
+import Base from '../../layouts/Base.astro';
+const user = (Astro.locals as any).user;
+---
+<Base title="Настройки" user={user}>
+  <section class="container" style="padding:60px 0; max-width:520px;">
+    <h1>Настройки</h1>
+    <form id="f" class="form">
+      <div><label class="label">Email (нельзя изменить)</label><input class="input" value={user.email} disabled /></div>
+      <div><label class="label">Имя</label><input class="input" name="name" value={user.name || ''} /></div>
+      <hr/>
+      <div><label class="label">Текущий пароль</label><input class="input" type="password" name="old_password" /></div>
+      <div><label class="label">Новый пароль</label><input class="input" type="password" name="new_password" /></div>
+      <button class="btn" type="submit">Сохранить</button>
+      <div id="msg" hidden></div>
+    </form>
+  </section>
+  <script>
+    const f = document.getElementById('f'), m = document.getElementById('msg');
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(f);
+      const r = await fetch('/api/me', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: fd.get('name'),
+          old_password: fd.get('old_password') || undefined,
+          new_password: fd.get('new_password') || undefined,
+        })
+      });
+      const j = await r.json();
+      m.className = r.ok ? 'alert ok' : 'alert';
+      m.textContent = r.ok ? 'Сохранено' : (j.error || 'Ошибка');
+      m.hidden = false;
+    });
+  </script>
+</Base>

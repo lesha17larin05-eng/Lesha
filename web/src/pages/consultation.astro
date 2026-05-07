@@ -1,0 +1,9 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { extractLegacy } from '../lib/legacy';
+import rawHtml from '../legacy/consultation.html?raw';
+const { styles, body } = extractLegacy(rawHtml);
+---
+<SiteLayout title="Консультация — Алексей Ларин" active="consultation" pageStyles={styles}>
+  <Fragment set:html={body} />
+</SiteLayout>

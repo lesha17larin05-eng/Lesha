@@ -1,0 +1,21 @@
+---
+import Base from '../../layouts/Base.astro';
+const token = Astro.url.searchParams.get('token') || '';
+---
+<Base title="Подтверждение email">
+  <section class="container" style="padding:60px 0; max-width:520px;">
+    <h1>Подтверждение email</h1>
+    <p id="msg">Проверяем токен...</p>
+  </section>
+  <script define:vars={{ token }}>
+    (async () => {
+      const r = await fetch('/api/auth/verify-email', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const m = document.getElementById('msg');
+      if (r.ok) m.innerHTML = '✅ Email подтверждён. <a href="/auth/login">Войти</a>';
+      else m.textContent = '❌ Ссылка недействительна или просрочена.';
+    })();
+  </script>
+</Base>

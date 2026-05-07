@@ -1,0 +1,9 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { extractLegacy } from '../lib/legacy';
+import rawHtml from '../legacy/results.html?raw';
+const { styles, body } = extractLegacy(rawHtml);
+---
+<SiteLayout title="Результаты учеников — Алексей Ларин" active="results" pageStyles={styles}>
+  <Fragment set:html={body} />
+</SiteLayout>

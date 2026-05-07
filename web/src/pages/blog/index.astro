@@ -1,0 +1,60 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { apiJson } from '../../lib/api';
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data } = await apiJson<any[]>('/api/articles?limit=100', { cookie });
+const articles = Array.isArray(data) ? data : [];
+
+const blogStyles = `
+.blog-page-header { padding: 120px 80px 60px; background: var(--navy); position: relative; overflow: hidden; }
+.blog-page-header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 480px; height: 480px; background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%); pointer-events: none; }
+.blog-page-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--orange) 0%, transparent 60%); }
+.blog-page-header .label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 16px; position:relative; }
+.blog-page-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; color: white; line-height: 1.1; margin-bottom: 12px; position:relative; }
+.blog-page-header h1 em { font-style: italic; color: #8bb8f0; }
+.blog-page-header p { font-size: 17px; color: rgba(255,255,255,0.55); max-width: 520px; line-height: 1.75; position:relative; }
+.blog-grid { padding: 60px 80px 100px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.article-card { background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; transition: transform .2s, box-shadow .2s; text-decoration: none; display: flex; flex-direction: column; color: inherit; }
+.article-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.07); }
+.card-img { width: 100%; height: 180px; background: linear-gradient(160deg, #e8edf5 0%, #d4dce8 100%); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text-light); font-weight: 500; }
+.card-img.has-img { background-size: cover; background-position: center; }
+.card-body { padding: 28px; flex: 1; display: flex; flex-direction: column; }
+.card-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; margin-bottom: 14px; background: #dbeeff; color: #1060a0; align-self: flex-start; }
+.card-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; color: var(--navy); line-height: 1.3; margin-bottom: 12px; flex: 1; }
+.card-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+.card-meta { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 16px; }
+.card-read { color: var(--orange); font-weight: 600; }
+.blog-empty { padding: 100px 80px; text-align: center; color: var(--text-muted); }
+@media (max-width: 900px) { .blog-grid { grid-template-columns: repeat(2,1fr); padding: 60px 24px 100px; } .blog-page-header { padding: 100px 24px 48px; } }
+@media (max-width: 600px) { .blog-grid { grid-template-columns: 1fr; } }
+`;
+---
+<SiteLayout title="Блог — Алексей Ларин" active="blog" pageStyles={blogStyles}>
+  <section class="blog-page-header">
+    <div class="label">Заметки и статьи</div>
+    <h1>Блог о <em>здоровье и привычках</em></h1>
+    <p>Личные наблюдения и инструменты, которые работают на практике. Без догм — про сон, движение, дыхание и ритм жизни.</p>
+  </section>
+  {articles.length === 0
+    ? <div class="blog-empty">Пока статей нет. Загляните позже.</div>
+    : <div class="blog-grid">
+        {articles.map(a => (
+          <a href={`/blog/${a.slug}`} class="article-card">
+            <div class={`card-img${a.cover_image_url ? ' has-img' : ''}`} style={a.cover_image_url ? `background-image:url(${a.cover_image_url})` : ''}>
+              {!a.cover_image_url && <span>{a.tag || 'Статья'}</span>}
+            </div>
+            <div class="card-body">
+              {a.tag && <span class="card-tag">{a.tag}</span>}
+              <h3 class="card-title">{a.title}</h3>
+              {a.excerpt && <p class="card-desc">{a.excerpt}</p>}
+              <div class="card-meta">
+                <span>{a.reading_minutes ? `${a.reading_minutes} мин` : 'Читать'}</span>
+                <span class="card-read">Читать →</span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+  }
+</SiteLayout>

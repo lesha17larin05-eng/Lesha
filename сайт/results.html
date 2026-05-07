@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Результаты клиентов – Алексей Ларин</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1a2744;--orange:#e8652a;--cream:#f8f5ef;--warm-white:#fdfaf5;--text:#1a1a1a;--text-muted:#777;--border:#ece8e0;}
+*{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
+body{font-family:'Manrope',sans-serif;background:var(--warm-white);color:var(--text);overflow-x:hidden;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:64px;padding:0 48px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{flex-shrink:0;text-decoration:none;}
+.nav-links{display:flex;gap:32px;margin-left:auto;margin-right:40px;}
+.nav-links a{font-size:13px;font-weight:500;color:var(--text-muted);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--navy);}
+.nav-links a.active{font-weight:600;border-bottom:2px solid var(--orange);padding-bottom:3px;}
+.nav-login{font-size:13px;color:var(--text-muted);text-decoration:none;}
+.page-header{padding:120px 80px 60px;background:var(--navy);position:relative;overflow:hidden;}
+.page-header::before{content:'';position:absolute;top:-80px;right:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(46,61,107,0.6) 0%,transparent 65%);pointer-events:none;}
+.page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange) 0%,transparent 60%);}
+.header-label{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:16px;}
+.page-header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,4vw,60px);font-weight:400;color:white;line-height:1.1;margin-bottom:12px;}
+.page-header h1 em{font-style:italic;color:#8bb8f0;}
+.page-header p{font-size:17px;color:rgba(255,255,255,0.5);max-width:540px;line-height:1.75;}
+.header-stats{display:flex;gap:40px;margin-top:40px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.1);}
+.hs-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:500;color:white;line-height:1;display:block;}
+.hs-label{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px;display:block;}
+.filters{padding:20px 80px;background:white;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;position:sticky;top:64px;z-index:80;}
+.filter-btn{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);transition:all 0.2s;font-family:'Manrope',sans-serif;}
+.filter-btn:hover{border-color:var(--navy);color:var(--navy);}
+.filter-btn.active{background:var(--navy);border-color:var(--navy);color:white;}
+
+.rv-grid{padding:48px 80px 80px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.rv-card{background:white;border-radius:20px;border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;}
+.rv-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.08);}
+.rv-card.hidden{display:none;}
+
+/* Video container — fixed height, clips header and bottom text naturally */
+.rv-video{width:100%;height:300px;overflow:hidden;position:relative;background:#f0f0f0;}
+.rv-video iframe{
+  position:absolute;
+  top:-65px;
+  left:0;
+  width:100%;
+  height:480px;
+  border:none;
+}
+.rv-video--empty{background:var(--cream);}
+
+.rv-body{padding:20px;flex:1;display:flex;flex-direction:column;gap:8px;}
+.rv-badges{display:flex;flex-wrap:wrap;gap:5px;}
+.rv-badge{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:100px;}
+.rv-name{font-size:16px;font-weight:700;color:var(--navy);}
+.rv-result{font-size:14px;color:var(--text-muted);line-height:1.65;flex:1;}
+.rv-btns{display:flex;gap:8px;margin-top:4px;}
+.rv-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:100px;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.2s;flex:1;justify-content:center;font-family:'Manrope',sans-serif;}
+.rv-btn--vk{background:#e8f0ff;color:#1060c0;}
+.rv-btn--vk:hover{background:#1060c0;color:white;}
+.rv-btn--yt{background:#ffe8e8;color:#c01010;}
+.rv-btn--yt:hover{background:#c01010;color:white;}
+
+.footer-social{display:flex;flex-direction:row;gap:8px;align-items:center;}
+.social-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.2s;}
+.social-btn:hover{background:rgba(255,255,255,0.15);color:white;}
+footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;justify-content:space-between;}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:18px;color:white;text-decoration:none;}
+.footer-copy{font-size:13px;color:rgba(255,255,255,0.3);}
+@media(max-width:700px){
+  nav{padding:0 20px;}.nav-links{display:none;}
+  .page-header,.filters,.rv-grid{padding-left:24px;padding-right:24px;}
+  .rv-grid{grid-template-columns:1fr;}
+  footer{flex-direction:column;gap:20px;padding:32px 24px;text-align:center;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iX9Ch0LvQvtC5XzEiIGRhdGEtbmFtZT0i0KHQu9C+0LlfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTc0NC4yOSAzMjcuNzgiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNlODY1MmE7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzFhMjc0NDsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGc+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xNzIuMjYsMjkwLjU3Yy0zLjEyLS4yNy02LjE5LS43My05LjI1LTEuNS0xLjg1LS40Ni0yLjA2LTEuMzItMS42MS0yLjcuOTMtMi44NywxLjkzLTUuNzEsMy4wMy04LjUyLjQ1LTEuMTQsMS4wNy0xLjc3LDIuNzItMS4xNiwyLjc2LDEuMDMsNS43OC41OCw4LjY5LjQsMS44OC0uMTIsMi45NC4wMiwzLjIzLDIuMzUuMzEsMi41MywxLjEsNS4wOCwyLjE0LDcuNDIuODksMS45OS4xMSwyLjY5LTEuNTIsMi44OC0yLjQ3LjI4LTQuODksMS4wNC03LjQyLjgzWiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTQzLjI4LDY4LjkzYzQuNjItNC42Nyw5LjM5LTkuMjEsMTMuODctMTQsMy4zMy0zLjU2LDcuNTctNS41MiwxMi4wMy02LjI0LDcuOTYtMS4yOCwxNC41OCwyLjAxLDIwLjI1LDcuNTcsOC40NSw4LjI5LDE3LjAxLDE2LjQ3LDI1LjY2LDI0LjgzLDEuNTEtMy4xMiwzLjIyLTYuNDcsNC43NS05LjkuNi0xLjM0LjM2LTIuNTMtLjk5LTMuNjktMi4zNi0yLjAxLTQuMzYtNC40NC02LjYyLTYuNTgtNi43Ny02LjM5LTEyLjU5LTEzLjgtMjAuMDktMTkuMzgtMTAuMjUtNy42My0yNS44MS03Ljk2LTM2LjgzLTEuNTItNS44MSwzLjM5LTEwLDguNDQtMTQuNzEsMTIuOTUtMi4yOCwyLjE5LTYuMTksNC4xOS02LjEsNy4wMS4wOSwyLjkxLDMuMDksNS43Miw0Ljc3LDguNTksMS41LDIuNTcsMi40OSwxLjg4LDQuMDEuMzRaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMjAuOTUsNzMuNjJjLjcsNC40NCwxLDguOTksMi4zNiwxMy4zMy41NSwxLjc4LS43NCwyLjYyLTEuNjcsMy41NS0xMS4zMiwxMS4zNi0yMi42OCwyMi42OC0zNC4wMiwzNC4wMS03Ljg0LDcuODMtMTUuNzEsMTUuNjQtMjMuNTIsMjMuNS04LjA3LDguMTItOC4xNiwyMS4zNi4wNCwyOS43OCwxMC4yMSwxMC40OSwyMC42NSwyMC43NywzMSwzMS4xMywxNi40MSwxNi40MiwzMi44MiwzMi44Myw0OS4yNyw0OS4yMSwxLjU5LDEuNTgsMi4zLDMuMTEsMS45Niw1LjQ1LS42Niw0LjUyLS4zNyw5LjEtLjEyLDEzLjg0LTIuMjUtLjI4LTMuMTQtMi4xOC00LjQtMy40NC0yNS43OC0yNS42OS01MS41Ny01MS4zNi03Ny4yMS03Ny4xOS01LjMzLTUuMzctMTEuMzMtMTAuMTMtMTUuMTUtMTYuOTYtNy42MS0xMy42MS01LjM5LTMwLjMzLDUuNy00MS40MiwyMS4xNy0yMS4xNyw0Mi4zMS00Mi4zNyw2My40Ni02My41Ni42LS42LDEuMTQtMS4yOSwyLjMxLTEuMjRaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yMDcuMzYsMTk2LjI4YzIuMDYtMTUuNjcsMy4xLTMxLjQ3LDMuMTgtNDcuMjguMDMtNi40Mi0uMDktMTIuODksMS4xNS0xOS4xOSwyLjE1LTEwLjk0LDguMjQtMjAuNjIsMTIuODMtMzAuNzgsNC42LTEwLjE2LDcuNzMtMjEuOTQsMy43Mi0zMi4zNC04Ljg3LDIwLjY0LTE5LjIxLDQxLjQzLTM2LjE0LDU2LjE5LS42Ny41OS0xLjQxLDEuMTktMi4zLDEuMy0xLjAzLjEzLTIuMDEtLjQyLTIuOS0uOTUtMTQuNDMtOC43NS0yNy40NC0xOS44LTM4LjQ3LTMyLjU2LTUuNTctNi40NC0xMC42NC0xMy4zMi0xNS4xNC0yMC41Ni0xLjA3LTEuNzItNC4zMS05LjUtNi4yNS03Ljc4LTEuODMsMS42Mi0uMzEsMTAuODQtLjAzLDEzLjA3LDEuNjIsMTMuMDYsMTEuNzYsMjMuNDQsMTkuNDMsMzQsMTAuNiwxNC41OSwyNC4zNywyNi41MiwzNi44MiwzOS41NywxMi40NSwxMy4wNSwxOS43NiwyOS44LDI0LjA5LDQ3LjMxWiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjg5LjUsMTM4LjFjLTEzLjQ0LTEzLjMzLTI2Ljc4LTI2Ljc2LTQwLjEzLTQwLjE5LTQuNjEtNC42NC05LjEtOS4zOS0xNC4xNy0xNC42My0uOTksNC43OC0xLjEyLDguNzYtMi43NCwxMi4zLTEuMDcsMi4zMy0uMzQsMy43MywxLjI1LDUuMzEsMTUuMzQsMTUuMjQsMzAuNjIsMzAuNTIsNDUuOTQsNDUuNzcsOS41MSw5LjQ2LDkuNzcsMjIuNzguMzIsMzIuMjUtMjUuNjQsMjUuNjctNTEuMzksNTEuMjMtNzcuMDIsNzYuOTEtMS45MywxLjk0LTQuODYsMy40LTUuMzUsNi4yNy0xLjA0LDYuMTYtMS41OSwxMi40MS0yLjM0LDE4LjYyLjI2LjEyLjUyLjI0Ljc5LjM2LjQ1LS40Mi45MS0uODMsMS4zNC0xLjI2LDMwLjkyLTMwLjg5LDYxLjk1LTYxLjY2LDkyLjcxLTkyLjcxLDEzLjUzLTEzLjY2LDEzLjU5LTM0LjkzLS41OS00OC45OVoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE3NS4wOCwxMDYuNDhjMi44LDQuNTgsNi41Myw3Ljc2LDEyLjMxLDcuMTYsNS4xNC0uNTQsNy45LTMuOTUsOS42LTguNDcsMi4yOS02LjEuMzgtMTQuMDYtNC40LTE4LjQ4LTUuMzQtNC45My0xMi4yMy00LjQ4LTE2LjcyLDEuMTUtMi4yNCwyLjgxLTMuMjYsNi4wMy0yLjg4LDkuNy0uMzYsMy4xOC40Miw2LjE5LDIuMDksOC45NFoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTIwMC4xOCwyMDYuNzRjLTEuMTUuODEtNC40NCwzLjUyLTQuOTMsMy45Ni0xLjk0LDEuNzUtMy42NiwzLjczLTUuNDQsNS42NS0zLjU1LDMuODUtNS4zNCw3Ljk3LTYuOTgsMTMtMy4zNSwxMC4yMS0yLjM4LDIxLjI3LTEuMTQsMzEuNzUsMS4wOSw5LjI0LDIuNDcsMTguNjYsNi44MSwyNi44OCwyLjIzLTI3LjUyLDExLTU5LjA4LDE4LjA5LTg1Ljc2LS4xOC42OC01LjAyLDMuNTUtNi40MSw0LjUyWiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTk5LjMzLDE4MS4zNWMtMS42MS00LjY1LTMuODEtOS4xMS02LjUyLTEzLjIyLTEuNDMtMi4xNy0yLjUxLDIuMTgtMi45OCwzLjE1LTEuMDgsMi4yLTIuMTgsNC4zOS0zLjI5LDYuNTctMi4yMyw0LjM2LTQuNTEsOC43LTYuNzgsMTMuMDQtNC41NCw4LjY3LTkuMDYsMTcuMzYtMTMuMDQsMjYuMy0xLjMxLDIuOTUtMi41Nyw1LjkyLTMuNzUsOC45My03Ljg4LDIwLjA4LTEyLjI3LDQyLjM0LTcuMDcsNjMuMjgsNC42Ni0zMS4yMiwxOC42OC02MC45NywzOS44LTg0LjQzLDIuNDctMi43NSw1LjE0LTUuNiw1Ljk0LTkuMjEuNTMtMi40LjE3LTQuOTEtLjM0LTcuMzEtLjUxLTIuNC0xLjE3LTQuNzctMS45Ny03LjA4WiIvPgogIDwvZz4KICA8Zz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTM0OS4wMiwyMTkuNjdsNDMuODctMTE0LjA0aDE2LjI4bDQ2Ljc1LDExNC4wNGgtMTcuMjJsLTEzLjMyLTM0LjU0aC00Ny43NmwtMTIuNTQsMzQuNTRoLTE2LjA1Wk0zODEuOTgsMTcyLjg0aDM4LjcybC0xMS45Mi0zMS41OGMtMy42NC05LjU5LTYuMzQtMTcuNDgtOC4xLTIzLjY1LTEuNDYsNy4zMS0zLjUxLDE0LjU3LTYuMTYsMjEuNzhsLTEyLjU0LDMzLjQ1WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNDgwLjMxLDEwNS42NGg3MS41MnYxMTQuMDRoLTE1LjExdi0xMDAuNThoLTQxLjI5djU4LjczYzAsMTEuOTMtLjU2LDIwLjY3LTEuNjcsMjYuMjEtMS4xMiw1LjU1LTMuNDcsOS44Ny03LjA1LDEyLjk1cy04LjEzLDQuNjMtMTMuNjMsNC42M2MtMy4zMywwLTcuMzItLjYyLTEyLTEuODdsMi41Ny0xMy4zOGMyLjQ5LDEuMDQsNC42MiwxLjU2LDYuMzksMS41NiwzLjQzLDAsNi0xLjI4LDcuNzEtMy44NSwxLjcxLTIuNTcsMi41Ny04LjYyLDIuNTctMTguMTZ2LTgwLjI4WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNTc3LjQ4LDIxOS42N3YtMTE0LjA0aDgyLjU5djEzLjQ2aC02Ny40N3YzNC45M2g2My4xOXYxMy4zOGgtNjMuMTl2MzguODJoNzAuMTJ2MTMuNDZoLTg1LjI0WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNjg0LjMxLDEwNS42NGgxNS4xMnY0OS45NGM2LjkxLDAsMTEuNzYtMS4zMywxNC41Ny00LjAxLDIuODEtMi42Nyw2LjM5LTkuMDksMTAuNzUtMTkuMjUsMy4xNy03LjQ3LDUuNzgtMTIuNzQsNy44My0xNS44MywyLjA1LTMuMDgsNC45Ny01LjY4LDguNzYtNy43OCwzLjc5LTIuMSw3Ljk3LTMuMTUsMTIuNTQtMy4xNSw1LjgyLDAsOC44OC4wNSw5LjE5LjE2djEzLjA3Yy0uNTIsMC0xLjUzLS4wMy0zLjA0LS4wOC0xLjY2LS4wNS0yLjY4LS4wOC0zLjA0LS4wOC00LjgzLDAtOC40MiwxLjE3LTEwLjc1LDMuNS0yLjM5LDIuMzMtNS4xMiw3LjMxLTguMTgsMTQuOTQtMy44NCw5LjY1LTcuMDksMTUuNzMtOS43NCwxOC4yNC0yLjY1LDIuNTItNS44Miw0LjUzLTkuNTEsNi4wMyw3LjM4LDIuMDIsMTQuNjUsOC44MiwyMS44MiwyMC4zOGwyMy41MywzNy45NmgtMTguNzhsLTE5LjA5LTMwLjk2Yy01LjI1LTguNTYtOS42NC0xNC40My0xMy4xNy0xNy42Mi0zLjUzLTMuMTktOC4xLTQuNzgtMTMuNzEtNC43OHY1My4zNmgtMTUuMTJ2LTExNC4wNFoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTg1Ny4yMSwxNzkuNjlsMTUuMTIsMy44MWMtMy4xNywxMi4zOS04Ljg3LDIxLjg1LTE3LjEsMjguMzUtOC4yMyw2LjUxLTE4LjMsOS43Ni0zMC4xOSw5Ljc2cy0yMi4zMi0yLjUtMzAuMDQtNy41MWMtNy43MS01LTEzLjU4LTEyLjI1LTE3LjYxLTIxLjc0LTQuMDMtOS40OS02LjA0LTE5LjY4LTYuMDQtMzAuNTcsMC0xMS44OCwyLjI3LTIyLjIzLDYuODItMzEuMDgsNC41NC04Ljg0LDExLjAxLTE1LjU2LDE5LjQtMjAuMTUsOC4zOS00LjU5LDE3LjYyLTYuODgsMjcuNy02Ljg4LDExLjQzLDAsMjEuMDQsMi45LDI4LjgzLDguNzEsNy43OSw1LjgxLDEzLjIyLDEzLjk4LDE2LjI4LDI0LjVsLTE0Ljg4LDMuNWMtMi42NS04LjMtNi40OS0xNC4zNC0xMS41My0xOC4xMi01LjA0LTMuNzktMTEuMzgtNS42OC0xOS4wMS01LjY4LTguNzgsMC0xNi4xMiwyLjEtMjIuMDEsNi4zLTUuOSw0LjItMTAuMDQsOS44NC0xMi40MywxNi45Mi0yLjM5LDcuMDgtMy41OCwxNC4zOC0zLjU4LDIxLjksMCw5LjcsMS40MSwxOC4xNiw0LjI1LDI1LjQsMi44Myw3LjIzLDcuMjMsMTIuNjQsMTMuMjEsMTYuMjIsNS45NywzLjU4LDEyLjQ0LDUuMzcsMTkuNCw1LjM3LDguNDcsMCwxNS42My0yLjQ0LDIxLjUtNy4zMSw1Ljg3LTQuODcsOS44NC0xMi4xMSwxMS45Mi0yMS43WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNODkxLjc0LDIxOS42N3YtMTE0LjA0aDgyLjU5djEzLjQ2aC02Ny40N3YzNC45M2g2My4xOXYxMy4zOGgtNjMuMTl2MzguODJoNzAuMTJ2MTMuNDZoLTg1LjI0WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNOTk4LjU3LDEwNS42NGgxMy43MXY5MC4zMWw2MC43Ny05MC4zMWgxNS4xOXYxMTQuMDRoLTEzLjcxdi05MC4wOGwtNjAuODUsOTAuMDhoLTE1LjEydi0xMTQuMDRaTTEwNTUuMzcsNzguNDloOS41OGMtLjc4LDYuNDgtMy4xNiwxMS40Ni03LjEzLDE0Ljk0LTMuOTcsMy40Ny05LjI2LDUuMjEtMTUuODYsNS4yMXMtMTEuOTYtMS43Mi0xNS45My01LjE3Yy0zLjk3LTMuNDUtNi4zNS04LjQ0LTcuMTMtMTQuOTdoOS41OGMuNzMsMy41MywyLjE3LDYuMTYsNC4zMiw3LjksMi4xNSwxLjc0LDUuMDUsMi42MSw4LjY5LDIuNjEsNC4yMSwwLDcuMzktLjg0LDkuNTQtMi41MywyLjE2LTEuNjgsMy42LTQuMzQsNC4zMi03Ljk3WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTE2Ni42NSwxMDUuNjRoNzEuNTJ2MTE0LjA0aC0xNS4xMXYtMTAwLjU4aC00MS4yOXY1OC43M2MwLDExLjkzLS41NiwyMC42Ny0xLjY3LDI2LjIxLTEuMTIsNS41NS0zLjQ3LDkuODctNy4wNSwxMi45NXMtOC4xMyw0LjYzLTEzLjYzLDQuNjNjLTMuMzMsMC03LjMyLS42Mi0xMi0xLjg3bDIuNTctMTMuMzhjMi40OSwxLjA0LDQuNjIsMS41Niw2LjM5LDEuNTYsMy40MywwLDYtMS4yOCw3LjcxLTMuODUsMS43MS0yLjU3LDIuNTctOC42MiwyLjU3LTE4LjE2di04MC4yOFoiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTEyNTAuOTcsMjE5LjY3bDQzLjg3LTExNC4wNGgxNi4yOGw0Ni43NSwxMTQuMDRoLTE3LjIybC0xMy4zMi0zNC41NGgtNDcuNzZsLTEyLjU0LDM0LjU0aC0xNi4wNVpNMTI4My45MiwxNzIuODRoMzguNzJsLTExLjkyLTMxLjU4Yy0zLjY0LTkuNTktNi4zNC0xNy40OC04LjEtMjMuNjUtMS40Niw3LjMxLTMuNTEsMTQuNTctNi4xNiwyMS43OGwtMTIuNTQsMzMuNDVaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMzcwLjQyLDIxOS42N3YtMTE0LjA0aDQzLjA5YzcuNTgsMCwxMy4zNy4zNiwxNy4zNywxLjA5LDUuNjEuOTMsMTAuMzEsMi43MSwxNC4xLDUuMzMsMy43OSwyLjYyLDYuODQsNi4yOSw5LjE2LDExLjAxLDIuMzEsNC43MiwzLjQ3LDkuOTEsMy40NywxNS41NiwwLDkuNy0zLjA5LDE3LjktOS4yNywyNC42Mi02LjE4LDYuNzItMTcuMzUsMTAuMDctMzMuNSwxMC4wN2gtMjkuMjl2NDYuMzZoLTE1LjEyWk0xMzg1LjUzLDE1OS44NWgyOS41M2M5Ljc3LDAsMTYuNy0xLjgxLDIwLjgtNS40NSw0LjEtMy42Myw2LjE1LTguNzQsNi4xNS0xNS4zMiwwLTQuNzctMS4yMS04Ljg1LTMuNjItMTIuMjUtMi40Mi0zLjQtNS42LTUuNjQtOS41NC02LjczLTIuNTUtLjY3LTcuMjUtMS4wMS0xNC4xLTEuMDFoLTI5LjIydjQwLjc2WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTQ3Ny41NiwxMDUuNjRoMTMuNzF2OTAuMzFsNjAuNzctOTAuMzFoMTUuMTl2MTE0LjA0aC0xMy43MXYtOTAuMDhsLTYwLjg1LDkwLjA4aC0xNS4xMnYtMTE0LjA0WiIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTU5Mi45NiwyMTkuNjd2LTExNC4wNGgxNS4xMnY0Ni44M2g1OS4zN3YtNDYuODNoMTUuMTJ2MTE0LjA0aC0xNS4xMnYtNTMuNzVoLTU5LjM3djUzLjc1aC0xNS4xMloiLz4KICA8L2c+Cjwvc3ZnPg==" alt="Алексей Ларин" style="height:34px;width:auto;display:block;"></a>
+  <div class="nav-links">
+    <a href="consultation.html">Консультация</a>
+    <a href="index.html">Личное ведение</a>
+    <a href="course.html">Бесплатный курс</a>
+    <a href="#">Здоровая спина</a>
+    <a href="results.html" class="active">Результаты</a>
+    <a href="blog.html">Блог</a>
+  </div>
+  <a href="#" class="nav-login">Войти</a>
+</nav>
+<div class="page-header">
+  <div class="header-label">Результаты</div>
+  <h1>Реальные люди,<br><em>реальные результаты</em></h1>
+  <p>Видеоотзывы клиентов с 2017 года. Личное ведение, групповые курсы, ретриты. У каждого — своя история.</p>
+  <div class="header-stats">
+    <div><span class="hs-num">65+</span><span class="hs-label">видеоотзывов</span></div>
+    <div><span class="hs-num">8000+</span><span class="hs-label">человек через проекты</span></div>
+    <div><span class="hs-num">8 лет</span><span class="hs-label">практики</span></div>
+  </div>
+</div>
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">Все</button>
+  <button class="filter-btn" data-filter="pain">Боль ушла</button>
+  <button class="filter-btn" data-filter="weight">Похудение</button>
+  <button class="filter-btn" data-filter="energy">Энергия и форма</button>
+  <button class="filter-btn" data-filter="mind">Медитация и стресс</button>
+  <button class="filter-btn" data-filter="kids">Дети и семья</button>
+</div>
+<div class="rv-grid">
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/96?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Яна</div>
+      <p class="rv-result">Протрузии ушли по МРТ, перекос таза уменьшился</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239382" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/_9ggbdaKaTQ" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/34?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Анастасия</div>
+      <p class="rv-result">Родила после диагноза «привычная невынашиваемость»</p>
+      <div class="rv-btns">
+        <a href="https://vk.com/clip-141544391_456239583" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/jvWr49fj_MQ" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="weight">
+<div class="rv-video"><iframe src="https://t.me/results_larin/59?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#fdefd4;color:#8a5010;">Похудение</span></div>
+      <div class="rv-name">Ксения</div>
+      <p class="rv-result">−11 кг за 3 месяца, изменилось внутреннее состояние</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239421" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/thTkEBzU9tQ" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain weight">
+<div class="rv-video"><iframe src="https://t.me/results_larin/68?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#fdefd4;color:#8a5010;">Похудение</span></div>
+      <div class="rv-name">Кристина</div>
+      <p class="rv-result">Прошла 100% курса, поясница перестала болеть, ушёл лишний вес</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239366" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/pMWlF3AKlCM" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain weight">
+<div class="rv-video"><iframe src="https://t.me/results_larin/95?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#fdefd4;color:#8a5010;">Похудение</span></div>
+      <div class="rv-name">Диля</div>
+      <p class="rv-result">58 лет: боли в суставах уменьшились, вес начал уходить после травмы</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239355" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/4h9ImOWh9Aw" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain weight">
+<div class="rv-video"><iframe src="https://t.me/results_larin/60?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#fdefd4;color:#8a5010;">Похудение</span></div>
+      <div class="rv-name">Ксения</div>
+      <p class="rv-result">Ушли боли в тазобедренных суставах, влезла в старые джинсы</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239367" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/CL1SAFuUKzY" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain weight">
+<div class="rv-video"><iframe src="https://t.me/results_larin/94?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#fdefd4;color:#8a5010;">Похудение</span></div>
+      <div class="rv-name">Марина</div>
+      <p class="rv-result">Ушли боли в шее и ступне, вес сдвинулся без экстремальных мер</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239369" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/OucZY4tSmso" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/91?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Анастасия</div>
+      <p class="rv-result">Перестали болеть спина, поясница, ноги, голова, шея и плечи</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239417" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/_ouahlnjFgs" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/97?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Давидбек</div>
+      <p class="rv-result">Спина перестала болеть</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239415" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/culsTHJowA0" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/98?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Анастасия</div>
+      <p class="rv-result">Прострелы ушли после первой же тренировки, появилась лёгкость</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239346" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/mbTC3RtPXNg" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/93?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Ольга</div>
+      <p class="rv-result">Боль ушла на 1–2 неделе, энергии прибавилось</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239377" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/4156C0_-kOs" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/66?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Яна</div>
+      <p class="rv-result">Боль в пояснице ушла, семья тренируется вместе</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239381" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/AGQ22MDg3Fk" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/85?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Яна</div>
+      <p class="rv-result">Боли при сколиозе уменьшились, появилась уверенность</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239383" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/xiCROIKUIfs" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/90?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">Ушла скованность в шее и плечах</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239361" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/h0-uqHjnDNw" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/67?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Анна</div>
+      <p class="rv-result">Мама с малышом: боли в спине уменьшились, появилась лёгкость</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239348" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/M8UzPB7zUqI" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/57?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Рузана</div>
+      <p class="rv-result">Страх после переломов прошёл, начала доверять телу</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239419" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/bukmUUNi5dU" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/58?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Татьяна</div>
+      <p class="rv-result">Комплекс подошёл при кифозе, сколиозе и переломах</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239409" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/z6A-9dwStO8" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/48?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Сергей</div>
+      <p class="rv-result">Почувствовал улучшение после травмы через системную работу</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239435" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/b5yWpxbqWuc" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/83?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Марина</div>
+      <p class="rv-result">Стала вставать без опоры, спина стала гибче</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239368" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/EBFGWtc0Xko" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/56?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Ирина</div>
+      <p class="rv-result">При протрузиях тело стало ощущаться целостно</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239364" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/LlbJzjOBvHE" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/36?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Анна</div>
+      <p class="rv-result">Встроила спорт в жизнь, ушли зажимы в плечах и спине</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239528" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/ZzKbTRkWV7E" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/64?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Алёна</div>
+      <p class="rv-result">Позвоночник «кайфанул» уже после первой тренировки</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239407" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/2oMgQ4SE1eo" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="pain">
+<div class="rv-video"><iframe src="https://t.me/results_larin/41?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#d4f0e4;color:#0a6040;">Боль ушла</span></div>
+      <div class="rv-name">Кирилл</div>
+      <p class="rv-result">Начал системно работать со спиной</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239365" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/6hDYyPu-UeI" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy kids">
+<div class="rv-video"><iframe src="https://t.me/results_larin/35?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span><span class="rv-badge" style="background:#ffe4f0;color:#a0205a;">Дети и семья</span></div>
+      <div class="rv-name">Анна</div>
+      <p class="rv-result">Ты привил привычку — семья занимается три раза в неделю</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239546" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/FJLgWzzGsDY" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/65?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Анна</div>
+      <p class="rv-result">Регулярные тренировки, рост энергии, семейные занятия</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239349" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/JW9jnW37KvQ" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/42?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Дарья</div>
+      <p class="rv-result">Взяла себя в руки, вернула энергию, начала бегать</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239353" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/jjof76l_eZw" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/52?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Маргарита</div>
+      <p class="rv-result">Вернула вдохновение и привела тело в тонус</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239404" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/Oebk3per-1U" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/88?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Варвара</div>
+      <p class="rv-result">Укрепление без изнурения, сон стал стабильнее и крепче</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239350" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/obR1VZsZLWQ" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/86?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Мария</div>
+      <p class="rv-result">Прилив сил после каждого занятия, спина гибкая и лёгкая</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239371" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/kEMmDq7a7FI" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/87?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Екатерина</div>
+      <p class="rv-result">После курса хочется жить и делать ещё больше</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239356" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/f0AQ-crb94o" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/49?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Екатерина</div>
+      <p class="rv-result">Третий поток — спокойствие, расслабление и хороший тонус</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239358" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/hV6dDlgA_4U" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/39?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Мария</div>
+      <p class="rv-result">Десятиминутные зарядки каждый день преображают весь день</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239372" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/xyDxkXRzxVw" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/92?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Алёна</div>
+      <p class="rv-result">Преподаватель йоги: заработали мышцы которые давно молчали</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239341" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/N-2w9zI80c8" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/47?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Сергей</div>
+      <p class="rv-result">Укрепил «спящие» мышцы, тело стало работать более цельно</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239405" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/uHW-kOE1o7A" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/84?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Дарья</div>
+      <p class="rv-result">Стало легче держать спину, легче просто ходить по жизни</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239352" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/tNQk8DcHQ5E" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/89?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Александр</div>
+      <p class="rv-result">Бодрость и спокойствие одновременно — медитативное ощущение</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239406" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/jGWe-g_P10Q" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/51?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Ольга</div>
+      <p class="rv-result">Польза, удовольствие и дисциплина одновременно каждый день</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239408" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/OX-sjxnRaM0" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/54?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Владимир</div>
+      <p class="rv-result">Из скептика к уверенности, лучший сон и неожиданная любовь</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239351" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/A-Msxq7nfj0" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/82?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Алина</div>
+      <p class="rv-result">База и вариации — каждый нашёл свою точку роста</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239342" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/RnAwHJ1mPgk" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/63?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">Тело откликнулось, вернулась на второй поток</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239418" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/YycW7skk12g" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/50?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Екатерина</div>
+      <p class="rv-result">Оформились мышцы, укрепились суставы, выросла выносливость</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239357" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/y0g6E90nEEs" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/44?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Наталия</div>
+      <p class="rv-result">Системный подход без перегруза, лёгкая и задорная атмосфера</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239375" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/LEGB7-yREHo" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/43?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Надежда</div>
+      <p class="rv-result">Системный курс для любого уровня подготовки</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239374" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/_ZnRtTNRmao" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/46?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">Выстроила систему тренировок под сложный посменный график</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239359" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/WiVb_mArc7I" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/40?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Анна</div>
+      <p class="rv-result">Теорию перенесла в практику, занимается намного чаще</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239410" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/vcPfTeEFgm0" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/81?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">Расправила плечи, стала осознанно держать осанку</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239360" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/ikkFQEkXclQ" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/37?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Ксения</div>
+      <p class="rv-result">Чётко, по делу, без воды — структура и ясность</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239403" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/LcR4K9wrEUM" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/53?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Денис</div>
+      <p class="rv-result">Огонь и командный дух на групповых занятиях</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239354" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/jw1xymkcMEU" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/55?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Анастасия</div>
+      <p class="rv-result">Первый опыт групповых — комфортно, тепло, размеренно</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239416" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/p8URB7yZKis" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/38?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Елизавета</div>
+      <p class="rv-result">Мягкость, поддержка и желание продолжать</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239402" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/3-sDTUDjAZg" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="energy">
+<div class="rv-video"><iframe src="https://t.me/results_larin/45?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#dbeeff;color:#1060a0;">Энергия и форма</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">По-другому ощущаю своё тело — улучшила осанку</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239362" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/0I6oBvQkWt4" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/33?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Командный отзыв</div>
+      <p class="rv-result">Мир медитации, вдохновение и ощущение нового состояния</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239347" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/JpN2TTcxwCk" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/80?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">Засыпает быстрее, проблема со сном почти перестала существовать</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239431" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/FTQGPjbG6Og" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/77?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Алексей</div>
+      <p class="rv-result">Услышал себя — шанс побыть наедине с собой</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239428" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/Ivb0eoiQslk" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/76?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Анастасия</div>
+      <p class="rv-result">Молчание вернуло внутренний покой</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239345" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/4fynwCPaG6k" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/75?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Сергей</div>
+      <p class="rv-result">Заменил «ниточку» на прочную — нашёл устойчивость</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239425" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/KHAO2msC9z0" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/71?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Мария</div>
+      <p class="rv-result">Мысли успокоились, появилось понимание куда двигаться</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239427" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/yD_7w60BG0A" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/73?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Илья</div>
+      <p class="rv-result">Стал спокойнее относиться к напряжённым ситуациям</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239424" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/J_TVs1T9cH4" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/70?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Екатерина</div>
+      <p class="rv-result">Услышала себя в тишине и вернулась к своей природе</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239429" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/AmzJm5yiF-g" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/74?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Ольга</div>
+      <p class="rv-result">Психолог: випассана — гигиена души, без этого уже не может</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239432" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/J6GVI20XksA" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/72?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Наталья</div>
+      <p class="rv-result">От раздражения к контролю мыслей и желанию медитировать дома</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239426" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/beuVJpt5p1U" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/78?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Ольга</div>
+      <p class="rv-result">Замедлилась и осознала куда идти дальше</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239433" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/Pu4nmgY0Kl0" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/79?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Елена</div>
+      <p class="rv-result">Внутреннее напряжение ушло, вернулось равновесие</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239430" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/J-KJXIw0Wrc" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="mind">
+<div class="rv-video"><iframe src="https://t.me/results_larin/69?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#f0e4ff;color:#6020a0;">Медитация и стресс</span></div>
+      <div class="rv-name">Мария и Наталья</div>
+      <p class="rv-result">Мягкий подход — всегда приезжайте, вы в надёжных руках</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/video-141544391_456239370" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtu.be/4V6whhxtoIg" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="kids">
+<div class="rv-video"><iframe src="https://t.me/results_larin/62?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#ffe4f0;color:#a0205a;">Дети и семья</span></div>
+      <div class="rv-name">Нина</div>
+      <p class="rv-result">Внук окреп, наросли бицепсы, появилась уверенность на физкультуре</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239422" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/hH59zDqdFNk" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="rv-card" data-cats="kids">
+<div class="rv-video"><iframe src="https://t.me/results_larin/61?embed=1&mode=tme" frameborder="0" scrolling="no" allowtransparency="true" allowfullscreen="true"></iframe></div>
+    <div class="rv-body">
+      <div class="rv-badges"><span class="rv-badge" style="background:#ffe4f0;color:#a0205a;">Дети и семья</span></div>
+      <div class="rv-name">Елисей</div>
+      <p class="rv-result">Стал сильнее, увереннее на физкультуре, ушла зажатость</p>
+      <div class="rv-btns">
+        <a href="https://vkvideo.ru/clip-141544391_456239423" target="_blank" class="rv-btn rv-btn--vk"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg> ВКонтакте</a>
+        <a href="https://youtube.com/shorts/6fQ8u2211vM" target="_blank" class="rv-btn rv-btn--yt"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg> YouTube</a>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+  <a href="index.html" class="footer-logo">Алексей Ларин</a>
+  <div class="footer-social">
+    <a href="https://t.me/lesha_larin" target="_blank" class="social-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg></a>
+    <a href="https://vk.com/lesha_larin" target="_blank" class="social-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.785 16.241s.288-.032.436-.19c.136-.148.132-.426.132-.426s-.02-1.302.583-1.493c.595-.189 1.36 1.258 2.17 1.814.612.416 1.078.325 1.078.325l2.165-.03s1.132-.07.595-.96c-.044-.073-.314-.661-1.616-1.869-1.363-1.265-1.18-1.061.462-3.251.999-1.33 1.398-2.142 1.272-2.492-.12-.334-.854-.246-.854-.246l-2.436.015s-.18-.025-.314.056c-.132.079-.216.262-.216.262s-.387 1.03-.903 1.905c-1.088 1.849-1.523 1.947-1.701 1.833-.413-.267-.31-1.073-.31-1.646 0-1.79.271-2.535-.528-2.727-.265-.064-.46-.106-1.137-.113-.869-.009-1.605.003-2.02.206-.277.136-.491.44-.361.457.162.022.529.099.724.362.252.341.243 1.107.243 1.107s.145 2.107-.337 2.368c-.331.176-.785-.183-1.759-1.822-.499-.862-.876-1.816-.876-1.816s-.072-.176-.202-.271c-.157-.115-.376-.151-.376-.151l-2.314.015s-.347.01-.474.161C3.04 8.38 3.149 8.7 3.149 8.7s1.811 4.238 3.861 6.377c1.88 1.963 4.016 1.835 4.016 1.835l1.759-.024z"/></svg></a>
+    <a href="https://www.instagram.com/lesha_larin/" target="_blank" class="social-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+    <a href="https://www.youtube.com/@lesha_larin" target="_blank" class="social-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg></a>
+    <a href="mailto:les-larin@yandex.ru" class="social-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>
+  </div>
+  <div class="footer-copy">© 2026 Алексей Ларин</div>
+</footer>
+<script>
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    const f = this.dataset.filter;
+    document.querySelectorAll('.rv-card').forEach(card => {
+      card.classList.toggle('hidden', f !== 'all' && !card.dataset.cats.includes(f));
+    });
+  });
+});
+</script>
+</body>
+</html>

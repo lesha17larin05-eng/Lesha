@@ -1,0 +1,24 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data: courses } = await apiJson<any[]>('/api/me/courses', { cookie });
+const user = (Astro.locals as any).user;
+const paid = Astro.url.searchParams.get('paid');
+---
+<Base title="Мои курсы" user={user}>
+  <section class="container" style="padding:60px 0;">
+    {paid && <div class="alert ok">Оплата принята! Курс открыт ниже.</div>}
+    <h1>Мои курсы</h1>
+    <div class="grid grid-3" style="margin-top:18px;">
+      {(courses || []).map((c: any) => (
+        <a class="card" href={`/courses/${c.slug}`} style="color:inherit; display:block;">
+          <h3>{c.title}</h3>
+          <p class="muted">{c.subtitle}</p>
+          <div class="progress"><i style={`width:${c.progress_pct}%`}></i></div>
+          <div class="muted">{c.progress_pct}%</div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

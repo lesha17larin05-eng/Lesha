@@ -1,0 +1,32 @@
+services:
+  web:
+    image: node:20-alpine
+    build: !reset null
+    working_dir: /app
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 4321"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4321
+      API_URL_INTERNAL: http://api:8080
+      PUBLIC_API_URL: /api
+
+  api:
+    image: golang:1.22-alpine
+    build: !reset null
+    user: "0:0"
+    working_dir: /src
+    command: sh -c "apk add --no-cache git ffmpeg ca-certificates tzdata >/dev/null && (test -x /go/bin/air || go install github.com/air-verse/air@v1.52.3) && exec /go/bin/air -c .air.toml"
+    volumes:
+      - ./api:/src
+      - api_go_cache:/go/pkg
+      - api_go_bin:/go/bin
+      - ${DATA_DIR:-./data}/videos:/var/videos
+      - ${DATA_DIR:-./data}/uploads:/var/uploads
+
+volumes:
+  web_node_modules:
+  api_go_cache:
+  api_go_bin:

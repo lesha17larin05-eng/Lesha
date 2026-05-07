@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const status = Astro.url.searchParams.get('status') || '';
+const { data } = await apiJson<any[]>(`/api/admin/orders?status=${status}`, { cookie });
+const user = (Astro.locals as any).user;
+---
+<Base title="Оплаты" user={user}>
+  <section class="container" style="padding:50px 0;">
+    <h1>Оплаты</h1>
+    <p>
+      <a href="?status=">Все</a> · <a href="?status=pending">Pending</a> ·
+      <a href="?status=paid">Paid</a> · <a href="?status=failed">Failed</a>
+    </p>
+    <table>
+      <thead><tr><th>№</th><th>User</th><th>Course</th><th>Сумма</th><th>Статус</th><th>Создан</th><th>Оплачен</th></tr></thead>
+      <tbody>
+        {(data || []).map((o: any) => (
+          <tr>
+            <td>{o.OrderNum ?? o.order_num}</td>
+            <td>{o.UserID ?? o.user_id}</td>
+            <td>{o.CourseID ?? o.course_id}</td>
+            <td>{o.AmountRub ?? o.amount_rub}</td>
+            <td>{o.Status ?? o.status}</td>
+            <td>{(o.CreatedAt ?? o.created_at)?.toString?.().slice(0,16)}</td>
+            <td>{(o.PaidAt ?? o.paid_at)?.toString?.().slice(0,16) || '—'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+</Base>

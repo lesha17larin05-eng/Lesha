@@ -1,0 +1,56 @@
+---
+// Рендерит <picture> с WebP + fallback и srcset 1x/2x для retina.
+//
+// Файлы должны быть подготовлены скриптом `npm run img` и лежать в /public/img/...
+// Структура имён: {base}.{ext}, {base}@2x.{ext}, {base}.webp, {base}@2x.webp
+//
+// Пример:
+//   <ResponsiveImage base="/img/hero/lazy-vs-coach" ext="jpg" width="420" height="420" alt="..." />
+interface Props {
+  base: string;          // путь без расширения, начиная со слэша. Пример: "/img/hero/foo"
+  ext?: 'jpg' | 'png';   // расширение fallback-формата. По умолчанию "jpg".
+  alt: string;
+  width?: number | string;
+  height?: number | string;
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  class?: string;
+  style?: string;
+  sizes?: string;
+}
+
+const {
+  base,
+  ext = 'jpg',
+  alt,
+  width,
+  height,
+  loading = 'lazy',
+  decoding = 'async',
+  fetchpriority,
+  class: className,
+  style,
+  sizes,
+} = Astro.props as Props;
+---
+<picture>
+  <source
+    type="image/webp"
+    srcset={`${base}.webp 1x, ${base}@2x.webp 2x`}
+    sizes={sizes}
+  />
+  <img
+    src={`${base}.${ext}`}
+    srcset={`${base}.${ext} 1x, ${base}@2x.${ext} 2x`}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding={decoding}
+    fetchpriority={fetchpriority}
+    class={className}
+    style={style}
+    sizes={sizes}
+  />
+</picture>

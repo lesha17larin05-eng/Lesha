@@ -1,0 +1,94 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data } = await apiJson<any[]>('/api/admin/courses', { cookie });
+const user = (Astro.locals as any).user;
+const courses = Array.isArray(data) ? data : [];
+---
+<Base title="Курсы (админ)" user={user}>
+  <section class="container" style="padding:50px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+      <h1>Курсы</h1>
+      <button class="btn" id="open-new-course">+ Создать курс</button>
+    </div>
+    <p class="muted">Каждый курс открывается отдельно — там модули, уроки и видео. Загрузка видео: <code>POST /api/admin/videos/upload</code>.</p>
+    <table style="margin-top:20px;">
+      <thead><tr><th>Slug</th><th>Название</th><th>Тип</th><th>Цена</th><th>Опубл.</th><th></th></tr></thead>
+      <tbody>
+        {courses.length === 0 && <tr><td colspan="6" class="muted">Курсов пока нет.</td></tr>}
+        {courses.map((c: any) => (
+          <tr>
+            <td><code>{c.slug}</code></td>
+            <td>{c.title}</td>
+            <td>{c.kind}</td>
+            <td>{c.price_rub ?? '—'}</td>
+            <td>{c.is_published ? '✅' : '—'}</td>
+            <td>
+              <a href={`/admin/courses/${c.id}`}>Открыть →</a>
+              {c.is_published && <><span style="margin:0 6px; color:#ccc;">·</span><a href={`/courses/${c.slug}`} target="_blank" rel="noopener">Просмотр</a></>}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <style>
+      .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; display:flex; align-items:flex-start; justify-content:center; padding:40px 20px; overflow:auto; }
+      .modal-bg[hidden] { display: none; }
+    </style>
+    <div id="new-course-modal" hidden class="modal-bg">
+      <div style="background:#fff; border-radius:12px; padding:30px; max-width:560px; width:100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="margin:0;">Новый курс</h2>
+          <button type="button" class="btn secondary" id="close-new-course" style="padding:4px 12px;">×</button>
+        </div>
+        <form id="newcourse" class="form" style="margin-top:14px;">
+          <div><label class="label">Slug</label><input class="input" name="slug" required pattern="[a-z0-9-]+" placeholder="my-course" /></div>
+          <div><label class="label">Название</label><input class="input" name="title" required /></div>
+          <div><label class="label">Подзаголовок</label><input class="input" name="subtitle" /></div>
+          <div><label class="label">Описание</label><textarea class="input" name="description" rows="3"></textarea></div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label class="label">Тип</label>
+              <select class="input" name="kind"><option value="free">Бесплатный</option><option value="paid">Платный</option></select>
+            </div>
+            <div><label class="label">Цена (₽)</label><input class="input" name="price_rub" type="number" placeholder="для платных" /></div>
+          </div>
+          <label><input type="checkbox" name="is_published" checked /> Опубликован</label>
+          <div style="display:flex; gap:10px;">
+            <button class="btn" type="submit">Создать</button>
+            <button class="btn secondary" type="button" id="cancel-new-course">Отмена</button>
+          </div>
+          <div id="new-course-msg" hidden></div>
+        </form>
+      </div>
+    </div>
+  </section>
+  <script>
+    const modal = document.getElementById('new-course-modal');
+    const open = () => { modal.hidden = false; modal.querySelector('input[name="slug"]').focus(); };
+    const close = () => { modal.hidden = true; };
+    document.getElementById('open-new-course').addEventListener('click', open);
+    document.getElementById('close-new-course').addEventListener('click', close);
+    document.getElementById('cancel-new-course').addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+    document.getElementById('newcourse').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const body = Object.fromEntries(fd);
+      body.is_published = fd.has('is_published');
+      if (body.price_rub) body.price_rub = parseInt(body.price_rub);
+      else delete body.price_rub;
+      const r = await fetch('/api/admin/courses', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const j = await r.json().catch(() => ({}));
+      const msg = document.getElementById('new-course-msg');
+      if (r.ok && j.id) { location.href = `/admin/courses/${j.id}`; }
+      else { msg.className = 'alert'; msg.textContent = j.error || 'Ошибка'; msg.hidden = false; }
+    });
+  </script>
+</Base>

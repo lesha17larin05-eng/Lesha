@@ -1,0 +1,128 @@
+---
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+const {
+  title = 'Алексей Ларин — тренер по развитию здоровья',
+  description = 'Личное ведение, бесплатный курс, статьи и результаты учеников.',
+  active = '',
+  pageStyles = '',
+  padTop = false,
+  user = (Astro.locals as any).user,
+} = Astro.props as { title?: string; description?: string; active?: string; pageStyles?: string; padTop?: boolean; user?: any };
+---
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style is:global>
+    :root {
+      --navy: #1a2744;
+      --navy-mid: #243058;
+      --navy-light: #2e3d6b;
+      --orange: #e8652a;
+      --orange-warm: #f07530;
+      --cream: #f8f5ef;
+      --warm-white: #fdfaf5;
+      --text: #1a1a1a;
+      --text-mid: #444;
+      --text-muted: #777;
+      --text-light: #aaa;
+      --border: #ece8e0;
+      --border-light: #f2ede5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color: var(--text); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
+    a { color: inherit; }
+
+    /* Site nav */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(253,250,245,0.94); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 64px; padding: 0 48px;
+      display: flex; align-items: center; gap: 24px;
+    }
+    .site-nav-logo { text-decoration: none; flex-shrink: 0; display: inline-flex; align-items: center; }
+    .site-nav-links { display: flex; gap: 32px; margin-left: auto; margin-right: 40px; align-items: center; }
+    .site-nav-links a { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; border-bottom: 2px solid transparent; }
+    .site-nav-links a:hover { color: var(--navy); }
+    .site-nav-links a.active { color: var(--navy); font-weight: 600; border-bottom-color: var(--orange); }
+    .site-nav-right { display: flex; gap: 16px; align-items: center; }
+    .site-nav-login { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; color: var(--text-muted); text-decoration: none; }
+    .site-nav-login:hover { color: var(--navy); }
+    .site-nav-logout { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; padding: 0 16px; border-radius: 100px; border: 1.5px solid var(--navy); background: transparent; color: var(--navy); cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s; }
+    .site-nav-logout:hover { background: var(--navy); color: white; }
+
+    /* Sticky footer: main grows to fill remaining space */
+    .site-main { flex: 1 0 auto; }
+    .site-main.with-pad { padding-top: 64px; }
+    .site-footer { flex-shrink: 0; }
+
+    /* Footer */
+    .site-footer {
+      background: #0f1520; padding: 36px 80px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
+    .footer-social { display: flex; gap: 8px; align-items: center; }
+    .social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
+    .social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+    .footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+    @media (max-width: 700px) {
+      .site-nav { padding: 0 20px; }
+      .site-nav-links { display: none; }
+      .site-footer { flex-direction: column; padding: 32px 24px; text-align: center; }
+    }
+
+    /* Generic helpers reused by Astro pages */
+    .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
+      padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 600; font-family: 'Manrope',sans-serif;
+      transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+    }
+    .btn-primary:hover { background: var(--orange-warm); transform: translateY(-2px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px;
+      border: 1.5px solid var(--navy); color: var(--navy); background: transparent;
+      padding: 14px 28px; border-radius: 100px; font-size: 15px; font-weight: 600;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: var(--navy); color: white; }
+  </style>
+  {pageStyles && <style is:global set:html={pageStyles} />}
+</head>
+<body>
+  <SiteHeader active={active} user={user} />
+  <main class={`site-main${padTop ? ' with-pad' : ''}`}>
+    <slot />
+  </main>
+  <SiteFooter />
+  <script>
+    // Attach CSRF to fetch mutations.
+    (() => {
+      const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
+      const csrf = m ? m[1] : '';
+      const orig = window.fetch;
+      window.fetch = function(input, init = {}) {
+        const method = (init.method || (typeof input === 'string' ? 'GET' : input.method) || 'GET').toUpperCase();
+        if (method !== 'GET' && method !== 'HEAD') {
+          init.headers = { ...(init.headers || {}), 'X-CSRF-Token': csrf };
+          init.credentials = 'include';
+        }
+        return orig.call(this, input, init);
+      };
+    })();
+  </script>
+</body>
+</html>

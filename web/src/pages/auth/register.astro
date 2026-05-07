@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Регистрация">
+  <section class="container" style="padding:60px 0; max-width:480px;">
+    <h1>Регистрация</h1>
+    <form id="f" class="form">
+      <div><label class="label">Имя</label><input class="input" name="name" /></div>
+      <div><label class="label">Email</label><input class="input" name="email" type="email" required /></div>
+      <div><label class="label">Пароль (минимум 8 символов)</label><input class="input" name="password" type="password" required minlength="8" /></div>
+      <button class="btn" type="submit">Создать аккаунт</button>
+      <div id="msg" hidden></div>
+    </form>
+  </section>
+  <script>
+    const form = document.getElementById('f');
+    const msg = document.getElementById('msg');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const r = await fetch('/api/auth/register', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password'), name: fd.get('name') }),
+      });
+      const j = await r.json();
+      if (r.ok) {
+        msg.className = 'alert ok';
+        msg.innerHTML = 'Аккаунт создан. Подтвердите email — письмо отправлено. <br/>Dev-ссылка для подтверждения: <a href="' + j.verify_link_dev + '">' + j.verify_link_dev + '</a>';
+      } else {
+        msg.className = 'alert';
+        msg.textContent = j.error || 'Ошибка';
+      }
+      msg.hidden = false;
+    });
+  </script>
+</Base>

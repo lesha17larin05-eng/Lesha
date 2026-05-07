@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data: courses } = await apiJson<any[]>('/api/courses', { cookie });
+const user = (Astro.locals as any).user;
+---
+<Base title="Курсы" user={user}>
+  <section class="container" style="padding:60px 0;">
+    <h1 style="font-size:42px;">Курсы</h1>
+    <p class="muted" style="margin-bottom:30px;">Бесплатные и платные программы. Начните с вводного — он короткий и сразу даёт пользу.</p>
+    <div class="grid grid-3">
+      {(courses || []).map((c: any) => (
+        <a href={`/courses/${c.slug}`} class="card" style="display:block; color:inherit;">
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <span class={`badge ${c.kind}`}>{c.kind === 'free' ? 'Бесплатно' : `${c.price_rub ?? ''} ₽`}</span>
+            {c.enrolled && <span class="badge owned">Открыт</span>}
+          </div>
+          <h3>{c.title}</h3>
+          <p class="muted">{c.subtitle}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

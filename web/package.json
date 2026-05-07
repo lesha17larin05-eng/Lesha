@@ -1,0 +1,21 @@
+{
+  "name": "leshalarin-web",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev --host 0.0.0.0",
+    "build": "astro build",
+    "start": "HOST=0.0.0.0 PORT=4321 node ./dist/server/entry.mjs",
+    "preview": "astro preview",
+    "img": "node scripts/process-image.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.4",
+    "astro": "^4.16.18",
+    "marked": "^14.1.4"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

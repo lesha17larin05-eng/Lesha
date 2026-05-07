@@ -1,0 +1,14 @@
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS video_access_log;
+DROP TABLE IF EXISTS payment_webhooks;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS lesson_progress;
+DROP TABLE IF EXISTS enrollments;
+DROP TABLE IF EXISTS lessons;
+DROP TABLE IF EXISTS videos;
+DROP TABLE IF EXISTS modules;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS password_reset_tokens;
+DROP TABLE IF EXISTS email_verification_tokens;
+DROP TABLE IF EXISTS users;

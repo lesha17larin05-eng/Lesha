@@ -1,0 +1,36 @@
+---
+const { active = '', user = (Astro.locals as any).user } = Astro.props as { active?: string; user?: any };
+const links = [
+  { href: '/consultation', key: 'consultation', label: 'Консультация' },
+  { href: '/', key: 'home', label: 'Личное ведение' },
+  { href: '/course', key: 'course', label: 'Бесплатный курс' },
+  { href: '/results', key: 'results', label: 'Результаты' },
+  { href: '/blog', key: 'blog', label: 'Блог' },
+];
+---
+<nav class="site-nav">
+  <a href="/" class="site-nav-logo" aria-label="Алексей Ларин — на главную">
+    <img src="/img/logo.svg" alt="Алексей Ларин" style="height:34px; width:auto; display:block;" />
+  </a>
+  <div class="site-nav-links">
+    {links.map(l => (
+      <a href={l.href} class={l.key === active ? 'active' : ''}>{l.label}</a>
+    ))}
+  </div>
+  <div class="site-nav-right">
+    {user
+      ? <>
+          <a href="/cabinet" class="site-nav-login">Кабинет</a>
+          {user.role === 'admin' && <a href="/admin" class="site-nav-login">Админка</a>}
+          <button type="button" id="site-logout-btn" class="site-nav-logout">Выйти</button>
+        </>
+      : <a href="/auth/login" class="site-nav-login">Войти</a>
+    }
+  </div>
+</nav>
+<script>
+  document.getElementById('site-logout-btn')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    location.href = '/';
+  });
+</script>

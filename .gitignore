@@ -1,0 +1,10 @@
+.env
+data/
+node_modules/
+dist/
+.astro/
+*.log
+.DS_Store
+api/bin/
+api/tmp/
+coverage.out

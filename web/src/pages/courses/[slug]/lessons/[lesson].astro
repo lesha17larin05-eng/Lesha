@@ -1,0 +1,75 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import { apiJson } from '../../../../lib/api';
+import { marked } from 'marked';
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const { slug, lesson } = Astro.params;
+const { data: lessonData, status } = await apiJson<any>(`/api/courses/${slug}/lessons/${lesson}`, { cookie });
+if (status !== 200) return new Response('Not found', { status });
+const { data: courseFull } = await apiJson<any>(`/api/courses/${slug}`, { cookie });
+const course = lessonData.course;
+const l = lessonData.lesson;
+const lessons = courseFull?.lessons || [];
+const html = marked.parse(l.content_md || '');
+const user = (Astro.locals as any).user;
+---
+<Base title={l.title} user={user}>
+  <section class="container" style="padding:30px 0; display:grid; grid-template-columns: 280px 1fr; gap:40px;">
+    <aside style="border-right:1px solid #ece8df; padding-right:20px;">
+      <a href={`/courses/${slug}`} class="muted">← {course.title}</a>
+      <ol style="margin-top:14px; padding-left:18px;">
+        {lessons.map((x: any) => (
+          <li style={x.slug === l.slug ? 'font-weight:700;color:var(--orange)' : ''}>
+            <a href={`/courses/${slug}/lessons/${x.slug}`}>{x.title}</a>
+          </li>
+        ))}
+      </ol>
+    </aside>
+    <article>
+      <h1>{l.title}</h1>
+      {l.video_id && <div id="player" style="margin:20px 0;"><video controls style="width:100%; border-radius:10px; background:#000"></video></div>}
+      <div set:html={html} />
+      <div style="margin-top:30px; display:flex; gap:12px;">
+        <button class="btn" id="mark-done">Отметить как пройденный</button>
+      </div>
+    </article>
+  </section>
+  <script define:vars={{ lessonId: l.id, videoId: l.video_id }}>
+    document.getElementById('mark-done')?.addEventListener('click', async () => {
+      const r = await fetch(`/api/lessons/${lessonId}/progress`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ completed: true, last_position_sec: 0 }),
+      });
+      if (r.ok) alert('Урок отмечен');
+    });
+    if (videoId) {
+      (async () => {
+        const r = await fetch(`/api/videos/${videoId}/playback`);
+        if (!r.ok) return;
+        const { playback_url } = await r.json();
+        const v = document.querySelector('#player video');
+        if (window.Hls && Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(playback_url);
+          hls.attachMedia(v);
+        } else {
+          v.src = playback_url;
+        }
+        let last = 0;
+        v.addEventListener('timeupdate', async () => {
+          if (v.currentTime - last > 10) {
+            last = v.currentTime;
+            await fetch(`/api/lessons/${lessonId}/progress`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ completed: v.currentTime / (v.duration || 1) > 0.9, last_position_sec: Math.floor(v.currentTime) })
+            });
+          }
+        });
+      })();
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js" is:inline></script>
+</Base>

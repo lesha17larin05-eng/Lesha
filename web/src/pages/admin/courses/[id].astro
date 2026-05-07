@@ -1,0 +1,277 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { apiJson } from '../../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { id } = Astro.params;
+const { data, status } = await apiJson<any>(`/api/admin/courses/${id}`, { cookie });
+if (status !== 200) return new Response('Not found', { status });
+const course = data.course;
+const modules = data.modules || [];
+const lessons = data.lessons || [];
+const user = (Astro.locals as any).user;
+
+// group lessons by module
+const noModule = lessons.filter((l: any) => !l.module_id);
+const grouped = modules.map((m: any) => ({
+  module: m,
+  items: lessons.filter((l: any) => l.module_id === m.id).sort((a: any, b: any) => a.sort_order - b.sort_order),
+}));
+noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
+---
+<Base title={`Курс: ${course.title}`} user={user}>
+  <section class="container" style="padding:40px 0;">
+    <a href="/admin/courses" class="muted">← Все курсы</a>
+    <h1 style="margin-top:8px;">{course.title}</h1>
+    <p class="muted"><code>{course.slug}</code> · {course.kind} · {course.is_published ? 'опубликован' : 'черновик'}</p>
+
+    <details class="card" style="margin-top:20px;" open>
+      <summary style="cursor:pointer; font-size:18px; font-weight:600;">Метаданные курса</summary>
+      <form id="course-form" class="form" data-id={course.id} style="margin-top:14px;">
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:14px;">
+          <div><label class="label">Slug</label><input class="input" name="slug" value={course.slug} required pattern="[a-z0-9-]+" /></div>
+          <div><label class="label">Название</label><input class="input" name="title" value={course.title} required /></div>
+        </div>
+        <div><label class="label">Подзаголовок</label><input class="input" name="subtitle" value={course.subtitle || ''} /></div>
+        <div><label class="label">Описание</label><textarea class="input" name="description" rows="3">{course.description || ''}</textarea></div>
+        <div><label class="label">Обложка (URL)</label><input class="input" name="cover_image_url" value={course.cover_image_url || ''} /></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+          <div>
+            <label class="label">Тип</label>
+            <select class="input" name="kind">
+              <option value="free" selected={course.kind === 'free'}>free</option>
+              <option value="paid" selected={course.kind === 'paid'}>paid</option>
+            </select>
+          </div>
+          <div><label class="label">Цена (₽)</label><input class="input" name="price_rub" type="number" value={course.price_rub ?? ''} /></div>
+          <div><label class="label">Sort order</label><input class="input" name="sort_order" type="number" value={course.sort_order} /></div>
+        </div>
+        <label><input type="checkbox" name="is_published" checked={course.is_published} /> Опубликован</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn" type="submit">Сохранить</button>
+          <button class="btn secondary" type="button" id="delete-course">Удалить курс</button>
+          <span id="course-msg" class="muted"></span>
+        </div>
+      </form>
+    </details>
+
+    <div class="card" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Модули</h2>
+        <button class="btn" id="new-module">+ Добавить модуль</button>
+      </div>
+      {modules.length === 0 && <p class="muted" style="margin-top:10px;">Модулей пока нет. Для бесплатных курсов модули необязательны — уроки можно создавать сразу.</p>}
+      {modules.length > 0 && (
+        <table style="margin-top:14px;">
+          <thead><tr><th style="width:60px;">#</th><th>Название</th><th style="width:140px;">Порядок</th><th style="width:200px;"></th></tr></thead>
+          <tbody>
+            {modules.map((m: any, idx: number) => (
+              <tr data-mod-id={m.id} data-mod-title={m.title} data-mod-sort={m.sort_order}>
+                <td>{idx + 1}</td>
+                <td>{m.title}</td>
+                <td>
+                  <button class="btn secondary tiny" data-mod-up={m.id} title="Вверх" style="padding:2px 8px;">↑</button>
+                  <button class="btn secondary tiny" data-mod-down={m.id} title="Вниз" style="padding:2px 8px;">↓</button>
+                  <span class="muted" style="margin-left:6px;">({m.sort_order})</span>
+                </td>
+                <td>
+                  <button class="btn secondary" data-edit-mod={m.id} style="padding:4px 10px;">Редактировать</button>
+                  <button class="btn secondary" data-del-mod={m.id} style="padding:4px 10px;">×</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Уроки</h2>
+        <button class="btn" id="new-lesson">+ Добавить урок</button>
+      </div>
+      {lessons.length === 0 && <p class="muted" style="margin-top:10px;">Уроков пока нет.</p>}
+
+      {grouped.map((g: any) => (
+        <div style="margin-top:18px;">
+          <h3 style="margin:0 0 8px; font-size:16px;">{g.module.title} <span class="muted" style="font-weight:normal;">(модуль · порядок {g.module.sort_order})</span></h3>
+          {g.items.length === 0 ? (
+            <p class="muted" style="margin:6px 0 0;">— уроков нет —</p>
+          ) : (
+            <table>
+              <thead><tr><th style="width:60px;">#</th><th>Название</th><th>Slug</th><th>Превью</th><th>Видео</th><th style="width:160px;">Порядок</th><th style="width:200px;"></th></tr></thead>
+              <tbody>
+                {g.items.map((l: any) => (
+                  <tr data-lesson-row={l.id}>
+                    <td>{l.sort_order}</td>
+                    <td>{l.title}</td>
+                    <td><code>{l.slug}</code></td>
+                    <td>{l.is_preview ? '✅' : '—'}</td>
+                    <td>{l.video_id ? '🎬' : '—'}</td>
+                    <td>
+                      <button class="btn secondary tiny" data-lesson-up={l.id} title="Вверх" style="padding:2px 8px;">↑</button>
+                      <button class="btn secondary tiny" data-lesson-down={l.id} title="Вниз" style="padding:2px 8px;">↓</button>
+                    </td>
+                    <td>
+                      <button class="btn secondary" data-edit-lesson={l.id} style="padding:4px 10px;">Редактировать</button>
+                      <button class="btn secondary" data-del-lesson={l.id} style="padding:4px 10px;">×</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      ))}
+
+      {noModule.length > 0 && (
+        <div style="margin-top:18px;">
+          <h3 style="margin:0 0 8px; font-size:16px;">Без модуля</h3>
+          <table>
+            <thead><tr><th style="width:60px;">#</th><th>Название</th><th>Slug</th><th>Превью</th><th>Видео</th><th style="width:160px;">Порядок</th><th style="width:200px;"></th></tr></thead>
+            <tbody>
+              {noModule.map((l: any) => (
+                <tr>
+                  <td>{l.sort_order}</td>
+                  <td>{l.title}</td>
+                  <td><code>{l.slug}</code></td>
+                  <td>{l.is_preview ? '✅' : '—'}</td>
+                  <td>{l.video_id ? '🎬' : '—'}</td>
+                  <td>
+                    <button class="btn secondary tiny" data-lesson-up={l.id} title="Вверх" style="padding:2px 8px;">↑</button>
+                    <button class="btn secondary tiny" data-lesson-down={l.id} title="Вниз" style="padding:2px 8px;">↓</button>
+                  </td>
+                  <td>
+                    <button class="btn secondary" data-edit-lesson={l.id} style="padding:4px 10px;">Редактировать</button>
+                    <button class="btn secondary" data-del-lesson={l.id} style="padding:4px 10px;">×</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+
+    <lesson-editor data-course-id={course.id} data-modules={JSON.stringify(modules)}></lesson-editor>
+    <module-editor data-course-id={course.id}></module-editor>
+  </section>
+
+  <script is:inline src="/admin-course-editor.js"></script>
+  <script define:vars={{ courseId: course.id, modulesJSON: modules, lessonsJSON: lessons }}>
+    const courseForm = document.getElementById('course-form');
+    const courseMsg = document.getElementById('course-msg');
+    courseForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(courseForm);
+      const body = {
+        slug: fd.get('slug'), title: fd.get('title'),
+        subtitle: fd.get('subtitle') || '', description: fd.get('description') || '',
+        cover_image_url: fd.get('cover_image_url') || '',
+        kind: fd.get('kind'),
+        price_rub: fd.get('price_rub') ? parseInt(fd.get('price_rub')) : null,
+        is_published: fd.has('is_published'),
+        sort_order: parseInt(fd.get('sort_order') || '0'),
+      };
+      const r = await fetch(`/api/admin/courses/${courseId}`, {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json().catch(() => ({}));
+      courseMsg.textContent = r.ok ? '✓ Сохранено' : (j.error || 'Ошибка');
+      courseMsg.style.color = r.ok ? '#1a7a3a' : '#a23c0d';
+    });
+
+    document.getElementById('delete-course').addEventListener('click', async () => {
+      if (!confirm('Удалить курс целиком? Все уроки и модули тоже удалятся.')) return;
+      const r = await fetch(`/api/admin/courses/${courseId}`, { method: 'DELETE' });
+      if (r.ok) location.href = '/admin/courses';
+      else alert('Ошибка удаления');
+    });
+
+    // Lesson editor
+    const lessonEditor = document.querySelector('lesson-editor');
+    const moduleEditor = document.querySelector('module-editor');
+
+    document.getElementById('new-lesson').addEventListener('click', () => lessonEditor.open(null));
+    document.getElementById('new-module').addEventListener('click', () => moduleEditor.open(null));
+
+    document.querySelectorAll('[data-edit-lesson]').forEach((b) => {
+      b.addEventListener('click', async () => {
+        const r = await fetch(`/api/admin/lessons/${b.dataset.editLesson}`);
+        if (!r.ok) return alert('Не удалось загрузить урок');
+        const { lesson } = await r.json();
+        lessonEditor.open(lesson);
+      });
+    });
+
+    document.querySelectorAll('[data-del-lesson]').forEach((b) => {
+      b.addEventListener('click', async () => {
+        if (!confirm('Удалить урок?')) return;
+        const r = await fetch(`/api/admin/lessons/${b.dataset.delLesson}`, { method: 'DELETE' });
+        if (r.ok) location.reload();
+      });
+    });
+
+    document.querySelectorAll('[data-edit-mod]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const m = modulesJSON.find((x) => x.id === b.dataset.editMod);
+        if (m) moduleEditor.open(m);
+      });
+    });
+
+    document.querySelectorAll('[data-del-mod]').forEach((b) => {
+      b.addEventListener('click', async () => {
+        if (!confirm('Удалить модуль? Уроки останутся, но без привязки к модулю.')) return;
+        const r = await fetch(`/api/admin/modules/${b.dataset.delMod}`, { method: 'DELETE' });
+        if (r.ok) location.reload();
+      });
+    });
+
+    // Reorder helpers — swap sort_order with neighbour, then save both.
+    async function moveLesson(id, dir) {
+      // pick within the same module group
+      const target = lessonsJSON.find((l) => l.id === id);
+      if (!target) return;
+      const peers = lessonsJSON
+        .filter((l) => (l.module_id || '') === (target.module_id || ''))
+        .sort((a, b) => a.sort_order - b.sort_order);
+      const idx = peers.findIndex((l) => l.id === id);
+      const swap = peers[idx + dir];
+      if (!swap) return;
+      const [a, b] = [target, swap];
+      const sa = a.sort_order, sb = b.sort_order;
+      await Promise.all([
+        patchLesson(a, sb),
+        patchLesson(b, sa),
+      ]);
+      location.reload();
+    }
+    async function patchLesson(l, sort) {
+      return fetch(`/api/admin/lessons/${l.id}`, {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          course_id: courseId, module_id: l.module_id, title: l.title, slug: l.slug,
+          content_md: l.content_md || '', video_id: l.video_id, duration_sec: l.duration_sec,
+          sort_order: sort, is_preview: l.is_preview,
+        }),
+      });
+    }
+    document.querySelectorAll('[data-lesson-up]').forEach((b) => b.addEventListener('click', () => moveLesson(b.dataset.lessonUp, -1)));
+    document.querySelectorAll('[data-lesson-down]').forEach((b) => b.addEventListener('click', () => moveLesson(b.dataset.lessonDown, +1)));
+
+    async function moveModule(id, dir) {
+      const sorted = [...modulesJSON].sort((a, b) => a.sort_order - b.sort_order);
+      const idx = sorted.findIndex((m) => m.id === id);
+      const swap = sorted[idx + dir];
+      if (!swap) return;
+      const [a, b] = [sorted[idx], swap];
+      await Promise.all([
+        fetch(`/api/admin/modules/${a.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: a.title, sort_order: b.sort_order }) }),
+        fetch(`/api/admin/modules/${b.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ title: b.title, sort_order: a.sort_order }) }),
+      ]);
+      location.reload();
+    }
+    document.querySelectorAll('[data-mod-up]').forEach((b) => b.addEventListener('click', () => moveModule(b.dataset.modUp, -1)));
+    document.querySelectorAll('[data-mod-down]').forEach((b) => b.addEventListener('click', () => moveModule(b.dataset.modDown, +1)));
+  </script>
+</Base>
