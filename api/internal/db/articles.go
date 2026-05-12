@@ -41,7 +41,7 @@ func (r *Repo) ListArticles(ctx context.Context, onlyPublished bool, limit, offs
 	if onlyPublished {
 		q += ` WHERE is_published=true`
 	}
-	q += ` ORDER BY COALESCE(published_at, created_at) DESC, sort_order LIMIT $1 OFFSET $2`
+	q += ` ORDER BY sort_order ASC, COALESCE(published_at, created_at) DESC LIMIT $1 OFFSET $2`
 	rows, err := r.Pool.Query(ctx, q, limit, offset)
 	if err != nil {
 		return nil, err
