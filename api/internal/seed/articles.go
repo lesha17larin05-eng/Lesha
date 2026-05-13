@@ -63,7 +63,7 @@ func parseArticleHTML(raw string) (title, tag, excerpt, content string, readingM
 func stripTags(s string) string { return reTagsAll.ReplaceAllString(s, "") }
 
 var articleCoverImages = map[string]string{
-	"kak-nachat-trenirovatsya":                  "/img/blog/kak-nachat.jpg",
+	"kak-nachat-trenirovatsya":                  "/img/blog/IMG_4029.jpg",
 	"pochemu-brosaju-trenirovki":                "/img/blog/pochemu-brosaju.jpg",
 	"zachem-delat-zaryadku":                     "/img/blog/zaryadka.jpg",
 	"bolit-poyasnitsa-sidjachaja-rabota":        "/img/blog/poyasnitsa-new.jpg",
@@ -75,7 +75,7 @@ var articleCoverImages = map[string]string{
 	"kak-snizit-trevozhnost":                    "/img/blog/trevozhnost.jpg",
 	"istorija-pereloma-pozvonochnika":           "/img/blog/perelom-new.jpeg",
 	"kak-pravilno-podnimat-tyazhesti":           "/img/blog/podnimat.jpg",
-	"mpk-chto-eto-i-kak-uluchshit":             "/img/blog/beg.jpg",
+	"mpk-chto-eto-i-kak-uluchshit":             "/img/mpk.jpeg",
 	"kak-sformirovat-privychku-trenirovatsya":   "/img/blog/privychka.jpg",
 	"kak-nachat-begat":                          "/img/blog/mpk-new.jpeg",
 	"trenirovki-i-mentalnoe-zdorove":            "/img/blog/mentalnoe-zdorove.jpg",
@@ -84,12 +84,12 @@ var articleCoverImages = map[string]string{
 	"princip-malenkih-shagov":                   "/img/blog/malenkie-shagi.jpg",
 	"uprazhnenija-ot-otekov":                    "/img/blog/oteki.jpg",
 	"gimnastika-dlja-glaz":                      "/img/blog/glaza.jpg",
-	"uprazhnenija-dlja-shei":                    "/img/blog/sheia.jpg",
+	"uprazhnenija-dlja-shei":                    "/img/blog/IMG_3916.jpg",
 	"uprazhnenija-pri-sidjachej-rabote":         "/img/blog/sidyachaya-rabota.jpg",
 	"kak-razvit-gibkost":                        "/img/blog/gibkost.jpg",
 	"kak-begat-zimoj":                           "/img/blog/beg-zimoj-new.jpeg",
 	"banja-i-zdorove":                           "/img/blog/banya-new.jpg",
-	"kak-nauchitsja-meditirovat":                "/img/blog/meditaciya.jpg",
+	"kak-nauchitsja-meditirovat":                "/img/blog/IMG_4002.jpg",
 	"akrojoga-chto-eto":                         "/img/blog/akrojoga-new.jpeg",
 	"obuchenie-novomu-navyku":                   "/img/blog/obuchenie.jpg",
 	"dyhatelnye-tehniki":                        "/img/blog/dykhanie.jpg",
