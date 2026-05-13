@@ -75,7 +75,7 @@ var articleCoverImages = map[string]string{
 	"kak-snizit-trevozhnost":                    "/img/blog/trevozhnost.jpg",
 	"istorija-pereloma-pozvonochnika":           "/img/blog/perelom-new.jpeg",
 	"kak-pravilno-podnimat-tyazhesti":           "/img/blog/podnimat.jpg",
-	"mpk-chto-eto-i-kak-uluchshit":             "/img/mpk.jpeg",
+	"mpk-chto-eto-i-kak-uluchshit":             "/img/blog/mpk.jpeg",
 	"kak-sformirovat-privychku-trenirovatsya":   "/img/blog/privychka.jpg",
 	"kak-nachat-begat":                          "/img/blog/mpk-new.jpeg",
 	"trenirovki-i-mentalnoe-zdorove":            "/img/blog/mentalnoe-zdorove.jpg",
