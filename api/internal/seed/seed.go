@@ -50,6 +50,10 @@ func Run(ctx context.Context, repo *db.Repo, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+	spinaID, err := ensureZdorovayaSpina(ctx, repo)
+	if err != nil {
+		return err
+	}
 	if err := ensureFreeLessons(ctx, repo, freeID); err != nil {
 		return err
 	}
@@ -58,6 +62,7 @@ func Run(ctx context.Context, repo *db.Repo, cfg *config.Config) error {
 	}
 	// auto-enroll admin into all, user into free courses
 	_ = repo.Grant(ctx, adminID, myagkiyID, "admin", &adminID)
+	_ = repo.Grant(ctx, adminID, spinaID, "admin", &adminID)
 	_ = repo.Grant(ctx, adminID, freeID, "admin", &adminID)
 	_ = repo.Grant(ctx, adminID, paidID, "admin", &adminID)
 	_ = repo.Grant(ctx, userID, myagkiyID, "free", nil)
@@ -152,6 +157,100 @@ func ensureMyagkiyStart(ctx context.Context, repo *db.Repo) (uuid.UUID, error) {
 			ContentMD:   "Что делать дальше и как продолжить путь. Алексей рассказывает о следующих шагах, даёт рекомендации по регулярности и отвечает на самые частые вопросы.",
 			DurationSec: 600, SortOrder: 8,
 		},
+	}
+	for _, l := range lessons {
+		l.CourseID = courseID
+		if _, err := repo.CreateLesson(ctx, l); err != nil {
+			return uuid.Nil, err
+		}
+	}
+	return courseID, nil
+}
+
+func ensureZdorovayaSpina(ctx context.Context, repo *db.Repo) (uuid.UUID, error) {
+	price := 3990
+	courseID, err := ensureCourse(ctx, repo, db.CourseInput{
+		Slug:        "zdorovaya-spina",
+		Title:       "Здоровая спина",
+		Subtitle:    "Курс на 3 недели – от мягкого старта к привычке",
+		Description: "11 уроков, 3 недели, ваш темп. Основные тренировки, короткие практики и теория – чтобы выстроить регулярность, которая держится после курса. Начинаете в любой день, доступ навсегда.",
+		Kind:        "paid",
+		PriceRub:    &price,
+		IsPublished: true,
+		SortOrder:   1,
+	})
+	if err != nil {
+		return uuid.Nil, err
+	}
+	existing, _ := repo.ListLessons(ctx, courseID)
+	if len(existing) > 0 {
+		return courseID, nil
+	}
+
+	modIntro, err := repo.CreateModule(ctx, courseID, "Модуль 1. Вводный", 1)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	modW1, err := repo.CreateModule(ctx, courseID, "Неделя 1. Запуск", 2)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	modW2, err := repo.CreateModule(ctx, courseID, "Неделя 2. Углубление", 3)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	modW3, err := repo.CreateModule(ctx, courseID, "Неделя 3. Закрепление", 4)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	modFinal, err := repo.CreateModule(ctx, courseID, "Модуль 5. Дальше", 5)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	lessons := []db.LessonInput{
+		// Модуль 1 – вводный (превью)
+		{Title: "Как проходить курс", Slug: "kak-prohodit-kurs",
+			ContentMD: "Знакомство с курсом, разметка под ваш уровень и расписание. Алексей рассказывает, как устроены недели, чем основная тренировка отличается от короткой практики и как выбрать интенсивность под свою ситуацию.",
+			SortOrder: 1, IsPreview: true, ModuleID: &modIntro},
+
+		// Неделя 1 – Запуск
+		{Title: "Неделя 1. Основная тренировка", Slug: "nedelya-1-osnovnaya",
+			ContentMD: "Главная тренировка первой недели – ~45 минут. Возвращаем подвижность, мягко прорабатываем спину, убираем страх движения. Подробно разбираю детали и нюансы каждого упражнения.",
+			SortOrder: 2, ModuleID: &modW1},
+		{Title: "Неделя 1. Короткая практика", Slug: "nedelya-1-korotkaya",
+			ContentMD: "Короткая практика 20–25 минут. Последовательно выполняете упражнения за мной. Подходит для тех дней, когда нет времени на полную тренировку – от 2 до 8 раз в неделю.",
+			SortOrder: 3, ModuleID: &modW1},
+		{Title: "Теория: грыжи и протрузии", Slug: "teoriya-gryzhi",
+			ContentMD: "Что такое грыжи и протрузии, почему движение – не враг, а инструмент восстановления. Как ориентироваться на ощущения и где проходит граница «полезного дискомфорта».",
+			SortOrder: 4, ModuleID: &modW1},
+
+		// Неделя 2 – Углубление
+		{Title: "Неделя 2. Основная тренировка", Slug: "nedelya-2-osnovnaya",
+			ContentMD: "Главная тренировка второй недели – добавляем силу, работаем с осанкой. Тело уже привыкло к ритму, можно идти чуть глубже.",
+			SortOrder: 5, ModuleID: &modW2},
+		{Title: "Неделя 2. Короткая практика", Slug: "nedelya-2-korotkaya",
+			ContentMD: "Короткая практика второй недели. Можно подключать в перерывы рабочего дня или утром – небольшая зарядка, которая держит спину в тонусе.",
+			SortOrder: 6, ModuleID: &modW2},
+		{Title: "Теория: осанка", Slug: "teoriya-osanka",
+			ContentMD: "Что такое здоровая осанка, чем нам мешает «правильно сидеть» и что реально работает. Простые принципы, которые встраиваются в обычный день.",
+			SortOrder: 7, ModuleID: &modW2},
+
+		// Неделя 3 – Закрепление
+		{Title: "Неделя 3. Основная тренировка", Slug: "nedelya-3-osnovnaya",
+			ContentMD: "Финальная основная тренировка – закрепляем привычку, проверяем диапазон движения, разбираем точки роста.",
+			SortOrder: 8, ModuleID: &modW3},
+		{Title: "Неделя 3. Короткая практика", Slug: "nedelya-3-korotkaya",
+			ContentMD: "Короткая практика третьей недели. Финальный «набор» движений, который остаётся с вами и после курса.",
+			SortOrder: 9, ModuleID: &modW3},
+		{Title: "Бонус: расслабление и снятие стресса", Slug: "bonus-rasslablenie",
+			ContentMD: "Бонусный урок – практика для снятия стресса и расслабления. Дыхательные техники и мягкие движения, которые возвращают ощущение целостности.",
+			SortOrder: 10, ModuleID: &modW3},
+
+		// Модуль 5 – Дальше
+		{Title: "Циклы и следующий шаг", Slug: "cikly-i-shag",
+			ContentMD: "Как продолжать после курса. Циклы тренировок и периоды отдыха, разметка ритма на месяцы вперёд. Что делать, если выпали из режима – и как вернуться.",
+			SortOrder: 11, ModuleID: &modFinal},
 	}
 	for _, l := range lessons {
 		l.CourseID = courseID

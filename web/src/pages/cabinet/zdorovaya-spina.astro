@@ -1,0 +1,405 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { apiJson } from '../../lib/api';
+
+const user = (Astro.locals as any).user;
+if (!user) {
+  return Astro.redirect('/courses/zdorovaya-spina', 302);
+}
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data, status } = await apiJson<any>('/api/courses/zdorovaya-spina', { cookie });
+if (status !== 200 || !data.enrolled) return Astro.redirect('/courses/zdorovaya-spina', 302);
+
+const modules: any[] = data.modules || [];
+const allLessons: any[] = data.lessons || [];
+
+// Group lessons by module_id, preserving module sort order
+const modulesWithLessons = modules
+  .sort((a: any, b: any) => a.sort_order - b.sort_order)
+  .map((mod: any) => ({
+    ...mod,
+    lessons: allLessons
+      .filter((l: any) => l.module_id === mod.id)
+      .sort((a: any, b: any) => a.sort_order - b.sort_order),
+  }));
+
+function lessonTag(title: string): { label: string; color: string; bg: string } {
+  if (title.includes('Основная')) return { label: 'Основная', color: '#1A2744', bg: 'rgba(26,39,68,0.08)' };
+  if (title.includes('Короткая')) return { label: 'Короткая', color: '#2a7a5a', bg: 'rgba(42,122,90,0.1)' };
+  if (title.includes('Теория')) return { label: 'Теория', color: '#4a4a9c', bg: 'rgba(74,74,156,0.1)' };
+  if (title.includes('Бонус')) return { label: 'Бонус', color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+  if (title.includes('Как проходить')) return { label: 'Введение', color: '#555', bg: 'rgba(0,0,0,0.06)' };
+  return { label: 'Итог', color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+}
+
+function getLessonClass(title: string): string {
+  if (title.includes('Основная')) return 'zs-cab-lesson-main';
+  if (title.includes('Короткая')) return 'zs-cab-lesson-short';
+  return 'zs-cab-lesson-bonus';
+}
+
+const materials = [
+  {
+    href: '/files/metodichka.pdf',
+    title: 'Методичка',
+    desc: 'Подробное описание упражнений, техника выполнения и принципы курса',
+    size: '94 KB',
+  },
+  {
+    href: '/files/kalendar.pdf',
+    title: 'Календарь занятий',
+    desc: 'План на 3 недели – распечатайте и отмечайте каждую тренировку',
+    size: '105 KB',
+  },
+  {
+    href: '/files/zamery.pdf',
+    title: 'Замеры и самопроверка',
+    desc: 'Чек-листы, чтобы отслеживать прогресс до и после курса',
+    size: '107 KB',
+  },
+];
+---
+<SiteLayout title="Здоровая спина — уроки курса" active="spina" padTop={true}>
+  <style>
+    /* ─── PAGE ─── */
+    .zs-cab-page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 56px 24px 100px;
+    }
+
+    /* ─── HEADER ─── */
+    .zs-cab-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; margin-bottom: 40px;
+      transition: color 0.2s;
+    }
+    .zs-cab-back:hover, .zs-cab-back:focus-visible { color: var(--navy); outline: none; }
+
+    .zs-cab-eyebrow {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--orange); margin-bottom: 12px;
+    }
+    .zs-cab-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4vw, 52px);
+      font-weight: 400; line-height: 1.1; color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .zs-cab-title em { font-style: italic; }
+    .zs-cab-subtitle {
+      font-size: 17px; color: var(--text-muted); margin-bottom: 48px;
+    }
+
+    /* ─── MATERIALS ─── */
+    .zs-cab-materials {
+      margin-bottom: 56px;
+      background: linear-gradient(135deg, var(--cream) 0%, #f3ede0 100%);
+      border-radius: 24px;
+      padding: 32px 36px;
+      border: 1px solid var(--border);
+    }
+    .zs-cab-materials-head {
+      display: flex; align-items: flex-start; gap: 14px;
+      margin-bottom: 24px;
+    }
+    .zs-cab-materials-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .zs-cab-materials-icon svg { width: 22px; height: 22px; stroke: white; }
+    .zs-cab-materials-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px; font-weight: 500; color: var(--navy);
+      line-height: 1.2; margin-bottom: 4px;
+    }
+    .zs-cab-materials-sub {
+      font-size: 14px; color: var(--text-muted);
+    }
+    .zs-cab-materials-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .zs-cab-material {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      text-decoration: none;
+      transition: all 0.2s;
+      color: inherit;
+    }
+    @media (hover: hover) {
+      .zs-cab-material:hover {
+        border-color: var(--orange);
+        box-shadow: 0 6px 20px rgba(232,101,42,0.12);
+        transform: translateY(-1px);
+      }
+    }
+    .zs-cab-material:focus-visible {
+      outline: 2px solid var(--orange);
+      outline-offset: 2px;
+    }
+    .zs-cab-material-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(232,101,42,0.1);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .zs-cab-material-icon svg { width: 18px; height: 18px; stroke: var(--orange); }
+    .zs-cab-material-meta { flex: 1; min-width: 0; }
+    .zs-cab-material-title {
+      font-size: 15px; font-weight: 600; color: var(--navy);
+      margin-bottom: 3px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .zs-cab-material-size {
+      font-size: 11px; font-weight: 500; color: var(--text-light);
+      background: var(--cream);
+      padding: 2px 8px; border-radius: 100px;
+    }
+    .zs-cab-material-desc {
+      font-size: 13px; color: var(--text-muted); line-height: 1.5;
+    }
+
+    /* ─── MODULE SECTION ─── */
+    .zs-cab-module {
+      margin-bottom: 48px;
+      background: white;
+      border-radius: 24px;
+      padding: 36px 40px;
+      border: 1px solid var(--border);
+    }
+    .zs-cab-module-title {
+      font-size: 14px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--orange);
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .zs-cab-module-title::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orange);
+    }
+
+    /* ─── LESSONS ─── */
+    .zs-cab-lessons { display: flex; flex-direction: column; gap: 24px; }
+
+    .zs-cab-lesson-main {
+      order: -2;
+    }
+    .zs-cab-lesson-short {
+      order: -1;
+    }
+    .zs-cab-lesson-bonus {
+      order: 0;
+    }
+
+    .zs-cab-lesson {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    @media (hover: hover) {
+      .zs-cab-lesson:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+      }
+    }
+
+    .zs-cab-lesson-head {
+      padding: 24px 28px 20px;
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+    .zs-cab-lesson-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--navy); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+    .zs-cab-lesson-num.preview { background: var(--orange); }
+    .zs-cab-lesson-meta { flex: 1; min-width: 0; }
+
+    .zs-cab-lesson-tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px; margin-bottom: 8px;
+    }
+    .zs-cab-lesson-title {
+      font-size: 20px; font-weight: 700; color: var(--navy); line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .zs-cab-lesson-desc {
+      font-size: 15px; color: var(--text-muted); line-height: 1.75;
+    }
+
+    /* Video placeholder */
+    .zs-cab-video-wrap {
+      margin: 0 28px 28px;
+      aspect-ratio: 16 / 9;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--cream) 0%, #e8e4db 100%);
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .zs-cab-video-wrap::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 20px,
+        rgba(26,39,68,0.02) 20px,
+        rgba(26,39,68,0.02) 21px
+      );
+    }
+    .zs-cab-video-play-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(26,39,68,0.08); border: 2px solid rgba(26,39,68,0.12);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .zs-cab-video-play-icon svg { width: 20px; height: 20px; fill: rgba(26,39,68,0.3); margin-left: 3px; }
+    .zs-cab-video-placeholder-text {
+      font-size: 14px; font-weight: 500; color: var(--text-light);
+      position: relative; z-index: 1;
+    }
+
+    /* ─── FEEDBACK ─── */
+    .zs-cab-feedback {
+      margin-top: 56px;
+      background: var(--navy);
+      border-radius: 20px;
+      padding: 36px 40px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      flex-wrap: wrap;
+    }
+    .zs-cab-feedback-text strong {
+      display: block; font-size: 18px; font-weight: 600; color: white; margin-bottom: 6px;
+    }
+    .zs-cab-feedback-text span {
+      font-size: 15px; color: rgba(255,255,255,0.5);
+    }
+    .zs-cab-feedback-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--orange); color: white; text-decoration: none;
+      padding: 14px 28px; border-radius: 100px;
+      font-size: 15px; font-weight: 600; font-family: 'Manrope', sans-serif;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(232,101,42,0.3);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .zs-cab-feedback-btn:hover, .zs-cab-feedback-btn:focus-visible {
+      background: var(--orange-warm); transform: translateY(-2px); outline: none;
+    }
+    .zs-cab-feedback-btn svg { width: 18px; height: 18px; fill: white; flex-shrink: 0; }
+
+    @media (max-width: 600px) {
+      .zs-cab-page { padding: 40px 16px 80px; }
+      .zs-cab-lesson-head { padding: 20px 20px 16px; }
+      .zs-cab-video-wrap { margin: 0 20px 20px; }
+      .zs-cab-feedback { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+      .zs-cab-feedback-btn { width: 100%; justify-content: center; }
+    }
+  </style>
+
+  <div class="zs-cab-page">
+
+    <a href="/courses/zdorovaya-spina" class="zs-cab-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      О курсе
+    </a>
+
+    <h1 class="zs-cab-title">Здоровая <em>спина</em></h1>
+    <p class="zs-cab-subtitle">Продолжайте практиковать, это единственный путь</p>
+
+    <div class="zs-cab-materials">
+      <div class="zs-cab-materials-head">
+        <div class="zs-cab-materials-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div>
+          <div class="zs-cab-materials-title">Материалы курса</div>
+          <div class="zs-cab-materials-sub">Скачайте перед началом – пригодятся на всех неделях</div>
+        </div>
+      </div>
+      <div class="zs-cab-materials-list">
+        {materials.map(m => (
+          <a class="zs-cab-material" href={m.href} download>
+            <div class="zs-cab-material-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div class="zs-cab-material-meta">
+              <div class="zs-cab-material-title">
+                <span>{m.title}</span>
+                <span class="zs-cab-material-size">PDF · {m.size}</span>
+              </div>
+              <div class="zs-cab-material-desc">{m.desc}</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {modulesWithLessons.map(mod => (
+      <div class="zs-cab-module">
+        <div class="zs-cab-module-title">{mod.title}</div>
+        <div class="zs-cab-lessons">
+          {mod.lessons.map((l: any) => {
+            const tag = lessonTag(l.title);
+            const lessonClass = getLessonClass(l.title);
+            return (
+              <article class={`zs-cab-lesson ${lessonClass}`}>
+                <div class="zs-cab-lesson-head">
+                  <div class={`zs-cab-lesson-num${l.is_preview ? ' preview' : ''}`}>{l.sort_order}</div>
+                  <div class="zs-cab-lesson-meta">
+                    <span class="zs-cab-lesson-tag" style={`color:${tag.color};background:${tag.bg}`}>{tag.label}</span>
+                    <div class="zs-cab-lesson-title">{l.title}</div>
+                    <div class="zs-cab-lesson-desc">{l.content_md}</div>
+                  </div>
+                </div>
+                <div class="zs-cab-video-wrap">
+                  <div class="zs-cab-video-play-icon">
+                    <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                  <span class="zs-cab-video-placeholder-text">Видео появится здесь</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    ))}
+
+    <div class="zs-cab-feedback">
+      <div class="zs-cab-feedback-text">
+        <strong>Есть вопрос или отзыв?</strong>
+        <span>Напишите Алексею напрямую — отвечает лично</span>
+      </div>
+      <a href="https://t.me/lesha_larin" target="_blank" rel="noopener noreferrer" class="zs-cab-feedback-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+        Написать в Telegram
+      </a>
+    </div>
+
+  </div>
+</SiteLayout>

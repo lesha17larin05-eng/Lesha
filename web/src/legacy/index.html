@@ -140,7 +140,7 @@ nav {
 .fsw-aside-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
 
 /* JOURNEY */
-.journey-section { padding-top: 56px; border-top: 1px solid var(--border); }
+.journey-section { padding: 48px 40px; background: var(--warm-white); border-radius: 24px; margin-top: 32px; border: 1px solid var(--border); }
 .journey-section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-light); margin-bottom: 32px; }
 .journey-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .journey-month { background: white; border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); position: relative; overflow: hidden; }
@@ -170,7 +170,14 @@ section.results { padding: 100px 80px; background: white; }
 .rc-photos { display: grid; }
 .rc-photos--2 { grid-template-columns: 1fr 1fr; }
 .rc-photo-wrap { position: relative; overflow: hidden; }
-.rc-photo { width: 100%; height: 280px; object-fit: cover; display: block; }
+.rc-photo { width: 100%; display: block; object-fit: contain; background: white; cursor: pointer; transition: opacity 0.2s; }
+.rc-photo:hover { opacity: 0.9; }
+.photo-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.photo-modal.active { display: flex; }
+.photo-modal-content { position: relative; max-width: 90%; max-height: 90vh; }
+.photo-modal img { max-width: 100%; max-height: 90vh; border-radius: 8px; display: block; }
+.photo-modal-close { position: absolute; top: 20px; right: 20px; font-size: 40px; color: white; cursor: pointer; background: none; border: none; padding: 0; line-height: 1; }
+.photo-modal-close:hover { opacity: 0.7; }
 .rc-badge { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.55); color: white; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 100px; letter-spacing: 0.04em; }
 .rc-badge--after { background: rgba(232,101,42,0.92); }
 .rc-body { padding: 28px 32px; }
@@ -185,7 +192,7 @@ section.results { padding: 100px 80px; background: white; }
 .rc-text-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .result-card { background: var(--cream); border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); transition: transform 0.2s; }
 .result-card:hover { transform: translateY(-4px); }
-.result-tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 100px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.08em; }
+.result-tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 100px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
 .tag-w { background: #fdefd4; color: #8a5010; }
 .tag-p { background: #d4f0e4; color: #0a6040; }
 .tag-e { background: #dbeeff; color: #1060a0; }
@@ -198,9 +205,9 @@ section.results { padding: 100px 80px; background: white; }
 .results-note { text-align: center; margin-top: 40px; font-size: 16px; color: var(--text-muted); }
 .results-note a { color: var(--navy); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--border); }
 
-.reviews { padding: 100px 80px; background: var(--cream); }
-.reviews-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 56px; }
-.review-card { background: white; border-radius: 20px; padding: 32px; border: 1px solid var(--border); }
+.reviews-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 40px; padding-top: 0; border-top: none; }
+.review-card { background: var(--cream); border-radius: 20px; padding: 32px; border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; }
+.review-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
 .review-stars { color: var(--orange); font-size: 16px; margin-bottom: 16px; }
 .review-text { font-size: 15px; color: var(--text); line-height: 1.85; margin-bottom: 20px; }
 .reviewer { display: flex; align-items: center; gap: 12px; }
@@ -348,7 +355,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
   <div class="hero-right">
     <div class="hero-photo">
-      <img src="/img/IMG_3936.jpg" alt="Алексей Ларин" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
+      <img src="/img/IMG_3979.jpg" alt="Алексей Ларин" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
     </div>
     <div class="spots-pill"><div class="spots-dot"></div>Осталось 6 мест</div>
   </div>
@@ -659,14 +666,9 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="rc-grid">
 
     <div class="rc-card">
-      <div class="rc-photos rc-photos--2">
+      <div class="rc-photos">
         <div class="rc-photo-wrap">
-          <img src="/img/IMG_3979.jpg" alt="Ксения до" class="rc-photo">
-          <span class="rc-badge">До</span>
-        </div>
-        <div class="rc-photo-wrap">
-          <img src="/img/results/kseniya-2.jpeg" alt="Ксения после" class="rc-photo">
-          <span class="rc-badge rc-badge--after">После</span>
+          <img src="/img/results/ksenia2.jpg" alt="Ксения" class="rc-photo">
         </div>
       </div>
       <div class="rc-body">
@@ -684,14 +686,9 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     </div>
 
     <div class="rc-card">
-      <div class="rc-photos rc-photos--2">
+      <div class="rc-photos">
         <div class="rc-photo-wrap">
-          <img src="/img/results/anastasiya-1.jpeg" alt="Анастасия до/после первый поток" class="rc-photo" style="object-position: center 20%;">
-          <span class="rc-badge">Поток 1 · −10 кг</span>
-        </div>
-        <div class="rc-photo-wrap">
-          <img src="/img/results/anastasiya-2.jpeg" alt="Анастасия второй поток" class="rc-photo">
-          <span class="rc-badge rc-badge--after">Поток 2 · −4 кг</span>
+          <img src="/img/results/Annastasia.jpg" alt="Анастасия" class="rc-photo">
         </div>
       </div>
       <div class="rc-body">
@@ -700,47 +697,17 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
           <span class="rc-n">60 кг</span>
           <span class="rc-arrow">→</span>
           <span class="rc-n rc-n--after">50 кг</span>
-          <span class="rc-diff">−10 кг в первом потоке</span>
+          <span class="rc-diff">−10 кг за 2 месяца</span>
         </div>
-        <p class="rc-desc">Ещё минус 4 кг во втором потоке. Тело изменилось – и внутреннее состояние тоже.</p>
-        <div class="rc-quote">«После первого потока 54 кг, после второго – 50.»</div>
+        <p class="rc-desc">Кроме снижения веса, улучшилось самочувствие и внутреннее состояние.</p>
+        <div class="rc-quote">«Начинала с 60 кг и стресса. После первого месяца было 54 кг, после второго уже 50 кг! И появилось море энергии! Это чудесно»</div>
         <div class="rc-name">Анастасия · два потока</div>
       </div>
     </div>
 
   </div>
 
-  <div class="rc-text-grid">
-    <div class="result-card">
-      <span class="result-tag tag-p">Боль и здоровье</span>
-      <div class="result-nums" style="margin-top:16px;">
-        <div><div class="rn">6</div><div class="rl">лет боль</div></div>
-        <div class="rarrow">→</div>
-        <div><div class="rn">0</div><div class="rl">за 2 мес.</div></div>
-      </div>
-      <p class="result-desc">Проблема по женской части, которую не могли решить врачи 6 лет, ушла за 2 месяца занятий. И родился ребёнок.</p>
-      <div class="result-quote">«Совпадение? Не думаю.»</div>
-    </div>
-    <div class="result-card">
-      <span class="result-tag tag-e">Неожиданный результат</span>
-      <div class="result-nums" style="margin-top:16px;">
-        <div><div class="rn">2+</div><div class="rl">года боль в шее</div></div>
-        <div class="rarrow">→</div>
-        <div><div class="rn">✓</div><div class="rl">прошла</div></div>
-      </div>
-      <p class="result-desc">Боль в шее и стопе, которую врачи не могли найти годами, ушла незаметно через суставную гимнастику.</p>
-      <div class="result-quote">«Я просто поняла, что боль ушла – не заметила когда.»</div>
-    </div>
-  </div>
-
-  <div class="results-note">По вашему запросу наверняка найдётся похожая история → <a href="https://t.me/lesha_larin_otzivi" target="_blank">смотреть все 65+ отзывов</a></div>
-</section>
-
-<section class="reviews" id="reviews">
-  <div class="section-label">Что говорят клиенты</div>
-  <h2 class="section-title">Живые слова<br><em>живых людей</em></h2>
-  <p class="section-desc">Не отредактированные, не придуманные. Просто то, что люди сами написали и сказали на камеру.</p>
-  <div class="reviews-grid">
+  <div class="reviews-grid" id="reviews">
     <div class="review-card">
       <div class="review-stars">★★★★★</div>
       <p class="review-text">«Боль в шее беспокоила 2 года. Занялась с Алексеем – и в какой-то момент просто поняла, что боль ушла. Не заметила когда. И ещё ушла боль в стопе, которую врачи не могли найти.»</p>
@@ -748,8 +715,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     </div>
     <div class="review-card">
       <div class="review-stars">★★★★★</div>
-      <p class="review-text">«Минус 11 кг за 3 месяца. Я даже не верила, что без изнурительных диет и перегрузок возможен такой результат. Внутреннее состояние – совсем другое.»</p>
-      <div class="reviewer"><div class="reviewer-av">К</div><div><div class="reviewer-name">Ксения</div><div class="reviewer-meta">Личное ведение · 3 месяца</div></div></div>
+      <p class="review-text">«Лёша, я бы не поверила, если бы мне сказали. Но у меня не болит поясница. Не болит спина. Я просыпаюсь с хорошим настроением. Встаю с кровати — и мне легко. Это лучшее, что может себе позволить мама в декрете.»</p>
+      <div class="reviewer"><div class="reviewer-av">К</div><div><div class="reviewer-name">Кристина</div><div class="reviewer-meta">Курс здоровой спины</div></div></div>
     </div>
     <div class="review-card">
       <div class="review-stars">★★★★★</div>
@@ -760,6 +727,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="reviews-more">
     <a href="/results" class="btn-outline">Смотреть все 65+ отзывов →</a>
   </div>
+
 </section>
 
 <section class="cta-section" id="cta">
@@ -807,6 +775,30 @@ window.addEventListener('scroll', () => {
     if (el && window.scrollY >= el.offsetTop - 120) current = id;
   });
   anchorLinks.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+});
+
+// Photo zoom modal
+const photoModal = document.createElement('div');
+photoModal.className = 'photo-modal';
+photoModal.innerHTML = '<div class="photo-modal-content"><button class="photo-modal-close">×</button><img id="modalImg" src="" alt=""></div>';
+document.body.appendChild(photoModal);
+
+const rcPhotos = document.querySelectorAll('.rc-photo');
+rcPhotos.forEach(photo => {
+  photo.addEventListener('click', () => {
+    photoModal.classList.add('active');
+    document.getElementById('modalImg').src = photo.src;
+  });
+});
+
+photoModal.addEventListener('click', (e) => {
+  if (e.target === photoModal || e.target.classList.contains('photo-modal-close')) {
+    photoModal.classList.remove('active');
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') photoModal.classList.remove('active');
 });
 </script>
 </body>

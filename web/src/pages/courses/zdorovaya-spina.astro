@@ -1,0 +1,54 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { extractLegacy } from '../../lib/legacy';
+import rawHtml from '../../legacy/zdorovaya-spina.html?raw';
+import { apiJson } from '../../lib/api';
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const user = (Astro.locals as any).user;
+
+// Fetch enrollment status only for logged-in users
+let enrolled = false;
+if (user) {
+  const { data, status } = await apiJson<any>('/api/courses/zdorovaya-spina', { cookie });
+  if (status === 200) enrolled = !!data.enrolled;
+}
+
+const { styles, body: rawBody } = extractLegacy(rawHtml);
+// Strip anchor-nav (second <nav>) and edit bar
+const reSecondNav = /<nav[\s\S]*?<\/nav>/i;
+const reEditBar  = /<div\s+id=["']edit-bar["'][\s\S]*?<\/div>/i;
+const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
+---
+<SiteLayout title="Здоровая спина – курс Алексея Ларина" active="spina" pageStyles={styles}>
+  <Fragment set:html={body} />
+  <script define:vars={{ enrolled }}>
+    if (enrolled) {
+      // Eyebrow
+      const eyebrow = document.querySelector('.eyebrow-text');
+      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 11 уроков · онлайн';
+
+      // Promise
+      const promise = document.querySelector('.hero-promise p');
+      if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 11 уроков открыты</strong> – переходите к занятиям и начинайте в любом порядке.';
+
+      // CTA button
+      const btn = document.querySelector('.btn-hero');
+      if (btn) {
+        btn.textContent = 'Перейти к урокам →';
+        btn.setAttribute('href', '/cabinet/zdorovaya-spina');
+        btn.removeAttribute('onclick');
+      }
+
+      // Hide safety text and start-pill
+      const safety = document.querySelector('.hero-safety');
+      if (safety) safety.style.display = 'none';
+
+      // Hide tariffs, FAQ, final-cta sections
+      ['#tariffs', '.final-cta', '.guarantee-faq'].forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) el.style.display = 'none';
+      });
+    }
+  </script>
+</SiteLayout>

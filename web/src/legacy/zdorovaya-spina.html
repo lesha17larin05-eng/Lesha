@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Здоровая спина – курс Алексея Ларина</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243058;
+  --navy-light: #2e3d6b;
+  --orange: #e8652a;
+  --orange-warm: #f07530;
+  --cream: #f8f5ef;
+  --warm-white: #fdfaf5;
+  --text: #1a1a1a;
+  --text-mid: #444;
+  --text-muted: #777;
+  --text-light: #aaa;
+  --border: #ece8e0;
+  --border-light: #f2ede5;
+  --green: #4ade80;
+  --green-deep: #16a34a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color: var(--text); overflow-x: hidden; }
+
+/* ===== NAV ===== */
+nav.top-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(253,250,245,0.94); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 64px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+.nav-logo span { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; color: var(--navy); letter-spacing: 0.03em; }
+.nav-links { display: flex; gap: 32px; margin-left: auto; margin-right: 40px; }
+.nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; padding-bottom: 3px; }
+.nav-links a:hover { color: var(--navy); }
+.nav-links a.active { color: var(--navy); font-weight: 600; border-bottom: 2px solid var(--orange); }
+.nav-login { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+
+.anchor-nav {
+  position: sticky; top: 64px; z-index: 90;
+  background: rgba(253,250,245,0.94); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  height: 44px; padding: 0 80px;
+  display: flex; align-items: center; gap: 32px;
+}
+.anchor-nav a { font-size: 12px; font-weight: 500; color: var(--text-light); text-decoration: none; transition: color 0.2s; white-space: nowrap; }
+.anchor-nav a:hover { color: var(--navy); }
+.anchor-nav a.active { color: var(--orange); font-weight: 600; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+
+/* ===== HERO ===== */
+.hero { min-height: 100vh; display: grid; grid-template-columns: 55% 45%; padding-top: 64px; }
+.hero-left {
+  background: var(--navy); padding: 80px 72px 80px 80px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.hero-left::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-left::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+}
+.hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; line-height: 1.08; color: white; margin-bottom: 14px; letter-spacing: -0.01em; }
+.hero h1 em { font-style: italic; color: #8bb8f0; }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.45); margin-bottom: 32px; line-height: 1.5; }
+.hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+.hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
+.hero-promise strong { color: white; font-weight: 600; }
+.hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
+  padding: 18px 36px; border-radius: 100px; font-size: 17px; font-weight: 600; font-family: 'Manrope', sans-serif;
+  transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+}
+.btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.hero-safety { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
+.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.65); }
+.hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
+.stat-label { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 4px; display: block; }
+
+.hero-right { background: var(--cream); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; overflow: hidden; }
+.hero-photo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 500px; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+
+.course-badge { position: absolute; bottom: 32px; left: 32px; background: white; border-radius: 16px; padding: 16px 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 14px; max-width: 300px; }
+.badge-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; color: white; }
+.badge-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.badge-sub { font-size: 13px; color: var(--text-muted); }
+
+.start-pill { position: absolute; top: 32px; right: 32px; background: var(--navy); color: white; padding: 8px 16px; border-radius: 100px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.start-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+/* ===== COMMON SECTIONS ===== */
+.section-label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px,3.5vw,52px); font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 16px; }
+.section-title em { font-style: italic; }
+.section-desc { font-size: 17px; color: var(--text-muted); line-height: 1.85; max-width: 620px; margin-bottom: 56px; }
+
+/* ===== PROBLEMS ===== */
+.problems { padding: 100px 80px; background: white; }
+.problems-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.problem-card { background: var(--cream); border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+.problem-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.2s; }
+.problem-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.07); }
+.problem-card:hover::before { background: var(--orange); }
+.problem-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--navy); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.problem-icon svg { width: 24px; height: 24px; }
+.problem-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: var(--navy); }
+.problem-card p { font-size: 15px; color: var(--text-muted); line-height: 1.75; }
+
+/* ===== STORY ===== */
+.story { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; overflow: hidden; }
+.story::before { content: '"'; position: absolute; top: -20px; left: 60px; font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+.story-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; }
+.story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.story-content .section-label { color: #7ab0f0; }
+.story-content .section-title { color: white; }
+.story-pull { background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0; font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.75); line-height: 1.6; }
+.story-text { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.85; margin-bottom: 16px; }
+.creds { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+.cred { display: flex; align-items: center; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.5); }
+.cred-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+/* ===== PROGRAM ===== */
+.program { padding: 100px 80px; background: var(--cream); }
+.program-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.program-card { background: white; border-radius: 20px; padding: 28px 24px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: transform 0.2s; }
+.program-card:hover { transform: translateY(-3px); }
+.program-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--navy); }
+.program-card.intro-card::before { background: var(--text-light); }
+.program-card.final-card::before { background: var(--green); }
+.pm-num { font-size: 12px; font-weight: 700; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+.pm-title { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 16px; line-height: 1.25; min-height: 44px; }
+.pm-lessons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.pm-lesson { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-mid); line-height: 1.5; }
+.pm-lesson-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); flex-shrink: 0; margin-top: 7px; }
+.pm-focus { font-size: 13px; color: var(--text-muted); line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--border); font-style: italic; }
+
+.rhythm { margin-top: 64px; background: white; border-radius: 24px; padding: 40px 48px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 36px; }
+.rhythm-item h4 { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.rhythm-item h4::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.rhythm-item p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+
+/* ===== INCLUDED ===== */
+.included { padding: 100px 80px; background: white; }
+.included-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 40px; }
+.inc-card { background: var(--cream); border-radius: 18px; padding: 28px 24px; border: 1px solid var(--border); }
+.inc-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.inc-icon svg { width: 22px; height: 22px; }
+.inc-card h3 { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.inc-card p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+/* ===== RESULTS / REVIEWS ===== */
+.results { padding: 100px 80px; background: var(--cream); }
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.result-card { background: white; border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); transition: transform 0.2s; }
+.result-card:hover { transform: translateY(-3px); }
+.result-tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 100px; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.08em; background: #d4f0e4; color: #0a6040; }
+.result-headline { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 14px; line-height: 1.35; }
+.result-quote { font-size: 15px; color: var(--text-muted); line-height: 1.75; font-style: italic; margin-bottom: 16px; }
+.result-author { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border); }
+.result-av { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.result-name { font-size: 14px; font-weight: 600; color: var(--navy); }
+.result-meta { font-size: 12px; color: var(--text-light); }
+.results-more { text-align: center; margin-top: 40px; }
+.btn-outline { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--navy); color: var(--navy); padding: 15px 32px; border-radius: 100px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s; background: transparent; cursor: pointer; font-family: 'Manrope', sans-serif; }
+.btn-outline:hover { background: var(--navy); color: white; }
+
+/* ===== TARIFFS ===== */
+.tariffs { padding: 100px 80px; background: var(--navy); position: relative; }
+.tariffs .section-label { color: #7ab0f0; }
+.tariffs .section-title { color: white; }
+.tariffs .section-desc { color: rgba(255,255,255,0.5); }
+.tariff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+.tariff-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; position: relative; transition: transform 0.2s, border-color 0.2s; }
+.tariff-card:hover { transform: translateY(-3px); }
+.tariff-card.featured { background: rgba(255,255,255,0.07); border: 1.5px solid var(--orange); }
+.tariff-badge { position: absolute; top: -14px; left: 40px; background: var(--orange); color: white; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; }
+.tariff-name { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.tariff-price { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 400; color: white; line-height: 1; margin-bottom: 6px; }
+.tariff-price small { font-size: 18px; color: rgba(255,255,255,0.4); margin-left: 4px; font-family: 'Manrope', sans-serif; }
+.tariff-desc { font-size: 15px; color: rgba(255,255,255,0.55); margin-bottom: 28px; line-height: 1.65; }
+.tariff-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.tariff-feature { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.55; }
+.tf-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+.tariff-feature.bonus { color: rgba(255,255,255,0.95); font-weight: 500; }
+.tariff-feature.bonus .tf-check { color: var(--orange); }
+.tariff-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0 16px; }
+.tariff-divider-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: 4px 0 8px; }
+.btn-tariff { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; padding: 16px 24px; border-radius: 100px; font-size: 15px; font-weight: 600; transition: all 0.2s; cursor: pointer; font-family: 'Manrope', sans-serif; width: 100%; }
+.btn-tariff:hover { background: rgba(255,255,255,0.18); }
+.btn-tariff.primary { background: var(--orange); border-color: var(--orange); box-shadow: 0 8px 32px rgba(232,101,42,0.3); }
+.btn-tariff.primary:hover { background: var(--orange-warm); transform: translateY(-1px); }
+
+/* ===== GUARANTEE + FAQ ===== */
+.guarantee-faq { padding: 100px 80px; background: white; }
+.gf-grid { display: grid; grid-template-columns: 360px 1fr; gap: 64px; align-items: start; }
+.guarantee-box { background: var(--cream); border-radius: 20px; padding: 32px; border: 1px solid var(--border); position: sticky; top: 130px; }
+.guarantee-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.guarantee-icon svg { width: 28px; height: 28px; }
+.guarantee-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); margin-bottom: 10px; line-height: 1.2; }
+.guarantee-box p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+.guarantee-box .small { font-size: 13px; color: var(--text-light); margin-top: 12px; }
+
+.faq-list { display: flex; flex-direction: column; gap: 10px; }
+.faq-item { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
+.faq-item:hover { border-color: var(--text-light); }
+.faq-item[open] { border-color: var(--orange); background: var(--cream); }
+.faq-item summary { padding: 22px 26px; font-size: 16px; font-weight: 600; color: var(--navy); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 20px; transition: color 0.2s; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; font-size: 24px; font-weight: 300; color: var(--text-light); flex-shrink: 0; transition: transform 0.3s, color 0.2s; }
+.faq-item[open] summary::after { content: '–'; color: var(--orange); }
+.faq-item summary:hover { color: var(--orange); }
+.faq-content { padding: 0 26px 26px; font-size: 15px; color: var(--text-mid); line-height: 1.85; }
+.faq-content p { margin-bottom: 10px; }
+.faq-content p:last-child { margin-bottom: 0; }
+
+/* ===== FINAL CTA ===== */
+.final-cta { padding: 100px 80px; background: var(--cream); text-align: center; }
+.final-cta .section-title { max-width: 720px; margin-left: auto; margin-right: auto; }
+.final-cta .section-desc { margin-left: auto; margin-right: auto; text-align: center; }
+.final-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+
+/* ===== FOOTER ===== */
+footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 15px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: white; }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+/* ===== EDIT BAR ===== */
+#edit-bar { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; gap: 10px; }
+#edit-btn { background: var(--navy); color: white; border: none; border-radius: 100px; padding: 12px 22px; font-size: 13px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+#save-btn { background: var(--orange); color: white; border: none; border-radius: 100px; padding: 12px 22px; font-size: 13px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; display: none; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+.hero-eyebrow{animation:fadeUp 0.6s 0.1s both;}
+.hero h1{animation:fadeUp 0.6s 0.2s both;}
+.hero-sub{animation:fadeUp 0.6s 0.3s both;}
+.hero-promise{animation:fadeUp 0.6s 0.4s both;}
+.hero-cta{animation:fadeUp 0.6s 0.5s both;}
+.hero-stats{animation:fadeUp 0.6s 0.6s both;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1100px){
+  .program-grid{grid-template-columns:repeat(3,1fr);}
+  .included-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:960px){
+  nav.top-nav{padding:0 20px;} .nav-links{display:none;}
+  .hero{grid-template-columns:1fr;} .hero-left{padding:60px 24px;} .hero-right{min-height:360px;}
+  .problems,.results,.program,.included,.tariffs,.story,.guarantee-faq,.final-cta{padding:60px 24px;}
+  .problems-grid,.results-grid{grid-template-columns:1fr;}
+  .program-grid{grid-template-columns:1fr;}
+  .included-grid{grid-template-columns:1fr;}
+  .rhythm{grid-template-columns:1fr; gap:24px; padding:28px;}
+  .tariff-grid{grid-template-columns:1fr;}
+  .story{grid-template-columns:1fr; gap:40px;}
+  .gf-grid{grid-template-columns:1fr; gap:32px;}
+  .guarantee-box{position:static;}
+  .anchor-nav{padding:0 24px; gap:20px; overflow-x:auto;}
+  footer{flex-direction:column; gap:20px; padding:32px 24px; text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP NAV ===== -->
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <svg width="36" height="36" viewBox="0 0 64 64" style="flex-shrink:0;">
+      <polygon points="32,5 59,32 32,59 5,32" fill="none" stroke="#1a2744" stroke-width="6" stroke-linejoin="round"/>
+      <circle cx="32" cy="20" r="7" fill="#e8652a"/>
+      <path d="M32 27 Q20 36 19 47 Q18 54 26 56 Q32 58 38 56 Q46 54 45 47 Q44 36 32 27Z" fill="#e8652a"/>
+      <path d="M19 47 Q14 54 10 62" fill="none" stroke="#1a2744" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M45 47 Q50 54 54 62" fill="none" stroke="#1a2744" stroke-width="4.5" stroke-linecap="round"/>
+    </svg>
+    <span>АЛЕКСЕЙ ЛАРИН</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Личное сопровождение</a>
+    <a href="#">Бесплатный курс</a>
+    <a href="#" class="active">Здоровая спина</a>
+  </div>
+  <a href="#" class="nav-login">Войти</a>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-dot"></div>
+      <span class="eyebrow-text">Курс · 3 недели · Онлайн · Доступ навсегда</span>
+    </div>
+    <h1>Здоровая спина<br><em>за 3 недели</em></h1>
+    <p class="hero-sub">Курс, который я собрал из своего опыта восстановления</p>
+    <div class="hero-promise">
+      <p>11 уроков, 3 недели, ваш темп. Основные тренировки, короткие практики и теория – <strong>чтобы выстроить регулярность, которая держится после курса</strong>. Начинаете в любой день, доступ навсегда.</p>
+    </div>
+    <div class="hero-cta">
+      <a href="#tariffs" class="btn-hero">Смотреть тарифы →</a>
+      <div class="hero-safety">Гарантия возврата 7 дней · оплата через Prodamus</div>
+    </div>
+    <div class="hero-stats">
+      <div><span class="stat-num">11</span><span class="stat-label">уроков в 5 модулях</span></div>
+      <div><span class="stat-num">3 недели</span><span class="stat-label">структурированной работы</span></div>
+      <div><span class="stat-num">19+</span><span class="stat-label">историй про спину</span></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/spina/hero.webp 1x, /img/spina/hero@2x.webp 2x">
+        <img src="/img/spina/hero.jpg" srcset="/img/spina/hero.jpg 1x, /img/spina/hero@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="eager" fetchpriority="high">
+      </picture>
+    </div>
+    <div class="start-pill"><div class="start-dot"></div>Старт в любой день</div>
+    <div class="course-badge">
+      <div class="badge-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <div class="badge-title">Гарантия 7 дней</div>
+        <div class="badge-sub">Не подошло – вернём деньги</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ANCHOR NAV ===== -->
+<nav class="anchor-nav" id="anchor-nav">
+  <a href="#problems" class="active">Кому подойдёт</a>
+  <a href="#story">Моя история</a>
+  <a href="#program">Программа</a>
+  <a href="#included">Что внутри</a>
+  <a href="#results">Истории клиентов</a>
+  <a href="#tariffs">Тарифы</a>
+  <a href="#faq">FAQ</a>
+</nav>
+
+<!-- ===== PROBLEMS ===== -->
+<section class="problems" id="problems">
+  <div class="section-label">Кому подойдёт</div>
+  <h2 class="section-title">Узнаёте <em>себя?</em></h2>
+  <p class="section-desc">Курс для тех, кто хочет выстроить со спиной нормальные рабочие отношения – через регулярное движение, без надрыва и без медицинских обещаний. Если хотя бы один пункт про вас – курс ваш.</p>
+  <div class="problems-grid">
+    <div class="problem-card">
+      <div class="problem-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <h3>Спина даёт о себе знать к вечеру</h3>
+      <p>К концу рабочего дня появляется усталость, тяжесть, желание лечь. Хочется чтобы тело не было обузой.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+      <h3>Утром тяжело разогнуться</h3>
+      <p>Просыпаетесь со скованностью, нужно 15-30 минут чтобы тело «включилось». Хочется чтобы утро начиналось легко.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+      </div>
+      <h3>Сидячая работа · хочется профилактики</h3>
+      <p>8-10 часов за столом каждый день. Пока ничего не болит, но понимаете – пора что-то делать, чтобы и не начало.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Был неприятный опыт с нагрузкой</h3>
+      <p>Когда-то перестарались, защемило, испугались. С тех пор страшно нагружать спину – но и не двигаться тоже страшно.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+      </div>
+      <h3>Начинали много раз и бросали</h3>
+      <p>Знаете что нужно регулярно. Но энергии хватает на пару недель, потом – снова диван. Хочется наконец выстроить ритм, который держится.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7L9 18l-5-5"/></svg>
+      </div>
+      <h3>Уже занимаетесь – нужна программа для спины</h3>
+      <p>Бегаете, ходите в зал или на йогу. Но хочется отдельный фокус именно на спине – короткие, точечные практики.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STORY ===== -->
+<section class="story" id="story">
+  <div class="story-photo">
+    <picture>
+      <source type="image/webp" srcset="/img/spina/story.webp 1x, /img/spina/story@2x.webp 2x">
+      <img src="/img/spina/story.jpg" srcset="/img/spina/story.jpg 1x, /img/spina/story@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy">
+    </picture>
+  </div>
+  <div class="story-content">
+    <div class="section-label">Почему именно я</div>
+    <h2 class="section-title" style="color:white;">Я делал этот курс<br>из <em>своего опыта</em></h2>
+    <div class="story-pull">В 9 лет – перелом трёх позвонков. Месяц в больнице, полгода нельзя было сидеть, год в медицинском корсете.</div>
+    <p class="story-text">Именно через движение я восстановился. И именно поэтому знаю – правильная, мягкая, регулярная нагрузка возвращает телу нормальную жизнь. Не бывает «нельзя тренироваться» – бывает «ещё не нашли подходящий способ».</p>
+    <p class="story-text">В детстве после той травмы я ещё несколько лет проходил курсы консервативного лечения. Каждый длился три недели, в основе – лечебная физкультура. Мне это помогло и сделало сильнее. И уже во время тренерской деятельности вижу, как системная практика помогает и моим клиентам. Уверен, занятия помогут ещё многим.</p>
+    <p class="story-text">С 2017 года помогаю людям выстраивать отношения с телом через регулярное движение. Этот курс – структурированная версия того, что я даю в личной работе.</p>
+    <div class="creds">
+      <div class="cred"><div class="cred-icon">🎓</div>Магистр с отличием – Российский университет спорта</div>
+      <div class="cred"><div class="cred-icon">📅</div>8+ лет практики · более 8000 человек через проекты</div>
+      <div class="cred"><div class="cred-icon">👥</div>Дети, взрослые, старшее поколение – любой возраст</div>
+      <div class="cred"><div class="cred-icon">🌍</div>Онлайн – занимаются люди из разных стран</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROGRAM ===== -->
+<section class="program" id="program">
+  <div class="section-label">Программа</div>
+  <h2 class="section-title">Три недели —<br><em>от мягкого старта к привычке</em></h2>
+  <p class="section-desc">Каждая неделя – это основная тренировка, короткая практика и теория. Воскресенье – отдых. Начинать рекомендую в субботу утром, но подстроите под себя.</p>
+
+  <div class="program-grid">
+
+    <div class="program-card intro-card">
+      <div class="pm-num">Модуль 1</div>
+      <div class="pm-title">Вводный</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Как проходить курс</div>
+      </div>
+      <p class="pm-focus">Знакомство с курсом, разметка под ваш уровень и расписание.</p>
+    </div>
+
+    <div class="program-card">
+      <div class="pm-num">Неделя 1</div>
+      <div class="pm-title">Запуск</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Основная тренировка</div>
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая практика</div>
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Теория: грыжи и протрузии</div>
+      </div>
+      <p class="pm-focus">Возвращаем подвижность, снимаем напряжение, убираем страх движения.</p>
+    </div>
+
+    <div class="program-card">
+      <div class="pm-num">Неделя 2</div>
+      <div class="pm-title">Углубление</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Основная тренировка</div>
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая практика</div>
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Теория: осанка</div>
+      </div>
+      <p class="pm-focus">Добавляем силу, работаем с осанкой, тело привыкает к ритму.</p>
+    </div>
+
+    <div class="program-card">
+      <div class="pm-num">Неделя 3</div>
+      <div class="pm-title">Закрепление</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Основная тренировка</div>
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая практика</div>
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Бонус: расслабление</div>
+      </div>
+      <p class="pm-focus">Интегрируем привычку. В бонус-уроке – практика для снятия стресса.</p>
+    </div>
+
+    <div class="program-card final-card">
+      <div class="pm-num">Модуль 5</div>
+      <div class="pm-title">Дальше</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Циклы и следующий шаг</div>
+      </div>
+      <p class="pm-focus">Как продолжать после курса – циклы тренировок и периоды отдыха.</p>
+    </div>
+
+  </div>
+
+  <div class="rhythm">
+    <div class="rhythm-item">
+      <h4>Основная тренировка</h4>
+      <p>~45 минут. Подробно разбираю детали и нюансы. Раз в неделю – рекомендую субботу с утра.</p>
+    </div>
+    <div class="rhythm-item">
+      <h4>Короткая практика</h4>
+      <p>20-25 минут. Последовательно выполняете упражнения за мной. От 2 до 8 раз в неделю – выберете сами.</p>
+    </div>
+    <div class="rhythm-item">
+      <h4>Воскресенье – отдых</h4>
+      <p>Никаких тренировок. Тело восстанавливается, формируется привычка к недельному ритму.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INCLUDED ===== -->
+<section class="included" id="included">
+  <div class="section-label">Что внутри</div>
+  <h2 class="section-title">Не только видео —<br><em>рабочая система</em></h2>
+  <p class="section-desc">Чтобы вы не остались с экраном один на один, к видео идёт комплект материалов – он помогает встроить занятия в жизнь и видеть собственный прогресс.</p>
+  <div class="included-grid">
+    <div class="inc-card">
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <h3>11 видео-уроков</h3>
+      <p>Основные тренировки, короткие практики и теория. Доступ навсегда.</p>
+    </div>
+    <div class="inc-card">
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <h3>Методичка курса</h3>
+      <p>PDF: как заниматься, как выбрать интенсивность, техника безопасности.</p>
+    </div>
+    <div class="inc-card">
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      </div>
+      <h3>Чек-лист замеров</h3>
+      <p>Простые тесты «до и после»: наклон, повороты, ощущения. Видите свой результат.</p>
+    </div>
+    <div class="inc-card">
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <h3>Календарь занятий</h3>
+      <p>Готовая сетка на 3 недели. Видно где основная, где короткая, где отдых.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RESULTS ===== -->
+<section class="results" id="results">
+  <div class="section-label">Истории клиентов</div>
+  <h2 class="section-title">Что говорят те, кто<br><em>работал со мной</em></h2>
+  <p class="section-desc">Эти истории – из моих программ за 8 лет. У каждого свой запрос, свой темп, свой результат. Курс – это структурированная версия того, что им помогло.</p>
+  <div class="results-grid">
+
+    <div class="result-card">
+      <span class="result-tag">Боль ушла</span>
+      <div class="result-headline">Протрузии ушли по МРТ</div>
+      <p class="result-quote">«После курса сделала МРТ – протрузии ушли. Перекос таза уменьшился. Спина больше так не беспокоит.»</p>
+      <div class="result-author">
+        <div class="result-av">Я</div>
+        <div>
+          <div class="result-name">Яна</div>
+          <div class="result-meta">Групповая программа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <span class="result-tag">Боль ушла</span>
+      <div class="result-headline">Прострелы прошли в 56 лет</div>
+      <p class="result-quote">«Прострелы в пояснице ушли после первой же тренировки. Появилась лёгкость – я в это сначала не верила.»</p>
+      <div class="result-author">
+        <div class="result-av">А</div>
+        <div>
+          <div class="result-name">Анастасия</div>
+          <div class="result-meta">Групповая программа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <span class="result-tag">Боль ушла</span>
+      <div class="result-headline">Спина перестала болеть</div>
+      <p class="result-quote">«Курс помог – спина больше не беспокоит. Стал спокойнее относиться к нагрузкам.»</p>
+      <div class="result-author">
+        <div class="result-av">Д</div>
+        <div>
+          <div class="result-name">Давидбек</div>
+          <div class="result-meta">Групповая программа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <span class="result-tag">Боль ушла</span>
+      <div class="result-headline">Боль ушла на первой неделе</div>
+      <p class="result-quote">«К концу первой недели я поняла, что не вспоминала про спину пару дней. И энергии прибавилось.»</p>
+      <div class="result-author">
+        <div class="result-av">О</div>
+        <div>
+          <div class="result-name">Ольга</div>
+          <div class="result-meta">Групповая программа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <span class="result-tag">Боль ушла</span>
+      <div class="result-headline">Кифоз, сколиоз, переломы – стало легче</div>
+      <p class="result-quote">«У меня были и переломы, и кифоз, и сколиоз. Комплекс подошёл – занималась мягко, тело откликалось.»</p>
+      <div class="result-author">
+        <div class="result-av">Т</div>
+        <div>
+          <div class="result-name">Татьяна</div>
+          <div class="result-meta">Групповая программа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <span class="result-tag">Боль ушла</span>
+      <div class="result-headline">Поясница перестала болеть</div>
+      <p class="result-quote">«Прошла курс целиком. Поясница больше не напоминает о себе. Зарядка стала привычкой.»</p>
+      <div class="result-author">
+        <div class="result-av">К</div>
+        <div>
+          <div class="result-name">Кристина</div>
+          <div class="result-meta">Групповая программа</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="results-more">
+    <a href="/results" class="btn-outline">Все результаты →</a>
+  </div>
+</section>
+
+<!-- ===== TARIFFS ===== -->
+<section class="tariffs" id="tariffs">
+  <div class="section-label">Тарифы</div>
+  <h2 class="section-title">Один курс —<br><em>два варианта прохождения</em></h2>
+  <p class="section-desc">Самостоятельный – для тех, кто хочет пройти курс в своём темпе без коммуникации. С поддержкой – для тех, кому важно моё внимание, разбор замеров и личный созвон в конце.</p>
+
+  <div class="tariff-grid">
+
+    <div class="tariff-card">
+      <div class="tariff-name">Самостоятельный</div>
+      <div class="tariff-price">3 990 ₽<small>разово</small></div>
+      <p class="tariff-desc">Все материалы курса, доступ навсегда. Идёте в своём темпе, без коммуникации со мной.</p>
+      <div class="tariff-features">
+        <div class="tariff-feature"><span class="tf-check">✓</span>11 видео-уроков в 5 модулях</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Методичка курса (PDF)</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Чек-лист замеров «до и после»</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Календарь занятий на 3 недели</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Доступ навсегда в личном кабинете</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Старт в любой день после оплаты</div>
+      </div>
+      <a href="#" class="btn-tariff" data-tariff="self">Купить за 3 990 ₽</a>
+    </div>
+
+    <div class="tariff-card featured">
+      <div class="tariff-badge">Рекомендую</div>
+      <div class="tariff-name">С поддержкой</div>
+      <div class="tariff-price">12 990 ₽<small>разово</small></div>
+      <p class="tariff-desc">Всё то же, плюс моё личное внимание во время курса и созвон-разбор в конце.</p>
+      <div class="tariff-features">
+        <div class="tariff-feature"><span class="tf-check">✓</span>Всё из «Самостоятельного»</div>
+        <div class="tariff-divider"></div>
+        <div class="tariff-divider-label">Плюс лично от меня:</div>
+        <div class="tariff-feature bonus"><span class="tf-check">✓</span>Личный чат со мной в Telegram во время курса (3 недели)</div>
+        <div class="tariff-feature bonus"><span class="tf-check">✓</span>Видео-созвон 45-60 минут в конце курса</div>
+        <div class="tariff-feature bonus"><span class="tf-check">✓</span>Разбор ваших замеров «до и после»</div>
+        <div class="tariff-feature bonus"><span class="tf-check">✓</span>Бонус: первый месяц личного сопровождения по специальной цене для выпускников</div>
+      </div>
+      <a href="#" class="btn-tariff primary" data-tariff="support">Купить за 12 990 ₽</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== GUARANTEE + FAQ ===== -->
+<section class="guarantee-faq" id="faq">
+  <div class="section-label">Гарантия и вопросы</div>
+  <h2 class="section-title">Покупайте <em>без риска</em></h2>
+  <p class="section-desc">Если курс по любой причине не подойдёт в первые 7 дней – верну деньги без вопросов. Ниже – ответы на самые частые вопросы. Если не нашли свой – напишите мне в Telegram.</p>
+
+  <div class="gf-grid">
+    <div class="guarantee-box">
+      <div class="guarantee-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      </div>
+      <h3>Гарантия 7 дней</h3>
+      <p>Если в первые 7 дней после оплаты вы поймёте, что курс не подходит – напишите мне, и я верну деньги полностью. Без анкет, без объяснений, без обид.</p>
+      <p class="small">Это не маркетинговый ход – это моя позиция. Я хочу, чтобы у вас был курс, который реально работает в вашей жизни. Если не работает – давайте честно расстанемся.</p>
+    </div>
+
+    <div class="faq-list">
+
+      <details class="faq-item">
+        <summary>А если у меня грыжа или большая протрузия?</summary>
+        <div class="faq-content">
+          <p>Я не врач – и курс не лечит грыжи. Но мой опыт и опыт клиентов показывают: при разумной нагрузке люди с диагнозами чувствуют себя лучше. Тело становится крепче, мышечный корсет работает, симптомы часто уменьшаются.</p>
+          <p>Если у вас крупная грыжа, операция в анамнезе или неврологические симптомы – сначала покажитесь врачу и спросите его про лёгкую регулярную нагрузку. Если врач даёт «зелёный свет» – курс ваш.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>У меня сейчас острая боль – могу заниматься?</summary>
+        <div class="faq-content">
+          <p>При острой стреляющей боли, онемении в ногах или после недавней травмы – не начинайте курс прямо сейчас. Сначала разберитесь с острым состоянием у врача.</p>
+          <p>Курс – для устойчивого состояния: хронической скованности, периодических ноющих ощущений, профилактики. Дождитесь, когда острая фаза пройдёт – и начнём мягко.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Я давно не занимался – справлюсь?</summary>
+        <div class="faq-content">
+          <p>Да, курс специально устроен так, чтобы был доступен и тем, кто давно не двигался. Первая неделя идёт с минимальной нагрузкой: возвращаем подвижность, без перегрузок.</p>
+          <p>Короткие практики можно выполнять от 2 раз в неделю – этого достаточно для старта. Дальше тело само подскажет, когда будет готово к большему.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Что делать, если после занятия что-то болит?</summary>
+        <div class="faq-content">
+          <p>Лёгкая мышечная усталость – нормально, это значит, тело начало работать. А вот резкая боль, прострелы или ухудшение – сигнал остановиться и отдохнуть.</p>
+          <p>В методичке отдельный блок про то, как отличить «полезный дискомфорт» от «надо остановиться». Если в тарифе «С поддержкой» – пишите мне в чат, разберём вместе.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Нужно ли оборудование?</summary>
+        <div class="faq-content">
+          <p>Минимум – коврик. Всё остальное по желанию: подушка или валик под спину, плотный плед. Никаких тренажёров, гантелей, фитболов.</p>
+          <p>Курс рассчитан на то, чтобы заниматься дома, в любой одежде, в любой комнате, где есть место расстелить коврик.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Что, если у меня не получится регулярно заниматься?</summary>
+        <div class="faq-content">
+          <p>Доступ к курсу пожизненный – вы можете растянуть прохождение на 6 недель вместо 3, или сделать перерыв и вернуться через месяц. Главное – не бросать совсем.</p>
+          <p>В методичке есть рекомендации, как поддерживать регулярность, и что делать, если выпала из ритма.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Есть ли возрастные ограничения?</summary>
+        <div class="faq-content">
+          <p>Со мной занимаются и подростки, и люди старше 70. Программа выстроена так, что каждый идёт в своём темпе. В первом уроке я подробно объясняю, как выбрать интенсивность под свою ситуацию.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>А если курс мне всё-таки не подойдёт?</summary>
+        <div class="faq-content">
+          <p>В первые 7 дней – верну деньги без вопросов. Просто напишите мне в Telegram. Это работает и для тарифа «Самостоятельный», и для «С поддержкой».</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="final-cta">
+  <div class="section-label">Начать</div>
+  <h2 class="section-title">Через 3 недели<br>спина <em>будет благодарна</em></h2>
+  <p class="section-desc">Старт в любой день после оплаты. Доступ в личном кабинете остаётся навсегда. Гарантия возврата 7 дней.</p>
+  <div class="final-actions">
+    <a href="#tariffs" class="btn-hero">Выбрать тариф →</a>
+    <a href="https://t.me/larin_lesha" class="btn-outline" target="_blank">Задать вопрос в Telegram</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <a href="index.html" class="footer-logo">Алексей Ларин</a>
+  <div class="footer-links">
+    <a href="https://t.me/lesha_larin" target="_blank">Telegram-канал</a>
+    <a href="https://t.me/lesha_larin_otzivi" target="_blank">Отзывы</a>
+    <a href="https://t.me/larin_lesha" target="_blank">Написать</a>
+  </div>
+  <div class="footer-copy">© 2025 Алексей Ларин</div>
+</footer>
+
+<!-- ===== EDIT BAR ===== -->
+<div id="edit-bar">
+  <button id="edit-btn" onclick="toggleEdit()">✏️ Редактировать</button>
+  <button id="save-btn" onclick="saveEdit()">💾 Сохранить</button>
+</div>
+
+<script>
+// Anchor nav highlighting
+const sections = ['problems','story','program','included','results','tariffs','faq'];
+const anchorLinks = document.querySelectorAll('.anchor-nav a');
+window.addEventListener('scroll', () => {
+  let current = sections[0];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 130) current = id;
+  });
+  anchorLinks.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+});
+
+// Inline editing (same as index.html)
+let editMode = false;
+const editSel = 'h1,h2,h3,h4,p,.section-label,.stat-num,.stat-label,.result-headline,.result-quote,.result-name,.result-meta,.story-pull,.tariff-price,.tariff-desc,.tariff-feature,.faq-content,.guarantee-box,.badge-title,.badge-sub,.hero-safety,.eyebrow-text,.hero-sub,.cred,.pm-title,.pm-focus,.pm-lesson,.inc-card';
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('edit-btn');
+  const saveBtn = document.getElementById('save-btn');
+  const els = document.querySelectorAll(editSel);
+  if (editMode) {
+    btn.textContent = '✕ Выйти'; btn.style.background = '#666'; saveBtn.style.display = 'block';
+    els.forEach(el => { el.contentEditable = 'true'; el.style.outline = '2px dashed rgba(232,101,42,0.4)'; el.style.borderRadius = '4px'; });
+  } else {
+    btn.textContent = '✏️ Редактировать'; btn.style.background = '#1a2744'; saveBtn.style.display = 'none';
+    els.forEach(el => { el.contentEditable = 'false'; el.style.outline = ''; el.style.borderRadius = ''; });
+  }
+}
+function saveEdit() {
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'zdorovaya-spina.html'; a.click();
+  URL.revokeObjectURL(a.href);
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.textContent = '✓ Скачан!'; saveBtn.style.background = '#16a34a';
+  setTimeout(() => { saveBtn.textContent = '💾 Сохранить'; saveBtn.style.background = '#e8652a'; }, 2000);
+}
+</script>
+</body>
+</html>
