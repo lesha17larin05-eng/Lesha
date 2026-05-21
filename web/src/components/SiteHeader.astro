@@ -8,11 +8,25 @@ const links = [
   { href: '/results', key: 'results', label: 'Результаты' },
   { href: '/blog', key: 'blog', label: 'Блог' },
 ];
+const isSalyut = active === 'salyut';
 ---
+<style is:global>
+  .site-nav-salyut {
+    font-size: 13px; line-height: 1.3; font-weight: 600;
+    color: var(--orange); text-decoration: none;
+    padding: 7px 16px; border: 1.5px solid var(--orange);
+    border-radius: 10px; text-align: center; flex-shrink: 0;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .site-nav-salyut:hover { background: var(--orange); color: white; text-decoration: none; }
+  .site-nav-salyut.is-active { background: rgba(232,101,42,0.10); color: var(--orange); cursor: default; pointer-events: none; }
+  @media (max-width: 960px) { .site-nav-salyut { display: none; } }
+</style>
 <nav class="site-nav">
   <a href="/" class="site-nav-logo" aria-label="Алексей Ларин — на главную">
     <img src="/img/logo.svg" alt="Алексей Ларин" style="height:34px; width:auto; display:block;" />
   </a>
+  <a href="/salut-2026" class={`site-nav-salyut${isSalyut ? ' is-active' : ''}`} aria-current={isSalyut ? 'page' : undefined}>Здоровая спина<br>в Салюте</a>
   <div class="site-nav-links">
     {links.map(l => (
       <a href={l.href} class={l.key === active ? 'active' : ''}>{l.label}</a>

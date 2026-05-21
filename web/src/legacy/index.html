@@ -75,7 +75,14 @@ nav {
 .hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
 .hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
 .hero-promise strong { color: white; font-weight: 600; }
-.hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.hero-notice { display: flex; align-items: flex-start; gap: 16px; background: rgba(244,195,97,0.10); border: 1px solid rgba(244,195,97,0.30); border-radius: 14px; padding: 22px 24px; margin-bottom: 28px; }
+.hero-notice-icon { font-size: 22px; line-height: 1.2; flex-shrink: 0; padding-top: 2px; }
+.hero-notice-content { font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.75); display: flex; flex-direction: column; gap: 10px; }
+.hero-notice-content p { margin: 0; }
+.hero-notice-content strong { color: white; font-weight: 600; }
+.hero-notice-content a { color: var(--gold, #f4c361); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; transition: opacity 0.2s; }
+.hero-notice-content a:hover { opacity: 0.75; }
+.hero-cta { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .btn-hero {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
@@ -83,6 +90,8 @@ nav {
   transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
 }
 .btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.btn-hero-alt { display: inline-flex; align-items: center; font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none; padding: 7px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-hero-alt:hover { color: white; background: rgba(255,255,255,0.06); }
 .hero-safety { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
 .hero-safety::before { content: '✓'; color: rgba(255,255,255,0.65); }
 .hero-geo { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
@@ -233,6 +242,9 @@ section.results { padding: 100px 80px; background: white; }
 .price-guarantee strong { color: rgba(255,255,255,0.65); }
 .btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer; padding: 18px 32px; border-radius: 100px; width: 100%; font-size: 15px; font-weight: 600; font-family: 'Manrope', sans-serif; transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.3); }
 .btn-cta:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.cta-buttons { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.btn-cta-alt { display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(255,255,255,0.55); text-decoration: none; padding: 8px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-cta-alt:hover { color: white; background: rgba(255,255,255,0.06); }
 .spots-warning { text-align: center; margin-top: 16px; font-size: 15px; color: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; gap: 6px; }
 .spots-warning span { color: #fbbf24; }
 
@@ -313,6 +325,17 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
 .social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
 .footer-social { display: flex; flex-direction: row; gap: 8px; align-items: center; }
+.tg-section { padding: 80px 80px; background: #eef6ff; }
+.tg-section-inner { display: flex; align-items: center; gap: 64px; max-width: 920px; margin: 0 auto; }
+.tg-section-icon { flex-shrink: 0; width: 88px; height: 88px; background: #2aabee; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 40px rgba(42,171,238,0.28); }
+.tg-section .section-label { color: #1a7aab; }
+.tg-section h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px,3vw,42px); font-weight: 400; color: var(--navy); line-height: 1.2; margin-bottom: 14px; }
+.tg-section h2 em { font-style: italic; }
+.tg-section p { font-size: 16px; color: var(--text-muted); line-height: 1.85; max-width: 500px; margin-bottom: 28px; }
+.btn-tg { display: inline-flex; align-items: center; gap: 10px; background: #2aabee; color: white; text-decoration: none; padding: 16px 32px; border-radius: 100px; font-weight: 600; font-size: 15px; font-family: 'Manrope', sans-serif; transition: background 0.2s, transform 0.15s; box-shadow: 0 8px 24px rgba(42,171,238,0.3); }
+@media (hover:hover) { .btn-tg:hover { background: #229ed9; transform: translateY(-2px); } }
+.btn-tg:focus-visible { outline: 2px solid #2aabee; outline-offset: 3px; }
+@media (max-width:700px) { .tg-section { padding: 60px 24px; } .tg-section-inner { flex-direction: column; gap: 28px; text-align: center; } .tg-section p { max-width: none; } }
 </style>
 </head>
 <body>
@@ -341,11 +364,21 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <h1>Через 3 месяца вы будете<br><em>другим человеком</em></h1>
     <p class="hero-sub">Без изнурительных тренировок и жёстких диет</p>
     <div class="hero-promise">
-      <p>Болит спина, нет энергии, начинали много раз и бросали? <strong>Я помогу начать мягко и не остановиться</strong> – с персональным планом и системой, которая встраивается в вашу жизнь.</p>
+      <p>Болит спина, нет энергии, начинали много раз и бросали? <strong>Я помогу начать мягко и не остановиться</strong> — с персональным планом и системой, которая встраивается в вашу жизнь.</p>
+    </div>
+    <div class="hero-notice">
+      <div class="hero-notice-icon">🌿</div>
+      <div class="hero-notice-content">
+        <p><strong>Сейчас места заняты — следующий набор открывается в сентябре.</strong> Летом я работаю тренером в детском лагере.</p>
+        <p>Если хотите попасть в личную работу — оставьте заявку сейчас. Места разбирают заранее, на всех может не хватить. Отвечу в порядке очереди, как только вернусь.</p>
+        <p>Если вопрос срочный — <a href="https://t.me/larin_lesha" target="_blank" rel="noopener">напишите мне лично</a>.</p>
+        <p>А пока — занимайтесь по моим <a href="/courses/zdorovaya-spina">онлайн-курсам</a>. Там всё, что нужно для старта, и они реально работают.</p>
+      </div>
     </div>
     <div class="hero-cta">
-      <a href="#cta" class="btn-hero">Написать свой запрос →</a>
-<div class="hero-geo">Онлайн — работаю с людьми из разных стран</div>
+      <a href="#cta" class="btn-hero">Записаться в лист ожидания →</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-hero-alt" target="_blank">Нет Телеграма — написать в Max</a>
+      <div class="hero-geo">Онлайн — работаю с людьми из разных стран</div>
     </div>
     <div class="hero-stats">
       <div><span class="stat-num">8000+</span><span class="stat-label">человек через проекты</span></div>
@@ -360,7 +393,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <img src="/img/IMG_3979.jpg" srcset="/img/IMG_3979.jpg 1x, /img/IMG_3979@2x.jpg 2x" alt="Алексей Ларин" loading="eager" fetchpriority="high" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
       </picture>
     </div>
-    <div class="spots-pill"><div class="spots-dot"></div>Осталось 6 мест</div>
+    <div class="spots-pill"><div class="spots-dot"></div>Запись — с сентября</div>
   </div>
 </section>
 
@@ -746,9 +779,9 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="cta-grid">
     <div class="cta-left">
       <div class="section-label">Начать</div>
-      <h2 class="section-title">Напишите свой запрос –<br><em>разберём вместе</em></h2>
-      <p class="section-desc">Расскажите что беспокоит, что хочется изменить. Я пришлю анкету, потом созвонимся. Если формат подойдёт – начнём уже в этом месяце.</p>
-      <p class="section-desc">Работаю с детьми, взрослыми и старшим поколением. Онлайн – со мной занимаются люди из разных стран. Если вы в Москве – очные тренировки тоже возможны.</p>
+      <h2 class="section-title">Напишите свой запрос —<br><em>разберём вместе</em></h2>
+      <p class="section-desc"><strong style="color:var(--navy)">Сейчас идёт запись в лист ожидания.</strong> Летом я тренирую детей в детском лагере, новый набор в личное ведение — с сентября. Расскажите что беспокоит и что хочется изменить — я отвечаю в порядке очереди, как только освобождаюсь, и приглашаю на анкету и созвон.</p>
+      <p class="section-desc">Работаю с детьми, взрослыми и старшим поколением. Онлайн — со мной занимаются люди из разных стран. Если вы в Москве — очные тренировки тоже возможны.</p>
     </div>
     <div class="price-box">
       <div class="price-features">
@@ -758,9 +791,29 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="price-feature"><span class="pf-check">✓</span>Созвон-разбор раз в месяц</div>
         <div class="price-feature"><span class="pf-check">✓</span>Всё подбирается под вас лично</div>
       </div>
-      <div class="price-guarantee">Стоимость обсудим на первом созвоне – после того как разберёмся с вашим запросом.</div>
-      <a href="https://t.me/larin_lesha" class="btn-cta" target="_blank">Написать запрос в Telegram →</a>
-      <div class="spots-warning"><span>⚡</span> Сейчас открыто <span>6 мест</span> – места занимаются</div>
+      <div class="price-guarantee">Стоимость обсудим на первом созвоне — после того как разберёмся с вашим запросом.</div>
+      <div class="cta-buttons">
+        <a href="https://t.me/larin_lesha" class="btn-cta" target="_blank">Записаться в лист ожидания →</a>
+        <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
+      </div>
+      <div class="spots-warning"><span>🌿</span> Новый набор — с сентября · отвечаю в порядке очереди</div>
+    </div>
+  </div>
+</section>
+
+<section class="tg-section">
+  <div class="tg-section-inner">
+    <div class="tg-section-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+    </div>
+    <div>
+      <div class="section-label">Телеграм-канал</div>
+      <h2>Пока не готовы? Следите за советами <em>в канале</em></h2>
+      <p>Пишу о движении, восстановлении и здоровых привычках — коротко и по делу. Подпишитесь и возвращайтесь, когда будете готовы.</p>
+      <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="btn-tg">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+        Подписаться на канал
+      </a>
     </div>
   </div>
 </section>

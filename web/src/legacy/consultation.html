@@ -70,7 +70,16 @@ nav {
 .hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
 .hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
 .hero-promise strong { color: white; font-weight: 600; }
-.hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.hero-notice { display: flex; align-items: flex-start; gap: 16px; background: rgba(244,195,97,0.10); border: 1px solid rgba(244,195,97,0.30); border-radius: 14px; padding: 22px 24px; margin-bottom: 28px; }
+.hero-notice-icon { font-size: 22px; line-height: 1.2; flex-shrink: 0; padding-top: 2px; }
+.hero-notice-content { font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.75); display: flex; flex-direction: column; gap: 10px; }
+.hero-notice-content p { margin: 0; }
+.hero-notice-content strong { color: white; font-weight: 600; }
+.hero-notice-content a { color: #f4c361; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; transition: opacity 0.2s; }
+.hero-notice-content a:hover { opacity: 0.75; }
+.btn-hero-alt { display: inline-flex; align-items: center; font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none; padding: 7px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; margin-top: -4px; }
+.btn-hero-alt:hover { color: white; background: rgba(255,255,255,0.06); }
+.hero-cta { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .btn-hero {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
@@ -205,6 +214,9 @@ nav {
   transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
 }
 .btn-cta-center:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.cta-buttons { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.btn-cta-alt { display: inline-flex; align-items: center; font-size: 14px; color: var(--text-muted); text-decoration: none; padding: 8px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-cta-alt:hover { color: var(--navy); background: var(--cream); }
 .cta-note { margin-top: 16px; font-size: 15px; color: var(--text-light); }
 
 /* FOOTER */
@@ -277,11 +289,21 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <h1>Разберём вашу ситуацию –<br>вы уйдёте с <em>чётким планом</em></h1>
     <p class="hero-sub">Говорим про тело, сон, стресс – находим с чего начать</p>
     <div class="hero-promise">
-      <p>Не знаете с чего начать, всё пробовали и бросали, болит и непонятно почему? <strong>За 55 минут разберём ситуацию</strong> – сон, стресс, тело, желания. Уйдёте с конкретными первыми шагами.</p>
+      <p>Не знаете с чего начать, всё пробовали и бросали, болит и непонятно почему? <strong>За 55 минут разберём ситуацию</strong> — сон, стресс, тело, желания. Уйдёте с конкретными первыми шагами.</p>
+    </div>
+    <div class="hero-notice">
+      <div class="hero-notice-icon">🌿</div>
+      <div class="hero-notice-content">
+        <p><strong>Сейчас консультации не провожу — вернусь к ним в сентябре.</strong> Летом я тренирую детей в лагере.</p>
+        <p>Хотите первыми попасть на консультацию — оставьте запрос заранее. Очередь уже собирается. Отвечу всем по порядку, как только освобожусь.</p>
+        <p>Срочный вопрос? <a href="https://t.me/larin_lesha" target="_blank" rel="noopener">Напишите в личные сообщения</a>.</p>
+        <p>Пока ждёте — рекомендую пройти мои <a href="/courses/zdorovaya-spina">онлайн-курсы</a>. Многие вопросы решаются уже там.</p>
+      </div>
     </div>
     <div class="hero-cta">
-      <a href="https://t.me/larin_lesha" class="btn-hero" target="_blank">Записаться на консультацию →</a>
-      <div class="hero-safety">Приходите как есть – разберёмся с чего начать</div>
+      <a href="https://t.me/larin_lesha" class="btn-hero" target="_blank">Записаться в лист ожидания →</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-hero-alt" target="_blank">Нет Телеграма — написать в Max</a>
+      <div class="hero-safety">Приходите как есть — разберёмся с чего начать</div>
     </div>
     <div class="hero-params">
       <div class="param"><span class="param-val">55</span><span class="param-label">минут созвон</span></div>
@@ -430,15 +452,15 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="cta-bottom">
   <div class="cta-inner">
     <div class="section-label">Как записаться</div>
-    <h2 class="section-title">Три простых шага</h2>
-    <p class="section-desc">Никаких форм и лишних действий. Пишете – и через несколько часов всё договорено.</p>
+    <h2 class="section-title">Лист ожидания на сентябрь</h2>
+    <p class="section-desc">Летом я тренирую детей в детском лагере, новые консультации провожу с сентября. Сейчас открыт лист ожидания — отвечаю в порядке очереди, как только освобождаюсь.</p>
 
     <div class="cta-steps">
       <div class="cta-step">
         <div class="cta-step-num">1</div>
         <div class="cta-step-text">
-          <h4>Напишите в Telegram</h4>
-          <p>Напишите «Хочу консультацию» – отвечу и согласуем время. Обычно находим дату в течение нескольких дней.</p>
+          <h4>Напишите мне в Телеграме</h4>
+          <p>Напишите «Хочу консультацию» — добавлю вас в лист ожидания и согласуем время, как только освобожусь.</p>
         </div>
       </div>
       <div class="cta-step">
@@ -457,8 +479,11 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       </div>
     </div>
 
-    <a href="https://t.me/larin_lesha" class="btn-cta-center" target="_blank">Написать в Telegram →</a>
-    <p class="cta-note">Отвечаю в рабочие часы · обычно в тот же день</p>
+    <div class="cta-buttons">
+      <a href="https://t.me/larin_lesha" class="btn-cta-center" target="_blank">Записаться в лист ожидания →</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
+    </div>
+    <p class="cta-note">Отвечаю в порядке очереди · новые консультации с сентября</p>
   </div>
 </section>
 

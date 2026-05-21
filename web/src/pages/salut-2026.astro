@@ -1,0 +1,1295 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Здоровая спина в Салюте · Алексей Ларин" active="salyut">
+<style>
+
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243058;
+  --navy-light: #2e3d6b;
+  --orange: #e8652a;
+  --orange-warm: #f07530;
+  --orange-soft: #fbe6d4;
+  --cream: #f8f5ef;
+  --warm-white: #fdfaf5;
+  --gold: #f4c361;
+  --gold-soft: #fdf3dc;
+  --text: #1a1a1a;
+  --text-mid: #444;
+  --text-muted: #777;
+  --text-light: #aaa;
+  --border: #ece8e0;
+  --border-light: #f2ede5;
+  --green: #4ade80;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color: var(--text); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+
+/* HERO */
+.hero { min-height: 100vh; display: grid; grid-template-columns: 52% 48%; }
+.hero-left {
+  background: var(--navy); padding: 80px 72px 80px 80px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.hero-left::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(244,195,97,0.15) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-left::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+}
+.hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; position: relative; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+.hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4.2vw,62px); font-weight: 400; line-height: 1.08; color: white; margin-bottom: 14px; letter-spacing: -0.015em; position: relative; }
+.hero h1 em { font-style: italic; color: var(--gold); }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.5); margin-bottom: 32px; line-height: 1.5; position: relative; }
+.hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 22px 26px; margin-bottom: 36px; position: relative; }
+.hero-promise p { font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.82); }
+.hero-promise strong { color: white; font-weight: 600; }
+.hero-cta { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; position: relative; }
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--orange); color: white; text-decoration: none;
+  padding: 18px 36px; border-radius: 100px; font-size: 17px; font-weight: 600;
+  transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+}
+.btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.btn-hero-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; color: rgba(255,255,255,0.7); text-decoration: none;
+  padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.25);
+  transition: color 0.2s;
+}
+.btn-hero-secondary:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.hero-reply { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+.hero-reply::before { content: '✓'; color: var(--green); }
+.hero-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 52px; padding-top: 36px; border-top: 1px solid rgba(255,255,255,0.08); position: relative; }
+.meta-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: white; line-height: 1; display: block; margin-bottom: 8px; }
+.meta-label { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.45; }
+
+.hero-right { background: var(--cream); position: relative; overflow: hidden; }
+.hero-photo { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.04); transform-origin: center bottom; }
+.hero-badge { position: absolute; bottom: 28px; left: 28px; background: white; border-radius: 16px; padding: 14px 18px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 12px; max-width: 280px; z-index: 5; }
+.badge-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.badge-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+.badge-sub { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+.seasons-pill { position: absolute; top: 28px; right: 28px; background: var(--navy); color: white; padding: 10px 18px; border-radius: 100px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; z-index: 5; }
+.seasons-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+/* SECTIONS */
+.section-label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px,3.5vw,52px); font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 16px; letter-spacing: -0.01em; }
+.section-title em { font-style: italic; }
+.section-desc { font-size: 18px; color: var(--text-muted); line-height: 1.8; max-width: 640px; margin-bottom: 56px; }
+
+/* SEASONS */
+.seasons { padding: 90px 80px 80px; background: var(--cream); }
+.seasons-head { max-width: 720px; margin-bottom: 48px; }
+.seasons-head .section-desc { margin-bottom: 0; }
+.prog-head .section-desc,
+.safety-head .section-desc,
+.takeaways-head .section-desc,
+.reviews-head .section-desc,
+.media-head .section-desc { margin-bottom: 0; }
+.seasons-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.season-card { background: white; border-radius: 18px; padding: 28px 24px; border: 1px solid var(--border); transition: all 0.2s; position: relative; }
+.season-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.05); }
+.season-name { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 14px; line-height: 1.2; }
+.season-dates { font-size: 16px; color: var(--text-mid); line-height: 1.5; margin-bottom: 16px; }
+.season-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.season-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+/* FOR WHOM */
+.for-whom { padding: 100px 80px; background: white; }
+.fw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.fw-card { background: var(--cream); border-radius: 18px; padding: 32px 28px; border: 1px solid var(--border); transition: all 0.2s; }
+.fw-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.06); }
+.fw-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--navy); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.fw-icon svg { width: 22px; height: 22px; stroke: white; }
+.fw-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 14px; color: var(--navy); line-height: 1.3; }
+.fw-card p { font-size: 17px; color: var(--text-muted); line-height: 1.7; }
+
+/* PROGRAMME */
+.programme { padding: 100px 80px; background: var(--cream); position: relative; overflow: hidden; }
+.prog-head { max-width: 660px; margin-bottom: 56px; }
+.prog-lessons-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
+.prog-lesson { background: white; border-radius: 16px; padding: 26px 28px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; align-items: flex-start; transition: all 0.2s; }
+.prog-lesson:hover { border-color: var(--orange); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.05); }
+
+.prog-video-block { display: grid; grid-template-columns: 1fr 1.6fr; gap: 40px; align-items: center; background: white; border-radius: 22px; padding: 28px; border: 1px solid var(--border); margin-bottom: 56px; }
+.prog-video-text { padding: 8px 0; }
+.prog-video-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 12px; }
+.prog-video-h { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--navy); line-height: 1.15; margin: 0 0 14px; letter-spacing: -0.005em; }
+.prog-video-desc { font-size: 16px; color: var(--text-muted); line-height: 1.7; margin: 0; }
+.prog-video { border-radius: 14px; overflow: hidden; aspect-ratio: 16/9; background: var(--navy); position: relative; box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
+.prog-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prog-lesson-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 400; color: var(--orange); line-height: 1; flex-shrink: 0; }
+.prog-lesson-content h4 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.prog-lesson-content p { font-size: 15px; color: var(--text-muted); line-height: 1.65; }
+
+.prog-details { background: white; border-radius: 20px; padding: 36px 40px; border: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.prog-detail-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--orange-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 18px; }
+.prog-detail-num { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: var(--navy); line-height: 1; margin-bottom: 6px; }
+.prog-detail-label { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+/* BONUS */
+.bonus { padding: 100px 80px; background: linear-gradient(135deg, var(--gold-soft) 0%, var(--orange-soft) 100%); position: relative; overflow: hidden; }
+.bonus::before {
+  content: ''; position: absolute; top: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(244,195,97,0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+.bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; }
+.bonus-tag { display: inline-flex; align-items: center; gap: 10px; background: var(--navy); color: white; padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 22px; }
+.bonus h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(38px,3.5vw,54px); font-weight: 400; line-height: 1.1; color: var(--navy); margin-bottom: 20px; letter-spacing: -0.01em; }
+.bonus h2 em { font-style: italic; color: var(--orange); }
+.bonus-lead { font-size: 19px; color: var(--text-mid); line-height: 1.7; margin-bottom: 28px; }
+.bonus-lead strong { color: var(--navy); font-weight: 600; }
+.bonus-features { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+.bonus-feature { display: flex; align-items: flex-start; gap: 12px; font-size: 17px; color: var(--text-mid); line-height: 1.6; }
+.bonus-check { width: 22px; height: 22px; border-radius: 50%; background: var(--orange); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.bonus-value { background: white; border-radius: 16px; padding: 22px 26px; display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }
+.bonus-value-old { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 400; color: var(--text-light); text-decoration: line-through; }
+.bonus-value-new { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: var(--orange); }
+.bonus-value-label { font-size: 14px; color: var(--text-muted); line-height: 1.4; }
+.bonus-card {
+  background: var(--navy); border-radius: 24px; padding: 36px 36px 32px;
+  display: flex; flex-direction: column; gap: 28px;
+  box-shadow: 0 24px 60px rgba(26,39,68,0.25);
+  position: relative; overflow: hidden;
+}
+.bonus-card::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(244,195,97,0.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+.bonus-card-top { position: relative; }
+.bonus-card-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.bonus-card-title { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 400; color: white; line-height: 1.05; letter-spacing: -0.01em; }
+.bonus-card-title em { font-style: italic; color: var(--gold); }
+.bonus-card-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.5); margin-top: 6px; }
+.bonus-card-modules { display: flex; flex-direction: column; gap: 12px; padding: 22px 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
+.bcm-row { display: flex; align-items: center; gap: 16px; font-size: 15px; color: rgba(255,255,255,0.78); }
+.bcm-num { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--orange); font-weight: 500; min-width: 28px; }
+.bonus-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; }
+.bonus-card-stats > div { text-align: center; padding: 4px 0; }
+.bcs-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: white; line-height: 1; margin-bottom: 4px; }
+.bcs-lab { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ABOUT */
+.about { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1.2fr; gap: 72px; align-items: center; position: relative; overflow: hidden; }
+.about::before { content: '"'; position: absolute; top: -20px; left: 60px; font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+.about-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; }
+.about-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.about-content .section-label { color: #7ab0f0; }
+.about-content .section-title { color: white; margin-bottom: 24px; }
+.about-pull { background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange); padding: 18px 22px; border-radius: 0 12px 12px 0; margin: 24px 0; font-family: 'Cormorant Garamond', serif; font-size: 21px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.78); line-height: 1.5; }
+.about-text { font-size: 17px; color: rgba(255,255,255,0.7); line-height: 1.8; margin-bottom: 14px; }
+.about-creds { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
+.about-cred { display: flex; align-items: center; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.65); }
+.cred-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+/* SAFETY */
+.safety { padding: 100px 80px; background: white; }
+.safety-head { max-width: 620px; margin-bottom: 56px; }
+.safety-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.safety-card { background: var(--cream); border-radius: 20px; padding: 36px 32px; border: 1px solid var(--border); }
+.safety-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--orange); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.safety-icon svg { width: 24px; height: 24px; stroke: white; }
+.safety-card h3 { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 14px; line-height: 1.3; }
+.safety-card p { font-size: 17px; color: var(--text-muted); line-height: 1.7; }
+
+/* TAKEAWAYS — методички и сертификат */
+.takeaways { padding: 100px 80px; background: var(--cream); }
+.takeaways-head { max-width: 680px; margin-bottom: 56px; }
+.takeaways-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.takeaway-block { background: white; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); transition: all 0.25s; display: flex; flex-direction: column; }
+.takeaway-block:hover { transform: translateY(-3px); box-shadow: 0 20px 50px rgba(0,0,0,0.06); border-color: var(--orange); }
+.takeaway-images { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: var(--cream); }
+.takeaway-images img { width: 100%; aspect-ratio: 3/4; object-fit: contain; background: white; border-radius: 8px; padding: 8px; cursor: zoom-in; transition: transform 0.2s; }
+.takeaway-images img:hover { transform: scale(1.02); }
+.takeaway-body { padding: 28px 32px 32px; }
+.takeaway-tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.takeaway-title { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 12px; line-height: 1.3; }
+.takeaway-desc { font-size: 16px; color: var(--text-muted); line-height: 1.7; }
+
+/* MEDIA SECTION — видео + фото */
+.media-section { padding: 100px 80px; background: white; }
+.media-head { max-width: 720px; margin-bottom: 48px; }
+.media-head .section-desc { margin-bottom: 0; }
+.course-videos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 24px; margin-bottom: 48px; }
+.course-video-item { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.course-video { width: 100%; background: var(--navy); border-radius: 18px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.08); position: relative; }
+.course-video video { width: 100%; aspect-ratio: 16/9; display: block; object-fit: cover; }
+.course-video-cap {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 18px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-mid);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.course-video-cap svg { color: var(--orange); flex-shrink: 0; }
+
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.gallery-item { border-radius: 16px; overflow: hidden; position: relative; cursor: zoom-in; aspect-ratio: 4/3; background: var(--cream); }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
+.gallery-item:hover img { transform: scale(1.04); }
+
+/* REVIEWS — гибридный блок */
+.reviews { padding: 100px 80px; background: var(--cream); }
+.reviews-head { max-width: 680px; margin-bottom: 56px; }
+
+/* Цифры опроса */
+.survey-stats { background: white; border-radius: 24px; padding: 48px 56px; border: 1px solid var(--border); margin-bottom: 56px; box-shadow: 0 12px 40px rgba(0,0,0,0.04); }
+.stat-headline { text-align: center; padding-bottom: 40px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+.stat-headline-label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.stat-headline-num { font-family: 'Cormorant Garamond', serif; font-size: clamp(72px,7vw,120px); font-weight: 400; color: var(--navy); line-height: 1; letter-spacing: -0.02em; }
+.stat-headline-num span { color: var(--text-light); font-size: 0.5em; font-weight: 300; }
+.stat-headline-sub { font-size: 16px; color: var(--text-muted); margin-top: 14px; font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 20px; }
+.stat-breakdown { display: grid; grid-template-columns: 1fr auto 1fr; gap: 36px; align-items: center; }
+.stat-bd-item { text-align: center; }
+.stat-bd-num { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 500; color: var(--orange); line-height: 1; margin-bottom: 12px; }
+.stat-bd-num span { color: var(--text-light); font-size: 0.55em; font-weight: 300; }
+.stat-bd-label { font-size: 15px; color: var(--text-mid); line-height: 1.55; max-width: 320px; margin: 0 auto; }
+.stat-bd-divider { width: 1px; height: 64px; background: var(--border); }
+.stat-source { text-align: center; font-size: 13px; color: var(--text-light); margin-top: 28px; font-style: italic; letter-spacing: 0.02em; }
+
+/* Стена детских отзывов */
+.kids-reviews { margin-bottom: 60px; }
+.kids-reviews-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 400; color: var(--navy); margin-bottom: 28px; font-style: italic; }
+.kids-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.kid-quote { background: white; border-radius: 14px; padding: 24px 26px 22px; border: 1px solid var(--border); font-size: 17px; color: var(--text-mid); line-height: 1.55; position: relative; transition: all 0.2s; }
+.kid-quote:hover { border-color: var(--orange); transform: translateY(-2px); }
+.kid-quote::before { content: '"'; font-family: 'Cormorant Garamond', serif; font-size: 44px; color: var(--orange); position: absolute; top: 2px; left: 18px; line-height: 1; opacity: 0.35; }
+.kid-quote-text { padding-left: 18px; padding-top: 10px; }
+.kid-quote-author { padding-left: 18px; margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--orange); letter-spacing: 0.03em; }
+.kid-quote--featured { background: var(--navy); color: white; grid-column: span 3; padding: 30px 36px; }
+.kid-quote--featured::before { color: var(--gold); opacity: 0.5; font-size: 56px; }
+.kid-quote--featured .kid-quote-text { font-family: 'Cormorant Garamond', serif; font-size: 30px; line-height: 1.4; font-style: italic; color: white; padding-top: 14px; }
+.kid-quote--featured .kid-quote-author { color: var(--gold); font-style: normal; }
+
+/* Отзывы родителей */
+.parent-reviews { margin-bottom: 24px; }
+.parent-reviews-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 400; color: var(--navy); margin-bottom: 28px; font-style: italic; }
+.parent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.parent-card { background: white; border-radius: 18px; padding: 28px 32px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+.parent-stars { color: var(--orange); font-size: 14px; margin-bottom: 14px; letter-spacing: 2px; }
+.parent-text { font-size: 16px; color: var(--text); line-height: 1.75; margin-bottom: 18px; flex-grow: 1; }
+.parent-text em { font-style: italic; color: var(--navy); font-weight: 500; }
+.parent-meta { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+.parent-av { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+.parent-name { font-size: 15px; font-weight: 600; color: var(--navy); }
+.parent-role { font-size: 13px; color: var(--text-light); }
+
+/* Скрины переписок — лента после parent reviews, без отдельных заголовков */
+.screens-section { margin-top: 24px; }
+.screens-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: thin; }
+.screens-strip::-webkit-scrollbar { height: 8px; }
+.screens-strip::-webkit-scrollbar-track { background: var(--border); border-radius: 4px; }
+.screens-strip::-webkit-scrollbar-thumb { background: var(--text-light); border-radius: 4px; }
+.screen-card { flex: 0 0 auto; width: 280px; background: white; border-radius: 16px; padding: 14px; border: 1px solid var(--border); }
+.screen-card img { width: 100%; max-height: 260px; object-fit: contain; object-position: top; border-radius: 8px; display: block; }
+.screen-card-meta { font-size: 13px; color: var(--text-light); margin-top: 10px; text-align: center; letter-spacing: 0.03em; }
+
+/* GUARANTEE + FAQ */
+.guarantee-faq { padding: 100px 80px; background: white; }
+.guarantee-faq > .section-label,
+.guarantee-faq > .section-title,
+.guarantee-faq > .section-desc { max-width: 720px; }
+.gf-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; align-items: start; margin-top: 8px; }
+.guarantee-box { background: var(--cream); border: 1px solid var(--border); border-radius: 20px; padding: 36px 32px; position: sticky; top: 84px; }
+.guarantee-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--orange); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; }
+.guarantee-icon svg { width: 28px; height: 28px; }
+.guarantee-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; color: var(--navy); line-height: 1.2; margin: 0 0 14px; letter-spacing: -0.005em; }
+.guarantee-box p { font-size: 16px; color: var(--text-mid); line-height: 1.7; margin-bottom: 12px; }
+.guarantee-box p:last-child { margin-bottom: 0; }
+.guarantee-box .small { font-size: 14px; color: var(--text-muted); font-style: italic; }
+.faq-list { display: flex; flex-direction: column; gap: 12px; }
+.faq-item { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
+.faq-item:hover { border-color: var(--text-light); }
+.faq-item[open] { border-color: var(--orange); background: var(--cream); }
+.faq-item summary { padding: 22px 26px; font-size: 17px; font-weight: 600; color: var(--navy); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 20px; transition: color 0.2s; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; font-size: 26px; font-weight: 300; color: var(--text-light); flex-shrink: 0; transition: transform 0.3s, color 0.2s; }
+.faq-item[open] summary::after { content: '–'; color: var(--orange); }
+.faq-item summary:hover { color: var(--orange); }
+.faq-content { padding: 0 26px 26px; font-size: 16px; color: var(--text-mid); line-height: 1.8; }
+.faq-content p { margin-bottom: 10px; }
+.faq-content p:last-child { margin-bottom: 0; }
+
+/* TG CHANNEL STRIP */
+.tg-strip { background: var(--cream); padding: 56px 80px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.tg-strip-wrap { max-width: 820px; margin: 0 auto; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+.tg-strip-icon { width: 64px; height: 64px; border-radius: 18px; background: #2aabee; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; box-shadow: 0 8px 24px rgba(42,171,238,0.25); }
+.tg-strip-icon svg { width: 32px; height: 32px; }
+.tg-strip-content { flex: 1; min-width: 280px; }
+.tg-strip-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); line-height: 1.25; margin-bottom: 6px; }
+.tg-strip-text { font-size: 15px; color: var(--text-muted); line-height: 1.6; }
+.tg-strip-link { display: inline-flex; align-items: center; gap: 8px; background: #2aabee; color: white; text-decoration: none; padding: 14px 24px; border-radius: 100px; font-size: 15px; font-weight: 600; transition: background 0.2s, transform 0.2s; flex-shrink: 0; }
+.tg-strip-link:hover { background: #229ed9; transform: translateY(-1px); }
+
+/* PRICE & CTA */
+.cta-section { padding: 100px 80px; background: var(--navy); }
+.cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.cta-left .section-label { color: #7ab0f0; }
+.cta-left .section-title { color: white; }
+.cta-left .section-desc { color: rgba(255,255,255,0.55); max-width: none; margin-bottom: 24px; }
+.cta-howto { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 24px; }
+.cta-howto-title { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.cta-howto-list { display: flex; flex-direction: column; gap: 10px; }
+.cta-howto-item { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.5; }
+.cta-howto-num { width: 22px; height: 22px; border-radius: 50%; background: var(--orange); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+.price-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 40px; }
+.price-main { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 400; color: white; line-height: 1; margin-bottom: 4px; }
+.price-per { font-size: 15px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+.price-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.price-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: rgba(255,255,255,0.72); line-height: 1.5; }
+.pf-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+.pf-highlight { color: var(--gold); font-weight: 600; }
+.price-discount { background: rgba(244,195,97,0.1); border: 1px solid rgba(244,195,97,0.2); border-radius: 12px; padding: 14px 18px; font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 24px; }
+.price-discount strong { color: var(--gold); }
+.btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; padding: 17px 32px; border-radius: 100px; width: 100%; font-size: 15px; font-weight: 600; transition: all 0.25s; box-shadow: 0 8px 28px rgba(232,101,42,0.3); margin-bottom: 10px; }
+.btn-cta:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.btn-cta-alt { display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.65); text-decoration: none; padding: 12px; font-size: 14px; transition: color 0.2s; border-bottom: 1px dashed rgba(255,255,255,0.18); }
+.btn-cta-alt:hover { color: white; }
+.cta-reply { text-align: center; margin-top: 14px; font-size: 13px; color: rgba(255,255,255,0.4); }
+
+/* FOOTER */
+footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 14px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: white; }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+/* VIDEO PLAY OVERLAY */
+.video-wrap { position: relative; }
+.video-play-btn {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 84px; height: 84px; border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  border: none; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  transition: transform 0.2s, opacity 0.2s, background 0.2s;
+  z-index: 3;
+}
+.video-play-btn::before {
+  content: '';
+  width: 0; height: 0;
+  border-left: 24px solid var(--navy);
+  border-top: 16px solid transparent;
+  border-bottom: 16px solid transparent;
+  margin-left: 6px;
+}
+.video-play-btn:hover { background: white; transform: translate(-50%, -50%) scale(1.06); }
+.video-wrap.is-playing .video-play-btn { opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.85); }
+@media (max-width: 700px) { .video-play-btn { width: 64px; height: 64px; } .video-play-btn::before { border-left-width: 18px; border-top-width: 12px; border-bottom-width: 12px; margin-left: 4px; } }
+
+/* LIGHTBOX */
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; cursor: zoom-out; align-items: center; justify-content: center; padding: 40px; }
+.lightbox.active { display: flex; }
+.lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; border-radius: 8px; cursor: default; }
+.lightbox-close { position: absolute; top: 24px; right: 32px; width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 28px; cursor: pointer; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); transition: all 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; }
+.lightbox-close:hover { background: rgba(255,255,255,0.2); }
+.lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: white; font-size: 40px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0 0 6px; font-weight: 300; }
+.lightbox-nav:hover { background: rgba(255,255,255,0.22); transform: translateY(-50%) scale(1.05); }
+.lightbox-prev { left: 24px; }
+.lightbox-next { right: 24px; padding: 0 0 6px 4px; }
+.lightbox-counter { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-size: 14px; letter-spacing: 0.06em; font-weight: 500; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 7px 16px; border-radius: 100px; }
+@media (max-width: 700px) { .lightbox-nav { width: 44px; height: 44px; font-size: 30px; } .lightbox-prev { left: 12px; } .lightbox-next { right: 12px; } }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+.hero-eyebrow{animation:fadeUp 0.6s 0.1s both;}
+.hero h1{animation:fadeUp 0.6s 0.2s both;}
+.hero-sub{animation:fadeUp 0.6s 0.3s both;}
+.hero-promise{animation:fadeUp 0.6s 0.4s both;}
+.hero-cta{animation:fadeUp 0.6s 0.5s both;}
+.hero-meta{animation:fadeUp 0.6s 0.6s both;}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .bonus-grid, .about, .cta-grid { grid-template-columns: 1fr; gap: 48px; }
+  .prog-lessons-row { grid-template-columns: 1fr; }
+  .prog-video-block { grid-template-columns: 1fr; gap: 24px; }
+  .prog-details { grid-template-columns: repeat(2, 1fr); }
+  .gf-grid { grid-template-columns: 1fr; gap: 32px; }
+  .guarantee-box { position: static; }
+  .seasons-grid { grid-template-columns: repeat(2, 1fr); }
+  .fw-grid, .safety-grid { grid-template-columns: repeat(2, 1fr); }
+  .takeaways-grid { grid-template-columns: 1fr; }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-breakdown { grid-template-columns: 1fr; gap: 24px; }
+  .stat-bd-divider { width: 100%; height: 1px; }
+  .kids-grid { grid-template-columns: repeat(2, 1fr); }
+  .kid-quote--featured { grid-column: span 2; }
+  .parent-grid { grid-template-columns: 1fr; }
+  .course-videos-grid { grid-template-columns: 1fr; }
+}
+@media(max-width:760px){
+  nav { padding: 0 20px; }
+  
+  .hero { grid-template-columns: 1fr; }
+  .hero-left { padding: 56px 24px; }
+  .hero-right { min-height: 400px; }
+  .hero-meta { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .seasons, .for-whom, .programme, .bonus, .about, .safety, .takeaways, .media-section, .reviews, .guarantee-faq, .cta-section, .tg-strip { padding: 60px 24px; }
+  .tg-strip-wrap { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .kid-quote--featured { grid-column: span 1; }
+  .kid-quote--featured .kid-quote-text { font-size: 22px; }
+  .seasons-grid, .fw-grid, .safety-grid, .takeaways-grid { grid-template-columns: 1fr; }
+  .prog-details { grid-template-columns: 1fr 1fr; padding: 28px; gap: 20px; }
+  .gallery-grid { grid-template-columns: 1fr; }
+  .survey-stats { padding: 32px 24px; }
+  .kids-grid { grid-template-columns: 1fr; }
+  .kid-quote--featured { grid-column: span 1; }
+  footer { flex-direction: column; gap: 18px; padding: 32px 24px; text-align: center; }
+  .price-box { padding: 28px; }
+  .price-main { font-size: 44px; }
+}
+
+/* Переопределяем глобальный стиль ссылок из Base.astro */
+a { text-decoration: none; }
+a:hover { text-decoration: none; }
+</style>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-dot"></div>
+      <span class="eyebrow-text">Курс в лагере «Салют» · лето 2026 · 4 смены</span>
+    </div>
+    <h1>Здоровая спина<br>для <em>вашего ребёнка</em></h1>
+    <p class="hero-sub">5 занятий за смену. Без стресса, с удовольствием.</p>
+    <div class="hero-promise">
+      <p>Укрепим спину, научим правильно поднимать тяжести, привьём интерес к движению — а ещё подарим <strong>онлайн-курс по здоровой спине для всей семьи</strong>.</p>
+    </div>
+    <div class="hero-cta">
+      <a href="https://t.me/lesha_larin" class="btn-hero" target="_blank">Записать ребёнка в Телеграме →</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-hero-secondary" target="_blank">Нет Телеграма — написать в Max →</a>
+      <div class="hero-reply">Обычно отвечаю в течение 1–2 часов</div>
+    </div>
+    <div class="hero-meta">
+      <div><span class="meta-num">5</span><span class="meta-label">занятий<br>по 55 минут</span></div>
+      <div><span class="meta-num">6–16</span><span class="meta-label">возраст<br>участников</span></div>
+      <div><span class="meta-num">до 12</span><span class="meta-label">детей<br>в группе</span></div>
+      <div><span class="meta-num">10/10</span><span class="meta-label">средняя оценка<br>от детей и родителей</span></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <img class="hero-photo" src="/salut-2026/img/trainer-stretch.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    <div class="seasons-pill"><div class="seasons-dot"></div>Открыта запись на 4 смены</div>
+    <div class="hero-badge">
+      <div class="badge-icon">🎁</div>
+      <div>
+        <div class="badge-title">Бонус каждой семье</div>
+        <div class="badge-sub">Онлайн-курс (3 990 ₽) — в подарок на 3-х человек</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEASONS -->
+<section class="seasons" id="seasons">
+  <div class="seasons-head">
+    <div class="section-label">Смены лагеря</div>
+    <h2 class="section-title">Лето <em>2026</em></h2>
+    <p class="section-desc">Курс проходит в каждую из 4 смен. Выбирайте удобную и сообщайте при записи.</p>
+  </div>
+  <div class="seasons-grid">
+    <div class="season-card">
+      <div class="season-name">Смена 1</div>
+      <div class="season-dates">1 июня — 20 июня</div>
+      <div class="season-status">Идёт запись</div>
+    </div>
+    <div class="season-card">
+      <div class="season-name">Смена 2</div>
+      <div class="season-dates">23 июня — 12 июля</div>
+      <div class="season-status">Идёт запись</div>
+    </div>
+    <div class="season-card">
+      <div class="season-name">Смена 3</div>
+      <div class="season-dates">15 июля — 3 августа</div>
+      <div class="season-status">Идёт запись</div>
+    </div>
+    <div class="season-card">
+      <div class="season-name">Смена 4</div>
+      <div class="season-dates">6 августа — 25 августа</div>
+      <div class="season-status">Идёт запись</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHOM -->
+<section class="for-whom">
+  <div class="section-label">Для кого этот курс</div>
+  <h2 class="section-title">Подойдёт, <em>если...</em></h2>
+  <p class="section-desc">Курс уже четвёртое лето проходит в «Салюте». Дети возвращаются на следующее лето, родители записывают младших.</p>
+  <div class="fw-grid">
+    <div class="fw-card">
+      <div class="fw-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 9l7-7 7 7M5 15l7 7 7-7"/></svg>
+      </div>
+      <h3>Есть показания к ЛФК</h3>
+      <p>Нарушение осанки, сколиоз, плоскостопие, гипермобильность — врач или родитель видят, что спине ребёнка нужно внимание.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/><path d="M12 3v12"/></svg>
+      </div>
+      <h3>Ребёнок много сидит</h3>
+      <p>Школа, уроки, гаджеты — спина устаёт, плечи сводятся вперёд. Хочется компенсировать это движением и базовыми привычками.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <h3>Хочется укрепить осанку</h3>
+      <p>Без жалоб и диагнозов — просто чтобы ребёнок рос с крепкой спиной и понимал, как заботиться о теле с детства.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <h3>Нужен позитивный опыт с физкультурой</h3>
+      <p>В школе физра бывает стрессом. Здесь — мягкая атмосфера, мини-группа, никто никого не сравнивает и не ставит оценок.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      </div>
+      <h3>Хочется научить ребёнка слушать тело</h3>
+      <p>Базовая грамотность движения: как поднимать тяжести, как сидеть, как чувствовать перенапряжение. Это останется на всю жизнь.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <h3>Ребёнок уже был на курсе</h3>
+      <p>Многие возвращаются из лета в лето. Для повторников действует скидка 20% — программу углубляю под уровень.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAMME -->
+<section class="programme" id="programme">
+  <div class="prog-head">
+    <div class="section-label">Программа</div>
+    <h2 class="section-title">5 занятий —<br>каждое <em>по 55 минут</em></h2>
+    <p class="section-desc">В каждом занятии — три части: коротко даём теорию, основное время — практика, в конце спокойно разбираем главное.</p>
+  </div>
+
+  <div class="prog-lessons-row">
+    <div class="prog-lesson">
+      <div class="prog-lesson-num">15′</div>
+      <div class="prog-lesson-content">
+        <h4>Теория</h4>
+        <p>О строении позвоночника, осанке, причинах нарушений. На примерах — как поднимать тяжести, как сидеть за партой.</p>
+      </div>
+    </div>
+    <div class="prog-lesson">
+      <div class="prog-lesson-num">40′</div>
+      <div class="prog-lesson-content">
+        <h4>Практика</h4>
+        <p>Базовые упражнения для укрепления мышц спины и пресса. Мягкие скрутки. Учимся расслабляться.</p>
+      </div>
+    </div>
+    <div class="prog-lesson">
+      <div class="prog-lesson-num">★</div>
+      <div class="prog-lesson-content">
+        <h4>Экзамен и сертификат</h4>
+        <p>В конце курса — без стресса, с фотофиксацией правильного выполнения упражнений. Ребёнок забирает сертификат и методички с собой.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="prog-video-block">
+    <div class="prog-video-text">
+      <div class="prog-video-eyebrow">Видео с курса</div>
+      <h3 class="prog-video-h">Пример проведения занятия</h3>
+      <p class="prog-video-desc">26-секундная нарезка — как одно занятие выглядит изнутри: от теоретической части до практики.</p>
+    </div>
+    <div class="prog-video video-wrap">
+      <video class="js-vid" controls preload="metadata" poster="/salut-2026/img/video-poster-process.jpg">
+        <source src="/salut-2026/video/video-training-process.mp4" type="video/mp4">
+      </video>
+      <button class="video-play-btn" aria-label="Воспроизвести"></button>
+    </div>
+  </div>
+
+  <div class="prog-details">
+    <div>
+      <div class="prog-detail-icon">⏰</div>
+      <div class="prog-detail-num">15:00</div>
+      <div class="prog-detail-label">В тихий час — не отнимает время от других активностей</div>
+    </div>
+    <div>
+      <div class="prog-detail-icon">👥</div>
+      <div class="prog-detail-num">до 12</div>
+      <div class="prog-detail-label">Камерная группа с индивидуальной обратной связью</div>
+    </div>
+    <div>
+      <div class="prog-detail-icon">📋</div>
+      <div class="prog-detail-num">5</div>
+      <div class="prog-detail-label">Занятий за смену — оптимальная длительность для усвоения</div>
+    </div>
+    <div>
+      <div class="prog-detail-icon">🎓</div>
+      <div class="prog-detail-num">Сертификат</div>
+      <div class="prog-detail-label">С фото ребёнка, выполняющего упражнение правильно</div>
+    </div>
+  </div>
+</section>
+
+<!-- BONUS -->
+<section class="bonus">
+  <div class="bonus-grid">
+    <div>
+      <div class="bonus-tag"><span>🎁</span>Подарок каждой семье</div>
+      <h2>Онлайн-курс «Здоровая спина» —<br><em>в подарок</em></h2>
+      <p class="bonus-lead">После лагеря вся семья получает доступ к моему авторскому онлайн-курсу «Здоровая спина» — <strong>чтобы ребёнок продолжал заниматься дома, а родители занимались вместе с ним</strong>.</p>
+      <div class="bonus-features">
+        <div class="bonus-feature">
+          <div class="bonus-check">✓</div>
+          <div><strong>3 недели программы</strong> по системе мягкого укрепления спины — видео-уроки и PDF-материалы</div>
+        </div>
+        <div class="bonus-feature">
+          <div class="bonus-check">✓</div>
+          <div><strong>Доступ для 3 человек</strong> — ребёнку, родителю и кому-то ещё в семье (бабушка, дедушка, второй родитель)</div>
+        </div>
+        <div class="bonus-feature">
+          <div class="bonus-check">✓</div>
+          <div><strong>Доступ на 1 год</strong> — можно вернуться к курсу в любой момент в течение года</div>
+        </div>
+        <div class="bonus-feature">
+          <div class="bonus-check">✓</div>
+          <div><strong>Активация через анкету</strong> на сайте после возвращения из лагеря — пришлю ссылку</div>
+        </div>
+      </div>
+      <div class="bonus-value">
+        <div><div class="bonus-value-old">3 990 ₽</div></div>
+        <div><div class="bonus-value-new">0 ₽</div></div>
+        <div class="bonus-value-label">Включено в курс<br>для каждой семьи</div>
+      </div>
+    </div>
+    <div class="bonus-card">
+      <div class="bonus-card-top">
+        <div class="bonus-card-tag">Онлайн-курс · доступ на 1 год</div>
+        <div class="bonus-card-title">Здоровая <em>спина</em></div>
+        <div class="bonus-card-sub">для всей семьи</div>
+      </div>
+      <div class="bonus-card-modules">
+        <div class="bcm-row"><span class="bcm-num">01</span><span>Подвижность и расслабление</span></div>
+        <div class="bcm-row"><span class="bcm-num">02</span><span>Укрепление мышечного корсета</span></div>
+        <div class="bcm-row"><span class="bcm-num">03</span><span>Глубокие мышцы и баланс</span></div>
+        <div class="bcm-row"><span class="bcm-num">04</span><span>Силовая работа</span></div>
+        <div class="bcm-row"><span class="bcm-num">05</span><span>Интеграция в жизнь</span></div>
+      </div>
+      <div class="bonus-card-stats">
+        <div><div class="bcs-num">3</div><div class="bcs-lab">недели</div></div>
+        <div><div class="bcs-num">11</div><div class="bcs-lab">уроков</div></div>
+        <div><div class="bcs-num">3</div><div class="bcs-lab">человека</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-photo">
+    <img src="/salut-2026/img/class-circle-quiet.jpg" alt="Алексей Ларин — тренер по здоровой спине">
+  </div>
+  <div class="about-content">
+    <div class="section-label">Кто ведёт</div>
+    <h2 class="section-title">Алексей Ларин — <em>сам прошёл</em> через восстановление</h2>
+    <div class="about-pull">В 9 лет — перелом трёх позвонков. Месяц в больнице, полгода нельзя было сидеть, год в медицинском корсете.</div>
+    <p class="about-text">Именно через движение я восстановился. И именно поэтому понимаю, как осторожно нужно подходить к детской спине — особенно если есть особенности.</p>
+    <p class="about-text">С детьми работаю с 2017 года. Занятия — без давления, без сравнений, в формате постепенного освоения. Дети возвращаются на курс из года в год — это для меня главный показатель.</p>
+    <div class="about-creds">
+      <div class="about-cred"><div class="cred-icon">🎓</div>Магистр с отличием — РУС «ГЦОЛИФК» (ведущий спортивный вуз России)</div>
+      <div class="about-cred"><div class="cred-icon">📅</div>8+ лет тренерской практики · более 8 000 человек через проекты</div>
+      <div class="about-cred"><div class="cred-icon">❤️</div>Опыт реабилитации в фондах «Подари жизнь» и «Хрупкие люди»</div>
+      <div class="about-cred"><div class="cred-icon">🏕</div>4-й год веду курс по здоровой спине в лагере «Салют»</div>
+    </div>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section class="safety">
+  <div class="safety-head">
+    <div class="section-label">Безопасно</div>
+    <h2 class="section-title">Почему можно <em>не переживать</em></h2>
+    <p class="section-desc">Спина ребёнка — деликатная зона, особенно если есть особенности. Расскажу, как именно построена работа.</p>
+  </div>
+  <div class="safety-grid">
+    <div class="safety-card">
+      <div class="safety-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>50+ проведённых курсов</h3>
+      <p>Комплексы выверены годами работы. Все упражнения — мягкие, посильные. Никаких рискованных нагрузок на детский позвоночник.</p>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </div>
+      <h3>Опыт реабилитации</h3>
+      <p>Эти же комплексы применял для восстановления детей и взрослых в фондах «Подари жизнь» и «Хрупкие люди» — где требования к безопасности максимальные.</p>
+    </div>
+    <div class="safety-card">
+      <div class="safety-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </div>
+      <h3>Индивидуальная обратная связь</h3>
+      <p>Группа до 12 человек — каждого ребёнка я вижу. Если у ребёнка есть особенности — расскажите при записи, учту в работе.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TAKEAWAYS — что ребёнок забирает с собой -->
+<section class="takeaways">
+  <div class="takeaways-head">
+    <div class="section-label">После курса</div>
+    <h2 class="section-title">Что ребёнок<br><em>забирает с собой</em></h2>
+    <p class="section-desc">Курс не растворяется после лагеря. Ребёнок уезжает с осязаемыми материалами — чтобы продолжать дома.</p>
+  </div>
+  <div class="takeaways-grid">
+    <div class="takeaway-block">
+      <div class="takeaway-images">
+        <img src="/salut-2026/img/certificate-front.jpg" alt="Сертификат — лицевая сторона" onclick="openTakeaway(0)">
+        <img src="/salut-2026/img/certificate-back.jpg" alt="Сертификат — обратная сторона" onclick="openTakeaway(1)">
+      </div>
+      <div class="takeaway-body">
+        <div class="takeaway-tag">🎓 Сертификат · с двух сторон</div>
+        <div class="takeaway-title">Именной диплом с памяткой</div>
+        <div class="takeaway-desc">Спереди — имя ребёнка и общее фото группы: подтверждение, что программа пройдена до конца. На обороте — комплекс упражнений с фото самого ребёнка в правильной позе. Шпаргалка для дома.</div>
+      </div>
+    </div>
+    <div class="takeaway-block">
+      <div class="takeaway-images">
+        <img src="/salut-2026/img/methodichka-theory.jpg" alt="Методичка — теория курса" onclick="openTakeaway(2)">
+        <img src="/salut-2026/img/methodichka-exercises.jpg" alt="Методичка — строение позвоночника" onclick="openTakeaway(3)">
+      </div>
+      <div class="takeaway-body">
+        <div class="takeaway-tag">📚 Две методички</div>
+        <div class="takeaway-title">Теория курса и анатомия позвоночника</div>
+        <div class="takeaway-desc">Первая методичка — теория со всех 5 занятий: как устроен позвоночник, как сидеть за партой, как поднимать тяжести. Вторая — наглядная анатомия: что такое сколиоз, грыжа, протрузия, на медицинских иллюстрациях. Простыми словами и с картинками.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEDIA: VIDEO + PHOTO -->
+<section class="media-section">
+  <div class="media-head">
+    <div class="section-label">Видео и фото с курса</div>
+    <h2 class="section-title">Как это <em>выглядит</em></h2>
+    <p class="section-desc">Реальные кадры с курсов прошлых лет в «Салюте» — без постановки, как есть. Сначала пара коротких видео с занятий, затем фотогалерея — нажмите на любое фото, чтобы открыть в полном размере.</p>
+  </div>
+  <div class="course-videos-grid">
+    <div class="course-video-item">
+      <div class="course-video video-wrap">
+        <video class="js-vid" controls preload="metadata" poster="/salut-2026/img/video-poster-main.jpg">
+          <source src="/salut-2026/video/video-course-overview.mp4" type="video/mp4">
+        </video>
+        <button class="video-play-btn" aria-label="Воспроизвести"></button>
+      </div>
+      <div class="course-video-cap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Обзор курса · 2 минуты
+      </div>
+    </div>
+    <div class="course-video-item">
+      <div class="course-video video-wrap">
+        <video class="js-vid" controls preload="metadata" poster="/salut-2026/img/video-poster-timelapse.jpg">
+          <source src="/salut-2026/video/video-timelapse.mp4" type="video/mp4">
+        </video>
+        <button class="video-play-btn" aria-label="Воспроизвести"></button>
+      </div>
+      <div class="course-video-cap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Таймлапс занятия
+      </div>
+    </div>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item" onclick="openGallery(0)">
+      <img src="/salut-2026/img/class-circle-overview.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(1)">
+      <img src="/salut-2026/img/group-relaxed-after.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(2)">
+      <img src="/salut-2026/img/exam-flexing.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(3)">
+      <img src="/salut-2026/img/group-mixed-selfie.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(4)">
+      <img src="/salut-2026/img/exam-certificates-1.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(5)">
+      <img src="/salut-2026/img/group-kids-selfie.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(6)">
+      <img src="/salut-2026/img/group-teens-selfie.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
+    </div>
+    <div class="gallery-item" onclick="openGallery(7)">
+      <img src="/salut-2026/img/trainer-stretch.jpg" alt="Алексей Ларин — тренер">
+    </div>
+    <div class="gallery-item" onclick="openGallery(8)">
+      <img src="/salut-2026/img/trainer-plank.jpg" alt="Алексей Ларин — тренер">
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews" id="reviews">
+  <div class="reviews-head">
+    <div class="section-label">После курса</div>
+    <h2 class="section-title">Что говорят <em>дети и родители</em></h2>
+    <p class="section-desc">Отзывы со всех сторон: анонимный опрос 28 семей, слова самих детей, тёплые сообщения родителей.</p>
+  </div>
+
+  <!-- Цифры опроса -->
+  <div class="survey-stats">
+    <div class="stat-headline">
+      <div class="stat-headline-label">Средняя оценка курса</div>
+      <div class="stat-headline-num">9,7 <span>/&nbsp;10</span></div>
+      <div class="stat-headline-sub">от детей и родителей вместе взятых</div>
+    </div>
+    <div class="stat-breakdown">
+      <div class="stat-bd-item">
+        <div class="stat-bd-num">26<span>/&nbsp;28</span></div>
+        <div class="stat-bd-label">детей поставили курсу высший балл — 10 из 10</div>
+      </div>
+      <div class="stat-bd-divider"></div>
+      <div class="stat-bd-item">
+        <div class="stat-bd-num">22<span>/&nbsp;28</span></div>
+        <div class="stat-bd-label">родителей поставили курсу высший балл — 10 из 10</div>
+      </div>
+    </div>
+    <div class="stat-source">Анонимный опрос 28 семей · август 2025</div>
+  </div>
+
+  <!-- Стена детских отзывов -->
+  <div class="kids-reviews">
+    <div class="kids-reviews-title">Сами дети — после курса</div>
+    <div class="kids-grid">
+      <div class="kid-quote--featured kid-quote">
+        <div class="kid-quote-text">Каждый раз хотелось приходить снова и снова. В конце курса был виден явный результат</div>
+        <div class="kid-quote-author">Никита, 14 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Всё понравилось, особенно пуфики</div>
+        <div class="kid-quote-author">Маша, 8 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Если будет прямая спина — будет счастливая жизнь</div>
+        <div class="kid-quote-author">Тимофей, 10 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Весёлые тренировки без надоедания</div>
+        <div class="kid-quote-author">Лиза, 12 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Хочется, чтобы занятия были на всех сменах</div>
+        <div class="kid-quote-author">Артём, 11 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Когда после них чувствуешь умиротворённость</div>
+        <div class="kid-quote-author">Соня, 13 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Всё понравилось! Подача, реализация, мотивация. Благодаря этим курсам стал осознанно заниматься своим телом</div>
+        <div class="kid-quote-author">Алиса, 15 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Спокойно, доброжелательно, доходчиво</div>
+        <div class="kid-quote-author">Кирилл, 12 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Не было растяжки, не было больно — всё размеренно и понятно</div>
+        <div class="kid-quote-author">Полина, 9 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Приятно было сделать себя здоровее. Очень рад, что с нами занимался именно Лёша</div>
+        <div class="kid-quote-author">Денис, 13 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Теперь я буду делать так зарядку</div>
+        <div class="kid-quote-author">Ваня, 7 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Хороший тренер, несложные упражнения, приятная обстановка</div>
+        <div class="kid-quote-author">Максим, 14 лет</div>
+      </div>
+      <div class="kid-quote">
+        <div class="kid-quote-text">Появилось желание заниматься своей осанкой и узнать, какими видами спорта лучше заниматься</div>
+        <div class="kid-quote-author">Аня, 13 лет</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Отзывы родителей -->
+  <div class="parent-reviews">
+    <div class="parent-reviews-title">Родители — после курса</div>
+    <div class="parent-grid">
+      <div class="parent-card">
+        <div class="parent-stars">★★★★★</div>
+        <p class="parent-text">Хочу сказать вам огромное спасибо за Дениса. Результат заметный, он ровнее стал держать спинку, очень понравились ваши занятия, у него появился стимул. <em>Огромная к вам симпатия и доверие, и я знаю, как это важно.</em> Очень надеюсь, что вы будете в лагере и на следующую смену — мы с огромным желанием будем продолжать. Будем рекомендовать всем нашим друзьям, которые едут в лагерь.</p>
+        <div class="parent-meta">
+          <div class="parent-av">М</div>
+          <div>
+            <div class="parent-name">Мама Дениса</div>
+            <div class="parent-role">Лагерь «Салют»</div>
+          </div>
+        </div>
+      </div>
+      <div class="parent-card">
+        <div class="parent-stars">★★★★★</div>
+        <p class="parent-text">Благодарю за такое внимательное и бережное отношение к нашим детям. Занятия оказались <em>одними из самых полезных и интересных для ребёнка за всю смену</em>. Сначала он сопротивлялся, но уже после первого занятия втянулся. Отдельная благодарность за то, что вы были готовы поговорить с ребёнком перед началом и помогли его замотивировать.</p>
+        <div class="parent-meta">
+          <div class="parent-av">М</div>
+          <div>
+            <div class="parent-name">Мама Софии</div>
+            <div class="parent-role">Лагерь «Салют»</div>
+          </div>
+        </div>
+      </div>
+      <div class="parent-card">
+        <div class="parent-stars">★★★★★</div>
+        <p class="parent-text">От меня отдельная благодарность. Олег после ваших занятий приехал из лагеря с энтузиазмом <em>продолжать заниматься самостоятельно</em> — при том, что сначала не хотел ничего. Вы большой молодец!</p>
+        <div class="parent-meta">
+          <div class="parent-av">М</div>
+          <div>
+            <div class="parent-name">Мама Олега</div>
+            <div class="parent-role">Лагерь «Салют»</div>
+          </div>
+        </div>
+      </div>
+      <div class="parent-card">
+        <div class="parent-stars">★★★★★</div>
+        <p class="parent-text">Алексей, спасибо большое за занятия! Максим <em>реально стал меньше сутулиться, следит за осанкой, я вижу результат!</em> Ему тоже понравились занятия — СПАСИБО!</p>
+        <div class="parent-meta">
+          <div class="parent-av">М</div>
+          <div>
+            <div class="parent-name">Мама Максима</div>
+            <div class="parent-role">Лагерь «Салют»</div>
+          </div>
+        </div>
+      </div>
+      <div class="parent-card">
+        <div class="parent-stars">★★★★★</div>
+        <p class="parent-text">Прекрасная программа для формирования осанки. Прививает ребёнку интерес заниматься дальше самостоятельно, а также <em>показывать упражнения друзьям и родственникам</em>. Очень признательны и благодарны за столь полезные занятия.</p>
+        <div class="parent-meta">
+          <div class="parent-av">П</div>
+          <div>
+            <div class="parent-name">Папа Артёма</div>
+            <div class="parent-role">Лагерь «Салют»</div>
+          </div>
+        </div>
+      </div>
+      <div class="parent-card">
+        <div class="parent-stars">★★★★★</div>
+        <p class="parent-text">Спасибо за этот курс! <em>Даже не ожидала, что представится такая возможность приучить ребёнка заниматься и следить за собой.</em> Курс оказался эффективным, у ребёнка улучшилась осанка. Выданные памятки помогают делать упражнения дома.</p>
+        <div class="parent-meta">
+          <div class="parent-av">М</div>
+          <div>
+            <div class="parent-name">Мама Лизы</div>
+            <div class="parent-role">Лагерь «Салют»</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Скрины переписок -->
+  <div class="screens-section">
+    <div class="screens-strip">
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-koshka.jpg" alt="Отзыв 1">
+        <div class="screen-card-meta">«Любимое упражнение — кошка»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-all-shifts.jpg" alt="Отзыв 2">
+        <div class="screen-card-meta">«Все было отлично!»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-radost.jpg" alt="Отзыв 3">
+        <div class="screen-card-meta">«Вы большой молодец!»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-alisa.jpg" alt="Отзыв 4">
+        <div class="screen-card-meta">«Подача, реализация, мотивация»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-all-shifts.jpg" alt="Отзыв 5">
+        <div class="screen-card-meta">«Хочется, чтобы занятия были на всех сменах»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-sutulit.jpg" alt="Отзыв 6">
+        <div class="screen-card-meta">«Я вижу результат!»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-oleg.jpg" alt="Отзыв 7">
+        <div class="screen-card-meta">«Очень понравился подход преподавателя»</div>
+      </div>
+      <div class="screen-card">
+        <img src="/salut-2026/screenshots/chat-clean-osoznano.jpg" alt="Отзыв 8">
+        <div class="screen-card-meta">«Поставить тренажёры, второго тренера»</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-grid">
+    <div class="cta-left">
+      <div class="section-label">Запись на курс</div>
+      <h2 class="section-title">Напишите —<br><em>забронирую место</em></h2>
+      <p class="section-desc">Сообщите имя ребёнка, возраст и смену, на которую он едет. Я подтвержу место и расскажу детали.</p>
+      <div class="cta-howto">
+        <div class="cta-howto-title">Как записаться — 3 шага</div>
+        <div class="cta-howto-list">
+          <div class="cta-howto-item">
+            <div class="cta-howto-num">1</div>
+            <div>Напишите мне в Телеграме (или в Max, если Телеграма нет) — укажите имя и возраст ребёнка, выбранную смену</div>
+          </div>
+          <div class="cta-howto-item">
+            <div class="cta-howto-num">2</div>
+            <div>Пришлю небольшую анкету (5 минут) — заполняют родители. Из неё я узнаю про особенности ребёнка по здоровью</div>
+          </div>
+          <div class="cta-howto-item">
+            <div class="cta-howto-num">3</div>
+            <div>Подтверждаю место и присылаю реквизиты — оплата в удобный момент после анкеты</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="price-box">
+      <div class="price-main">6 500 ₽</div>
+      <div class="price-per">за весь курс из 5 занятий</div>
+      <div class="price-features">
+        <div class="price-feature"><span class="pf-check">✓</span>5 занятий по 55 минут в течение смены</div>
+        <div class="price-feature"><span class="pf-check">✓</span>Группа до 12 детей, индивидуальная обратная связь</div>
+        <div class="price-feature"><span class="pf-check">✓</span>Сертификат с фото правильного выполнения упражнений</div>
+        <div class="price-feature"><span class="pf-check">✓</span>Методички с занятий — забрать домой</div>
+        <div class="price-feature"><span class="pf-highlight">★</span><span class="pf-highlight">Онлайн-курс «Здоровая спина» (3 990 ₽) — в подарок для всей семьи</span></div>
+      </div>
+      <div class="price-discount">
+        <strong>Скидка 20% для повторников.</strong> Если ваш ребёнок уже проходил курс в «Салюте» — стоимость 5 200 ₽. Программу адаптирую под его уровень.
+      </div>
+      <a href="https://t.me/lesha_larin" class="btn-cta" target="_blank">Написать в Телеграме →</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
+      <div class="cta-reply">Обычно отвечаю в течение 1–2 часов</div>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE + FAQ -->
+<section class="guarantee-faq" id="faq">
+  <div class="section-label">Гарантия и вопросы</div>
+  <h2 class="section-title">Запишитесь <em>без переживаний</em></h2>
+  <p class="section-desc">Если ребёнку курс не подойдёт после первого занятия — верну деньги без вопросов. Ниже — ответы на самые частые вопросы родителей.</p>
+
+  <div class="gf-grid">
+    <div class="guarantee-box">
+      <div class="guarantee-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      </div>
+      <h3>Гарантия первого занятия</h3>
+      <p>Если после первого занятия ребёнок скажет, что курс ему не подходит — верну полную стоимость, без анкет и объяснений.</p>
+      <p class="small">Я не хочу, чтобы ребёнок занимался через «не хочу». Курс работает, только когда у него есть собственный интерес — а это становится ясно уже после первого занятия.</p>
+    </div>
+
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>А если у моего ребёнка сколиоз, нарушение осанки или гипермобильность?</summary>
+        <div class="faq-content">
+          <p>Курс рассчитан именно на таких детей — это его основная аудитория. Все упражнения мягкие, без рискованных нагрузок на позвоночник.</p>
+          <p>При записи в анкете расскажете про особенности — учту в работе. Если есть серьёзный диагноз и сомнения — сначала покажите врачу и спросите про лёгкую ЛФК. Если врач даёт «зелёный свет» — курс ваш.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Сын или дочь не любит спорт и физру — будет ли интересно?</summary>
+        <div class="faq-content">
+          <p>Большая часть детей в группе именно такие. Здесь нет «нормативов», никто никого не сравнивает и не ставит оценок. Атмосфера спокойная, упражнения посильные.</p>
+          <p>Один из самых частых отзывов от родителей: «Сначала упирался, после первого занятия — втянулся, ждёт следующего». У детей это работает, потому что им объясняют ЗАЧЕМ, а не «давай-давай делай».</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Когда занятия и не помешают ли они другим активностям лагеря?</summary>
+        <div class="faq-content">
+          <p>Занятия идут в тихий час, в 15:00, по 55 минут. Это время в лагере и так свободное — с другими активностями не пересекается.</p>
+          <p>Всего 5 занятий за смену. Достаточно, чтобы ребёнок успел освоить базу, и не настолько много, чтобы устать.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Какой возраст подходит?</summary>
+        <div class="faq-content">
+          <p>От 6 до 16 лет. Все занимаются вместе — это часть формата: старшие подтягивают младших, младшие смотрят на старших и тянутся за ними. Каждый идёт в своём темпе, упражнения я адаптирую под конкретного ребёнка.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>А если ребёнок впервые в лагере и стесняется?</summary>
+        <div class="faq-content">
+          <p>Группы маленькие — до 12 человек. Многие дети говорят, что курс был для них «самым спокойным местом в смене». Перед началом я отдельно знакомлюсь с теми, кому это важно.</p>
+          <p>Если ребёнок очень тревожный — напишите заранее, придумаем подход.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Что входит в подарочный онлайн-курс «Здоровая спина»?</summary>
+        <div class="faq-content">
+          <p>Это мой полноценный авторский курс для дома: 3 недели программы, 11 видео-уроков, 5 модулей, PDF-материалы. Обычно его покупают отдельно — для участников курса в «Салюте» он включён.</p>
+          <p>Доступ открывается на 3 человек в семье — ребёнка, родителя и кого-то ещё (бабушка, второй родитель). Доступ — на 1 год.</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Мой ребёнок уже был у вас в прошлом году. Есть ли смысл идти снова?</summary>
+        <div class="faq-content">
+          <p>Да — программа адаптируется под уровень. Повторникам даю более сложные модификации упражнений и углубляю теорию. Для них действует скидка 20% (5 200 ₽ вместо 6 500 ₽).</p>
+          <p>Многие дети ходят 3–4 года подряд — для меня это лучший показатель.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- TG CHANNEL STRIP -->
+<section class="tg-strip">
+  <div class="tg-strip-wrap">
+    <div class="tg-strip-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+    </div>
+    <div class="tg-strip-content">
+      <div class="tg-strip-title">Чтобы не потерять — подпишитесь на канал</div>
+      <div class="tg-strip-text">Полезный контент про развитие здоровья для всей семьи.</div>
+    </div>
+    <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-strip-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+      @lesha_larin
+    </a>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Закрыть">×</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1, event)" aria-label="Предыдущее фото">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="navLightbox(1, event)" aria-label="Следующее фото">›</button>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
+</div>
+
+<script is:inline>
+  const imageSets = {
+    gallery: [
+      '/salut-2026/img/class-circle-overview.jpg',
+      '/salut-2026/img/group-relaxed-after.jpg',
+      '/salut-2026/img/exam-flexing.jpg',
+      '/salut-2026/img/group-mixed-selfie.jpg',
+      '/salut-2026/img/exam-certificates-1.jpg',
+      '/salut-2026/img/group-kids-selfie.jpg',
+      '/salut-2026/img/group-teens-selfie.jpg',
+      '/salut-2026/img/trainer-stretch.jpg',
+      '/salut-2026/img/trainer-plank.jpg'
+    ],
+    takeaway: [
+      '/salut-2026/img/certificate-front.jpg',
+      '/salut-2026/img/certificate-back.jpg',
+      '/salut-2026/img/methodichka-theory.jpg',
+      '/salut-2026/img/methodichka-exercises.jpg'
+    ]
+  };
+  let currentSet = null;
+  let currentIdx = -1;
+
+  function showImage() {
+    const arr = imageSets[currentSet];
+    document.getElementById('lightbox-img').src = arr[currentIdx];
+    document.getElementById('lightbox-counter').textContent = (currentIdx + 1) + ' / ' + arr.length;
+  }
+  function openSet(setName, idx) {
+    currentSet = setName;
+    currentIdx = idx;
+    document.querySelectorAll('.lightbox-nav, #lightbox-counter').forEach(el => el.style.display = '');
+    showImage();
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function openGallery(idx) { openSet('gallery', idx); }
+  function openTakeaway(idx) { openSet('takeaway', idx); }
+  function openLightbox(src) {
+    // одиночное фото (без навигации)
+    currentSet = null;
+    currentIdx = -1;
+    document.getElementById('lightbox-img').src = src;
+    document.querySelectorAll('.lightbox-nav, #lightbox-counter').forEach(el => el.style.display = 'none');
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function navLightbox(delta, e) {
+    if (e) e.stopPropagation();
+    if (!currentSet || currentIdx < 0) return;
+    const arr = imageSets[currentSet];
+    currentIdx = (currentIdx + delta + arr.length) % arr.length;
+    showImage();
+  }
+  document.getElementById('lightbox').addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('lightbox').classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (currentSet) {
+      if (e.key === 'ArrowRight') navLightbox(1);
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+    }
+  });
+
+  // Кнопка Play по центру + click to toggle
+  document.querySelectorAll('.video-wrap').forEach(wrap => {
+    const video = wrap.querySelector('.js-vid');
+    const btn = wrap.querySelector('.video-play-btn');
+    if (!video || !btn) return;
+    function sync() { wrap.classList.toggle('is-playing', !video.paused && !video.ended); }
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      if (video.paused) video.play(); else video.pause();
+    });
+    video.addEventListener('play', sync);
+    video.addEventListener('pause', sync);
+    video.addEventListener('ended', sync);
+    sync();
+  });
+</script>
+</Base>

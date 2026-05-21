@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,6 +27,17 @@ func (r *Repo) CreateUser(ctx context.Context, email, hash, name, role string) (
 		`INSERT INTO users(email,password_hash,name,role) VALUES($1,$2,$3,$4) RETURNING id`,
 		email, hash, name, role).Scan(&id)
 	return id, err
+}
+
+// SetUserPhone сохраняет телефон пользователя. Поле опциональное,
+// пустая строка не записывается (NULL).
+func (r *Repo) SetUserPhone(ctx context.Context, uid uuid.UUID, phone string) error {
+	phone = strings.TrimSpace(phone)
+	if phone == "" {
+		return nil
+	}
+	_, err := r.Pool.Exec(ctx, `UPDATE users SET phone=$1, updated_at=now() WHERE id=$2`, phone, uid)
+	return err
 }
 
 func (r *Repo) GetUserByEmail(ctx context.Context, email string) (*User, error) {

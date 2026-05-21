@@ -68,6 +68,11 @@ const authedStyles = user ? `
         const fd = new FormData(form);
         const email = String(fd.get('email') || '').trim().toLowerCase();
         const name = String(fd.get('name') || '').trim();
+        const phone = String(fd.get('phone') || '').trim();
+        if (!name) {
+          setNote('Введите имя', '#ff8a8a');
+          return;
+        }
         if (!email || !email.includes('@')) {
           setNote('Введите корректный email', '#ff8a8a');
           return;
@@ -78,7 +83,7 @@ const authedStyles = user ? `
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, name }),
+            body: JSON.stringify({ email, name, phone }),
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {

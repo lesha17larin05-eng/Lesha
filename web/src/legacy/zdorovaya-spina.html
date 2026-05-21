@@ -236,7 +236,17 @@ nav.top-nav {
 .final-cta { padding: 100px 80px; background: var(--cream); text-align: center; }
 .final-cta .section-title { max-width: 720px; margin-left: auto; margin-right: auto; }
 .final-cta .section-desc { margin-left: auto; margin-right: auto; text-align: center; }
-.final-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+.final-actions { display: flex; gap: 14px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-top: 32px; }
+.final-tg-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.btn-outline-alt { display: inline-flex; align-items: center; font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 6px 12px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-outline-alt:hover { color: var(--navy); background: rgba(0,0,0,0.04); }
+
+/* ===== TG CHANNEL STRIP ===== */
+.tg-alt-strip { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 28px 80px; background: var(--cream); border-top: 1px solid var(--border); flex-wrap: wrap; }
+.tg-alt-text { font-size: 15px; color: var(--text-muted); }
+.tg-alt-link { display: inline-flex; align-items: center; gap: 7px; color: #2aabee; text-decoration: none; font-size: 15px; font-weight: 600; transition: color 0.15s; }
+.tg-alt-link:hover { color: #229ed9; }
+@media (max-width: 700px) { .tg-alt-strip { flex-direction: column; gap: 12px; padding: 24px; text-align: center; } }
 
 /* ===== FOOTER ===== */
 footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
@@ -309,12 +319,12 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="hero-left">
     <div class="hero-eyebrow">
       <div class="eyebrow-dot"></div>
-      <span class="eyebrow-text">Курс · 3 недели · Онлайн · Доступ навсегда</span>
+      <span class="eyebrow-text">Курс · 3 недели · Онлайн · Доступ на 1 год</span>
     </div>
     <h1>Здоровая спина<br><em>за 3 недели</em></h1>
     <p class="hero-sub">Курс, который я собрал из своего опыта восстановления</p>
     <div class="hero-promise">
-      <p>11 уроков, 3 недели, ваш темп. Основные тренировки, короткие практики и теория – <strong>чтобы выстроить регулярность, которая держится после курса</strong>. Начинаете в любой день, доступ навсегда.</p>
+      <p>11 уроков, 3 недели, ваш темп. Основные тренировки, короткие практики и теория — <strong>чтобы выстроить регулярность, которая держится после курса</strong>. Начинаете в любой день, доступ — на 1 год.</p>
     </div>
     <div class="hero-cta">
       <a href="#tariffs" class="btn-hero">Смотреть тарифы →</a>
@@ -520,7 +530,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       </div>
       <h3>11 видео-уроков</h3>
-      <p>Основные тренировки, короткие практики и теория. Доступ навсегда.</p>
+      <p>Основные тренировки, короткие практики и теория. Доступ — на 1 год.</p>
     </div>
     <div class="inc-card">
       <div class="inc-icon">
@@ -648,13 +658,13 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="tariff-card">
       <div class="tariff-name">Самостоятельный</div>
       <div class="tariff-price">3 990 ₽<small>разово</small></div>
-      <p class="tariff-desc">Все материалы курса, доступ навсегда. Идёте в своём темпе, без коммуникации со мной.</p>
+      <p class="tariff-desc">Все материалы курса, доступ на 1 год. Идёте в своём темпе, без коммуникации со мной.</p>
       <div class="tariff-features">
         <div class="tariff-feature"><span class="tf-check">✓</span>11 видео-уроков в 5 модулях</div>
         <div class="tariff-feature"><span class="tf-check">✓</span>Методичка курса (PDF)</div>
         <div class="tariff-feature"><span class="tf-check">✓</span>Чек-лист замеров «до и после»</div>
         <div class="tariff-feature"><span class="tf-check">✓</span>Календарь занятий на 3 недели</div>
-        <div class="tariff-feature"><span class="tf-check">✓</span>Доступ навсегда в личном кабинете</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Доступ в личном кабинете на 1 год</div>
         <div class="tariff-feature"><span class="tf-check">✓</span>Старт в любой день после оплаты</div>
       </div>
       <a href="#" class="btn-tariff" data-tariff="self">Купить за 3 990 ₽</a>
@@ -669,7 +679,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="tariff-feature"><span class="tf-check">✓</span>Всё из «Самостоятельного»</div>
         <div class="tariff-divider"></div>
         <div class="tariff-divider-label">Плюс лично от меня:</div>
-        <div class="tariff-feature bonus"><span class="tf-check">✓</span>Личный чат со мной в Telegram во время курса (3 недели)</div>
+        <div class="tariff-feature bonus"><span class="tf-check">✓</span>Личный чат со мной в Телеграме во время курса (3 недели)</div>
         <div class="tariff-feature bonus"><span class="tf-check">✓</span>Видео-созвон 45-60 минут в конце курса</div>
         <div class="tariff-feature bonus"><span class="tf-check">✓</span>Разбор ваших замеров «до и после»</div>
         <div class="tariff-feature bonus"><span class="tf-check">✓</span>Бонус: первый месяц личного сопровождения по специальной цене для выпускников</div>
@@ -684,7 +694,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="guarantee-faq" id="faq">
   <div class="section-label">Гарантия и вопросы</div>
   <h2 class="section-title">Покупайте <em>без риска</em></h2>
-  <p class="section-desc">Если курс по любой причине не подойдёт в первые 7 дней – верну деньги без вопросов. Ниже – ответы на самые частые вопросы. Если не нашли свой – напишите мне в Telegram.</p>
+  <p class="section-desc">Если курс по любой причине не подойдёт в первые 7 дней — верну деньги без вопросов. Ниже — ответы на самые частые вопросы. Если не нашли свой — напишите мне в Телеграме.</p>
 
   <div class="gf-grid">
     <div class="guarantee-box">
@@ -741,7 +751,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <details class="faq-item">
         <summary>Что, если у меня не получится регулярно заниматься?</summary>
         <div class="faq-content">
-          <p>Доступ к курсу пожизненный – вы можете растянуть прохождение на 6 недель вместо 3, или сделать перерыв и вернуться через месяц. Главное – не бросать совсем.</p>
+          <p>Доступ к курсу — на 1 год. Можно растянуть прохождение на 6 недель вместо 3, сделать перерыв и вернуться через месяц или возвращаться к материалам в течение года. Главное — не бросать совсем.</p>
           <p>В методичке есть рекомендации, как поддерживать регулярность, и что делать, если выпала из ритма.</p>
         </div>
       </details>
@@ -756,7 +766,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <details class="faq-item">
         <summary>А если курс мне всё-таки не подойдёт?</summary>
         <div class="faq-content">
-          <p>В первые 7 дней – верну деньги без вопросов. Просто напишите мне в Telegram. Это работает и для тарифа «Самостоятельный», и для «С поддержкой».</p>
+          <p>В первые 7 дней — верну деньги без вопросов. Просто напишите мне в Телеграме. Это работает и для тарифа «Самостоятельный», и для «С поддержкой».</p>
         </div>
       </details>
 
@@ -768,18 +778,30 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="final-cta">
   <div class="section-label">Начать</div>
   <h2 class="section-title">Через 3 недели<br>спина <em>будет благодарна</em></h2>
-  <p class="section-desc">Старт в любой день после оплаты. Доступ в личном кабинете остаётся навсегда. Гарантия возврата 7 дней.</p>
+  <p class="section-desc">Старт в любой день после оплаты. Доступ в личном кабинете — на 1 год. Гарантия возврата 7 дней.</p>
   <div class="final-actions">
     <a href="#tariffs" class="btn-hero">Выбрать тариф →</a>
-    <a href="https://t.me/larin_lesha" class="btn-outline" target="_blank">Задать вопрос в Telegram</a>
+    <div class="final-tg-col">
+      <a href="https://t.me/larin_lesha" class="btn-outline" target="_blank">Задать вопрос в Телеграме</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-outline-alt" target="_blank">Нет Телеграма — написать в Max</a>
+    </div>
   </div>
+</section>
+
+<!-- ===== TG CHANNEL ===== -->
+<section class="tg-alt-strip">
+  <span class="tg-alt-text">Ещё не решили? Подпишитесь на канал — советы выходят бесплатно</span>
+  <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-alt-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+    @lesha_larin →
+  </a>
 </section>
 
 <!-- ===== FOOTER ===== -->
 <footer>
   <a href="index.html" class="footer-logo">Алексей Ларин</a>
   <div class="footer-links">
-    <a href="https://t.me/lesha_larin" target="_blank">Telegram-канал</a>
+    <a href="https://t.me/lesha_larin" target="_blank">Телеграм-канал</a>
     <a href="https://t.me/lesha_larin_otzivi" target="_blank">Отзывы</a>
     <a href="https://t.me/larin_lesha" target="_blank">Написать</a>
   </div>

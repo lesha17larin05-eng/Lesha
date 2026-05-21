@@ -344,14 +344,15 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="cta-inner">
     <div class="section-label">Получить доступ</div>
     <h2 class="section-title">Начните сегодня –<br><em>это бесплатно</em></h2>
-    <p class="section-desc">Оставьте имя и почту – и сразу получите доступ ко всем 8 урокам.</p>
+    <p class="section-desc">Оставьте имя и почту — и сразу получите доступ ко всем 8 урокам.</p>
     <form class="cta-form" id="quick-signup-form" novalidate>
       <div class="form-row">
-        <input type="text" name="name" class="form-input" placeholder="Ваше имя" autocomplete="name">
-        <input type="email" name="email" class="form-input" placeholder="Email" autocomplete="email" required>
+        <input type="text" name="name" class="form-input" placeholder="Ваше имя *" autocomplete="name" required>
+        <input type="email" name="email" class="form-input" placeholder="Email *" autocomplete="email" required>
       </div>
+      <input type="tel" name="phone" class="form-input" placeholder="Телефон (по желанию)" autocomplete="tel" style="width:100%; margin-top:8px;">
       <button type="submit" class="btn-cta-full" id="quick-signup-submit">Получить доступ →</button>
-      <p class="form-note" id="quick-signup-note">Бесплатно · без спама · отписаться в любой момент</p>
+      <p class="form-note" id="quick-signup-note">* — обязательные поля. Бесплатно · без спама · отписаться в любой момент</p>
     </form>
 
     <div class="access-block" id="access-block">

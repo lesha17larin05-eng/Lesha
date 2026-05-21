@@ -64,7 +64,15 @@ const articleStyles = `
 .article-cta-final p { font-size: 16px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 24px; }
 .article-cta-final strong { color: white; }
 .article-cta-final a { display: inline-flex; align-items: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; padding: 16px 32px; border-radius: 100px; font-weight: 600; }
-@media (max-width: 700px) { .article-header { padding: 100px 24px 48px; } .article-cta-final { padding: 32px 24px; } }
+.tg-inline { display: flex; align-items: center; gap: 20px; background: #eef6ff; border: 1px solid #c5dcf7; border-radius: 16px; padding: 22px 28px; margin: 48px 0 0; }
+.tg-inline-icon { flex-shrink: 0; width: 44px; height: 44px; background: #2aabee; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+.tg-inline-text { flex: 1; }
+.tg-inline-text strong { display: block; font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.tg-inline-text span { font-size: 14px; color: var(--text-muted); }
+.tg-inline .tg-inline-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; background: #2aabee; color: white; text-decoration: none; padding: 12px 22px; border-radius: 100px; font-size: 14px; font-weight: 600; white-space: nowrap; transition: background 0.2s, transform 0.15s; }
+@media (hover: hover) { .tg-inline .tg-inline-btn:hover { background: #229ed9; transform: translateY(-1px); } }
+.tg-inline .tg-inline-btn:focus-visible { outline: 2px solid #2aabee; outline-offset: 3px; }
+@media (max-width: 700px) { .article-header { padding: 100px 24px 48px; } .article-cta-final { padding: 32px 24px; } .tg-inline { flex-direction: column; text-align: center; } .tg-inline .tg-inline-btn { width: 100%; justify-content: center; } }
 `;
 ---
 <SiteLayout title={`${a.title} — Алексей Ларин`} description={a.excerpt} active="blog" pageStyles={articleStyles}>
@@ -83,6 +91,16 @@ const articleStyles = `
     <div class="article-cta-final">
       <p><strong>Хотите начать мягко — с поддержкой и конкретным планом?</strong><br/>Пройдите бесплатный курс — несколько уроков, которые помогут начать и не бросить.</p>
       <a href="/course">Получить курс бесплатно →</a>
+    </div>
+    <div class="tg-inline">
+      <div class="tg-inline-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+      </div>
+      <div class="tg-inline-text">
+        <strong>Пока не готовы к курсу?</strong>
+        <span>Подпишитесь на канал — советы о здоровье приходят бесплатно и без обязательств</span>
+      </div>
+      <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-inline-btn">Подписаться →</a>
     </div>
   </div>
 </SiteLayout>

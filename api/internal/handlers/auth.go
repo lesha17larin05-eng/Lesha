@@ -45,7 +45,7 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 201, map[string]any{"id": uid, "verify_link_dev": link})
 }
 
-type quickSignupReq struct{ Email, Name string }
+type quickSignupReq struct{ Email, Name, Phone string }
 
 // QuickSignup — одношаговая регистрация по email+имя без пароля.
 // Если email уже есть → {exists:true}, фронт перенаправит на /auth/login.
@@ -86,6 +86,10 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	if err := a.Repo.MarkEmailVerified(r.Context(), uid); err != nil {
 		writeErr(w, 500, "db")
 		return
+	}
+	// Phone — опциональное поле, ошибку логируем, но не валим регистрацию.
+	if in.Phone != "" {
+		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
 	}
 	enrolled := 0
 	if courses, err := a.Repo.ListCourses(r.Context(), true); err == nil {

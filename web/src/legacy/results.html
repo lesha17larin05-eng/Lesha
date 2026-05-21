@@ -16,9 +16,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,
 .nav-links a:hover,.nav-links a.active{color:var(--navy);}
 .nav-links a.active{font-weight:600;border-bottom:2px solid var(--orange);padding-bottom:3px;}
 .nav-login{font-size:13px;color:var(--text-muted);text-decoration:none;}
-.page-header{padding:120px 80px 60px;background:var(--navy);position:relative;overflow:hidden;}
-.page-header::before{content:'';position:absolute;top:-80px;right:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(46,61,107,0.6) 0%,transparent 65%);pointer-events:none;}
+.page-header{padding:120px 80px 60px;background:var(--navy);position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+.page-header::before{content:'';position:absolute;top:-80px;left:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(46,61,107,0.6) 0%,transparent 65%);pointer-events:none;}
 .page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange) 0%,transparent 60%);}
+.ph-left{position:relative;z-index:1;}
 .header-label{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:16px;}
 .page-header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,4vw,60px);font-weight:400;color:white;line-height:1.1;margin-bottom:12px;}
 .page-header h1 em{font-style:italic;color:#8bb8f0;}
@@ -26,6 +27,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,
 .header-stats{display:flex;gap:40px;margin-top:40px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.1);}
 .hs-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:500;color:white;line-height:1;display:block;}
 .hs-label{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px;display:block;}
+.ph-collage{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:220px 220px;gap:8px;position:relative;z-index:1;}
+.ph-collage-item{border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;}
+.ph-collage-item:hover{transform:scale(1.02);box-shadow:0 8px 32px rgba(0,0,0,0.7);}
+.ph-collage-item picture,.ph-collage-item img{width:100%;height:100%;display:block;}
+.ph-collage-item img{object-fit:cover;object-position:top center;}
+/* Lightbox */
+.ph-lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;}
+.ph-lightbox.open{display:flex;}
+.ph-lightbox img{max-width:90vw;max-height:90vh;border-radius:12px;object-fit:contain;box-shadow:0 24px 80px rgba(0,0,0,0.8);}
+.ph-lightbox-close{position:absolute;top:24px;right:28px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+.ph-lightbox-close:hover{background:rgba(255,255,255,0.25);}
+.ph-lightbox-close svg{width:20px;height:20px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;}
+@media(max-width:700px){.ph-collage{display:none;}}
 .filters{padding:20px 80px;background:white;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;position:sticky;top:64px;z-index:80;}
 .filter-btn{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);transition:all 0.2s;font-family:'Manrope',sans-serif;}
 .filter-btn:hover{border-color:var(--navy);color:var(--navy);}
@@ -91,14 +105,50 @@ footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;just
   <a href="#" class="nav-login">Войти</a>
 </nav>
 <div class="page-header">
-  <div class="header-label">Результаты</div>
-  <h1>Реальные люди,<br><em>реальные результаты</em></h1>
-  <p>Видеоотзывы клиентов с 2017 года. Личное ведение, групповые курсы, ретриты. У каждого — своя история.</p>
-  <p style="margin-top:10px;">В карточках короткие яркие фрагменты, полные версии смотрите по кнопкам ВК или YouTube.</p>
-  <div class="header-stats">
-    <div><span class="hs-num">65+</span><span class="hs-label">видеоотзывов</span></div>
-    <div><span class="hs-num">8000+</span><span class="hs-label">человек через проекты</span></div>
-    <div><span class="hs-num">8 лет</span><span class="hs-label">практики</span></div>
+  <div class="ph-left">
+    <div class="header-label">Результаты</div>
+    <h1>Реальные люди,<br><em>реальные результаты</em></h1>
+    <p>Видеоотзывы клиентов с 2017 года. Личное ведение, групповые курсы, ретриты. У каждого — своя история.</p>
+    <p style="margin-top:10px;">В карточках короткие яркие фрагменты, полные версии смотрите по кнопкам ВК или YouTube.</p>
+    <div class="header-stats">
+      <div><span class="hs-num">65+</span><span class="hs-label">видеоотзывов</span></div>
+      <div><span class="hs-num">8000+</span><span class="hs-label">человек через проекты</span></div>
+      <div><span class="hs-num">8 лет</span><span class="hs-label">практики</span></div>
+    </div>
+  </div>
+  <div class="ph-collage">
+    <div class="ph-collage-item">
+      <picture>
+        <source type="image/webp" srcset="/img/results/clients-photo3.webp 1x, /img/results/clients-photo3@2x.webp 2x">
+        <img src="/img/results/clients-photo3.jpg" srcset="/img/results/clients-photo3.jpg 1x, /img/results/clients-photo3@2x.jpg 2x" alt="Клиенты" loading="eager" data-full="/img/results/clients-photo3@2x.webp">
+      </picture>
+    </div>
+    <div class="ph-collage-item">
+      <picture>
+        <source type="image/webp" srcset="/img/results/clients-10.webp 1x, /img/results/clients-10@2x.webp 2x">
+        <img src="/img/results/clients-10.jpg" srcset="/img/results/clients-10.jpg 1x, /img/results/clients-10@2x.jpg 2x" alt="Клиенты" loading="eager" data-full="/img/results/clients-10@2x.webp">
+      </picture>
+    </div>
+    <div class="ph-collage-item">
+      <picture>
+        <source type="image/webp" srcset="/img/results/clients-6.webp 1x, /img/results/clients-6@2x.webp 2x">
+        <img src="/img/results/clients-6.jpg" srcset="/img/results/clients-6.jpg 1x, /img/results/clients-6@2x.jpg 2x" alt="Клиенты" loading="lazy" data-full="/img/results/clients-6@2x.webp">
+      </picture>
+    </div>
+    <div class="ph-collage-item">
+      <picture>
+        <source type="image/webp" srcset="/img/results/clients-xjgecyrqdle.webp 1x, /img/results/clients-xjgecyrqdle@2x.webp 2x">
+        <img src="/img/results/clients-xjgecyrqdle.jpg" srcset="/img/results/clients-xjgecyrqdle.jpg 1x, /img/results/clients-xjgecyrqdle@2x.jpg 2x" alt="Клиенты" loading="lazy" data-full="/img/results/clients-xjgecyrqdle@2x.webp">
+      </picture>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="ph-lightbox" id="phLightbox">
+    <button class="ph-lightbox-close" id="phLightboxClose" aria-label="Закрыть">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <img src="" alt="Фото" id="phLightboxImg">
   </div>
 </div>
 <div class="filters">
@@ -948,6 +998,29 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     });
   });
 });
+
+// Lightbox
+const lightbox = document.getElementById('phLightbox');
+const lightboxImg = document.getElementById('phLightboxImg');
+const lightboxClose = document.getElementById('phLightboxClose');
+
+document.querySelectorAll('.ph-collage img').forEach(img => {
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.dataset.full || img.src;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+  lightboxImg.src = '';
+}
+
+lightboxClose.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 </script>
 </body>
 </html>
