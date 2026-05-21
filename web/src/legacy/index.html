@@ -99,8 +99,9 @@ nav {
 .hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
 .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
 .stat-label { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 4px; display: block; }
-.hero-right { background: var(--cream); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; overflow: hidden; }
-.hero-photo { width: 100%; height: 100%; min-height: 500px; background: linear-gradient(160deg, #ccd4e0 0%, #b8c4d4 100%); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #8a96a8; font-weight: 500; }
+.hero-right { background: var(--cream); position: relative; min-height: 500px; overflow: hidden; }
+.hero-photo { position: absolute; inset: 0; background: linear-gradient(160deg, #ccd4e0 0%, #b8c4d4 100%); }
+.hero-photo picture, .hero-photo img { width: 100%; height: 100%; display: block; }
 .hero-badge { position: absolute; bottom: 32px; left: 32px; background: white; border-radius: 16px; padding: 16px 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 14px; max-width: 280px; }
 .badge-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
 .badge-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }

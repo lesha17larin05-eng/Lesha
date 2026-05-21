@@ -96,10 +96,11 @@ nav {
 
 .hero-right {
   background: var(--cream); position: relative;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  min-height: 500px;
   overflow: hidden;
 }
-.hero-photo { width: 100%; height: 100%; min-height: 500px; background: linear-gradient(160deg, #ccd4e0 0%, #b8c4d4 100%); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #8a96a8; font-weight: 500; }
+.hero-photo { position: absolute; inset: 0; background: linear-gradient(160deg, #ccd4e0 0%, #b8c4d4 100%); }
+.hero-photo picture, .hero-photo img { width: 100%; height: 100%; display: block; }
 .hero-right::before {
   content: ''; position: absolute; bottom: -60px; right: -60px;
   width: 320px; height: 320px;
@@ -315,7 +316,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="hero-photo">
       <picture>
         <source type="image/webp" srcset="/img/IMG_3989.webp 1x, /img/IMG_3989@2x.webp 2x">
-        <img src="/img/IMG_3989.jpg" srcset="/img/IMG_3989.jpg 1x, /img/IMG_3989@2x.jpg 2x" alt="Алексей Ларин" loading="eager" fetchpriority="high" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
+        <img src="/img/IMG_3989.jpg" srcset="/img/IMG_3989.jpg 1x, /img/IMG_3989@2x.jpg 2x" alt="Алексей Ларин" loading="eager" fetchpriority="high" style="width:100%;height:100%;object-fit:cover;object-position:22% 25%;display:block;">
       </picture>
     </div>
   </div>
