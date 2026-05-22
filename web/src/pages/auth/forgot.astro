@@ -21,7 +21,13 @@ import Base from '../../layouts/Base.astro';
       });
       const j = await r.json();
       m.className = 'alert ok';
-      m.innerHTML = 'Если email существует — письмо отправлено.' + (j.reset_link_dev ? '<br/>Dev: <a href="'+j.reset_link_dev+'">'+j.reset_link_dev+'</a>' : '');
+      // В dev показываем reset-ссылку, чтобы не настраивать SMTP локально. В проде — никогда.
+      if (import.meta.env.DEV && j.reset_link_dev) {
+        m.innerHTML = 'Если email существует — письмо отправлено.' +
+          ' <br/><small>Dev: <a href="'+j.reset_link_dev+'">'+j.reset_link_dev+'</a></small>';
+      } else {
+        m.textContent = 'Если такой email зарегистрирован, мы отправили на него ссылку для сброса пароля. Проверьте почту (в т.ч. папку «Спам»).';
+      }
       m.hidden = false;
     });
   </script>

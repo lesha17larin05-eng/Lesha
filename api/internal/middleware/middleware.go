@@ -142,9 +142,22 @@ func CSRF(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if c, err := r.Cookie("csrf"); err != nil || c.Value == "" {
 			tok := randHex(16)
+			// Secure-флаг ставим, если запрос фактически по HTTPS —
+			// напрямую или через nginx/Cloudflare (X-Forwarded-Proto).
+			secure := r.TLS != nil
+			if !secure {
+				if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
+					for _, p := range strings.Split(proto, ",") {
+						if strings.EqualFold(strings.TrimSpace(p), "https") {
+							secure = true
+							break
+						}
+					}
+				}
+			}
 			http.SetCookie(w, &http.Cookie{
 				Name: "csrf", Value: tok, Path: "/",
-				SameSite: http.SameSiteLaxMode,
+				SameSite: http.SameSiteLaxMode, Secure: secure,
 			})
 		}
 		switch r.Method {

@@ -67,6 +67,27 @@ func (r *Repo) MarkEmailVerified(ctx context.Context, userID uuid.UUID) error {
 	return err
 }
 
+// SaveConsent сохраняет факт согласий пользователя на момент регистрации.
+// pd=true → consent_pd_at=now() (обязательное по 152-ФЗ).
+// marketing=true → consent_marketing_at=now(); marketing=false → NULL (отзыв или нет согласия).
+// Никогда не «сбрасывает» уже выставленный consent_pd_at в NULL — оно держится для аудита.
+func (r *Repo) SaveConsent(ctx context.Context, userID uuid.UUID, pd, marketing bool) error {
+	var pdSQL string
+	if pd {
+		pdSQL = `COALESCE(consent_pd_at, now())`
+	} else {
+		pdSQL = `consent_pd_at`
+	}
+	marketingSQL := `NULL`
+	if marketing {
+		marketingSQL = `now()`
+	}
+	_, err := r.Pool.Exec(ctx,
+		`UPDATE users SET consent_pd_at=`+pdSQL+`, consent_marketing_at=`+marketingSQL+`, updated_at=now() WHERE id=$1`,
+		userID)
+	return err
+}
+
 func (r *Repo) UpdateUserName(ctx context.Context, userID uuid.UUID, name string) error {
 	_, err := r.Pool.Exec(ctx, `UPDATE users SET name=$1, updated_at=now() WHERE id=$2`, name, userID)
 	return err

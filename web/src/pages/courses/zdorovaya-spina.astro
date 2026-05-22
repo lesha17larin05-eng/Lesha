@@ -50,5 +50,26 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
         if (el) el.style.display = 'none';
       });
     }
+
+    // ─── Tariff buttons ────────────────────────────────────────────────
+    // Пока Prodamus не подключён, кнопки «Купить» открывают Telegram
+    // с предзаполненным сообщением. Когда подключим оплату — заменим
+    // тело обработчика на POST /api/courses/zdorovaya-spina/checkout?tariff=...
+    const TARIFF_INFO = {
+      self:    { name: '«Самостоятельный»', price: '3 990 ₽' },
+      support: { name: '«С поддержкой»',    price: '12 990 ₽' },
+    };
+
+    document.querySelectorAll('[data-tariff]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const key = el.getAttribute('data-tariff');
+        const info = TARIFF_INFO[key];
+        if (!info) return;
+        const msg = 'Здравствуйте, Алексей! Хочу записаться на курс «Здоровая спина», тариф ' + info.name + ' (' + info.price + ').';
+        const url = 'https://t.me/larin_lesha?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank', 'noopener');
+      });
+    });
   </script>
 </SiteLayout>

@@ -81,6 +81,7 @@ func main() {
 		r.Post("/api/lessons/{id}/progress", app.PostProgress)
 		r.Post("/api/courses/{slug}/enroll-free", app.EnrollFree)
 		r.Post("/api/courses/{slug}/checkout", app.Checkout)
+		r.Get("/api/courses/{slug}/files/{name}", app.CourseFile)
 		r.Get("/api/videos/{id}/playback", app.VideoPlayback)
 	})
 

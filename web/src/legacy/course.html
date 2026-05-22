@@ -351,9 +351,25 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <input type="email" name="email" class="form-input" placeholder="Email *" autocomplete="email" required>
       </div>
       <input type="tel" name="phone" class="form-input" placeholder="Телефон (по желанию)" autocomplete="tel" style="width:100%; margin-top:8px;">
+
+      <label class="qs-consent">
+        <input type="checkbox" name="consent_pd" id="quick-consent-pd" required>
+        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
+      </label>
+      <label class="qs-consent">
+        <input type="checkbox" name="consent_marketing" id="quick-consent-marketing">
+        <span>Хочу получать письма с советами и анонсами от Алексея — можно отписаться в любой момент.</span>
+      </label>
+
       <button type="submit" class="btn-cta-full" id="quick-signup-submit">Получить доступ →</button>
       <p class="form-note" id="quick-signup-note">* — обязательные поля. Бесплатно · без спама · отписаться в любой момент</p>
     </form>
+    <style>
+      .qs-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.65); cursor: pointer; text-align: left; }
+      .qs-consent input { margin-top: 2px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
+      .qs-consent a { color: rgba(255,255,255,0.9); text-decoration: underline; }
+      .qs-consent a:hover { color: white; }
+    </style>
 
     <div class="access-block" id="access-block">
       <div class="access-block-icon">🎉</div>

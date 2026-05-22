@@ -8,24 +8,60 @@ import Base from '../../layouts/Base.astro';
       <div><label class="label">Имя</label><input class="input" name="name" /></div>
       <div><label class="label">Email</label><input class="input" name="email" type="email" required /></div>
       <div><label class="label">Пароль (минимум 8 символов)</label><input class="input" name="password" type="password" required minlength="8" /></div>
+
+      <label class="consent">
+        <input type="checkbox" name="consent_pd" required />
+        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
+      </label>
+      <label class="consent">
+        <input type="checkbox" name="consent_marketing" />
+        <span>Хочу получать письма с советами, материалами и анонсами от Алексея. Можно отписаться в любой момент.</span>
+      </label>
+
       <button class="btn" type="submit">Создать аккаунт</button>
       <div id="msg" hidden></div>
     </form>
   </section>
+  <style>
+    .consent { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text-mid); cursor: pointer; }
+    .consent input { margin-top: 3px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
+    .consent a { color: var(--orange); text-decoration: underline; }
+  </style>
   <script>
     const form = document.getElementById('f');
     const msg = document.getElementById('msg');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(form);
+      // Дополнительная проверка обязательного согласия — на случай, если кто-то обошёл нативную валидацию.
+      if (!fd.get('consent_pd')) {
+        msg.className = 'alert';
+        msg.textContent = 'Чтобы продолжить, нужно согласиться с обработкой персональных данных.';
+        msg.hidden = false;
+        return;
+      }
       const r = await fetch('/api/auth/register', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password'), name: fd.get('name') }),
+        body: JSON.stringify({
+          email: fd.get('email'),
+          password: fd.get('password'),
+          name: fd.get('name'),
+          consent_pd: true,
+          consent_marketing: !!fd.get('consent_marketing'),
+        }),
       });
       const j = await r.json();
       if (r.ok) {
         msg.className = 'alert ok';
-        msg.innerHTML = 'Аккаунт создан. Подтвердите email — письмо отправлено. <br/>Dev-ссылка для подтверждения: <a href="' + j.verify_link_dev + '">' + j.verify_link_dev + '</a>';
+        // В dev-режиме показываем ссылку для подтверждения, чтобы не настраивать SMTP локально.
+        // В проде показываем только сообщение об отправке письма (verify_link_dev не использовать!).
+        if (import.meta.env.DEV && j.verify_link_dev) {
+          msg.innerHTML = 'Аккаунт создан. Подтвердите email — письмо отправлено.' +
+            ' <br/><small>Dev-ссылка: <a href="' + j.verify_link_dev + '">' + j.verify_link_dev + '</a></small>';
+        } else {
+          msg.textContent = 'Аккаунт создан. Мы отправили письмо на ' + (fd.get('email') || '') +
+            ' — перейдите по ссылке в письме, чтобы подтвердить email.';
+        }
       } else {
         msg.className = 'alert';
         msg.textContent = j.error || 'Ошибка';

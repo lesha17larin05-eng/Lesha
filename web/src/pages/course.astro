@@ -69,6 +69,8 @@ const authedStyles = user ? `
         const email = String(fd.get('email') || '').trim().toLowerCase();
         const name = String(fd.get('name') || '').trim();
         const phone = String(fd.get('phone') || '').trim();
+        const consentPd = !!fd.get('consent_pd');
+        const consentMarketing = !!fd.get('consent_marketing');
         if (!name) {
           setNote('Введите имя', '#ff8a8a');
           return;
@@ -77,13 +79,17 @@ const authedStyles = user ? `
           setNote('Введите корректный email', '#ff8a8a');
           return;
         }
+        if (!consentPd) {
+          setNote('Чтобы продолжить, нужно согласиться с обработкой персональных данных', '#ff8a8a');
+          return;
+        }
         if (btn) { btn.disabled = true; btn.textContent = 'Отправляем...'; }
         try {
           const res = await fetch('/api/auth/quick-signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, name, phone }),
+            body: JSON.stringify({ email, name, phone, consent_pd: true, consent_marketing: consentMarketing }),
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {
