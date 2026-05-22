@@ -1,12 +1,12 @@
 # База данных
 
-PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), email — `CITEXT`, таймстемпы — `TIMESTAMPTZ`. Миграции — `golang-migrate`, файлы в `api/migrations/*.up.sql` / `*.down.sql`. Текущие миграции: `001_init`, `002_articles`.
+PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), email — `CITEXT`, таймстемпы — `TIMESTAMPTZ`. Миграции — `golang-migrate`, файлы в `api/migrations/*.up.sql` / `*.down.sql`. Текущие миграции: `001_init`, `002_articles`, `003_users_phone`, `004_users_consent`.
 
 ## Таблицы
 
 | Таблица                       | Назначение                                             |
 |-------------------------------|--------------------------------------------------------|
-| `users`                       | Юзеры. Поля: email, argon2id-хеш, role (`user`/`admin`), `email_verified_at`, `last_seen_at`. |
+| `users`                       | Юзеры. Поля: email, argon2id-хеш, role (`user`/`admin`), `email_verified_at`, `last_seen_at`, `phone` (миграция 003), `consent_pd_at` (152-ФЗ, обязательное, миграция 004), `consent_marketing_at` (отдельное согласие на рассылки). |
 | `email_verification_tokens`   | Токены подтверждения email (hash + expires).           |
 | `password_reset_tokens`       | Токены сброса пароля.                                  |
 | `sessions`                    | Refresh-токены (хеш + UA + IP + expires + revoked).    |

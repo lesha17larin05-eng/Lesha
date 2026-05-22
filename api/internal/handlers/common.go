@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/leshalarin/api/internal/auth"
@@ -29,7 +30,30 @@ func writeErr(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
-func setAuthCookies(w http.ResponseWriter, accessToken, refreshToken string, secure bool) {
+// IsHTTPSRequest сообщает, пришёл ли запрос по HTTPS — напрямую (r.TLS)
+// или через reverse-proxy (заголовок X-Forwarded-Proto, который выставляет
+// nginx/Cloudflare/Caddy). Используется, чтобы выставлять Secure-флаг
+// только когда соединение реально TLS — иначе браузер отбросит cookie.
+func IsHTTPSRequest(r *http.Request) bool {
+	if r == nil {
+		return false
+	}
+	if r.TLS != nil {
+		return true
+	}
+	if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
+		// возможен список через запятую (CDN-цепочки)
+		for _, p := range strings.Split(proto, ",") {
+			if strings.EqualFold(strings.TrimSpace(p), "https") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func setAuthCookies(w http.ResponseWriter, r *http.Request, accessToken, refreshToken string) {
+	secure := IsHTTPSRequest(r)
 	http.SetCookie(w, &http.Cookie{
 		Name: "access_token", Value: accessToken, Path: "/",
 		HttpOnly: true, Secure: secure, SameSite: http.SameSiteLaxMode,

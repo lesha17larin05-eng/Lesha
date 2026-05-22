@@ -64,6 +64,10 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestArticleCreateValidatesRequiredFields` | Без `slug` → 400. |
 | `TestArticleCreateRequiresCSRF`        | Без X-CSRF-Token → 403. |
 | `TestParseArticleHTMLViaRepo`          | `is_published=true` без `published_at` → сервер сам ставит `now()`. |
+| `TestCourseFileRequiresEnrollment`     | `GET /api/courses/zdorovaya-spina/files/metodichka.pdf`: 401 без auth, 403 без enrollment, 200 с `Content-Type: application/pdf` и валидным `%PDF-` после `repo.Grant(...)`, 404 для неизвестного файла/слага. |
+| `TestRegisterRequiresConsentPD`        | `POST /auth/register` без `consent_pd=true` → 400 `consent_pd_required`, в users такой email не появился. |
+| `TestQuickSignupRequiresConsentPD`     | `POST /auth/quick-signup` без `consent_pd=true` → 400 `consent_pd_required`, в users такой email не появился. |
+| `TestRegisterSavesConsentTimestamps`   | При `consent_pd=true, consent_marketing=true` — `users.consent_pd_at` и `users.consent_marketing_at` не NULL. При `consent_marketing=false` — `consent_marketing_at = NULL`, `consent_pd_at` всё равно проставлен. |
 
 ## Как добавить тест
 

@@ -8,6 +8,7 @@
 - **Refresh token**: 32 случайных байта в hex, TTL 30 дней. Хранится в БД как SHA256-хеш в `sessions`. В `refresh_token` httpOnly cookie на `/api/auth`.
 - **Auth UI hint**: ненадёжный нечувствительный cookie `auth=1` (не httpOnly) — фронт читает чтобы сразу показать «вошёл/нет» без сетевого запроса. Не используется как авторизация.
 - Заголовок `Authorization: Bearer <token>` тоже работает (для curl/тестов).
+- **Secure-флаг**: все cookies (`access_token`, `refresh_token`, `auth`, `csrf`) автоматически получают `Secure`, если запрос пришёл по HTTPS — напрямую (`r.TLS != nil`) или через reverse-proxy (заголовок `X-Forwarded-Proto: https`, который выставляет nginx). На HTTP — Secure не ставится, иначе браузер бы отбросил cookie. Хелпер: `handlers.IsHTTPSRequest(r)`.
 
 ## CSRF
 
@@ -24,8 +25,8 @@ In-memory token bucket (`api/internal/middleware/middleware.go`): 20 запро�
 | Метод/Путь                              | Описание                                       |
 |----------------------------------------|------------------------------------------------|
 | `GET  /api/health`                     | health-check.                                  |
-| `POST /api/auth/register`              | `{email, password, name}` → юзер + email-токен. В dev в ответе есть `verify_link_dev`. |
-| `POST /api/auth/quick-signup`          | `{email, name?}` — одношаговая регистрация с лендинга. Если email уже есть → `{exists:true}` (200), фронт перекидывает на `/auth/login`. Если нет → создаёт юзера, генерит случайный пароль, шлёт его на почту, ставит `email_verified_at=now()`, **автоматически записывает на ВСЕ опубликованные free-курсы** (`granted_by='free'`), выдаёт auth-cookies → `{created:true, id, email, enrolled_free}` (201). В dev добавляет `password_dev`. |
+| `POST /api/auth/register`              | `{email, password, name, consent_pd, consent_marketing?}` → юзер + email-токен. **Без `consent_pd=true` → 400 `consent_pd_required`** (152-ФЗ). Время согласий пишется в `users.consent_pd_at` и `consent_marketing_at`. В dev в ответе есть `verify_link_dev`. |
+| `POST /api/auth/quick-signup`          | `{email, name?, phone?, consent_pd, consent_marketing?}` — одношаговая регистрация с лендинга. Без `consent_pd=true` → 400 `consent_pd_required`. Если email уже есть → `{exists:true}` (200). Если нет → создаёт юзера, генерит случайный пароль, шлёт его на почту, ставит `email_verified_at=now()`, фиксирует согласия, **автоматически записывает на ВСЕ опубликованные free-курсы** (`granted_by='free'`), выдаёт auth-cookies → `{created:true, id, email, enrolled_free}` (201). В dev добавляет `password_dev`. |
 | `POST /api/auth/login`                 | `{email, password}` → ставит cookies.          |
 | `POST /api/auth/logout`                | отзывает refresh, чистит cookies.              |
 | `POST /api/auth/refresh`               | по refresh-cookie выдаёт новый access.         |
@@ -45,6 +46,7 @@ In-memory token bucket (`api/internal/middleware/middleware.go`): 20 запро�
 | `GET  /api/me/courses`                         | Мои курсы с прогрессом (`progress_pct`, `lessons_done/total`). |
 | `POST /api/courses/{slug}/enroll-free`         | Мгновенная запись на бесплатный курс. |
 | `POST /api/courses/{slug}/checkout`            | Создаёт `order` (status=`pending`). Возвращает `{payment_url, order_id}`. В test mode (`PRODAMUS_TEST_MODE=true`) возвращает локальный `/api/dev/fake-payment?order_id=...`. Требует `email_verified`. |
+| `GET  /api/courses/{slug}/files/{name}`        | Защищённая отдача PDF-материалов курса (`metodichka.pdf`, `kalendar.pdf`, `zamery.pdf`). Доступ только при наличии enrollment у текущего пользователя. Файлы embed-ятся в бинарь из `api/internal/assets/courses/{slug}/` (см. `handlers/course_files.go`). Белый список slug → файлов жёстко зашит в коде ради защиты от path traversal и случайной публикации лишнего. |
 | `POST /api/lessons/{id}/progress`              | `{completed: bool, last_position_sec: int}` upsert. |
 | `GET  /api/videos/{id}/playback`               | Возвращает `{playback_url}` со встроенным signed JWT (TTL `VIDEO_TOKEN_TTL`, по умолчанию 2 часа). |
 

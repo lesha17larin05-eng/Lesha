@@ -26,19 +26,53 @@ $EDITOR .env   # секреты, DATA_DIR=/srv/leshalarin, APP_HOST=https://...
 make build && make up
 ```
 
-### TLS
+### TLS (HTTPS) — пошагово
 
-Базовый nginx-конфиг слушает только `:80`. Для прода:
-1. На хосте: `apt install certbot && certbot certonly --standalone -d leshalarin.ru`.
-2. Расширить `nginx/nginx.conf` блоком `server { listen 443 ssl http2; ... }` и сертификатами из `/etc/letsencrypt/live/...`.
-3. Добавить volume mount сертификатов в `nginx` сервис в `docker-compose.yml`.
-4. Cron для обновления: `0 3 * * * certbot renew --post-hook "docker compose -f /opt/larin/docker-compose.yml restart nginx"`.
+`nginx/nginx.conf` уже содержит готовый, но **закомментированный** TLS-блок и редирект 80→443. На сервере остаётся:
+
+1. **Привязать домен.** A-запись `leshalarin.ru` (и `www`) → IP сервера. Подождать, пока DNS пропагнётся (`dig +short leshalarin.ru`).
+2. **Установить certbot:** `apt install -y certbot`.
+3. **Выпустить сертификат.** Один раз, при остановленном nginx-контейнере (Let's Encrypt должен сам слушать :80):
+   ```bash
+   docker compose stop nginx
+   certbot certonly --standalone -d leshalarin.ru -d www.leshalarin.ru
+   docker compose start nginx
+   ```
+   Серты появятся в `/etc/letsencrypt/live/leshalarin.ru/`.
+4. **Прокинуть серты в контейнер.** В `docker-compose.yml` у сервиса `nginx` добавить в `volumes`:
+   ```yaml
+   - /etc/letsencrypt:/etc/letsencrypt:ro
+   ```
+5. **Включить HTTPS в `nginx/nginx.conf`:**
+   - Раскомментировать весь `server { listen 443 ssl http2; ... }` блок.
+   - Раскомментировать строку `return 301 https://$host$request_uri;` в `server { listen 80; }` и закомментировать всё, что ниже неё внутри того же блока (location-секции).
+6. **Перезапустить nginx:**
+   ```bash
+   docker compose exec nginx nginx -t           # проверка конфига
+   docker compose restart nginx
+   ```
+7. **Автообновление серта.** Cron на хосте:
+   ```bash
+   echo '0 3 * * * certbot renew --quiet --post-hook "docker compose -f /opt/larin/docker-compose.yml exec -T nginx nginx -s reload"' \
+     | sudo crontab -
+   ```
+
+После этого сайт открывается по `https://leshalarin.ru`, cookies становятся `Secure` автоматически (Go-API смотрит на `X-Forwarded-Proto`, который nginx уже подставляет).
+
+#### Что включено «из коробки» в этом конфиге
+
+- `Content-Security-Policy` (через `map $csp_value`) — на 80 и 443.
+- `Strict-Transport-Security` (HSTS) — только на 443.
+- `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` — на обоих.
+- `ssl_protocols TLSv1.2 TLSv1.3` + OCSP stapling — стандартный современный набор.
+
+Если что-то на сайте перестало работать после включения CSP — открой DevTools → Console, нарушения видно сразу. Исправляй в одном месте — в `map $csp_value`.
 
 ## Переменные окружения
 
 | Переменная              | Назначение                                        | Дефолт          |
 |-------------------------|---------------------------------------------------|-----------------|
-| `APP_ENV`               | `development` / `production`. Режим cookies (Secure). | `development` |
+| `APP_ENV`               | `development` / `production`. Влияет на показ dev-полей (`verify_link_dev`, `reset_link_dev`, `password_dev`) и enable `PRODAMUS_TEST_MODE`-флоу. **Secure-флаг cookies теперь зависит от реального протокола** (X-Forwarded-Proto), а не от APP_ENV. | `development` |
 | `APP_HOST`              | Базовый URL, используется в письмах и redirect Продамуса. | `http://localhost` |
 | `JWT_SECRET`            | Подпись access JWT (≥32 байта).                   | dev            |
 | `SESSION_SECRET`        | Резерв для будущей серверной сессии.              | dev            |

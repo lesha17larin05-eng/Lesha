@@ -14,6 +14,8 @@ import (
 
 type registerReq struct {
 	Email, Password, Name string
+	ConsentPD             bool `json:"consent_pd"`
+	ConsentMarketing      bool `json:"consent_marketing"`
 }
 
 func (a *App) Register(w http.ResponseWriter, r *http.Request) {
@@ -27,6 +29,11 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "invalid_input")
 		return
 	}
+	// 152-ФЗ: обработка ПД невозможна без явного согласия субъекта.
+	if !in.ConsentPD {
+		writeErr(w, 400, "consent_pd_required")
+		return
+	}
 	hash, err := auth.HashPassword(in.Password)
 	if err != nil {
 		writeErr(w, 500, "hash_failed")
@@ -37,6 +44,8 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 409, "email_taken")
 		return
 	}
+	// Сохраняем факт согласий, чтобы можно было предъявить при жалобе/проверке.
+	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
 	raw, hashTok, _ := auth.RandomToken(32)
 	_ = a.Repo.CreateEmailToken(r.Context(), uid, hashTok, 24*time.Hour)
 	link := a.Cfg.AppHost + "/auth/verify?token=" + raw
@@ -45,7 +54,11 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 201, map[string]any{"id": uid, "verify_link_dev": link})
 }
 
-type quickSignupReq struct{ Email, Name, Phone string }
+type quickSignupReq struct {
+	Email, Name, Phone string
+	ConsentPD          bool `json:"consent_pd"`
+	ConsentMarketing   bool `json:"consent_marketing"`
+}
 
 // QuickSignup — одношаговая регистрация по email+имя без пароля.
 // Если email уже есть → {exists:true}, фронт перенаправит на /auth/login.
@@ -61,6 +74,10 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	in.Name = strings.TrimSpace(in.Name)
 	if !strings.Contains(in.Email, "@") || len(in.Email) < 5 {
 		writeErr(w, 400, "invalid_input")
+		return
+	}
+	if !in.ConsentPD {
+		writeErr(w, 400, "consent_pd_required")
 		return
 	}
 	if _, err := a.Repo.GetUserByEmail(r.Context(), in.Email); err == nil {
@@ -87,6 +104,8 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
+	// 152-ФЗ: сохраняем факт согласий (consent_pd обязательное, marketing — опциональное).
+	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
 	// Phone — опциональное поле, ошибку логируем, но не валим регистрацию.
 	if in.Phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
@@ -116,7 +135,7 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "session_failed")
 		return
 	}
-	setAuthCookies(w, access, refreshRaw, a.Cfg.AppEnv == "production")
+	setAuthCookies(w, r, access, refreshRaw)
 	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "enrolled_free": enrolled}
 	if a.Cfg.AppEnv != "production" {
 		resp["password_dev"] = password
@@ -153,7 +172,7 @@ func (a *App) Login(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "session_failed")
 		return
 	}
-	setAuthCookies(w, access, refreshRaw, a.Cfg.AppEnv == "production")
+	setAuthCookies(w, r, access, refreshRaw)
 	writeJSON(w, 200, map[string]any{"id": u.ID, "email": u.Email, "name": u.Name, "role": u.Role,
 		"email_verified": u.EmailVerifiedAt != nil})
 }
@@ -183,7 +202,7 @@ func (a *App) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	access, _ := auth.IssueAccessToken(a.Cfg.JWTSecret, u.ID, u.Role)
-	setAuthCookies(w, access, c.Value, a.Cfg.AppEnv == "production")
+	setAuthCookies(w, r, access, c.Value)
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
 

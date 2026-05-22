@@ -81,6 +81,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/api/lessons/{id}/progress", app.PostProgress)
 		r.Post("/api/courses/{slug}/enroll-free", app.EnrollFree)
 		r.Post("/api/courses/{slug}/checkout", app.Checkout)
+		r.Get("/api/courses/{slug}/files/{name}", app.CourseFile)
 	})
 	r.Post("/api/webhooks/prodamus", app.ProdamusWebhook)
 	r.Get("/api/dev/fake-payment", app.FakePayment)
@@ -177,9 +178,8 @@ func TestHealth(t *testing.T) {
 func TestRegisterLoginMe(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
-	r, body := c.do("POST", "/api/auth/register", map[string]string{
-		"email": "a@b.ru", "password": "password123", "name": "A",
-	})
+	r, body := c.do("POST", "/api/auth/register", map[string]any{
+		"email": "a@b.ru", "password": "password123", "name": "A", "consent_pd": true})
 	if r.StatusCode != 201 {
 		t.Fatalf("register failed: %d %s", r.StatusCode, body)
 	}
@@ -199,7 +199,7 @@ func TestRegisterLoginMe(t *testing.T) {
 func TestLoginWrongPassword(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "x@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "x@b.ru", "password": "password123", "consent_pd": true})
 	r, _ := c.do("POST", "/api/auth/login", map[string]string{"email": "x@b.ru", "password": "wrongpw"})
 	if r.StatusCode != 401 {
 		t.Fatalf("expected 401, got %d", r.StatusCode)
@@ -233,7 +233,7 @@ func TestEnrollFreeFlow(t *testing.T) {
 		t.Fatal(err)
 	}
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "u@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "u@b.ru", "password": "password123", "consent_pd": true})
 	c.do("POST", "/api/auth/login", map[string]string{"email": "u@b.ru", "password": "password123"})
 	r, body := c.do("POST", "/api/courses/free1/enroll-free", nil)
 	if r.StatusCode != 200 {
@@ -256,7 +256,7 @@ func TestPaidCheckoutRequiresVerification(t *testing.T) {
 		t.Fatal(err)
 	}
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "p@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "p@b.ru", "password": "password123", "consent_pd": true})
 	c.do("POST", "/api/auth/login", map[string]string{"email": "p@b.ru", "password": "password123"})
 	r, _ := c.do("POST", "/api/courses/paid1/checkout", nil)
 	if r.StatusCode != 400 {
@@ -275,7 +275,7 @@ func TestPaidCheckoutTestModeReturnsFakeURL(t *testing.T) {
 		t.Fatal(err)
 	}
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "v@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "v@b.ru", "password": "password123", "consent_pd": true})
 	// mark verified directly
 	u, _ := repo.GetUserByEmail(ctx, "v@b.ru")
 	_ = repo.MarkEmailVerified(ctx, u.ID)
@@ -292,7 +292,7 @@ func TestPaidCheckoutTestModeReturnsFakeURL(t *testing.T) {
 func TestAdminEndpointsRequireAdminRole(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "n@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "n@b.ru", "password": "password123", "consent_pd": true})
 	c.do("POST", "/api/auth/login", map[string]string{"email": "n@b.ru", "password": "password123"})
 	r, _ := c.do("GET", "/api/admin/stats", nil)
 	if r.StatusCode != 403 {
@@ -317,9 +317,8 @@ func TestQuickSignupCreatesAndAuthenticates(t *testing.T) {
 		t.Fatal(err)
 	}
 	c := newClient(srv)
-	r, body := c.do("POST", "/api/auth/quick-signup", map[string]string{
-		"email": "quick@b.ru", "name": "Q",
-	})
+	r, body := c.do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "quick@b.ru", "name": "Q", "consent_pd": true})
 	if r.StatusCode != 201 {
 		t.Fatalf("quick-signup: %d %s", r.StatusCode, body)
 	}
@@ -352,12 +351,11 @@ func TestQuickSignupCreatesAndAuthenticates(t *testing.T) {
 func TestQuickSignupExistingEmailReturnsExists(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{
-		"email": "dup@b.ru", "password": "password123", "name": "D",
-	})
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "dup@b.ru", "password": "password123", "name": "D", "consent_pd": true})
 	c2 := newClient(srv)
-	r, body := c2.do("POST", "/api/auth/quick-signup", map[string]string{
-		"email": "dup@b.ru", "name": "D2",
+	r, body := c2.do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "dup@b.ru", "name": "D2", "consent_pd": true,
 	})
 	if r.StatusCode != 200 {
 		t.Fatalf("expected 200, got %d %s", r.StatusCode, body)
@@ -374,7 +372,7 @@ func TestQuickSignupExistingEmailReturnsExists(t *testing.T) {
 func TestQuickSignupRejectsBadEmail(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
-	r, _ := c.do("POST", "/api/auth/quick-signup", map[string]string{"email": "nope"})
+	r, _ := c.do("POST", "/api/auth/quick-signup", map[string]any{"email": "nope", "consent_pd": true})
 	if r.StatusCode != 400 {
 		t.Fatalf("expected 400, got %d", r.StatusCode)
 	}
@@ -400,7 +398,7 @@ func TestAdminCanCreateCourse(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "ad@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "ad@b.ru", "password": "password123", "consent_pd": true})
 	u, _ := repo.GetUserByEmail(ctx, "ad@b.ru")
 	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, u.ID)
 	c.do("POST", "/api/auth/login", map[string]string{"email": "ad@b.ru", "password": "password123"})
@@ -418,7 +416,7 @@ func TestProgressEndpoint(t *testing.T) {
 	cid, _ := repo.CreateCourse(ctx, db.CourseInput{Slug: "fp", Title: "F", Kind: "free", IsPublished: true})
 	lid, _ := repo.CreateLesson(ctx, db.LessonInput{CourseID: cid, Title: "L", Slug: "l", SortOrder: 1})
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "pr@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "pr@b.ru", "password": "password123", "consent_pd": true})
 	c.do("POST", "/api/auth/login", map[string]string{"email": "pr@b.ru", "password": "password123"})
 	r, body := c.do("POST", "/api/lessons/"+lid.String()+"/progress",
 		map[string]any{"completed": true, "last_position_sec": 42})
@@ -519,7 +517,7 @@ func adminClient(t *testing.T, srv *httptest.Server, repo *db.Repo) *client {
 	ctx := context.Background()
 	email := "admin-" + uuid.New().String() + "@b.ru"
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": email, "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": email, "password": "password123", "consent_pd": true})
 	u, _ := repo.GetUserByEmail(ctx, email)
 	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, u.ID)
 	c.do("POST", "/api/auth/login", map[string]string{"email": email, "password": "password123"})
@@ -643,7 +641,7 @@ func TestAdminLessonEndpointsForbiddenForUser(t *testing.T) {
 	ctx := context.Background()
 	cid, _ := repo.CreateCourse(ctx, db.CourseInput{Slug: "fbd", Title: "F", Kind: "free", IsPublished: true})
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "regular@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{"email": "regular@b.ru", "password": "password123", "consent_pd": true})
 	c.do("POST", "/api/auth/login", map[string]string{"email": "regular@b.ru", "password": "password123"})
 	r, _ := c.do("GET", "/api/admin/courses/"+cid.String(), nil)
 	if r.StatusCode != 403 {
@@ -653,4 +651,185 @@ func TestAdminLessonEndpointsForbiddenForUser(t *testing.T) {
 	if r.StatusCode != 403 {
 		t.Fatalf("expected 403 for create lesson, got %d", r.StatusCode)
 	}
+}
+
+// CourseFile отдаёт PDF-материалы курса только пользователям с enrollment.
+// Проверяем: 401 без логина, 403 без enrollment, 200 с enrollment, 404 для
+// неизвестного файла. Закрытие /files/*.pdf — критичная safety-правка.
+func TestCourseFileRequiresEnrollment(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	price := 3990
+	cid, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zdorovaya-spina", Title: "Здоровая спина", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Anonymous → 401.
+	anon := newClient(srv)
+	r, _ := anon.do("GET", "/api/courses/zdorovaya-spina/files/metodichka.pdf", nil)
+	if r.StatusCode != 401 {
+		t.Fatalf("anon: expected 401, got %d", r.StatusCode)
+	}
+
+	// Logged-in but not enrolled → 403.
+	c := newClient(srv)
+	regResp, regBody := c.do("POST", "/api/auth/register", map[string]any{
+		"email": "buyer@b.ru", "password": "password123", "consent_pd": true})
+	if regResp.StatusCode != 201 {
+		t.Fatalf("register: %d %s", regResp.StatusCode, regBody)
+	}
+	c.do("POST", "/api/auth/login", map[string]string{
+		"email": "buyer@b.ru", "password": "password123",
+	})
+	r, body := c.do("GET", "/api/courses/zdorovaya-spina/files/metodichka.pdf", nil)
+	if r.StatusCode != 403 {
+		t.Fatalf("not enrolled: expected 403, got %d body=%s", r.StatusCode, body)
+	}
+
+	// Look up user id and grant enrollment directly.
+	user, err := repo.GetUserByEmail(ctx, "buyer@b.ru")
+	if err != nil || user == nil {
+		t.Fatalf("get user: %v", err)
+	}
+	if err := repo.Grant(ctx, user.ID, cid, "purchase", nil); err != nil {
+		t.Fatalf("grant: %v", err)
+	}
+
+	// Enrolled → 200 + application/pdf.
+	r, body = c.do("GET", "/api/courses/zdorovaya-spina/files/metodichka.pdf", nil)
+	if r.StatusCode != 200 {
+		t.Fatalf("enrolled: expected 200, got %d body=%s", r.StatusCode, body)
+	}
+	if ct := r.Header.Get("Content-Type"); ct != "application/pdf" {
+		t.Fatalf("expected Content-Type application/pdf, got %q", ct)
+	}
+	if len(body) < 1000 {
+		t.Fatalf("pdf body suspiciously short (%d bytes)", len(body))
+	}
+	if !bytes.HasPrefix(body, []byte("%PDF-")) {
+		t.Fatalf("response does not look like a PDF: first bytes = %q", body[:8])
+	}
+
+	// Unknown file name → 404, никаких path traversal.
+	r, _ = c.do("GET", "/api/courses/zdorovaya-spina/files/secret.pdf", nil)
+	if r.StatusCode != 404 {
+		t.Fatalf("unknown file: expected 404, got %d", r.StatusCode)
+	}
+	r, _ = c.do("GET", "/api/courses/nonexistent/files/metodichka.pdf", nil)
+	if r.StatusCode != 404 {
+		t.Fatalf("unknown slug: expected 404, got %d", r.StatusCode)
+	}
+}
+
+// 152-ФЗ: без согласия на обработку ПД регистрация невозможна.
+// Бэк должен возвращать 400 consent_pd_required, а в БД — никакого user не создавать.
+func TestRegisterRequiresConsentPD(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+	// consent_pd явно false (отсутствие поля = false)
+	r, body := c.do("POST", "/api/auth/register", map[string]any{
+		"email": "noconsent@b.ru", "password": "password123", "name": "N",
+	})
+	if r.StatusCode != 400 {
+		t.Fatalf("expected 400 without consent, got %d %s", r.StatusCode, body)
+	}
+	if !strings.Contains(string(body), "consent_pd_required") {
+		t.Fatalf("expected consent_pd_required error, got %s", body)
+	}
+	if _, err := repo.GetUserByEmail(ctx, "noconsent@b.ru"); err == nil {
+		t.Fatalf("user should not exist after rejected registration")
+	}
+}
+
+func TestQuickSignupRequiresConsentPD(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+	r, body := c.do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "noconsent2@b.ru", "name": "N",
+	})
+	if r.StatusCode != 400 {
+		t.Fatalf("expected 400 without consent, got %d %s", r.StatusCode, body)
+	}
+	if !strings.Contains(string(body), "consent_pd_required") {
+		t.Fatalf("expected consent_pd_required error, got %s", body)
+	}
+	if _, err := repo.GetUserByEmail(ctx, "noconsent2@b.ru"); err == nil {
+		t.Fatalf("user should not exist after rejected quick-signup")
+	}
+}
+
+// После успешной регистрации в users.consent_pd_at должна стоять отметка времени.
+// consent_marketing_at — NULL, если маркетинговое согласие не дано.
+// При consent_marketing=true — заполнено.
+func TestRegisterSavesConsentTimestamps(t *testing.T) {
+	srv, _, _ := setup(t)
+	c := newClient(srv)
+	r, body := c.do("POST", "/api/auth/register", map[string]any{
+		"email": "withconsent@b.ru", "password": "password123", "name": "W",
+		"consent_pd": true, "consent_marketing": true,
+	})
+	if r.StatusCode != 201 {
+		t.Fatalf("register failed: %d %s", r.StatusCode, body)
+	}
+	pool := pgConnFromEnv(t)
+	defer pool.Close()
+	var pdAt, marketingAt *time.Time
+	err := pool.QueryRow(context.Background(),
+		`SELECT consent_pd_at, consent_marketing_at FROM users WHERE email=$1`, "withconsent@b.ru").
+		Scan(&pdAt, &marketingAt)
+	if err != nil {
+		t.Fatalf("query consent: %v", err)
+	}
+	if pdAt == nil {
+		t.Fatalf("consent_pd_at should not be NULL after consented registration")
+	}
+	if marketingAt == nil {
+		t.Fatalf("consent_marketing_at should not be NULL when user opted in")
+	}
+
+	// Второй пользователь, без маркетингового согласия.
+	c2 := newClient(srv)
+	r, body = c2.do("POST", "/api/auth/register", map[string]any{
+		"email": "noads@b.ru", "password": "password123",
+		"consent_pd": true, "consent_marketing": false,
+	})
+	if r.StatusCode != 201 {
+		t.Fatalf("register failed: %d %s", r.StatusCode, body)
+	}
+	err = pool.QueryRow(context.Background(),
+		`SELECT consent_pd_at, consent_marketing_at FROM users WHERE email=$1`, "noads@b.ru").
+		Scan(&pdAt, &marketingAt)
+	if err != nil {
+		t.Fatalf("query consent: %v", err)
+	}
+	if pdAt == nil {
+		t.Fatalf("consent_pd_at should not be NULL")
+	}
+	if marketingAt != nil {
+		t.Fatalf("consent_marketing_at should be NULL when user did not opt in, got %v", *marketingAt)
+	}
+}
+
+// Helper: открывает второй pgxpool — нужен в тестах, которые делают прямые SELECT'ы
+// поверх пула из setup(), который не возвращается наружу.
+func pgConnFromEnv(t *testing.T) *pgxpool.Pool {
+	t.Helper()
+	dburl := os.Getenv("TEST_DATABASE_URL")
+	if dburl == "" {
+		dburl = os.Getenv("DATABASE_URL")
+	}
+	if dburl == "" {
+		t.Skip("TEST_DATABASE_URL not set")
+	}
+	pool, err := pgxpool.New(context.Background(), dburl)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	return pool
 }
