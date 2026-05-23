@@ -6,19 +6,20 @@
 
 ### Создание ссылки на оплату
 
-`POST /api/courses/{slug}/checkout`:
-1. Проверяем `email_verified_at != NULL`. Если нет → 400 `email_not_verified`.
-2. Проверяем нет ли уже enrollment → 400 `already_enrolled`.
-3. `INSERT INTO orders (..., status='pending')` — `order_num BIGSERIAL` даёт человекочитаемый номер.
-4. Формируем параметры платёжной страницы (см. `api/internal/handlers/payments.go`):
+`POST /api/courses/{slug}/checkout[?tariff=...]`:
+1. Если курс есть в `tariffPresets` (мапа в `handlers/payments.go`) — обязательно нужен `?tariff=<key>`. Без него → 400 `tariff_required`, с неизвестным → 400 `bad_tariff`. Цена и имя товара берутся из пресета. Для остальных платных курсов используется `courses.price_rub` / `courses.title`. Сейчас в пресетах: `zdorovaya-spina` → `self` (3990 ₽) и `support` (12990 ₽). После оплаты обоих тарифов юзер получает enrollment в один и тот же курс `zdorovaya-spina`; «поддержка» — внешняя услуга (TG-чат с Алексеем), не привязана к коду.
+2. Проверяем `email_verified_at != NULL`. Если нет → 400 `email_not_verified`.
+3. Проверяем нет ли уже enrollment → 400 `already_enrolled`.
+4. `INSERT INTO orders (..., status='pending')` — `order_num BIGSERIAL` даёт человекочитаемый номер.
+5. Формируем параметры платёжной страницы (см. `api/internal/handlers/payments.go`):
    - `do=pay`, `order_id=<UUID>`, `order_num=<bigint>`, `customer_email`, `products[0][name|price|quantity]`,
    - `urlReturn`, `urlSuccess`, `urlNotification` — все собираются от `APP_HOST`.
-5. Подпись HMAC-SHA256 через `prodamus.Sign(secret, params)`:
+6. Подпись HMAC-SHA256 через `prodamus.Sign(secret, params)`:
    - убирает поля `signature`/`sign` из map (рекурсивно),
    - сериализует **canonical JSON** с отсортированными ключами и без HTML-эскейпа (`SetEscapeHTML(false)`),
    - HMAC-SHA256 → hex.
-6. `prodamus.PaymentURL(...)` собирает финальный URL с подставленной `signature=...`.
-7. Если `PRODAMUS_TEST_MODE=true` → возвращаем `/api/dev/fake-payment?order_id=...` вместо реального URL.
+7. `prodamus.PaymentURL(...)` собирает финальный URL с подставленной `signature=...`.
+8. Если `PRODAMUS_TEST_MODE=true` → возвращаем `/api/dev/fake-payment?order_id=...` вместо реального URL.
 
 ### Webhook `/api/webhooks/prodamus`
 

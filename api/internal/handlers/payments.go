@@ -13,12 +13,52 @@ import (
 	"github.com/leshalarin/api/internal/middleware"
 )
 
+// tariffPreset — пресет тарифа для курса с несколькими ценами.
+type tariffPreset struct {
+	PriceRub int
+	Title    string
+}
+
+// tariffPresets — мапа курсов с несколькими тарифами.
+// Если у курса есть запись здесь — Checkout требует ?tariff=<key> и берёт
+// цену и название отсюда вместо courses.price_rub / courses.title.
+// Сделано без отдельной таблицы tariffs пока тарифов мало; легко мигрировать.
+var tariffPresets = map[string]map[string]tariffPreset{
+	"zdorovaya-spina": {
+		"self":    {PriceRub: 3990, Title: "Здоровая спина — Самостоятельный"},
+		"support": {PriceRub: 12990, Title: "Здоровая спина — С поддержкой"},
+	},
+}
+
 func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	c, err := a.Repo.GetCourseBySlug(r.Context(), slug)
-	if err != nil || c.Kind != "paid" || c.PriceRub == nil {
+	if err != nil || c.Kind != "paid" {
 		writeErr(w, 404, "not_found")
 		return
+	}
+	// Выбор тарифа: либо пресет (для курсов в tariffPresets), либо courses.price_rub.
+	price := 0
+	title := c.Title
+	if presets, ok := tariffPresets[c.Slug]; ok {
+		tariffKey := r.URL.Query().Get("tariff")
+		if tariffKey == "" {
+			writeErr(w, 400, "tariff_required")
+			return
+		}
+		p, ok := presets[tariffKey]
+		if !ok {
+			writeErr(w, 400, "bad_tariff")
+			return
+		}
+		price = p.PriceRub
+		title = p.Title
+	} else {
+		if c.PriceRub == nil {
+			writeErr(w, 404, "not_found")
+			return
+		}
+		price = *c.PriceRub
 	}
 	uid, _ := middleware.UserID(r.Context())
 	u, err := a.Repo.GetUser(r.Context(), uid)
@@ -35,7 +75,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "already_enrolled")
 		return
 	}
-	o, err := a.Repo.CreateOrder(r.Context(), uid, c.ID, *c.PriceRub)
+	o, err := a.Repo.CreateOrder(r.Context(), uid, c.ID, price)
 	if err != nil {
 		writeErr(w, 500, "order_failed")
 		return
@@ -45,8 +85,8 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		"order_id":        o.ID.String(),
 		"order_num":       strconv.FormatInt(o.OrderNum, 10),
 		"customer_email":  u.Email,
-		"products[0][name]":     c.Title,
-		"products[0][price]":    strconv.Itoa(*c.PriceRub),
+		"products[0][name]":     title,
+		"products[0][price]":    strconv.Itoa(price),
 		"products[0][quantity]": "1",
 		"urlReturn":      a.Cfg.AppHost + "/cabinet/courses",
 		"urlSuccess":     a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
