@@ -22,7 +22,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
 ---
 <SiteLayout title="Здоровая спина – курс Алексея Ларина" active="spina" pageStyles={styles}>
   <Fragment set:html={body} />
-  <script define:vars={{ enrolled }}>
+  <script define:vars={{ enrolled, isLoggedIn: !!user }}>
     if (enrolled) {
       // Eyebrow
       const eyebrow = document.querySelector('.eyebrow-text');
@@ -51,25 +51,62 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       });
     }
 
-    // ─── Tariff buttons ────────────────────────────────────────────────
-    // Пока Prodamus не подключён, кнопки «Купить» открывают Telegram
-    // с предзаполненным сообщением. Когда подключим оплату — заменим
-    // тело обработчика на POST /api/courses/zdorovaya-spina/checkout?tariff=...
-    const TARIFF_INFO = {
-      self:    { name: '«Самостоятельный»', price: '3 990 ₽' },
-      support: { name: '«С поддержкой»',    price: '12 990 ₽' },
-    };
+    // ─── Tariff buttons → POST /checkout → редирект на Продамус ─────────
+    async function startCheckout(tariff) {
+      // незалогиненный юзер: редирект на регистрацию с возвратом сюда
+      if (!isLoggedIn) {
+        const next = encodeURIComponent('/courses/zdorovaya-spina?tariff=' + tariff);
+        window.location.href = '/auth/register?next=' + next;
+        return;
+      }
+      const r = await fetch('/api/courses/zdorovaya-spina/checkout?tariff=' + encodeURIComponent(tariff), {
+        method: 'POST',
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.payment_url) {
+        window.location.href = data.payment_url;
+        return;
+      }
+      switch (data.error) {
+        case 'email_not_verified':
+          alert('Перед оплатой подтвердите email — ссылка отправлена в письме после регистрации.');
+          break;
+        case 'already_enrolled':
+          window.location.href = '/cabinet/zdorovaya-spina';
+          break;
+        case 'bad_tariff':
+        case 'tariff_required':
+          alert('Неизвестный тариф. Обновите страницу и попробуйте снова.');
+          break;
+        default:
+          alert('Не удалось создать платёж. Попробуйте позже или напишите в Telegram @larin_lesha.');
+      }
+    }
 
     document.querySelectorAll('[data-tariff]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault();
         const key = el.getAttribute('data-tariff');
-        const info = TARIFF_INFO[key];
-        if (!info) return;
-        const msg = 'Здравствуйте, Алексей! Хочу записаться на курс «Здоровая спина», тариф ' + info.name + ' (' + info.price + ').';
-        const url = 'https://t.me/larin_lesha?text=' + encodeURIComponent(msg);
-        window.open(url, '_blank', 'noopener');
+        if (key !== 'self' && key !== 'support') return;
+        const origLabel = el.textContent;
+        el.style.pointerEvents = 'none';
+        el.textContent = 'Открываю оплату…';
+        startCheckout(key)
+          .catch(() => alert('Ошибка соединения. Попробуйте ещё раз.'))
+          .finally(() => {
+            el.style.pointerEvents = '';
+            el.textContent = origLabel;
+          });
       });
     });
+
+    // Если страница открыта с ?tariff=... и юзер залогинен — автозапуск чекаута.
+    // Это срабатывает после регистрации (мы редиректим обратно на эту URL).
+    const _q = new URLSearchParams(window.location.search);
+    const _autoTariff = _q.get('tariff');
+    if (_autoTariff && isLoggedIn && !enrolled) {
+      history.replaceState({}, '', window.location.pathname);
+      startCheckout(_autoTariff);
+    }
   </script>
 </SiteLayout>

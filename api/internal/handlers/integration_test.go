@@ -289,6 +289,87 @@ func TestPaidCheckoutTestModeReturnsFakeURL(t *testing.T) {
 	}
 }
 
+// TestCheckoutTariffPresets — для курсов с пресетами тарифов (zdorovaya-spina)
+// Checkout берёт цену/название из tariffPresets, а не из courses.price_rub.
+// Без ?tariff — 400 tariff_required; неизвестный tariff — 400 bad_tariff.
+func TestCheckoutTariffPresets(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	price := 3990
+	_, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zdorovaya-spina", Title: "Здоровая спина", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// helper: создать верифицированного юзера и залогинить
+	makeVerified := func(email string) *client {
+		c := newClient(srv)
+		c.do("POST", "/api/auth/register", map[string]any{
+			"email": email, "password": "password123", "consent_pd": true,
+		})
+		u, _ := repo.GetUserByEmail(ctx, email)
+		_ = repo.MarkEmailVerified(ctx, u.ID)
+		c.do("POST", "/api/auth/login", map[string]string{
+			"email": email, "password": "password123",
+		})
+		return c
+	}
+
+	checkAmount := func(t *testing.T, body []byte, want int) {
+		t.Helper()
+		var resp struct {
+			OrderID string `json:"order_id"`
+		}
+		if err := json.Unmarshal(body, &resp); err != nil {
+			t.Fatalf("parse body: %v (%s)", err, body)
+		}
+		oid, err := uuid.Parse(resp.OrderID)
+		if err != nil {
+			t.Fatalf("bad order_id: %v", err)
+		}
+		o, err := repo.GetOrder(ctx, oid)
+		if err != nil {
+			t.Fatalf("get order: %v", err)
+		}
+		if o.AmountRub != want {
+			t.Fatalf("amount: want %d got %d", want, o.AmountRub)
+		}
+	}
+
+	// 1) self → 3990
+	c1 := makeVerified("t-self@b.ru")
+	r, body := c1.do("POST", "/api/courses/zdorovaya-spina/checkout?tariff=self", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "fake-payment") {
+		t.Fatalf("self: %d %s", r.StatusCode, body)
+	}
+	checkAmount(t, body, 3990)
+
+	// 2) support → 12990
+	c2 := makeVerified("t-sup@b.ru")
+	r, body = c2.do("POST", "/api/courses/zdorovaya-spina/checkout?tariff=support", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "fake-payment") {
+		t.Fatalf("support: %d %s", r.StatusCode, body)
+	}
+	checkAmount(t, body, 12990)
+
+	// 3) без tariff → 400 tariff_required
+	c3 := makeVerified("t-no@b.ru")
+	r, body = c3.do("POST", "/api/courses/zdorovaya-spina/checkout", nil)
+	if r.StatusCode != 400 || !strings.Contains(string(body), "tariff_required") {
+		t.Fatalf("no tariff: %d %s", r.StatusCode, body)
+	}
+
+	// 4) неизвестный tariff → 400 bad_tariff
+	c4 := makeVerified("t-bad@b.ru")
+	r, body = c4.do("POST", "/api/courses/zdorovaya-spina/checkout?tariff=premium", nil)
+	if r.StatusCode != 400 || !strings.Contains(string(body), "bad_tariff") {
+		t.Fatalf("bad tariff: %d %s", r.StatusCode, body)
+	}
+}
+
 func TestAdminEndpointsRequireAdminRole(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)

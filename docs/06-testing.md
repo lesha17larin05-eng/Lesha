@@ -44,6 +44,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestEnrollFreeFlow`                   | Бесплатная запись → курс появляется в `/api/me/courses`. |
 | `TestPaidCheckoutRequiresVerification` | Checkout без `email_verified` → 400 `email_not_verified`. |
 | `TestPaidCheckoutTestModeReturnsFakeURL` | После verify checkout возвращает URL `fake-payment`. |
+| `TestCheckoutTariffPresets`            | Курс `zdorovaya-spina`: `?tariff=self` → order.AmountRub=3990, `?tariff=support` → 12990, без `?tariff` → 400 `tariff_required`, неизвестный → 400 `bad_tariff`. |
 | `TestAdminEndpointsRequireAdminRole`   | Юзер без `role=admin` → 403 на `/api/admin/stats`. |
 | `TestQuickSignupCreatesAndAuthenticates` | `POST /api/auth/quick-signup` для нового email → 201 `{created:true}`, юзер создан, `email_verified_at != NULL`, cookies дают доступ к `/api/me`. |
 | `TestQuickSignupExistingEmailReturnsExists` | Тот же endpoint для уже существующего email → 200 `{exists:true}` без создания сессии. |
