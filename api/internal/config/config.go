@@ -51,7 +51,7 @@ func Load() *Config {
 		SMTPPort:           env("SMTP_PORT", "465"),
 		SMTPUser:           os.Getenv("SMTP_USER"),
 		SMTPPassword:       os.Getenv("SMTP_PASSWORD"),
-		SMTPFrom:           env("SMTP_FROM", "noreply@leshalarin.ru"),
+		SMTPFrom:           env("SMTP_FROM", "Leshalarin <info@leshalarin.ru>"),
 		ProdamusPayformURL: env("PRODAMUS_PAYFORM_URL", "https://leshalarin.payform.ru"),
 		ProdamusSecret:     env("PRODAMUS_SECRET_KEY", "test"),
 		ProdamusTestMode:   env("PRODAMUS_TEST_MODE", "true") == "true",
