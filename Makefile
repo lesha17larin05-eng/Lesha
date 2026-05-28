@@ -2,7 +2,19 @@ SHELL := /bin/bash
 COMPOSE ?= docker compose
 ENVFILE ?= --env-file .env
 
-.PHONY: help up down build rebuild logs ps psql migrate seed test test-clean clean fresh web-build api-build img
+.PHONY: help up down build rebuild logs ps psql migrate seed test test-clean clean fresh web-build api-build img deploy deploy-shell tls-init prod-logs prod-ps
+
+# ─── Deploy ──────────────────────────────────────────────────────────
+# Креды для sshpass: создай локальный .deploy.env (он gitignored), пример:
+#   DEPLOY_HOST=62.181.53.102
+#   DEPLOY_USER=root
+#   DEPLOY_PASS=...
+#   DEPLOY_PATH=/root/Lesha
+-include .deploy.env
+DEPLOY_HOST ?= 62.181.53.102
+DEPLOY_USER ?= root
+DEPLOY_PATH ?= /root/Lesha
+SSH         := sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
 
 help:
 	@echo "Targets:"
@@ -22,6 +34,13 @@ help:
 	@echo "  make fresh        — снести всё включая data/ (DESTRUCTIVE) и поднять заново"
 	@echo "  make clean        — снести стек и тома, но НЕ data/"
 	@echo "  make img FILE=foo.jpg DIR=hero [NAME=slug] — обработать картинку из корня репо в web/public/img/<DIR>/"
+	@echo ""
+	@echo "  --- Prod (требует .deploy.env с DEPLOY_PASS=...) ---"
+	@echo "  make deploy       — git pull + build + up на проде (одна команда)"
+	@echo "  make deploy-shell — открыть SSH-сессию к проду"
+	@echo "  make tls-init     — выпустить серт Let's Encrypt (только в первый раз)"
+	@echo "  make prod-logs    — хвост логов на проде"
+	@echo "  make prod-ps      — статус контейнеров на проде"
 
 up:
 	@if [ ! -f .env ]; then cp .env.example .env; echo ">> .env создан из .env.example"; fi
@@ -82,3 +101,27 @@ img:
 	docker run --rm -v "$(CURDIR)":/repo -w /repo/web node:20-alpine sh -c "\
 		(test -d node_modules/sharp || npm install --no-audit --no-fund --silent sharp) && \
 		node scripts/process-image.mjs ../$(FILE) $(DIR) $(if $(NAME),--name=$(NAME))"
+
+# ─── Prod deployment via sshpass ─────────────────────────────────────
+# Все таргеты требуют DEPLOY_PASS (см. .deploy.env.example).
+
+_check-deploy-creds:
+	@if [ -z "$$DEPLOY_PASS" ]; then \
+	  echo "!! DEPLOY_PASS не задан. Создай .deploy.env (см. .deploy.env.example) или экспортни в окружение."; \
+	  exit 1; \
+	fi
+
+deploy: _check-deploy-creds
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'bash $(DEPLOY_PATH)/scripts/deploy.sh'
+
+tls-init: _check-deploy-creds
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'bash $(DEPLOY_PATH)/scripts/init-tls.sh'
+
+deploy-shell: _check-deploy-creds
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) -t $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && exec bash -l'
+
+prod-logs: _check-deploy-creds
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose --env-file .env logs -f --tail=200'
+
+prod-ps: _check-deploy-creds
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose --env-file .env ps'
