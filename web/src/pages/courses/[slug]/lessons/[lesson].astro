@@ -13,10 +13,29 @@ const l = lessonData.lesson;
 const lessons = courseFull?.lessons || [];
 const html = marked.parse(l.content_md || '');
 const user = (Astro.locals as any).user;
+
+// ─── Видео-ссылки для бесплатного курса «Мягкий старт» ────────────
+// Захардкожены здесь (не в БД), потому что URL'ы фиксированные.
+// Если когда-нибудь захочется делать админку видео — перенесём в БД.
+const FREE_VIDEOS: Record<string, Record<string, { youtube?: string; vk?: string }>> = {
+  'myagkiy-start': {
+    'vvodnyy':              { youtube: 'https://youtu.be/unnNrpAhZXw' },
+    'sustavnaya-gimnastika':{ youtube: 'https://youtu.be/h1v7X47GZf8' },
+    'sheya':                { youtube: 'https://youtu.be/WkpJ91SuzMQ' },
+    'zdorovaya-spina':      { youtube: 'https://youtu.be/2SteUTw8W70' },
+    'stopy':                { youtube: 'https://youtu.be/YjBP2ZfncGQ' },
+    'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/8icidvUi444' },
+    'meditatsiya':          { youtube: 'https://youtu.be/n__CTTITCzI' },
+    'itogovyy':             { youtube: 'https://youtu.be/YU806LDeie0' },
+  },
+};
+const v = FREE_VIDEOS[slug ?? '']?.[lesson ?? ''];
+const ytId = v?.youtube?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]{6,})/)?.[1];
+const ytEmbed = ytId ? `https://www.youtube.com/embed/${ytId}` : null;
 ---
 <Base title={l.title} user={user}>
-  <section class="container" style="padding:30px 0; display:grid; grid-template-columns: 280px 1fr; gap:40px;">
-    <aside style="border-right:1px solid #ece8df; padding-right:20px;">
+  <section class="lesson-page">
+    <aside class="lesson-side">
       <a href={`/courses/${slug}`} class="muted">← {course.title}</a>
       <ol style="margin-top:14px; padding-left:18px;">
         {lessons.map((x: any) => (
@@ -26,15 +45,80 @@ const user = (Astro.locals as any).user;
         ))}
       </ol>
     </aside>
-    <article>
+    <article class="lesson-main">
       <h1>{l.title}</h1>
-      {l.video_id && <div id="player" style="margin:20px 0;"><video controls style="width:100%; border-radius:10px; background:#000"></video></div>}
+
+      {/* YouTube для бесплатного курса */}
+      {ytEmbed && (
+        <div class="lesson-video">
+          <iframe src={ytEmbed} title={l.title} frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      )}
+
+      {/* HLS-плеер для платного курса */}
+      {!ytEmbed && l.video_id && (
+        <div id="player" class="lesson-video"><video controls></video></div>
+      )}
+
+      {/* Кнопки ВК / YouTube для бесплатного курса */}
+      {v && (v.youtube || v.vk) && (
+        <div class="lesson-platforms">
+          {v.youtube && (
+            <a href={v.youtube} target="_blank" rel="noopener" class="lesson-platform lesson-platform--yt">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+              Смотреть на YouTube
+            </a>
+          )}
+          {v.vk && (
+            <a href={v.vk} target="_blank" rel="noopener" class="lesson-platform lesson-platform--vk">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
+              Смотреть во ВКонтакте
+            </a>
+          )}
+        </div>
+      )}
+
       <div set:html={html} />
       <div style="margin-top:30px; display:flex; gap:12px;">
         <button class="btn" id="mark-done">Отметить как пройденный</button>
       </div>
     </article>
   </section>
+
+  <style is:global>
+    .lesson-page {
+      max-width: 1180px; margin: 0 auto;
+      padding: 30px 24px;
+      display: grid; grid-template-columns: 280px 1fr; gap: 40px;
+    }
+    .lesson-side { border-right: 1px solid #ece8df; padding-right: 20px; }
+    .lesson-side ol li { margin: 6px 0; line-height: 1.4; }
+    .lesson-main h1 { margin-top: 0; }
+    .lesson-video {
+      margin: 20px 0; aspect-ratio: 16/9; width: 100%;
+      border-radius: 10px; background: #000; overflow: hidden;
+    }
+    .lesson-video iframe, .lesson-video video { width: 100%; height: 100%; border: 0; display: block; }
+    .lesson-platforms { display: flex; gap: 12px; flex-wrap: wrap; margin: 0 0 24px; }
+    .lesson-platform {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .lesson-platform:hover { transform: translateY(-1px); }
+    .lesson-platform--yt { background: #ff0033; color: #fff; }
+    .lesson-platform--yt:hover { background: #cc0028; }
+    .lesson-platform--vk { background: #0077ff; color: #fff; }
+    .lesson-platform--vk:hover { background: #0066d9; }
+    @media (max-width: 760px) {
+      .lesson-page { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px; }
+      .lesson-side { border-right: none; border-bottom: 1px solid #ece8df; padding: 0 0 16px; }
+      .lesson-platform { flex: 1; justify-content: center; min-width: 0; }
+    }
+  </style>
   <script define:vars={{ lessonId: l.id, videoId: l.video_id }}>
     document.getElementById('mark-done')?.addEventListener('click', async () => {
       const r = await fetch(`/api/lessons/${lessonId}/progress`, {
