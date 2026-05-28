@@ -11,51 +11,56 @@ make up                # postgres → migrate → api (со встроенным
 
 ## Production VPS (Ubuntu 22.04+)
 
-Требования: 4+ ГБ RAM (ffmpeg прожорлив), 80+ ГБ диск, открыты порты 22 (whitelist), 80, 443.
+Требования: 4+ ГБ RAM (ffmpeg прожорлив), 80+ ГБ диск, Docker + docker compose v2, открыты порты 22 (whitelist), 80, 443.
+
+### Первая раскатка
 
 ```bash
-# 1. Подготовить хост
-useradd -u 1000 -m app
-mkdir -p /srv/leshalarin/{pgdata,videos,uploads,backups}
-chown -R 1000:1000 /srv/leshalarin/
+# 1. Подготовить хост (один раз)
+mkdir -p /root/data/{pgdata,videos,uploads,backups,certbot/www}
 
-# 2. Раскатать
-cd /opt && git clone <repo> larin && cd larin
+# 2. Клонировать и сконфигурировать
+cd /root && git clone https://github.com/lesha17larin05-eng/Lesha.git Lesha && cd Lesha
 cp .env.example .env
-$EDITOR .env   # секреты, DATA_DIR=/srv/leshalarin, APP_HOST=https://...
-make build && make up
+$EDITOR .env   # секреты, DATA_DIR=/root/data, APP_HOST=https://leshalarin.ru, CORS_ORIGIN=https://leshalarin.ru, APP_ENV=production
+
+# 3. Выпустить TLS-сертификат и поднять стек
+bash scripts/init-tls.sh
+# (см. ниже про DNS — перед запуском A-запись leshalarin.ru должна указывать на IP сервера)
 ```
 
-### TLS (HTTPS) — пошагово
+### Обновления
 
-`nginx/nginx.conf` уже содержит готовый, но **закомментированный** TLS-блок и редирект 80→443. На сервере остаётся:
+Дальнейшие апдейты — одной командой с локальной машины:
 
-1. **Привязать домен.** A-запись `leshalarin.ru` (и `www`) → IP сервера. Подождать, пока DNS пропагнётся (`dig +short leshalarin.ru`).
-2. **Установить certbot:** `apt install -y certbot`.
-3. **Выпустить сертификат.** Один раз, при остановленном nginx-контейнере (Let's Encrypt должен сам слушать :80):
-   ```bash
-   docker compose stop nginx
-   certbot certonly --standalone -d leshalarin.ru -d www.leshalarin.ru
-   docker compose start nginx
-   ```
-   Серты появятся в `/etc/letsencrypt/live/leshalarin.ru/`.
-4. **Прокинуть серты в контейнер.** В `docker-compose.yml` у сервиса `nginx` добавить в `volumes`:
-   ```yaml
-   - /etc/letsencrypt:/etc/letsencrypt:ro
-   ```
-5. **Включить HTTPS в `nginx/nginx.conf`:**
-   - Раскомментировать весь `server { listen 443 ssl http2; ... }` блок.
-   - Раскомментировать строку `return 301 https://$host$request_uri;` в `server { listen 80; }` и закомментировать всё, что ниже неё внутри того же блока (location-секции).
-6. **Перезапустить nginx:**
-   ```bash
-   docker compose exec nginx nginx -t           # проверка конфига
-   docker compose restart nginx
-   ```
-7. **Автообновление серта.** Cron на хосте:
-   ```bash
-   echo '0 3 * * * certbot renew --quiet --post-hook "docker compose -f /opt/larin/docker-compose.yml exec -T nginx nginx -s reload"' \
-     | sudo crontab -
-   ```
+```bash
+cp .deploy.env.example .deploy.env   # один раз, заполнить DEPLOY_PASS
+make deploy
+```
+
+Под капотом — `git pull && docker compose build && up -d` + smoke-проверка `/api/health`. Миграции и сидер запускаются автоматически (compose-сервис `migrate` + сам api при старте — идемпотентно).
+
+Соседние таргеты: `make prod-logs`, `make prod-ps`, `make deploy-shell`, `make tls-init` (повторный запуск тоже безопасен — certbot ничего не делает, если серт ещё валиден).
+
+### TLS (HTTPS)
+
+`scripts/init-tls.sh` делает всё за раз:
+
+1. Генерит self-signed placeholder в `/etc/letsencrypt/live/leshalarin.ru/` — чтобы nginx-контейнер с 443-блоком мог стартовать.
+2. Поднимает стек (`docker compose up -d`). Nginx слушает 80 (отдаёт `/.well-known/acme-challenge`) и 443 (на placeholder-серте).
+3. Делает pre-check, что `http://leshalarin.ru/.well-known/acme-challenge/...` реально доходит снаружи (то, что увидит Let's Encrypt).
+4. Запускает `certbot/certbot:latest certonly --webroot -w /var/www/certbot -d leshalarin.ru -d www.leshalarin.ru` — реальный серт заменяет placeholder.
+5. Делает `nginx -t && nginx -s reload`.
+
+Требования:
+- A-записи `leshalarin.ru` и `www.leshalarin.ru` указывают на IP сервера.
+- Порт 80 открыт извне (без него Let's Encrypt не сможет валидировать).
+
+Опции скрипта:
+- `STAGING=1 bash scripts/init-tls.sh` — выпустить тестовый серт через Let's Encrypt staging (для отладки, не расходует лимит реальных серов).
+- `DOMAIN=`, `ALT_DOMAIN=`, `LETSENCRYPT_EMAIL=` — переопределить дефолты.
+
+**Автообновление серта.** Скрипт в конце печатает готовую cron-строку. Скопируй и выполни — будет каждый день в 03:00 проверять renew и релоадить nginx, если выпустится новый серт. Let's Encrypt сам обновит за 30 дней до истечения; чаще — no-op.
 
 После этого сайт открывается по `https://leshalarin.ru`, cookies становятся `Secure` автоматически (Go-API смотрит на `X-Forwarded-Proto`, который nginx уже подставляет).
 

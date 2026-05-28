@@ -91,9 +91,14 @@ services:
       - web
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ${DATA_DIR:-./data}/videos:/var/videos:ro
+      # Сертификаты Let's Encrypt с хоста (read-only)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Webroot для ACME-челленджей (certbot пишет сюда, nginx раздаёт)
+      - ${DATA_DIR:-./data}/certbot/www:/var/www/certbot:ro
     networks:
       - internal
 
