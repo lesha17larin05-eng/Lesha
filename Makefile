@@ -14,6 +14,7 @@ ENVFILE ?= --env-file .env
 DEPLOY_HOST ?= 62.181.53.102
 DEPLOY_USER ?= root
 DEPLOY_PATH ?= /root/Lesha
+export DEPLOY_PASS
 SSH         := sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
 
 help:
@@ -112,16 +113,16 @@ _check-deploy-creds:
 	fi
 
 deploy: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'bash $(DEPLOY_PATH)/scripts/deploy.sh'
+	@SSHPASS="$$DEPLOY_PASS" $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'bash $(DEPLOY_PATH)/scripts/deploy.sh'
 
 tls-init: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'bash $(DEPLOY_PATH)/scripts/init-tls.sh'
+	@SSHPASS="$$DEPLOY_PASS" $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'bash $(DEPLOY_PATH)/scripts/init-tls.sh'
 
 deploy-shell: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) -t $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && exec bash -l'
+	@SSHPASS="$$DEPLOY_PASS" $(SSH) -t $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && exec bash -l'
 
 prod-logs: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose -f docker-compose.yml --env-file .env logs -f --tail=200'
+	@SSHPASS="$$DEPLOY_PASS" $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose -f docker-compose.yml --env-file .env logs -f --tail=200'
 
 prod-ps: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose -f docker-compose.yml --env-file .env ps'
+	@SSHPASS="$$DEPLOY_PASS" $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose -f docker-compose.yml --env-file .env ps'
