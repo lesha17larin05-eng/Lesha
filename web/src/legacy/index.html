@@ -277,6 +277,26 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .story{grid-template-columns:1fr;}
   .anchor-nav{padding:0 24px; gap:20px; overflow-x:auto;}
   footer{flex-direction:column; gap:20px; padding:32px 24px; text-align:center;}
+
+  /* ─── мобильные фиксы для сеток на главной ─────────────────── */
+  /* «01 Анкета и погружение» — было 72px+1fr+1fr, теперь одна колонка */
+  .format-step-wide{grid-template-columns:1fr; gap:14px; padding:28px 0;}
+  .fsw-num{font-size:38px; line-height:1;}
+  .fsw-aside{padding-top:0;}
+  /* «Как выглядит ваш путь по месяцам» — было 4 колонки, теперь одна */
+  .journey-section{padding:28px 20px;}
+  .journey-grid{grid-template-columns:1fr; gap:16px;}
+  .journey-month{padding:24px 22px;}
+  /* Результаты «76 кг → 65 кг» — было 2 колонки, теперь одна */
+  .rc-grid{grid-template-columns:1fr; gap:18px; margin-bottom:18px;}
+  .rc-text-grid{grid-template-columns:1fr; gap:18px;}
+  .rc-body{padding:24px 22px;}
+  .rc-photos--2{grid-template-columns:1fr 1fr;}
+  /* секционные отступы */
+  .results.section{padding:60px 24px;}
+  /* ничего не должно вылазить за вьюпорт */
+  *,*::before,*::after{max-width:100%;}
+  img,video,picture,svg{max-width:100%; height:auto;}
 }
 
 /* ROCKET */
@@ -320,8 +340,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .rocket-inner,.base-inner{grid-template-columns:1fr; gap:40px;}
   .rocket-section,.base-section{padding:60px 24px;}
   .base-pillars{grid-template-columns:repeat(2,1fr);}
-  .scales-visual{flex-direction:row; gap:16px;}
-  .scale-beam{width:140px;}
+  .scales-visual{flex-direction:column; gap:32px; align-items:center;}
+  .scale-beam{width:240px;}
 }
 .social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
 .social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
