@@ -121,7 +121,7 @@ deploy-shell: _check-deploy-creds
 	@SSHPASS='$(DEPLOY_PASS)' $(SSH) -t $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && exec bash -l'
 
 prod-logs: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose --env-file .env logs -f --tail=200'
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose -f docker-compose.yml --env-file .env logs -f --tail=200'
 
 prod-ps: _check-deploy-creds
-	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose --env-file .env ps'
+	@SSHPASS='$(DEPLOY_PASS)' $(SSH) $(DEPLOY_USER)@$(DEPLOY_HOST) 'cd $(DEPLOY_PATH) && docker compose -f docker-compose.yml --env-file .env ps'
