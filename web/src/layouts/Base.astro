@@ -34,8 +34,16 @@ const {
     }
     *,*::before,*::after { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
     body { font-family: 'Manrope', system-ui, -apple-system, sans-serif; color: var(--text); background: var(--warm-white); -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+    /* Защита от вылазящих за viewport элементов на мобиле */
+    img, video, picture, svg, iframe { max-width: 100%; height: auto; }
+    @media (max-width: 700px) {
+      /* всё внутри страницы не шире вьюпорта */
+      main, section, header, footer, nav, article, aside, div { max-width: 100%; }
+      /* длинные слова и URL переносить по словам, а не по буквам */
+      p, li, h1, h2, h3, h4, h5, h6, span, a, blockquote, td, th { overflow-wrap: break-word; word-wrap: break-word; }
+    }
     a { color: var(--orange); text-decoration: none; }
     a:hover { text-decoration: underline; }
     h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 500; color: var(--navy); margin: 0 0 .5em; line-height: 1.2; }
