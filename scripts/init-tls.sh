@@ -15,7 +15,7 @@ DOMAIN="${DOMAIN:-leshalarin.ru}"
 ALT_DOMAIN="${ALT_DOMAIN:-www.leshalarin.ru}"
 EMAIL="${LETSENCRYPT_EMAIL:-admin@leshalarin.ru}"
 DATA_DIR_DEFAULT="/root/data"
-COMPOSE="${COMPOSE:-docker compose}"
+COMPOSE="${COMPOSE:-docker compose -f docker-compose.yml}"
 
 cd "$REPO_DIR"
 
@@ -54,9 +54,10 @@ $COMPOSE --env-file .env up -d --remove-orphans
 sleep 3
 
 echo ">> [3/5] pre-check: nginx отдаёт /.well-known/acme-challenge?"
+mkdir -p "$WEBROOT/.well-known/acme-challenge"
 TEST_FILE=".acme-precheck-$$"
-echo "ok" > "$WEBROOT/$TEST_FILE"
-trap "rm -f $WEBROOT/$TEST_FILE" EXIT
+echo "ok" > "$WEBROOT/.well-known/acme-challenge/$TEST_FILE"
+trap "rm -f $WEBROOT/.well-known/acme-challenge/$TEST_FILE" EXIT
 
 # Проба сначала по IP+Host (DNS мог ещё не пропагнуться, но nginx обязан отвечать)
 if ! curl -fsS -H "Host: $DOMAIN" "http://127.0.0.1/.well-known/acme-challenge/$TEST_FILE" >/dev/null; then

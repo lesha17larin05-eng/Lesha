@@ -10,7 +10,7 @@ set -euo pipefail
 
 REPO_DIR="${REPO_DIR:-/root/Lesha}"
 BRANCH="${BRANCH:-main}"
-COMPOSE="${COMPOSE:-docker compose}"
+COMPOSE="${COMPOSE:-docker compose -f docker-compose.yml}"
 
 cd "$REPO_DIR"
 
