@@ -19,14 +19,14 @@ const user = (Astro.locals as any).user;
 // Если когда-нибудь захочется делать админку видео — перенесём в БД.
 const FREE_VIDEOS: Record<string, Record<string, { youtube?: string; vk?: string }>> = {
   'myagkiy-start': {
-    'vvodnyy':              { youtube: 'https://youtu.be/unnNrpAhZXw' },
-    'sustavnaya-gimnastika':{ youtube: 'https://youtu.be/h1v7X47GZf8' },
-    'sheya':                { youtube: 'https://youtu.be/WkpJ91SuzMQ' },
-    'zdorovaya-spina':      { youtube: 'https://youtu.be/2SteUTw8W70' },
-    'stopy':                { youtube: 'https://youtu.be/YjBP2ZfncGQ' },
-    'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/8icidvUi444' },
-    'meditatsiya':          { youtube: 'https://youtu.be/n__CTTITCzI' },
-    'itogovyy':             { youtube: 'https://youtu.be/YU806LDeie0' },
+    'vvodnyy':              { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },
+    'sustavnaya-gimnastika':{ youtube: 'https://youtu.be/h1v7X47GZf8', vk: 'https://vkvideo.ru/video-141544391_456239601?list=ln-Vzl3j8EOqEjlcztrPI' },
+    'sheya':                { youtube: 'https://youtu.be/WkpJ91SuzMQ', vk: 'https://vkvideo.ru/video-141544391_456239602?list=ln-lJenrW8Aw9WvjKOUph' },
+    'zdorovaya-spina':      { youtube: 'https://youtu.be/2SteUTw8W70', vk: 'https://vkvideo.ru/video-141544391_456239603?list=ln-3uhrATQFzcGbPm733E' },
+    'stopy':                { youtube: 'https://youtu.be/YjBP2ZfncGQ', vk: 'https://vkvideo.ru/video-141544391_456239604?list=ln-gWUMLYyhdzuOpH97Ev' },
+    'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/8icidvUi444', vk: 'https://vkvideo.ru/video-141544391_456239605?list=ln-lzKgZrMzUEtSTRxRxZ' },
+    'meditatsiya':          { youtube: 'https://youtu.be/n__CTTITCzI', vk: 'https://vkvideo.ru/video-141544391_456239606?list=ln-zXzqkZWLYscI6e5vdL' },
+    'itogovyy':             { youtube: 'https://youtu.be/YU806LDeie0', vk: 'https://vkvideo.ru/video-141544391_456239607?list=ln-zj1WZXmZgvtVCnakJ1' },
   },
 };
 const v = FREE_VIDEOS[slug ?? '']?.[lesson ?? ''];
