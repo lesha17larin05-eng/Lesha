@@ -13,6 +13,8 @@ if (status !== 200) return Astro.redirect('/course', 302);
 const enrolled: boolean = !!data.enrolled;
 const course = data.course;
 const rawLessons: any[] = data.lessons || [];
+// Бесплатный курс — все уроки доступны без enrollment
+const isFreeCourse = course?.kind === 'free';
 
 // UI-only metadata keyed by lesson slug (colours/tags — not content)
 const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }> = {
@@ -488,7 +490,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
 
       <div class="ms-video-grid">
         {lessons.map(l => {
-          const accessible = enrolled || l.isFree;
+          const accessible = isFreeCourse || enrolled || l.isFree;
           const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
           const links = l.video.youtube || l.video.vk ? l.video : null;
           const mp4Url = `/lesson-videos/${slug}/${l.slug}.mp4`;
