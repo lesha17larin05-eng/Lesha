@@ -26,9 +26,22 @@ const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }>
   'itogovyy':              { tag: 'Итог',      tagBg: '#f0f0f0', tagColor: '#444'    },
 };
 
+// Ссылки на YouTube и ВК для каждого урока — кнопки под видео.
+const videoLinks: Record<string, { youtube: string; vk: string }> = {
+  'vvodnyy':               { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },
+  'sustavnaya-gimnastika': { youtube: 'https://youtu.be/h1v7X47GZf8', vk: 'https://vkvideo.ru/video-141544391_456239601?list=ln-Vzl3j8EOqEjlcztrPI' },
+  'sheya':                 { youtube: 'https://youtu.be/WkpJ91SuzMQ', vk: 'https://vkvideo.ru/video-141544391_456239602?list=ln-lJenrW8Aw9WvjKOUph' },
+  'zdorovaya-spina':       { youtube: 'https://youtu.be/2SteUTw8W70', vk: 'https://vkvideo.ru/video-141544391_456239603?list=ln-3uhrATQFzcGbPm733E' },
+  'stopy':                 { youtube: 'https://youtu.be/YjBP2ZfncGQ', vk: 'https://vkvideo.ru/video-141544391_456239604?list=ln-gWUMLYyhdzuOpH97Ev' },
+  'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/8icidvUi444', vk: 'https://vkvideo.ru/video-141544391_456239605?list=ln-lzKgZrMzUEtSTRxRxZ' },
+  'meditatsiya':           { youtube: 'https://youtu.be/n__CTTITCzI', vk: 'https://vkvideo.ru/video-141544391_456239606?list=ln-zXzqkZWLYscI6e5vdL' },
+  'itogovyy':              { youtube: 'https://youtu.be/YU806LDeie0', vk: 'https://vkvideo.ru/video-141544391_456239607?list=ln-zj1WZXmZgvtVCnakJ1' },
+};
+
 const lessons = rawLessons.map((l: any, i: number) => {
   const meta = slugMeta[l.slug] ?? { tag: '', tagBg: '#f0f0f0', tagColor: '#444' };
   const mins = l.duration_sec ? Math.round(l.duration_sec / 60) : 0;
+  const video = videoLinks[l.slug] ?? { youtube: '', vk: '' };
   return {
     num: i,
     slug: l.slug,
@@ -39,6 +52,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
     tagBg: meta.tagBg,
     tagColor: meta.tagColor,
     isFree: !!l.is_preview,
+    video,
   };
 });
 ---
@@ -244,6 +258,43 @@ const lessons = rawLessons.map((l: any, i: number) => {
       padding: 4px 10px; border-radius: 100px;
     }
 
+    /* Inline video player (replaces stub when accessible) */
+    .ms-video-player {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
+    }
+    .ms-video-player video {
+      width: 100%; height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+    .ms-video-player .ms-video-num { color: rgba(255,255,255,0.18); }
+    .ms-video-player .ms-video-duration {
+      background: rgba(0,0,0,0.55); color: white;
+      backdrop-filter: blur(4px);
+    }
+
+    /* YouTube / VK platform buttons */
+    .ms-video-platforms {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin: 16px 0 4px;
+    }
+    .ms-platform {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 100px;
+      font-size: 13px; font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .ms-platform:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .ms-platform--yt { background: #ff0033; color: #fff; }
+    .ms-platform--yt:hover { background: #cc0028; }
+    .ms-platform--vk { background: #0077ff; color: #fff; }
+    .ms-platform--vk:hover { background: #0066d9; }
+    .ms-platform svg { flex-shrink: 0; }
+
     /* Card body */
     .ms-video-body { padding: 22px 24px 24px; }
     .ms-video-tag {
@@ -439,41 +490,59 @@ const lessons = rawLessons.map((l: any, i: number) => {
         {lessons.map(l => {
           const accessible = enrolled || l.isFree;
           const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
+          const links = l.video.youtube || l.video.vk ? l.video : null;
+          const mp4Url = `/lesson-videos/${slug}/${l.slug}.mp4`;
           return (
             <div class="ms-video-card">
-              <div class={`ms-video-stub${accessible ? '' : ' locked'}`}>
-                <div class="ms-video-num">{l.num}</div>
-                {accessible
-                  ? (
-                    <a href={lessonUrl} class="ms-video-play" aria-label={`Смотреть урок: ${l.title}`}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="white"/></svg>
-                    </a>
-                  )
-                  : (
-                    <>
-                      <div class="ms-video-play" aria-hidden="true">
-                        <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="rgba(255,255,255,0.4)"/></svg>
-                      </div>
-                      <div class="ms-video-lock" aria-label="Урок заблокирован">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                      </div>
-                    </>
-                  )
-                }
-                <div class="ms-video-duration">{l.duration}</div>
-              </div>
+              {accessible
+                ? (
+                  <div class="ms-video-player">
+                    <video controls preload="metadata" playsinline src={mp4Url}></video>
+                    <div class="ms-video-num">{l.num}</div>
+                    <div class="ms-video-duration">{l.duration}</div>
+                  </div>
+                )
+                : (
+                  <div class="ms-video-stub locked">
+                    <div class="ms-video-num">{l.num}</div>
+                    <div class="ms-video-play" aria-hidden="true">
+                      <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="rgba(255,255,255,0.4)"/></svg>
+                    </div>
+                    <div class="ms-video-lock" aria-label="Урок заблокирован">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    </div>
+                    <div class="ms-video-duration">{l.duration}</div>
+                  </div>
+                )
+              }
               <div class="ms-video-body">
                 <div class="ms-video-tag" style={`background:${l.tagBg}; color:${l.tagColor};`}>{l.tag}</div>
                 <div class="ms-video-title">{l.title}</div>
                 <div class="ms-video-desc">{l.desc}</div>
+                {accessible && links && (
+                  <div class="ms-video-platforms">
+                    {links.youtube && (
+                      <a href={links.youtube} target="_blank" rel="noopener" class="ms-platform ms-platform--yt" aria-label="Смотреть на YouTube">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+                        YouTube
+                      </a>
+                    )}
+                    {links.vk && (
+                      <a href={links.vk} target="_blank" rel="noopener" class="ms-platform ms-platform--vk" aria-label="Смотреть во ВКонтакте">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
+                        ВКонтакте
+                      </a>
+                    )}
+                  </div>
+                )}
                 <div class="ms-video-footer">
                   {accessible
                     ? (
                       <a href={lessonUrl} class="ms-video-link">
-                        Смотреть урок
+                        Открыть отдельно
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                       </a>
                     )
