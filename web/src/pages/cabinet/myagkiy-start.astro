@@ -202,7 +202,7 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
               </div>
             </div>
             <div class="ms-cab-video-wrap">
-              <video controls preload="metadata" playsinline src={mp4Url}></video>
+              <video controls preload="metadata" playsinline src={mp4Url} poster="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect width='1280' height='720' fill='%231a2744'/%3E%3Ccircle cx='640' cy='360' r='80' fill='rgba(255,255,255,0.20)'/%3E%3Cpolygon points='608,310 608,410 704,360' fill='white'/%3E%3C/svg%3E"></video>
             </div>
             {(l.video.youtube || l.video.vk) && (
               <div class="ms-cab-platforms">
