@@ -445,10 +445,35 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 }
 @media(max-width:760px){
   nav { padding: 0 20px; }
-  
+
   .hero { grid-template-columns: 1fr; }
   .hero-left { padding: 56px 24px; }
-  .hero-right { min-height: 400px; }
+  .hero-right { min-height: 320px; }
+
+  /* CTA-кнопка на всю ширину — стрелка не съезжает на новую строку */
+  .hero-cta { align-items: stretch; }
+  .btn-hero {
+    width: 100%; justify-content: center;
+    padding: 16px 20px; font-size: 15px;
+    box-sizing: border-box;
+  }
+  .btn-hero-secondary { align-self: center; }
+
+  /* Плашки больше не накрывают лица детей — уходят под фото */
+  .hero-photo { transform: none; }
+  .seasons-pill, .hero-badge { position: static; box-shadow: none; }
+  .seasons-pill {
+    width: 100%; padding: 12px 20px;
+    border-radius: 0; justify-content: center;
+    background: var(--navy); max-width: none;
+  }
+  .hero-badge {
+    display: flex; gap: 12px; max-width: none;
+    padding: 16px 20px; border-radius: 0;
+    background: var(--cream);
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+
   .hero-meta { grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .seasons, .for-whom, .programme, .bonus, .about, .safety, .takeaways, .media-section, .reviews, .guarantee-faq, .cta-section, .tg-strip { padding: 60px 24px; }
   .tg-strip-wrap { flex-direction: column; align-items: flex-start; gap: 20px; }
