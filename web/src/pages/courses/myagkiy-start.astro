@@ -441,7 +441,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
       </div>
       <div class="ms-hero-cta">
         {enrolled
-          ? <a href="#lessons" class="ms-btn-hero">Смотреть уроки →</a>
+          ? <a href="/cabinet/myagkiy-start" class="ms-btn-hero">Перейти к урокам →</a>
           : user
             ? <button id="enroll-btn" class="ms-btn-hero">Получить доступ бесплатно →</button>
             : <a href={`/auth/login?next=/courses/myagkiy-start`} class="ms-btn-hero">Войти и начать →</a>
@@ -471,101 +471,8 @@ const lessons = rawLessons.map((l: any, i: number) => {
     </div>
   </section>
 
-  <!-- ═══════ VIDEO GRID ═══════ -->
-  <section class="ms-course" id="lessons">
-    <div class="container" style="max-width:1180px; margin:0 auto; padding:0;">
-      <div class="ms-section-label">Уроки курса</div>
-      <h2 class="ms-section-title">Восемь практик —<br><em>один мягкий старт</em></h2>
-      <p class="ms-section-desc">Каждый урок самостоятельный — можно начать с любого, который сейчас актуален. Все видео можно смотреть прямо здесь, на странице урока. Если хочется в максимальном качестве или сохранить себе — есть кнопки «Смотреть на YouTube» и «Смотреть во ВКонтакте» под плеером.</p>
-
-      {enrolled && (
-        <div class="ms-enrolled-banner">
-          <div class="ms-enrolled-icon">🎉</div>
-          <div class="ms-enrolled-text">
-            <strong>Вы зачислены на курс</strong>
-            <span>Все уроки доступны — начинайте с любого</span>
-          </div>
-        </div>
-      )}
-
-      <div class="ms-video-grid">
-        {lessons.map(l => {
-          const accessible = isFreeCourse || enrolled || l.isFree;
-          const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
-          const links = l.video.youtube || l.video.vk ? l.video : null;
-          const mp4Url = `/lesson-videos/${slug}/${l.slug}.mp4`;
-          return (
-            <div class="ms-video-card">
-              {accessible
-                ? (
-                  <div class="ms-video-player">
-                    <video controls preload="metadata" playsinline src={mp4Url}></video>
-                    <div class="ms-video-num">{l.num}</div>
-                    <div class="ms-video-duration">{l.duration}</div>
-                  </div>
-                )
-                : (
-                  <div class="ms-video-stub locked">
-                    <div class="ms-video-num">{l.num}</div>
-                    <div class="ms-video-play" aria-hidden="true">
-                      <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="rgba(255,255,255,0.4)"/></svg>
-                    </div>
-                    <div class="ms-video-lock" aria-label="Урок заблокирован">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                    </div>
-                    <div class="ms-video-duration">{l.duration}</div>
-                  </div>
-                )
-              }
-              <div class="ms-video-body">
-                <div class="ms-video-tag" style={`background:${l.tagBg}; color:${l.tagColor};`}>{l.tag}</div>
-                <div class="ms-video-title">{l.title}</div>
-                <div class="ms-video-desc">{l.desc}</div>
-                {accessible && links && (
-                  <div class="ms-video-platforms">
-                    {links.youtube && (
-                      <a href={links.youtube} target="_blank" rel="noopener" class="ms-platform ms-platform--yt" aria-label="Смотреть на YouTube">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
-                        YouTube
-                      </a>
-                    )}
-                    {links.vk && (
-                      <a href={links.vk} target="_blank" rel="noopener" class="ms-platform ms-platform--vk" aria-label="Смотреть во ВКонтакте">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
-                        ВКонтакте
-                      </a>
-                    )}
-                  </div>
-                )}
-                <div class="ms-video-footer">
-                  {accessible
-                    ? (
-                      <a href={lessonUrl} class="ms-video-link">
-                        Открыть отдельно
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                      </a>
-                    )
-                    : (
-                      <div class="ms-video-link-locked">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        Откроется после записи
-                      </div>
-                    )
-                  }
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  </section>
+  {/* Секция с карточками-плеерами удалена — плееры теперь только в /cabinet/myagkiy-start.
+      Зарегистрированные попадают туда по кнопке «Перейти к урокам» в hero. */}
 
   <!-- ═══════ BENEFITS ═══════ -->
   <section class="ms-benefits">
