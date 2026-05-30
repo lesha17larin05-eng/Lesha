@@ -107,15 +107,18 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
 
     /* Inline mp4 player */
     .ms-cab-video-wrap {
-      margin: 0; /* плеер заполняет ширину карточки сверху */
+      margin: 0; /* плеер на всю ширину */
       aspect-ratio: 16 / 9;
       border-radius: 0;
       background: #000;
       overflow: hidden;
       position: relative;
     }
-    /* После плеера блок описания получает верхний padding */
-    .ms-cab-video-wrap + .ms-cab-lesson-head { padding-top: 24px; }
+    /* Описание под плеером — внутри карточки */
+    .ms-cab-lesson-desc-block {
+      padding: 20px 28px 8px;
+      font-size: 15px; color: var(--text-muted); line-height: 1.75;
+    }
     .ms-cab-video-wrap video {
       width: 100%; height: 100%;
       display: block;
@@ -214,21 +217,22 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
         const mp4Url = `/lesson-videos/myagkiy-start/${l.slug}.mp4#t=0.5`;
         return (
           <article class="ms-cab-lesson">
-            {/* 1. ПЛЕЕР сверху */}
+            {/* 1. Заголовок: номер + название */}
+            <div class="ms-cab-lesson-head">
+              <div class={`ms-cab-lesson-num${l.num === 0 ? ' first' : ''}`}>{l.num}</div>
+              <div class="ms-cab-lesson-meta">
+                <div class="ms-cab-lesson-title">{l.title}</div>
+              </div>
+            </div>
+            {/* 2. Плеер */}
             <div class="ms-cab-video-wrap" data-video-wrap>
               <video controls preload="metadata" playsinline src={mp4Url}></video>
               <button type="button" class="ms-cab-bigplay" aria-label="Воспроизвести">
                 <svg class="icon-play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="6,3 22,12 6,21"/></svg>
               </button>
             </div>
-            {/* 2. Описание урока ниже */}
-            <div class="ms-cab-lesson-head">
-              <div class={`ms-cab-lesson-num${l.num === 0 ? ' first' : ''}`}>{l.num}</div>
-              <div class="ms-cab-lesson-meta">
-                <div class="ms-cab-lesson-title">{l.title}</div>
-                <div class="ms-cab-lesson-desc">{l.desc}</div>
-              </div>
-            </div>
+            {/* 3. Описание */}
+            <div class="ms-cab-lesson-desc-block">{l.desc}</div>
             {/* 3. Кнопки YouTube/ВКонтакте в самом низу */}
             {(l.video.youtube || l.video.vk) && (
               <div class="ms-cab-platforms">
@@ -269,31 +273,19 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
   </div>
 
   <script>
-    // На каждом плеере: большая центральная кнопка play, скрывается при воспроизведении.
-    // Клик по кнопке = play. Клик по самому видео — стандартные controls.
-    let activeVideo = null;
+    // Большая play-кнопка поверх плеера. По клику — фокус на video и старт.
+    // Дальше нативные controls — включая Space — работают сами (в т.ч. в fullscreen).
     document.querySelectorAll('[data-video-wrap]').forEach((wrap) => {
       const video = wrap.querySelector('video');
       const btn = wrap.querySelector('.ms-cab-bigplay');
       if (!video || !btn) return;
-      btn.addEventListener('click', () => { activeVideo = video; video.play(); });
-      video.addEventListener('play',  () => { activeVideo = video; wrap.classList.add('is-playing'); });
+      btn.addEventListener('click', () => {
+        video.focus();
+        video.play();
+      });
+      video.addEventListener('play',  () => wrap.classList.add('is-playing'));
       video.addEventListener('pause', () => wrap.classList.remove('is-playing'));
       video.addEventListener('ended', () => wrap.classList.remove('is-playing'));
-      video.addEventListener('click', () => { activeVideo = video; });
-    });
-
-    // Пробел — pause/play активного видео (того, что играли последним)
-    document.addEventListener('keydown', (e) => {
-      if (e.code !== 'Space' && e.key !== ' ') return;
-      const t = e.target;
-      // Не перехватываем пробел в input/textarea/contenteditable
-      if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(t.tagName)) return;
-      if (t.isContentEditable) return;
-      if (!activeVideo) return;
-      e.preventDefault();
-      if (activeVideo.paused) activeVideo.play();
-      else activeVideo.pause();
     });
   </script>
 </SiteLayout>
