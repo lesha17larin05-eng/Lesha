@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 ---
 <Base title="Регистрация">
-  <section class="container" style="padding:60px 0; max-width:480px;">
+  <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
     <h1>Регистрация</h1>
     <form id="f" class="form">
       <div><label class="label">Имя</label><input class="input" name="name" /></div>
@@ -11,21 +11,28 @@ import Base from '../../layouts/Base.astro';
 
       <label class="consent">
         <input type="checkbox" name="consent_pd" required />
-        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
+        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>. <span class="req">обязательно</span></span>
       </label>
       <label class="consent">
         <input type="checkbox" name="consent_marketing" />
-        <span>Хочу получать письма с советами, материалами и анонсами от Алексея. Можно отписаться в любой момент.</span>
+        <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом из любого письма.</span>
       </label>
 
-      <button class="btn" type="submit">Создать аккаунт</button>
+      <button class="btn" type="submit" style="margin-top:14px;">Создать аккаунт</button>
       <div id="msg" hidden></div>
     </form>
   </section>
   <style>
+    .auth-page { width: 100%; box-sizing: border-box; }
     .consent { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text-mid); cursor: pointer; }
     .consent input { margin-top: 3px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
     .consent a { color: var(--orange); text-decoration: underline; }
+    .req { display: inline-block; margin-left: 4px; font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.04em; }
+    @media (max-width: 480px) {
+      .auth-page { padding: 40px 16px !important; }
+      .form { max-width: 100%; }
+      .input { font-size: 16px; /* iOS не зумит при 16px+ */ }
+    }
   </style>
   <script>
     const form = document.getElementById('f');

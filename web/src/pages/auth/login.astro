@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 const next = Astro.url.searchParams.get('next') || '/cabinet';
 ---
 <Base title="Вход">
-  <section class="container" style="padding:60px 0; max-width:480px;">
+  <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
     <h1>Вход</h1>
     <form id="f" class="form">
       <div><label class="label">Email</label><input class="input" name="email" type="email" required /></div>
@@ -14,6 +14,14 @@ const next = Astro.url.searchParams.get('next') || '/cabinet';
       <p class="muted"><a href="/auth/forgot">Забыли пароль?</a></p>
     </form>
   </section>
+  <style>
+    .auth-page { width: 100%; box-sizing: border-box; }
+    @media (max-width: 480px) {
+      .auth-page { padding: 40px 16px !important; }
+      .form { max-width: 100%; }
+      .input { font-size: 16px; }
+    }
+  </style>
   <script define:vars={{ next }}>
     const form = document.getElementById('f');
     const err = document.getElementById('err');
