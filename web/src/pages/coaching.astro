@@ -1,0 +1,9 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { extractLegacy } from '../lib/legacy';
+import rawHtml from '../legacy/index.html?raw';
+const { styles, body } = extractLegacy(rawHtml);
+---
+<SiteLayout title="Личное ведение — Алексей Ларин" active="home" pageStyles={styles}>
+  <Fragment set:html={body} />
+</SiteLayout>

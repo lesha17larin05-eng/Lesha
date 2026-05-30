@@ -2,7 +2,7 @@
 const { active = '', user = (Astro.locals as any).user } = Astro.props as { active?: string; user?: any };
 const links = [
   { href: '/consultation', key: 'consultation', label: 'Консультация' },
-  { href: '/', key: 'home', label: 'Личное ведение' },
+  { href: '/coaching', key: 'home', label: 'Личное ведение' },
   { href: '/course', key: 'course', label: 'Бесплатный курс' },
   { href: '/courses/zdorovaya-spina', key: 'spina', label: 'Здоровая спина' },
   { href: '/results', key: 'results', label: 'Результаты' },
