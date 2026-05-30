@@ -6,17 +6,45 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data: articlesData } = await apiJson<any[]>('/api/articles?limit=3', { cookie });
 const articles = Array.isArray(articlesData) ? articlesData : [];
 
-const services = [
+const servicesGroup = [
+  {
+    href: '/consultation',
+    image: '/img/IMG_3906.jpg',
+    image2x: '/img/IMG_3906@2x.jpg',
+    imageWebp: '/img/IMG_3906.webp',
+    imageWebp2x: '/img/IMG_3906@2x.webp',
+    imgPos: 'center 30%',
+    eyebrow: 'Консультация',
+    title: 'Разберём запрос за один созвон',
+    desc: 'Часовая встреча онлайн: поймём что мешает, наметим первые шаги и формат, если захотите идти дальше.',
+    cta: 'Записаться',
+  },
   {
     href: '/coaching',
     image: '/img/IMG_3979.jpg',
     image2x: '/img/IMG_3979@2x.jpg',
     imageWebp: '/img/IMG_3979.webp',
     imageWebp2x: '/img/IMG_3979@2x.webp',
+    imgPos: 'center 25%',
     eyebrow: 'Личное ведение',
-    title: 'Через 3 месяца станете другим человеком',
-    desc: 'Персональный план, тренировки и поддержка в WhatsApp. Старт мягкий — без изнурительных диет и жёстких нагрузок.',
+    title: 'Три месяца — и другой человек',
+    desc: 'Персональный план, тренировки и поддержка между ними. Мягко, в своём ритме, без жёстких нагрузок.',
     cta: 'Узнать подробнее',
+  },
+];
+
+const coursesGroup = [
+  {
+    href: '/course',
+    image: '/img/IMG_4046.jpg',
+    image2x: '/img/IMG_4046@2x.jpg',
+    imageWebp: '/img/IMG_4046.webp',
+    imageWebp2x: '/img/IMG_4046@2x.webp',
+    imgPos: 'center 35%',
+    eyebrow: 'Бесплатно',
+    title: '«Мягкий старт» — 8 уроков',
+    desc: 'От суставной гимнастики до медитации. Каждый урок отдельный — начните с того, что сейчас важно.',
+    cta: 'Получить доступ',
   },
   {
     href: '/courses/zdorovaya-spina',
@@ -24,32 +52,11 @@ const services = [
     image2x: '/img/spina/hero@2x.jpg',
     imageWebp: '/img/spina/hero.webp',
     imageWebp2x: '/img/spina/hero@2x.webp',
+    imgPos: 'center 40%',
     eyebrow: 'Курс «Здоровая спина»',
     title: 'Три недели — и спина благодарит',
-    desc: '11 уроков, теория и практика. Можно проходить самостоятельно или с поддержкой автора в Телеграме.',
+    desc: '11 уроков, теория и практика. Самостоятельно или с поддержкой автора в Телеграме.',
     cta: 'Посмотреть программу',
-  },
-  {
-    href: '/course',
-    image: '/img/IMG_4046.jpg',
-    image2x: '/img/IMG_4046@2x.jpg',
-    imageWebp: '/img/IMG_4046.webp',
-    imageWebp2x: '/img/IMG_4046@2x.webp',
-    eyebrow: 'Бесплатный курс',
-    title: '«Мягкий старт» — 8 уроков для возвращения к себе',
-    desc: 'От суставной гимнастики до медитации. Каждый урок — отдельный, можно начать с того, что важно сейчас.',
-    cta: 'Получить доступ бесплатно',
-  },
-  {
-    href: '/consultation',
-    image: '/img/IMG_3906.jpg',
-    image2x: '/img/IMG_3906@2x.jpg',
-    imageWebp: '/img/IMG_3906.webp',
-    imageWebp2x: '/img/IMG_3906@2x.webp',
-    eyebrow: 'Консультация',
-    title: 'Разберём ваш запрос за один звонок',
-    desc: 'Часовая встреча онлайн. Поймём, что мешает, наметим первые шаги и подберём формат, если решите идти дальше.',
-    cta: 'Записаться',
   },
 ];
 
@@ -151,39 +158,49 @@ const pageStyles = `
   max-width: 620px; margin-bottom: 56px;
 }
 
-/* SERVICES */
+/* SERVICES (две группы по 2 карточки) */
+.services-block { margin-bottom: 56px; }
+.services-block:last-child { margin-bottom: 0; }
+.services-block-head {
+  display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border); padding-bottom: 12px;
+}
+.services-block-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500;
+  font-size: 24px; color: var(--navy); letter-spacing: -0.005em;
+}
+.services-block-hint { font-size: 13px; color: var(--text-light); }
 .services-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
 }
 .service-card {
-  background: white; border: 1px solid var(--border); border-radius: 24px;
+  background: white; border: 1px solid var(--border); border-radius: 18px;
   overflow: hidden; display: flex; flex-direction: column;
   text-decoration: none; color: inherit;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .service-card:hover {
-  transform: translateY(-4px); box-shadow: 0 24px 56px rgba(0,0,0,0.08);
+  transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.07);
 }
-.service-img { width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: var(--cream); }
+.service-img { width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: var(--cream); }
 .service-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
-.service-card:hover .service-img img { transform: scale(1.03); }
-.service-body { padding: 28px 30px 30px; display: flex; flex-direction: column; flex: 1; }
+.service-card:hover .service-img img { transform: scale(1.04); }
+.service-body { padding: 22px 24px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
 .service-eyebrow {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--orange); margin-bottom: 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--orange);
 }
 .service-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 26px; font-weight: 500; color: var(--navy); line-height: 1.2;
-  margin-bottom: 12px;
+  font-size: 22px; font-weight: 500; color: var(--navy); line-height: 1.2;
 }
 .service-desc {
-  font-size: 15px; color: var(--text-muted); line-height: 1.7;
-  margin-bottom: 22px; flex: 1;
+  font-size: 14px; color: var(--text-muted); line-height: 1.65; flex: 1;
 }
 .service-cta {
   display: inline-flex; align-items: center; gap: 8px;
-  font-size: 14px; font-weight: 600; color: var(--orange);
+  font-size: 13px; font-weight: 600; color: var(--orange);
+  margin-top: 4px;
 }
 .service-cta::after { content: '→'; transition: transform 0.2s; }
 .service-card:hover .service-cta::after { transform: translateX(4px); }
@@ -285,7 +302,7 @@ const pageStyles = `
         <div class="home-hero-point">Подход — внимательный к телу, без насилия над собой.</div>
       </div>
       <div class="home-hero-cta">
-        <a href="/coaching" class="btn-hero-primary">Подобрать формат →</a>
+        <a href="#services" class="btn-hero-primary">Подобрать формат →</a>
         <a href="/course" class="btn-hero-ghost">Попробовать бесплатно</a>
       </div>
     </div>
@@ -304,29 +321,60 @@ const pageStyles = `
     <div><span class="home-stat-num">4</span><span class="home-stat-label">направления работы</span></div>
   </section>
 
-  <!-- SERVICES -->
+  <!-- SERVICES — 2 группы: Услуги и Курсы -->
   <section class="home-section" id="services">
     <div class="home-section-label">Что предлагаю</div>
     <h2 class="home-section-title">Четыре формата — <em>под разный запрос</em></h2>
-    <p class="home-section-desc">От бесплатного курса для знакомства до индивидуального ведения. Выберите то, что сейчас подходит вам по ритму и глубине.</p>
+    <p class="home-section-desc">От часовой консультации до трёхмесячного ведения. Выберите то, что подходит сейчас — по глубине и темпу.</p>
 
-    <div class="services-grid">
-      {services.map(s => (
-        <a href={s.href} class="service-card">
-          <div class="service-img">
-            <picture>
-              <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
-              <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" />
-            </picture>
-          </div>
-          <div class="service-body">
-            <div class="service-eyebrow">{s.eyebrow}</div>
-            <div class="service-title">{s.title}</div>
-            <div class="service-desc">{s.desc}</div>
-            <div class="service-cta">{s.cta}</div>
-          </div>
-        </a>
-      ))}
+    <div class="services-block">
+      <div class="services-block-head">
+        <div class="services-block-title">Услуги — работаем напрямую</div>
+        <div class="services-block-hint">личный контакт</div>
+      </div>
+      <div class="services-grid">
+        {servicesGroup.map(s => (
+          <a href={s.href} class="service-card">
+            <div class="service-img">
+              <picture>
+                <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
+                <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" style={`object-position:${s.imgPos}`} />
+              </picture>
+            </div>
+            <div class="service-body">
+              <div class="service-eyebrow">{s.eyebrow}</div>
+              <div class="service-title">{s.title}</div>
+              <div class="service-desc">{s.desc}</div>
+              <div class="service-cta">{s.cta}</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="services-block">
+      <div class="services-block-head">
+        <div class="services-block-title">Курсы — занимаетесь сами</div>
+        <div class="services-block-hint">в своём темпе</div>
+      </div>
+      <div class="services-grid">
+        {coursesGroup.map(s => (
+          <a href={s.href} class="service-card">
+            <div class="service-img">
+              <picture>
+                <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
+                <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" style={`object-position:${s.imgPos}`} />
+              </picture>
+            </div>
+            <div class="service-body">
+              <div class="service-eyebrow">{s.eyebrow}</div>
+              <div class="service-title">{s.title}</div>
+              <div class="service-desc">{s.desc}</div>
+              <div class="service-cta">{s.cta}</div>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
