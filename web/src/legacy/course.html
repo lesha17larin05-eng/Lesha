@@ -116,7 +116,7 @@ nav {
 .benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 60px; }
 .benefit-card { background: var(--cream); border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); position: relative; overflow: hidden; }
 .benefit-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--navy); }
-.benefit-num { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300; color: var(--border); line-height: 1; margin-bottom: 16px; }
+.benefit-num { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 500; color: var(--orange); opacity: 0.75; line-height: 1; margin-bottom: 16px; }
 .benefit-card h3 { font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
 .benefit-card p { font-size: 15px; color: var(--text-muted); line-height: 1.75; }
 
@@ -211,7 +211,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <a href="course.html" class="active">Бесплатный курс</a>
     <a href="#">Здоровая спина</a>
     <a href="results.html">Результаты</a>
-    <a href="blog.html">Блог</a>
+    <a href="blog.html">Статьи</a>
   </div>
   <a href="/auth/login" class="nav-login" id="nav-login-link">Войти</a>
 </nav>
@@ -354,21 +354,22 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
       <label class="qs-consent">
         <input type="checkbox" name="consent_pd" id="quick-consent-pd" required>
-        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
+        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>. <span class="qs-req">обязательно</span></span>
       </label>
       <label class="qs-consent">
-        <input type="checkbox" name="consent_marketing" id="quick-consent-marketing">
-        <span>Хочу получать письма с советами и анонсами от Алексея — можно отписаться в любой момент.</span>
+        <input type="checkbox" name="consent_marketing" id="quick-consent-marketing" required checked>
+        <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом из любого письма. <span class="qs-req">обязательно для доступа к курсу</span></span>
       </label>
 
-      <button type="submit" class="btn-cta-full" id="quick-signup-submit">Получить доступ →</button>
-      <p class="form-note" id="quick-signup-note">* — обязательные поля. Бесплатно · без спама · отписаться в любой момент</p>
+      <button type="submit" class="btn-cta-full" id="quick-signup-submit" style="margin-top:22px;">Получить доступ →</button>
+      <p class="form-note" id="quick-signup-note">* — обязательные поля. Бесплатно · отписаться можно в любой момент</p>
     </form>
     <style>
       .qs-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.65); cursor: pointer; text-align: left; }
       .qs-consent input { margin-top: 2px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
       .qs-consent a { color: rgba(255,255,255,0.9); text-decoration: underline; }
       .qs-consent a:hover { color: white; }
+      .qs-req { display: inline-block; margin-left: 4px; font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.04em; }
     </style>
 
     <div class="access-block" id="access-block">
