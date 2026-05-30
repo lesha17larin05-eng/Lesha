@@ -158,21 +158,25 @@ const pageStyles = `
   max-width: 620px; margin-bottom: 56px;
 }
 
-/* SERVICES (две группы по 2 карточки) */
-.services-block { margin-bottom: 56px; }
-.services-block:last-child { margin-bottom: 0; }
+/* SERVICES (две колонки: Услуги | Курсы, в каждой — 2 карточки в столбик) */
+.services-columns {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+}
+.services-block { display: flex; flex-direction: column; }
 .services-block-head {
   display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px;
   border-bottom: 1px solid var(--border); padding-bottom: 12px;
 }
 .services-block-title {
   font-family: 'Cormorant Garamond', serif; font-weight: 500;
-  font-size: 24px; color: var(--navy); letter-spacing: -0.005em;
+  font-size: 26px; color: var(--navy); letter-spacing: -0.005em;
 }
 .services-block-hint { font-size: 13px; color: var(--text-light); }
 .services-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+  display: grid; grid-template-columns: 1fr; gap: 20px;
 }
+/* плавный якорь #services без захода под фикс. шапку */
+#services { scroll-margin-top: 80px; }
 .service-card {
   background: white; border: 1px solid var(--border); border-radius: 18px;
   overflow: hidden; display: flex; flex-direction: column;
@@ -277,6 +281,7 @@ const pageStyles = `
   .home-section, .home-about, .home-articles { padding: 60px 24px; }
   .home-about { grid-template-columns: 1fr; gap: 32px; }
   .home-about-photo { max-height: 360px; }
+  .services-columns { grid-template-columns: 1fr; gap: 36px; }
   .services-grid { grid-template-columns: 1fr; gap: 18px; }
   .articles-grid { grid-template-columns: 1fr; }
   .tg-strip { padding: 48px 24px; }
@@ -321,59 +326,61 @@ const pageStyles = `
     <div><span class="home-stat-num">4</span><span class="home-stat-label">направления работы</span></div>
   </section>
 
-  <!-- SERVICES — 2 группы: Услуги и Курсы -->
+  <!-- SERVICES — 2 колонки: слева Услуги, справа Курсы -->
   <section class="home-section" id="services">
     <div class="home-section-label">Что предлагаю</div>
     <h2 class="home-section-title">Четыре формата — <em>под разный запрос</em></h2>
     <p class="home-section-desc">От часовой консультации до трёхмесячного ведения. Выберите то, что подходит сейчас — по глубине и темпу.</p>
 
-    <div class="services-block">
-      <div class="services-block-head">
-        <div class="services-block-title">Услуги — работаем напрямую</div>
-        <div class="services-block-hint">личный контакт</div>
+    <div class="services-columns">
+      <div class="services-block">
+        <div class="services-block-head">
+          <div class="services-block-title">Услуги</div>
+          <div class="services-block-hint">работаем напрямую</div>
+        </div>
+        <div class="services-grid">
+          {servicesGroup.map(s => (
+            <a href={s.href} class="service-card">
+              <div class="service-img">
+                <picture>
+                  <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
+                  <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" style={`object-position:${s.imgPos}`} />
+                </picture>
+              </div>
+              <div class="service-body">
+                <div class="service-eyebrow">{s.eyebrow}</div>
+                <div class="service-title">{s.title}</div>
+                <div class="service-desc">{s.desc}</div>
+                <div class="service-cta">{s.cta}</div>
+              </div>
+            </a>
+          ))}
+        </div>
       </div>
-      <div class="services-grid">
-        {servicesGroup.map(s => (
-          <a href={s.href} class="service-card">
-            <div class="service-img">
-              <picture>
-                <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
-                <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" style={`object-position:${s.imgPos}`} />
-              </picture>
-            </div>
-            <div class="service-body">
-              <div class="service-eyebrow">{s.eyebrow}</div>
-              <div class="service-title">{s.title}</div>
-              <div class="service-desc">{s.desc}</div>
-              <div class="service-cta">{s.cta}</div>
-            </div>
-          </a>
-        ))}
-      </div>
-    </div>
 
-    <div class="services-block">
-      <div class="services-block-head">
-        <div class="services-block-title">Курсы — занимаетесь сами</div>
-        <div class="services-block-hint">в своём темпе</div>
-      </div>
-      <div class="services-grid">
-        {coursesGroup.map(s => (
-          <a href={s.href} class="service-card">
-            <div class="service-img">
-              <picture>
-                <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
-                <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" style={`object-position:${s.imgPos}`} />
-              </picture>
-            </div>
-            <div class="service-body">
-              <div class="service-eyebrow">{s.eyebrow}</div>
-              <div class="service-title">{s.title}</div>
-              <div class="service-desc">{s.desc}</div>
-              <div class="service-cta">{s.cta}</div>
-            </div>
-          </a>
-        ))}
+      <div class="services-block">
+        <div class="services-block-head">
+          <div class="services-block-title">Курсы</div>
+          <div class="services-block-hint">в своём темпе</div>
+        </div>
+        <div class="services-grid">
+          {coursesGroup.map(s => (
+            <a href={s.href} class="service-card">
+              <div class="service-img">
+                <picture>
+                  <source type="image/webp" srcset={`${s.imageWebp} 1x, ${s.imageWebp2x} 2x`} />
+                  <img src={s.image} srcset={`${s.image} 1x, ${s.image2x} 2x`} alt={s.title} loading="lazy" style={`object-position:${s.imgPos}`} />
+                </picture>
+              </div>
+              <div class="service-body">
+                <div class="service-eyebrow">{s.eyebrow}</div>
+                <div class="service-title">{s.title}</div>
+                <div class="service-desc">{s.desc}</div>
+                <div class="service-cta">{s.cta}</div>
+              </div>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   </section>
