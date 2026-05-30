@@ -82,13 +82,13 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
     /* Lesson header */
     .ms-cab-lesson-head {
       padding: 24px 28px 20px;
-      display: flex; align-items: flex-start; gap: 16px;
+      display: flex; align-items: center; gap: 16px;
     }
     .ms-cab-lesson-num {
       width: 36px; height: 36px; border-radius: 50%;
       background: var(--navy); color: white;
       display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
     }
     .ms-cab-lesson-num.first { background: var(--orange); }
     .ms-cab-lesson-meta { flex: 1; min-width: 0; }
@@ -114,9 +114,10 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
       overflow: hidden;
       position: relative;
     }
-    /* Описание под плеером — внутри карточки */
+    /* Описание под плеером — внутри карточки.
+       Отступы сверху и снизу одинаковые (20px). */
     .ms-cab-lesson-desc-block {
-      padding: 20px 28px 8px;
+      padding: 20px 28px;
       font-size: 15px; color: var(--text-muted); line-height: 1.75;
     }
     .ms-cab-video-wrap video {
@@ -124,20 +125,20 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
       display: block;
       object-fit: contain;
     }
-    /* Большая центральная кнопка play, видна когда видео на паузе */
+    /* Центральная кнопка play — лёгкая, светлая (как в карточках на «Результатах») */
     .ms-cab-bigplay {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 84px; height: 84px; border-radius: 50%;
-      background: rgba(0,0,0,0.55); border: 2px solid rgba(255,255,255,0.85);
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.5);
+      backdrop-filter: blur(6px);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      opacity: 1; transition: opacity 0.2s, transform 0.2s, background 0.2s;
-      backdrop-filter: blur(4px);
+      transition: transform 0.2s, background 0.2s, opacity 0.2s;
     }
-    .ms-cab-bigplay:hover { background: rgba(0,0,0,0.75); transform: translate(-50%, -50%) scale(1.06); }
-    .ms-cab-bigplay svg { width: 32px; height: 32px; fill: white; }
-    .ms-cab-bigplay .icon-pause { display: none; }
+    .ms-cab-bigplay:hover { background: rgba(255,255,255,0.3); transform: translate(-50%, -50%) scale(1.1); }
+    .ms-cab-bigplay svg { width: 20px; height: 20px; fill: white; margin-left: 4px; }
     /* Когда видео играет — кнопку скрываем (но controls остаются) */
     .ms-cab-video-wrap.is-playing .ms-cab-bigplay { opacity: 0; pointer-events: none; }
 
@@ -273,19 +274,42 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
   </div>
 
   <script>
-    // Большая play-кнопка поверх плеера. По клику — фокус на video и старт.
-    // Дальше нативные controls — включая Space — работают сами (в т.ч. в fullscreen).
+    // Большая play-кнопка поверх плеера + Space переключает текущее видео,
+    // в том числе когда оно открыто во весь экран.
+    let activeVideo = null;
     document.querySelectorAll('[data-video-wrap]').forEach((wrap) => {
       const video = wrap.querySelector('video');
       const btn = wrap.querySelector('.ms-cab-bigplay');
       if (!video || !btn) return;
-      btn.addEventListener('click', () => {
-        video.focus();
-        video.play();
-      });
-      video.addEventListener('play',  () => wrap.classList.add('is-playing'));
+      btn.addEventListener('click', () => { activeVideo = video; video.focus(); video.play(); });
+      video.addEventListener('play',  () => { activeVideo = video; wrap.classList.add('is-playing'); });
       video.addEventListener('pause', () => wrap.classList.remove('is-playing'));
       video.addEventListener('ended', () => wrap.classList.remove('is-playing'));
+      video.addEventListener('click',          () => activeVideo = video);
+      video.addEventListener('focus',          () => activeVideo = video, true);
+      // в fullscreen фокус нужно вернуть на видео — иначе Space сворачивает окно
+      video.addEventListener('webkitbeginfullscreen', () => activeVideo = video);
+      video.addEventListener('webkitendfullscreen',   () => activeVideo = null);
     });
+    document.addEventListener('fullscreenchange', () => {
+      const fs = document.fullscreenElement;
+      if (fs && fs.tagName === 'VIDEO') { activeVideo = fs; fs.focus(); }
+    });
+
+    // Глобальный перехват пробела — capture-фаза, чтобы прийти раньше
+    // браузерных hot-keys (например, "сворачивания" в полноэкране).
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const t = e.target;
+      if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(t.tagName)) return;
+      if (t.isContentEditable) return;
+      // Если в фокусе само видео — пусть браузер сам, не дублируем
+      if (t.tagName === 'VIDEO') return;
+      if (!activeVideo) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeVideo.paused) activeVideo.play();
+      else activeVideo.pause();
+    }, true);
   </script>
 </SiteLayout>
