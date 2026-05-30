@@ -10,11 +10,11 @@ import Base from '../../layouts/Base.astro';
       <div><label class="label">Пароль (минимум 8 символов)</label><input class="input" name="password" type="password" required minlength="8" /></div>
 
       <label class="consent">
-        <input type="checkbox" name="consent_pd" required />
-        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>. <span class="req">обязательно</span></span>
+        <input type="checkbox" name="consent_pd" required checked />
+        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
       </label>
       <label class="consent">
-        <input type="checkbox" name="consent_marketing" />
+        <input type="checkbox" name="consent_marketing" checked />
         <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом из любого письма.</span>
       </label>
 
