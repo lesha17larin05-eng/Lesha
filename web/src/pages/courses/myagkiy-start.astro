@@ -471,8 +471,44 @@ const lessons = rawLessons.map((l: any, i: number) => {
     </div>
   </section>
 
-  {/* Секция с карточками-плеерами удалена — плееры теперь только в /cabinet/myagkiy-start.
-      Зарегистрированные попадают туда по кнопке «Перейти к урокам» в hero. */}
+  {/* ═══════ VIDEO GRID — превью карточек, без плееров.
+       Сами плееры — в /cabinet/myagkiy-start. По клику на карточку
+       пользователь идёт на отдельную страницу урока с YouTube-плеером. ═══════ */}
+  <section class="ms-course" id="lessons">
+    <div class="container" style="max-width:1180px; margin:0 auto; padding:0;">
+      <div class="ms-section-label">Уроки курса</div>
+      <h2 class="ms-section-title">Восемь практик —<br><em>один мягкий старт</em></h2>
+      <p class="ms-section-desc">Каждый урок самостоятельный — можно начать с любого, который сейчас актуален. После регистрации все видео доступны прямо в кабинете, в максимальном качестве — на YouTube и ВКонтакте.</p>
+
+      <div class="ms-video-grid">
+        {lessons.map(l => {
+          const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
+          return (
+            <a href={lessonUrl} class="ms-video-card" style="text-decoration:none;">
+              <div class="ms-video-stub">
+                <div class="ms-video-num">{l.num}</div>
+                <div class="ms-video-play" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="white"/></svg>
+                </div>
+                <div class="ms-video-duration">{l.duration}</div>
+              </div>
+              <div class="ms-video-body">
+                <div class="ms-video-tag" style={`background:${l.tagBg}; color:${l.tagColor};`}>{l.tag}</div>
+                <div class="ms-video-title">{l.title}</div>
+                <div class="ms-video-desc">{l.desc}</div>
+                <div class="ms-video-footer">
+                  <span class="ms-video-link">
+                    Смотреть урок
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
 
   <!-- ═══════ BENEFITS ═══════ -->
   <section class="ms-benefits">

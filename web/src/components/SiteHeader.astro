@@ -170,6 +170,14 @@ const isSalyut = active === 'salyut';
     // closest('a') ловит клик даже если попали в <svg> или <span> внутри ссылки
     if ((e.target as HTMLElement).closest('a')) closeMenu();
   });
+  // ─── закрытие при клике на свободное место (вне меню и вне кнопки бургера) ───
+  document.addEventListener('click', (e) => {
+    if (!menu?.classList.contains('is-open')) return;
+    const t = e.target as HTMLElement;
+    if (menu.contains(t)) return;
+    if (burger?.contains(t)) return;
+    closeMenu();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeMenu();
   });
