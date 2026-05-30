@@ -43,6 +43,10 @@ const {
       main, section, header, footer, nav, article, aside, div { max-width: 100%; }
       /* длинные слова и URL переносить по словам, а не по буквам */
       p, li, h1, h2, h3, h4, h5, h6, span, a, blockquote, td, th { overflow-wrap: break-word; word-wrap: break-word; }
+      /* типовые заголовки — компактнее, чтобы не дробились на 4 строки.
+         Конкретные .hero h1 на страницах могут переопределить это своим селектором. */
+      h1 { font-size: clamp(26px, 7.5vw, 36px); line-height: 1.15; }
+      h2 { font-size: clamp(22px, 6vw, 30px); line-height: 1.2; }
     }
     a { color: var(--orange); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -88,6 +92,10 @@ const {
         flex-direction: column; align-items: center; gap: 18px;
         padding: 32px 24px; text-align: center;
       }
+      /* все блоки внутри футера: ширина 100%, центр по горизонтали */
+      .site-footer > * { width: 100%; max-width: 100%; }
+      .footer-logo { text-align: center; display: block; }
+      .footer-copy { text-align: center; }
       .footer-social { justify-content: center; flex-wrap: wrap; }
     }
 

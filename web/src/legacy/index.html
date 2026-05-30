@@ -139,9 +139,9 @@ nav {
 
 .format { padding: 100px 80px; background: var(--cream); }
 .format-steps-wide { display: flex; flex-direction: column; margin-bottom: 72px; }
-.format-step-wide { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 32px; align-items: start; padding: 24px 0; border-bottom: 1px solid var(--border); }
+.format-step-wide { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 40px; align-items: start; padding: 36px 0; border-bottom: 1px solid var(--border); }
 .format-step-wide:last-child { border-bottom: none; }
-.fsw-num { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 500; color: var(--orange); line-height: 1; opacity: 0.75; }
+.fsw-num { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: var(--border); line-height: 1; }
 .fsw-main h3 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
 .fsw-main p { font-size: 16px; color: var(--text-muted); line-height: 1.8; }
 .fsw-highlight { color: var(--orange); font-weight: 600; }
@@ -281,7 +281,13 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   /* ─── мобильные фиксы для сеток на главной ─────────────────── */
   /* «01 Анкета и погружение» — было 72px+1fr+1fr, теперь одна колонка */
   .format-step-wide{grid-template-columns:1fr; gap:10px; padding:20px 0;}
-  .fsw-num{font-size:36px; line-height:1; margin-bottom:4px;}
+  /* на мобиле цифры заметнее — оранжевый с прозрачностью */
+  .fsw-num{font-size:36px; line-height:1; margin-bottom:4px; color:var(--orange); opacity:0.75; font-weight:500;}
+  /* hero h1 на мобиле — не такой огромный, чтобы не делил слова и дефисы */
+  .hero h1{font-size:30px; line-height:1.15;}
+  .hero-sub{font-size:17px;}
+  /* фотографии-коллажи в карточках клиентов — целиком, без обрезки по бокам */
+  .rc-photo{height:auto; min-height:0; object-fit:contain; background:transparent;}
   .fsw-aside{padding-top:0;}
   /* «Как выглядит ваш путь по месяцам» — было 4 колонки, теперь одна */
   .journey-section{padding:28px 20px;}
