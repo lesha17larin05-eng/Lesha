@@ -459,8 +459,10 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   }
   .btn-hero-secondary { align-self: center; }
 
-  /* Плашки больше не накрывают лица детей — уходят под фото */
-  .hero-photo { transform: none; }
+  /* Hero-фото на мобиле — без масштабирования, в естественных пропорциях,
+     лица не обрезаются ни сверху, ни снизу */
+  .hero-right { min-height: 0; aspect-ratio: 4 / 5; }
+  .hero-photo { transform: none; object-fit: cover; object-position: center top; }
   .seasons-pill, .hero-badge { position: static; box-shadow: none; }
   .seasons-pill {
     width: 100%; padding: 12px 20px;
