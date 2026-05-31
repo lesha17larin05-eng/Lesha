@@ -3,9 +3,14 @@ import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 const {
   title = 'Алексей Ларин — тренер по здоровью',
+  description = 'Здоровая спина в Салюте — курс для детей в детском лагере. 5 занятий по 55 минут.',
+  ogImage = '/salut-2026/img/trainer-stretch.jpg',
   active = '',
   user = (Astro.locals as any).user,
-} = Astro.props as { title?: string; active?: string; user?: any };
+} = Astro.props as { title?: string; description?: string; ogImage?: string; active?: string; user?: any };
+const siteUrl = 'https://leshalarin.ru';
+const canonicalUrl = siteUrl + Astro.url.pathname;
+const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage;
 ---
 <!doctype html>
 <html lang="ru">
@@ -13,7 +18,23 @@ const {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
-  <link rel="icon" type="image/png" href="/img/01.png" />
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalUrl} />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#1a2744" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:site_name" content="Алексей Ларин" />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={absoluteOgImage} />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
