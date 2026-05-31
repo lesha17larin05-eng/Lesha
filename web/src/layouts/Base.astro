@@ -54,8 +54,13 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
       --border: #ece8e0;
     }
     *,*::before,*::after { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; padding: 0; max-width: 100vw; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
+    /* НЕ задавать height: 100% на body — иначе body становится scroll-container,
+       window.scrollTo/scrollIntoView идут в html (где ничего не скроллится).
+       min-height: 100vh ниже даёт sticky-footer без поломки скролла. */
+    html, body { margin: 0; padding: 0; max-width: 100vw; }
+    /* overflow-x: clip вместо hidden — не делает html scroll-container
+       и не ломает smooth scroll / scrollIntoView */
+    html { scroll-behavior: smooth; overflow-x: clip; }
     body { font-family: 'Manrope', system-ui, -apple-system, sans-serif; color: var(--text); background: var(--warm-white); -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative; }
     /* Главный контейнер тоже не должен выходить за вьюпорт */
     .site-main { width: 100%; max-width: 100vw; overflow-x: hidden; }
