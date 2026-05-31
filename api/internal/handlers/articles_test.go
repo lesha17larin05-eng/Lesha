@@ -11,8 +11,16 @@ import (
 
 func makeAdmin(t *testing.T, c *client, repo *db.Repo, email string) {
 	t.Helper()
-	c.do("POST", "/api/auth/register", map[string]string{"email": email, "password": "password123"})
+	// consent_pd обязателен после [Юр 5.5]
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email":       email,
+		"password":    "password123",
+		"consent_pd":  true,
+	})
 	u, _ := repo.GetUserByEmail(context.Background(), email)
+	if u == nil {
+		t.Fatalf("makeAdmin: register did not create user %s", email)
+	}
 	_, _ = repo.Pool.Exec(context.Background(), `UPDATE users SET role='admin' WHERE id=$1`, u.ID)
 	c.do("POST", "/api/auth/login", map[string]string{"email": email, "password": "password123"})
 }
@@ -99,7 +107,9 @@ func TestArticleCRUDFlow(t *testing.T) {
 func TestArticleAdminRequiresAdmin(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
-	c.do("POST", "/api/auth/register", map[string]string{"email": "u2@b.ru", "password": "password123"})
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "u2@b.ru", "password": "password123", "consent_pd": true,
+	})
 	c.do("POST", "/api/auth/login", map[string]string{"email": "u2@b.ru", "password": "password123"})
 	r, _ := c.do("POST", "/api/admin/articles", map[string]any{
 		"slug": "x", "title": "x", "content_html": "<p>x</p>",

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /cabinet
+Disallow: /auth/
+
+Sitemap: https://leshalarin.ru/sitemap.xml
