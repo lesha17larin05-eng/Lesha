@@ -41,7 +41,7 @@ const coursesGroup = [
     imageWebp: '/img/IMG_4046.webp',
     imageWebp2x: '/img/IMG_4046@2x.webp',
     imgPos: 'center 25%',
-    eyebrow: 'Бесплатно',
+    eyebrow: 'Бесплатный оздоровительный курс',
     title: '«Мягкий старт» — 8 уроков',
     desc: 'От суставной гимнастики до медитации. Каждый урок отдельный — начните с того, что сейчас важно.',
     cta: 'Получить доступ',
@@ -200,21 +200,21 @@ const pageStyles = `
 .service-img { width: 120px; height: 100%; overflow: hidden; background: var(--cream); }
 .service-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
 .service-card:hover .service-img img { transform: scale(1.04); }
-.service-body { padding: 16px 18px; display: flex; flex-direction: column; flex: 1; gap: 6px; min-height: 150px; justify-content: center; }
+.service-body { padding: 18px 20px; display: flex; flex-direction: column; flex: 1; gap: 8px; min-height: 160px; justify-content: center; }
 .service-eyebrow {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.10em;
   text-transform: uppercase; color: var(--orange);
 }
 .service-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 19px; font-weight: 500; color: var(--navy); line-height: 1.2;
+  font-size: 23px; font-weight: 500; color: var(--navy); line-height: 1.2;
 }
 .service-desc {
-  font-size: 13px; color: var(--text-muted); line-height: 1.55;
+  font-size: 14px; color: var(--text-muted); line-height: 1.55;
 }
 .service-cta {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; color: var(--orange);
+  font-size: 13px; font-weight: 600; color: var(--orange);
   margin-top: 2px;
 }
 .service-cta::after { content: '→'; transition: transform 0.2s; }
@@ -297,10 +297,12 @@ const pageStyles = `
   .services-divider { width: 100%; height: 1px;
     background: linear-gradient(90deg, transparent 0%, var(--border) 15%, var(--border) 85%, transparent 100%); }
   .services-grid { grid-template-columns: 1fr; gap: 14px; }
-  .service-card { grid-template-columns: 100px 1fr; }
-  .service-img { width: 100px; }
-  .service-body { padding: 14px 16px; min-height: 130px; }
-  .service-title { font-size: 18px; }
+  .service-card { grid-template-columns: 110px 1fr; }
+  .service-img { width: 110px; }
+  .service-body { padding: 16px 16px; min-height: 140px; }
+  .service-eyebrow { font-size: 11px; }
+  .service-title { font-size: 21px; }
+  .service-desc { font-size: 13px; }
   .articles-grid { grid-template-columns: 1fr; }
   .tg-strip { padding: 48px 24px; }
   .tg-strip-inner { flex-direction: column; text-align: center; gap: 20px; }
@@ -381,7 +383,7 @@ const pageStyles = `
       <div class="services-block">
         <div class="services-block-head">
           <div class="services-block-title">Курсы</div>
-          <div class="services-block-hint">занимаетесь в своём темпе</div>
+          <div class="services-block-hint">проходите в своём темпе</div>
         </div>
         <div class="services-grid">
           {coursesGroup.map(s => (
