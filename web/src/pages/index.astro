@@ -62,13 +62,13 @@ const coursesGroup = [
 
 const pageStyles = `
 .home-hero {
-  position: relative; padding: 80px 80px;
+  position: relative; padding: 140px 80px 80px;
   background: var(--navy);
   overflow: hidden;
-  display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; align-items: center;
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; align-items: start;
   min-height: calc(100vh - 64px);
 }
-.home-hero-left { display: flex; flex-direction: column; justify-content: center; }
+.home-hero-left { display: flex; flex-direction: column; }
 .home-hero::before {
   content: ''; position: absolute; top: -120px; right: 30%;
   width: 520px; height: 520px;
