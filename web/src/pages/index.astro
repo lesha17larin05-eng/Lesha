@@ -13,7 +13,7 @@ const servicesGroup = [
     image2x: '/img/IMG_3906@2x.jpg',
     imageWebp: '/img/IMG_3906.webp',
     imageWebp2x: '/img/IMG_3906@2x.webp',
-    imgPos: 'center 30%',
+    imgPos: 'center 33%',
     eyebrow: 'Консультация',
     title: 'Разберём запрос за один созвон',
     desc: 'Часовая встреча онлайн: поймём что мешает, наметим первые шаги и формат, если захотите идти дальше.',
@@ -25,7 +25,7 @@ const servicesGroup = [
     image2x: '/img/IMG_3979@2x.jpg',
     imageWebp: '/img/IMG_3979.webp',
     imageWebp2x: '/img/IMG_3979@2x.webp',
-    imgPos: 'center 22%',
+    imgPos: 'center 18%',
     eyebrow: 'Личное ведение',
     title: 'Три месяца — и другой человек',
     desc: 'Персональный план, тренировки и поддержка между ними. Мягко, в своём ритме, без жёстких нагрузок.',
@@ -40,7 +40,7 @@ const coursesGroup = [
     image2x: '/img/IMG_4046@2x.jpg',
     imageWebp: '/img/IMG_4046.webp',
     imageWebp2x: '/img/IMG_4046@2x.webp',
-    imgPos: 'center 22%',
+    imgPos: 'center 25%',
     eyebrow: 'Бесплатно',
     title: '«Мягкий старт» — 8 уроков',
     desc: 'От суставной гимнастики до медитации. Каждый урок отдельный — начните с того, что сейчас важно.',
@@ -52,7 +52,7 @@ const coursesGroup = [
     image2x: '/img/spina/hero@2x.jpg',
     imageWebp: '/img/spina/hero.webp',
     imageWebp2x: '/img/spina/hero@2x.webp',
-    imgPos: 'center 35%',
+    imgPos: 'center 25%',
     eyebrow: 'Курс «Здоровая спина»',
     title: 'Три недели — и спина благодарит',
     desc: '11 уроков, теория и практика. Самостоятельно или с поддержкой автора в Телеграме.',
@@ -188,33 +188,34 @@ const pageStyles = `
 /* плавный якорь #services без захода под фикс. шапку */
 #services { scroll-margin-top: 80px; }
 .service-card {
-  background: white; border: 1px solid var(--border); border-radius: 18px;
-  overflow: hidden; display: flex; flex-direction: column;
+  background: white; border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; display: grid; grid-template-columns: 120px 1fr;
   text-decoration: none; color: inherit;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 .service-card:hover {
-  transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.07);
+  transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+  border-color: rgba(232,101,42,0.35);
 }
-.service-img { width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--cream); }
+.service-img { width: 120px; height: 100%; overflow: hidden; background: var(--cream); }
 .service-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
 .service-card:hover .service-img img { transform: scale(1.04); }
-.service-body { padding: 22px 24px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
+.service-body { padding: 16px 18px; display: flex; flex-direction: column; flex: 1; gap: 6px; min-height: 150px; justify-content: center; }
 .service-eyebrow {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--orange);
 }
 .service-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 500; color: var(--navy); line-height: 1.2;
+  font-size: 19px; font-weight: 500; color: var(--navy); line-height: 1.2;
 }
 .service-desc {
-  font-size: 14px; color: var(--text-muted); line-height: 1.65; flex: 1;
+  font-size: 13px; color: var(--text-muted); line-height: 1.55;
 }
 .service-cta {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 600; color: var(--orange);
-  margin-top: 4px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--orange);
+  margin-top: 2px;
 }
 .service-cta::after { content: '→'; transition: transform 0.2s; }
 .service-card:hover .service-cta::after { transform: translateX(4px); }
@@ -295,8 +296,11 @@ const pageStyles = `
   .services-columns { grid-template-columns: 1fr; gap: 28px; }
   .services-divider { width: 100%; height: 1px;
     background: linear-gradient(90deg, transparent 0%, var(--border) 15%, var(--border) 85%, transparent 100%); }
-  .services-grid { grid-template-columns: 1fr; gap: 18px; }
-  .service-img { aspect-ratio: 3 / 4; }
+  .services-grid { grid-template-columns: 1fr; gap: 14px; }
+  .service-card { grid-template-columns: 100px 1fr; }
+  .service-img { width: 100px; }
+  .service-body { padding: 14px 16px; min-height: 130px; }
+  .service-title { font-size: 18px; }
   .articles-grid { grid-template-columns: 1fr; }
   .tg-strip { padding: 48px 24px; }
   .tg-strip-inner { flex-direction: column; text-align: center; gap: 20px; }
