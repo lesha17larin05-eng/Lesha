@@ -13,7 +13,7 @@ const servicesGroup = [
     image2x: '/img/IMG_3906@2x.jpg',
     imageWebp: '/img/IMG_3906.webp',
     imageWebp2x: '/img/IMG_3906@2x.webp',
-    imgPos: 'center 30%',
+    imgPos: 'center 55%',
     eyebrow: 'Консультация',
     title: 'Разберём запрос за один созвон',
     desc: 'Часовая встреча онлайн: поймём что мешает, наметим первые шаги и формат, если захотите идти дальше.',
@@ -25,7 +25,7 @@ const servicesGroup = [
     image2x: '/img/IMG_3979@2x.jpg',
     imageWebp: '/img/IMG_3979.webp',
     imageWebp2x: '/img/IMG_3979@2x.webp',
-    imgPos: 'center 25%',
+    imgPos: 'center 55%',
     eyebrow: 'Личное ведение',
     title: 'Три месяца — и другой человек',
     desc: 'Персональный план, тренировки и поддержка между ними. Мягко, в своём ритме, без жёстких нагрузок.',
@@ -40,7 +40,7 @@ const coursesGroup = [
     image2x: '/img/IMG_4046@2x.jpg',
     imageWebp: '/img/IMG_4046.webp',
     imageWebp2x: '/img/IMG_4046@2x.webp',
-    imgPos: 'center 35%',
+    imgPos: 'center 60%',
     eyebrow: 'Бесплатно',
     title: '«Мягкий старт» — 8 уроков',
     desc: 'От суставной гимнастики до медитации. Каждый урок отдельный — начните с того, что сейчас важно.',
@@ -52,7 +52,7 @@ const coursesGroup = [
     image2x: '/img/spina/hero@2x.jpg',
     imageWebp: '/img/spina/hero.webp',
     imageWebp2x: '/img/spina/hero@2x.webp',
-    imgPos: 'center 40%',
+    imgPos: 'center 50%',
     eyebrow: 'Курс «Здоровая спина»',
     title: 'Три недели — и спина благодарит',
     desc: '11 уроков, теория и практика. Самостоятельно или с поддержкой автора в Телеграме.',
@@ -160,18 +160,28 @@ const pageStyles = `
 
 /* SERVICES (две колонки: Услуги | Курсы, в каждой — 2 карточки в столбик) */
 .services-columns {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 48px;
+  align-items: stretch;
+}
+.services-divider {
+  width: 1px;
+  background: linear-gradient(180deg, transparent 0%, var(--border) 15%, var(--border) 85%, transparent 100%);
 }
 .services-block { display: flex; flex-direction: column; }
 .services-block-head {
-  display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px;
-  border-bottom: 1px solid var(--border); padding-bottom: 12px;
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 .services-block-title {
   font-family: 'Cormorant Garamond', serif; font-weight: 500;
-  font-size: 26px; color: var(--navy); letter-spacing: -0.005em;
+  font-size: 28px; color: var(--navy); letter-spacing: -0.005em;
+  display: block; margin-bottom: 4px;
 }
-.services-block-hint { font-size: 13px; color: var(--text-light); }
+.services-block-hint { font-size: 13px; color: var(--text-light); display: block; }
 .services-grid {
   display: grid; grid-template-columns: 1fr; gap: 20px;
 }
@@ -186,7 +196,7 @@ const pageStyles = `
 .service-card:hover {
   transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.07);
 }
-.service-img { width: 100%; aspect-ratio: 3 / 2; overflow: hidden; background: var(--cream); }
+.service-img { width: 100%; aspect-ratio: 16 / 11; overflow: hidden; background: var(--cream); }
 .service-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
 .service-card:hover .service-img img { transform: scale(1.04); }
 .service-body { padding: 22px 24px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
@@ -281,8 +291,12 @@ const pageStyles = `
   .home-section, .home-about, .home-articles { padding: 60px 24px; }
   .home-about { grid-template-columns: 1fr; gap: 32px; }
   .home-about-photo { max-height: 360px; }
-  .services-columns { grid-template-columns: 1fr; gap: 36px; }
+  /* на мобиле — одна колонка, разделитель становится горизонтальной линией */
+  .services-columns { grid-template-columns: 1fr; gap: 28px; }
+  .services-divider { width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--border) 15%, var(--border) 85%, transparent 100%); }
   .services-grid { grid-template-columns: 1fr; gap: 18px; }
+  .service-img { aspect-ratio: 16 / 10; }
   .articles-grid { grid-template-columns: 1fr; }
   .tg-strip { padding: 48px 24px; }
   .tg-strip-inner { flex-direction: column; text-align: center; gap: 20px; }
@@ -357,6 +371,8 @@ const pageStyles = `
           ))}
         </div>
       </div>
+
+      <div class="services-divider" aria-hidden="true"></div>
 
       <div class="services-block">
         <div class="services-block-head">
