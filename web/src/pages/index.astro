@@ -290,7 +290,15 @@ const pageStyles = `
 
 /* MOBILE */
 @media (max-width: 900px) {
-  .home-hero { grid-template-columns: 1fr; padding: 80px 24px 60px; gap: 40px; min-height: 0; }
+  /* hero на мобиле — центрируем контент, как на /coaching и других страницах */
+  .home-hero {
+    grid-template-columns: 1fr;
+    padding: 100px 24px 60px;
+    gap: 40px;
+    min-height: calc(100vh - 64px);
+    align-items: center;
+  }
+  .home-hero-left { justify-content: center; }
   .home-hero-photo { aspect-ratio: 4 / 3; max-height: 380px; }
   .home-stats { padding: 40px 24px; gap: 32px; grid-template-columns: 1fr; }
   .home-section, .home-about, .home-articles { padding: 60px 24px; }
