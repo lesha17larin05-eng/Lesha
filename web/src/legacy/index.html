@@ -298,8 +298,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .rc-text-grid{grid-template-columns:1fr; gap:18px;}
   .rc-body{padding:24px 22px;}
   .rc-photos--2{grid-template-columns:1fr 1fr;}
-  /* фотографии клиентов в полную ширину — крупнее и заметнее */
-  .rc-photo{ min-height:280px; object-fit:cover; object-position:center top; background:transparent; }
+  /* фотографии клиентов в полную ширину — целиком, без обрезки */
+  .rc-photo{ width:100%; height:auto; min-height:0; object-fit:contain; background:transparent; }
   /* секционные отступы */
   .results.section{padding:60px 24px;}
   section.results{padding:60px 16px;}
