@@ -80,16 +80,26 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "order_failed")
 		return
 	}
+	// Продамус считает HMAC от json_encode(ksort_recursive($data)).
+	// Структура должна быть ВЛОЖЕННАЯ (products → array of objects),
+	// а не плоская "products[0][name]". flatten() в prodamus.PaymentURL
+	// сама превратит её в правильные query-ключи products%5B0%5D%5Bname%5D=…
+	// Все значения — строки, как они будут в query string (иначе JSON и query
+	// дадут разный HMAC).
 	params := map[string]any{
-		"do":              "pay",
-		"order_id":        o.ID.String(),
-		"order_num":       strconv.FormatInt(o.OrderNum, 10),
-		"customer_email":  u.Email,
-		"products[0][name]":     title,
-		"products[0][price]":    strconv.Itoa(price),
-		"products[0][quantity]": "1",
-		"urlReturn":      a.Cfg.AppHost + "/cabinet/courses",
-		"urlSuccess":     a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
+		"do":             "pay",
+		"order_id":       o.ID.String(),
+		"order_num":      strconv.FormatInt(o.OrderNum, 10),
+		"customer_email": u.Email,
+		"products": []any{
+			map[string]any{
+				"name":     title,
+				"price":    strconv.Itoa(price),
+				"quantity": "1",
+			},
+		},
+		"urlReturn":       a.Cfg.AppHost + "/cabinet/courses",
+		"urlSuccess":      a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
 		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
 	}
 	if a.Cfg.ProdamusTestMode {
