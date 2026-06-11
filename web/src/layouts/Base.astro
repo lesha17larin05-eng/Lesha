@@ -165,17 +165,32 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <SiteFooter />
   <script>
     (() => {
-      const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
-      const csrf = m ? m[1] : '';
+      function getCsrf() {
+        const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
+        return m ? m[1] : '';
+      }
+      // Если cookie csrf ещё нет (первый визит) — синхронно дёргаем
+      // /api/me, чтобы сервер её поставил, и только потом продолжаем.
+      async function ensureCsrf() {
+        if (getCsrf()) return getCsrf();
+        try { await fetch('/api/me', { credentials: 'include' }); } catch {}
+        return getCsrf();
+      }
       const orig = window.fetch;
-      window.fetch = function(input, init = {}) {
+      window.fetch = async function(input, init = {}) {
         const method = (init.method || (typeof input === 'string' ? 'GET' : input.method) || 'GET').toUpperCase();
         if (method !== 'GET' && method !== 'HEAD') {
+          // Cookie могла ещё не прийти (первый визит) — синхронно ставим её
+          // через GET /api/me, иначе сервер вернёт csrf_failed.
+          const csrf = (await ensureCsrf()) || '';
           init.headers = { ...(init.headers || {}), 'X-CSRF-Token': csrf };
           init.credentials = 'include';
         }
         return orig.call(this, input, init);
       };
+      // прогреваем cookie в фоне сразу при загрузке страницы — чтобы клик по форме
+      // не тратил время на лишний round-trip
+      ensureCsrf();
     })();
   </script>
 </body>

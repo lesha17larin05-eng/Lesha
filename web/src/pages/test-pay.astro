@@ -1,0 +1,50 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+const styles = `
+.tp-wrap { max-width: 540px; margin: 0 auto; padding: 80px 24px 100px; text-align: center; }
+.tp-wrap h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: var(--navy); margin-bottom: 14px; }
+.tp-msg { font-size: 16px; color: var(--text-mid); margin-bottom: 22px; line-height: 1.6; }
+.tp-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: white; text-decoration: none; padding: 14px 28px; border: none; border-radius: 100px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+.tp-btn:hover { background: var(--orange-warm); }
+.tp-btn:disabled { opacity: 0.5; cursor: wait; }
+.tp-err { color: #c53030; font-size: 15px; margin-top: 14px; }
+`;
+---
+<SiteLayout title="Тестовая оплата 10₽" padTop={true} pageStyles={styles}>
+  <section class="tp-wrap">
+    <h1>Тестовая оплата — 10 ₽</h1>
+    <p class="tp-msg">Это страница для проверки интеграции с Продамусом. Жми кнопку — переведёт на оплату, после успешной оплаты ты увидишь курс «Здоровая спина» в кабинете.</p>
+    <button id="tp-btn" class="tp-btn">Перейти к оплате →</button>
+    <p id="tp-err" class="tp-err"></p>
+  </section>
+  <script>
+    const btn = document.getElementById('tp-btn');
+    const err = document.getElementById('tp-err');
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = 'Создаём заказ…';
+      err.textContent = '';
+      try {
+        const me = await fetch('/api/me', { credentials: 'include' }).then(r => r.json()).catch(() => ({}));
+        if (!me || !me.id) {
+          err.innerHTML = 'Сначала войди: <a href="/auth/login?next=/test-pay" style="color:var(--orange)">/auth/login</a>';
+          btn.disabled = false; btn.textContent = 'Перейти к оплате →';
+          return;
+        }
+        const r = await fetch('/api/courses/zdorovaya-spina/checkout?tariff=test10', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await r.json();
+        if (!r.ok || !data.payment_url) {
+          err.textContent = 'Ошибка: ' + (data.error || r.status);
+          btn.disabled = false; btn.textContent = 'Попробовать снова';
+          return;
+        }
+        window.location.href = data.payment_url;
+      } catch (e) {
+        err.textContent = 'Сеть отвалилась — попробуй ещё раз';
+        btn.disabled = false; btn.textContent = 'Перейти к оплате →';
+      }
+    });
+  </script>
+</SiteLayout>

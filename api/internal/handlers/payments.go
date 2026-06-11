@@ -28,6 +28,9 @@ var tariffPresets = map[string]map[string]tariffPreset{
 	"zdorovaya-spina": {
 		"self":    {PriceRub: 3990, Title: "Здоровая спина — Самостоятельный"},
 		"support": {PriceRub: 12990, Title: "Здоровая спина — С поддержкой"},
+		// Временный тариф для проверки интеграции с Продамусом — после успешной
+		// тестовой оплаты + возврата эту строку удалим.
+		"test10": {PriceRub: 10, Title: "ТЕСТ — проверка интеграции"},
 	},
 }
 
