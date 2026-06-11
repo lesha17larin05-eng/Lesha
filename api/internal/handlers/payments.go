@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -220,18 +221,97 @@ func parseWebhook(ct string, body []byte) map[string]any {
 		_ = json.Unmarshal(body, &out)
 		return out
 	}
-	// urlencoded
-	values := strings.Split(string(body), "&")
-	for _, kv := range values {
+	// urlencoded: сначала разбираем плоские ключи foo, foo[0][bar],
+	// затем превращаем PHP-style индексы во вложенный объект — Продамус
+	// подписывает именно вложенную структуру (см. python-prodamus → php2dict).
+	flat := map[string]string{}
+	for _, kv := range strings.Split(string(body), "&") {
 		eq := strings.IndexByte(kv, '=')
 		if eq < 0 {
 			continue
 		}
 		k, _ := urlDecode(kv[:eq])
 		v, _ := urlDecode(kv[eq+1:])
-		out[k] = v
+		flat[k] = v
 	}
-	return out
+	return php2dict(flat)
+}
+
+// php2dict превращает плоские ключи вида "foo", "products[0][name]" в
+// вложенный map/slice. Если индексы чисто числовые — собираем slice
+// (как PHP/JSON массив); иначе — map. Сохраняем порядок индексов
+// через sort.
+func php2dict(flat map[string]string) map[string]any {
+	root := map[string]any{}
+	bracketRe := regexp.MustCompile(`\[([^\]]*)\]`)
+	for fullKey, val := range flat {
+		head := fullKey
+		var parts []string
+		if i := strings.IndexByte(fullKey, '['); i > 0 {
+			head = fullKey[:i]
+			matches := bracketRe.FindAllStringSubmatch(fullKey[i:], -1)
+			for _, m := range matches {
+				parts = append(parts, m[1])
+			}
+		}
+		if len(parts) == 0 {
+			root[head] = val
+			continue
+		}
+		// Идём вглубь, создавая map'ы по ключам. Числовые → потом превратим в slice.
+		var cur any = root
+		curMap := root
+		path := append([]string{head}, parts...)
+		for i, k := range path {
+			if i == len(path)-1 {
+				curMap[k] = val
+				break
+			}
+			next, ok := curMap[k].(map[string]any)
+			if !ok {
+				next = map[string]any{}
+				curMap[k] = next
+			}
+			curMap = next
+			cur = next
+		}
+		_ = cur
+	}
+	// Рекурсивно: map, у которого все ключи — целые подряд от 0 → slice
+	var convert func(v any) any
+	convert = func(v any) any {
+		m, ok := v.(map[string]any)
+		if !ok {
+			return v
+		}
+		for k, vv := range m {
+			m[k] = convert(vv)
+		}
+		// проверка: все ключи числовые и заполнены подряд от 0
+		allNum := len(m) > 0
+		maxIdx := -1
+		for k := range m {
+			n, err := strconv.Atoi(k)
+			if err != nil || n < 0 {
+				allNum = false
+				break
+			}
+			if n > maxIdx {
+				maxIdx = n
+			}
+		}
+		if !allNum || maxIdx+1 != len(m) {
+			return m
+		}
+		arr := make([]any, len(m))
+		for k, vv := range m {
+			n, _ := strconv.Atoi(k)
+			arr[n] = vv
+		}
+		return arr
+	}
+	result := convert(root).(map[string]any)
+	return result
 }
 
 func urlDecode(s string) (string, error) {
