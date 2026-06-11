@@ -60,10 +60,12 @@ type quickSignupReq struct {
 	ConsentMarketing   bool `json:"consent_marketing"`
 }
 
-// QuickSignup — одношаговая регистрация по email+имя без пароля.
-// Если email уже есть → {exists:true}, фронт перенаправит на /auth/login.
-// Если нет → создаём юзера, генерим пароль, шлём его на почту,
-// сразу подтверждаем email и ставим auth-cookies → {created:true}, фронт ведёт в кабинет.
+// QuickSignup — регистрация по email+имя за один шаг (для бесплатного курса).
+// Создаёт юзера, генерит временный пароль и токен подтверждения email,
+// отправляет письмо с ссылкой подтверждения и паролем. Доступ к курсу НЕ
+// выдаётся до тех пор, пока пользователь не кликнет по ссылке —
+// enrollment в free курсы делает VerifyEmail handler.
+// Это защита от опечаток в email и фейковых регистраций.
 func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	var in quickSignupReq
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
@@ -100,45 +102,29 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 409, "email_taken")
 		return
 	}
-	if err := a.Repo.MarkEmailVerified(r.Context(), uid); err != nil {
-		writeErr(w, 500, "db")
-		return
-	}
 	// 152-ФЗ: сохраняем факт согласий (consent_pd обязательное, marketing — опциональное).
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
-	// Phone — опциональное поле, ошибку логируем, но не валим регистрацию.
 	if in.Phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
 	}
-	enrolled := 0
-	if courses, err := a.Repo.ListCourses(r.Context(), true); err == nil {
-		for _, c := range courses {
-			if c.Kind != "free" {
-				continue
-			}
-			if err := a.Repo.Grant(r.Context(), uid, c.ID, "free", nil); err == nil {
-				enrolled++
-			}
-		}
-	}
-	a.Mail.Async(in.Email, "Доступ в личный кабинет",
-		"<p>Здравствуйте! Ваш аккаунт создан.</p>"+
-			"<p><b>Логин:</b> "+in.Email+"<br><b>Пароль:</b> "+password+"</p>"+
-			"<p>Вход: <a href=\""+a.Cfg.AppHost+"/auth/login\">"+a.Cfg.AppHost+"/auth/login</a></p>")
-	access, err := auth.IssueAccessToken(a.Cfg.JWTSecret, uid, "user")
-	if err != nil {
-		writeErr(w, 500, "token_failed")
-		return
-	}
-	refreshRaw, refreshHash, _ := auth.RandomToken(32)
-	if err := a.Repo.CreateSession(r.Context(), uid, refreshHash, r.UserAgent(), middleware.ClientIP(r), auth.RefreshTTL); err != nil {
-		writeErr(w, 500, "session_failed")
-		return
-	}
-	setAuthCookies(w, r, access, refreshRaw)
-	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "enrolled_free": enrolled}
+	// Токен подтверждения — после клика VerifyEmail выдаст enrollment в free курсы.
+	rawTok, hashTok, _ := auth.RandomToken(32)
+	_ = a.Repo.CreateEmailToken(r.Context(), uid, hashTok, 24*time.Hour)
+	link := a.Cfg.AppHost + "/auth/verify?token=" + rawTok
+	a.Mail.Async(in.Email, "Подтвердите почту — доступ к бесплатному курсу",
+		"<p>Здравствуйте! Спасибо за регистрацию на сайте Алексея Ларина.</p>"+
+			"<p>Чтобы открыть доступ к курсу «Мягкий старт», подтвердите вашу почту: "+
+			"<a href=\""+link+"\">"+link+"</a></p>"+
+			"<p>Ссылка действительна 24 часа.</p>"+
+			"<hr>"+
+			"<p><b>Данные для входа в личный кабинет:</b><br>"+
+			"Логин: "+in.Email+"<br>"+
+			"Пароль: "+password+"</p>"+
+			"<p>Сохраните это письмо — пригодится в будущем.</p>")
+	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "verify_required": true}
 	if a.Cfg.AppEnv != "production" {
 		resp["password_dev"] = password
+		resp["verify_link_dev"] = link
 	}
 	writeJSON(w, 201, resp)
 }
@@ -223,7 +209,33 @@ func (a *App) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
-	writeJSON(w, 200, map[string]string{"ok": "1"})
+	// Идемпотентно выдаём enrollment во все free-курсы — для тех, кто пришёл
+	// через quick-signup на /course (доступ к курсу открывается только после verify).
+	// Repo.Grant — INSERT ... ON CONFLICT DO NOTHING, повторный verify не ломает.
+	enrolled := 0
+	if courses, err := a.Repo.ListCourses(r.Context(), true); err == nil {
+		for _, c := range courses {
+			if c.Kind != "free" {
+				continue
+			}
+			if err := a.Repo.Grant(r.Context(), uid, c.ID, "free", nil); err == nil {
+				enrolled++
+			}
+		}
+	}
+	// Сразу логиним — после клика юзер попадает прямо в кабинет, без отдельной формы.
+	access, err := auth.IssueAccessToken(a.Cfg.JWTSecret, uid, "user")
+	if err != nil {
+		writeErr(w, 500, "token_failed")
+		return
+	}
+	refreshRaw, refreshHash, _ := auth.RandomToken(32)
+	if err := a.Repo.CreateSession(r.Context(), uid, refreshHash, r.UserAgent(), middleware.ClientIP(r), auth.RefreshTTL); err != nil {
+		writeErr(w, 500, "session_failed")
+		return
+	}
+	setAuthCookies(w, r, access, refreshRaw)
+	writeJSON(w, 200, map[string]any{"ok": "1", "enrolled_free": enrolled})
 }
 
 type forgotReq struct{ Email string }

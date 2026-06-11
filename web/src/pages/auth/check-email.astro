@@ -1,0 +1,33 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+const email = Astro.url.searchParams.get('email') || '';
+const styles = `
+.check-email-wrap { max-width: 560px; margin: 0 auto; padding: 80px 24px 100px; text-align: center; }
+.check-email-icon { font-size: 56px; line-height: 1; margin-bottom: 20px; }
+.check-email h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 40px); font-weight: 500; color: var(--navy); margin-bottom: 16px; line-height: 1.2; }
+.check-email-lead { font-size: 17px; color: var(--text-mid); line-height: 1.6; margin-bottom: 28px; }
+.check-email-lead b { color: var(--navy); }
+.check-email-tip { background: rgba(244,195,97,0.16); border: 1px solid rgba(244,195,97,0.4); border-radius: 14px; padding: 18px 22px; margin-bottom: 28px; text-align: left; font-size: 15px; color: var(--text-mid); line-height: 1.6; }
+.check-email-tip b { color: var(--navy); }
+.check-email-actions { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 24px; }
+.check-email-actions a { font-size: 15px; color: var(--orange); text-decoration: none; border-bottom: 1px dashed rgba(232,101,42,0.4); }
+.check-email-actions a:hover { color: var(--orange-warm); }
+`;
+---
+<SiteLayout title="Проверьте почту — Алексей Ларин" padTop={true} pageStyles={styles}>
+  <section class="check-email-wrap check-email">
+    <div class="check-email-icon">📬</div>
+    <h1>Письмо на пути</h1>
+    <p class="check-email-lead">
+      Отправили инструкции на <b>{email || 'ваш email'}</b>.<br>
+      Откройте письмо, нажмите на ссылку — и получите доступ к курсу «Мягкий старт».
+    </p>
+    <div class="check-email-tip">
+      <b>Не пришло за минуту?</b> Загляните в папку <b>«Спам»</b> — иногда первое письмо от нового отправителя попадает туда. Если найдёте — отметьте «Не спам», чтобы следующие письма приходили во «Входящие».
+    </div>
+    <div class="check-email-actions">
+      <a href="/auth/login">Уже подтвердили? Войти</a>
+      <a href="/course">Вернуться на страницу курса</a>
+    </div>
+  </section>
+</SiteLayout>

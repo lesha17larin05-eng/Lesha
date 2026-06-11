@@ -1,21 +1,57 @@
 ---
-import Base from '../../layouts/Base.astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
 const token = Astro.url.searchParams.get('token') || '';
+const styles = `
+.verify-wrap { max-width: 520px; margin: 0 auto; padding: 100px 24px; text-align: center; }
+.verify-icon { font-size: 56px; line-height: 1; margin-bottom: 18px; }
+.verify-wrap h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: var(--navy); margin-bottom: 14px; }
+.verify-msg { font-size: 16px; color: var(--text-mid); line-height: 1.6; margin-bottom: 22px; }
+.verify-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: white; text-decoration: none; padding: 14px 28px; border-radius: 100px; font-size: 15px; font-weight: 600; transition: background 0.2s; }
+.verify-btn:hover { background: var(--orange-warm); }
+`;
 ---
-<Base title="Подтверждение email">
-  <section class="container" style="padding:60px 0; max-width:520px;">
-    <h1>Подтверждение email</h1>
-    <p id="msg">Проверяем токен...</p>
+<SiteLayout title="Подтверждение email — Алексей Ларин" padTop={true} pageStyles={styles}>
+  <section class="verify-wrap">
+    <div id="icon" class="verify-icon">⏳</div>
+    <h1 id="title">Проверяем ссылку…</h1>
+    <p id="msg" class="verify-msg">Секунду…</p>
+    <div id="cta"></div>
   </section>
   <script define:vars={{ token }}>
     (async () => {
-      const r = await fetch('/api/auth/verify-email', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ token })
-      });
-      const m = document.getElementById('msg');
-      if (r.ok) m.innerHTML = '✅ Email подтверждён. <a href="/auth/login">Войти</a>';
-      else m.textContent = '❌ Ссылка недействительна или просрочена.';
+      const icon = document.getElementById('icon');
+      const title = document.getElementById('title');
+      const msg = document.getElementById('msg');
+      const cta = document.getElementById('cta');
+      if (!token) {
+        icon.textContent = '❌';
+        title.textContent = 'Ссылка некорректна';
+        msg.textContent = 'В адресе нет токена. Откройте ссылку из письма ещё раз.';
+        return;
+      }
+      try {
+        const r = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ token })
+        });
+        if (r.ok) {
+          icon.textContent = '✅';
+          title.textContent = 'Email подтверждён';
+          msg.textContent = 'Доступ к курсу открыт. Сейчас переведём в кабинет…';
+          setTimeout(() => { window.location.href = '/cabinet/myagkiy-start'; }, 1200);
+        } else {
+          icon.textContent = '❌';
+          title.textContent = 'Ссылка не действует';
+          msg.textContent = 'Возможно, она уже использована или просрочена (24 часа).';
+          cta.innerHTML = '<a href="/auth/login" class="verify-btn">Войти</a>';
+        }
+      } catch {
+        icon.textContent = '⚠️';
+        title.textContent = 'Не удалось проверить';
+        msg.textContent = 'Проверьте интернет и попробуйте открыть ссылку ещё раз.';
+      }
     })();
   </script>
-</Base>
+</SiteLayout>
