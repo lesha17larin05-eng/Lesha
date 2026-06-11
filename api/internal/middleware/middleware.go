@@ -158,6 +158,7 @@ func CSRF(next http.Handler) http.Handler {
 			http.SetCookie(w, &http.Cookie{
 				Name: "csrf", Value: tok, Path: "/",
 				SameSite: http.SameSiteLaxMode, Secure: secure,
+				MaxAge: 60 * 60 * 24 * 30, // 30 дней — иначе session-cookie умирает между визитами
 			})
 		}
 		switch r.Method {

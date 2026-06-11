@@ -157,19 +157,29 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   </main>
   <SiteFooter />
   <script>
-    // Attach CSRF to fetch mutations.
+    // Attach CSRF to fetch mutations. Если cookie csrf ещё нет (первый визит) —
+    // синхронно ставим её через GET /api/me, иначе сервер вернёт csrf_failed.
     (() => {
-      const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
-      const csrf = m ? m[1] : '';
+      function getCsrf() {
+        const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
+        return m ? m[1] : '';
+      }
+      async function ensureCsrf() {
+        if (getCsrf()) return getCsrf();
+        try { await fetch('/api/me', { credentials: 'include' }); } catch {}
+        return getCsrf();
+      }
       const orig = window.fetch;
-      window.fetch = function(input, init = {}) {
+      window.fetch = async function(input, init = {}) {
         const method = (init.method || (typeof input === 'string' ? 'GET' : input.method) || 'GET').toUpperCase();
         if (method !== 'GET' && method !== 'HEAD') {
+          const csrf = (await ensureCsrf()) || '';
           init.headers = { ...(init.headers || {}), 'X-CSRF-Token': csrf };
           init.credentials = 'include';
         }
         return orig.call(this, input, init);
       };
+      ensureCsrf();
     })();
   </script>
 </body>
