@@ -1,11 +1,17 @@
 package email
 
 import (
+	"crypto/rand"
 	"crypto/tls"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
+	"mime"
 	"net"
+	"net/mail"
 	"net/smtp"
+	"strings"
+	"time"
 )
 
 // Sender отправляет HTML-письма через SMTP.
@@ -72,11 +78,23 @@ func (s *Sender) Send(to, subject, body string) error {
 		return fmt.Errorf("smtp DATA: %w", err)
 	}
 
-	msg := "From: " + s.From + "\r\n" +
+	// Корректные заголовки RFC 5322 / 2047:
+	// - From: display name в B-encoding если есть не-ASCII; address — RFC 5321
+	// - Subject: тоже Q-encoded если не-ASCII
+	// - Date в формате RFC 1123Z (требуется для проверки спам-фильтров)
+	// - Message-ID — уникальный, иначе антиспам недоволен
+	// - Reply-To = адрес отправителя (по умолчанию)
+	fromHeader := encodeAddress(s.From, s.User)
+	domain := domainFromEmail(s.User)
+	msg := "From: " + fromHeader + "\r\n" +
 		"To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
+		"Reply-To: " + s.User + "\r\n" +
+		"Date: " + time.Now().UTC().Format(time.RFC1123Z) + "\r\n" +
+		"Message-ID: <" + randID() + "@" + domain + ">\r\n" +
+		"Subject: " + mime.QEncoding.Encode("UTF-8", subject) + "\r\n" +
 		"MIME-Version: 1.0\r\n" +
 		"Content-Type: text/html; charset=UTF-8\r\n" +
+		"Content-Transfer-Encoding: 8bit\r\n" +
 		"\r\n" + body
 
 	if _, err = fmt.Fprint(wc, msg); err != nil {
@@ -86,6 +104,37 @@ func (s *Sender) Send(to, subject, body string) error {
 		return fmt.Errorf("smtp close data: %w", err)
 	}
 	return c.Quit()
+}
+
+// encodeAddress кодирует From-заголовок: "Имя <addr@host>"
+// Если name содержит не-ASCII — кодирует через RFC 2047 B-encoding,
+// чтобы Gmail/Yandex не ругались на RFC 5322 non-compliant header.
+func encodeAddress(from, fallbackAddr string) string {
+	addr, err := mail.ParseAddress(from)
+	if err != nil {
+		// from мог быть просто адресом без display name
+		return fallbackAddr
+	}
+	if addr.Name == "" {
+		return addr.Address
+	}
+	// (mime.WordEncoder) Encode сам решит — Q или B, и оставит ASCII как есть.
+	encoded := mime.BEncoding.Encode("UTF-8", addr.Name)
+	return encoded + " <" + addr.Address + ">"
+}
+
+func domainFromEmail(addr string) string {
+	i := strings.LastIndexByte(addr, '@')
+	if i < 0 || i == len(addr)-1 {
+		return "localhost"
+	}
+	return addr[i+1:]
+}
+
+func randID() string {
+	b := make([]byte, 12)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)
 }
 
 // Async запускает Send в горутине; ошибки логируются.
