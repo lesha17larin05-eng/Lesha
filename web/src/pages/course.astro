@@ -93,8 +93,9 @@ const authedStyles = user ? `
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {
-            setNote('Аккаунт создан, пароль отправлен на почту. Переходим...');
-            window.location.href = '/cabinet/myagkiy-start';
+            // Письмо с ссылкой подтверждения и паролем уже улетело.
+            // Перебрасываем на страницу-инструкцию.
+            window.location.href = '/auth/check-email?email=' + encodeURIComponent(email);
             return;
           }
           if (res.ok && data.exists) {
