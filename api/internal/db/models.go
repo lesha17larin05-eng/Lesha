@@ -11,6 +11,7 @@ type User struct {
 	Email           string
 	PasswordHash    string
 	Name            string
+	Phone           string
 	Role            string
 	EmailVerifiedAt *time.Time
 	LastSeenAt      *time.Time
