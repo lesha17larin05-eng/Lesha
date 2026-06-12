@@ -30,9 +30,20 @@ const styles = `
         return;
       }
       try {
+        // CSRF cookie может ещё не быть установлена (первый визит из почтового
+        // клиента в новой вкладке) — сначала прогреваем её через GET.
+        function getCsrf() {
+          const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
+          return m ? m[1] : '';
+        }
+        let csrf = getCsrf();
+        if (!csrf) {
+          try { await fetch('/api/me', { credentials: 'include' }); } catch {}
+          csrf = getCsrf();
+        }
         const r = await fetch('/api/auth/verify-email', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { 'content-type': 'application/json', 'X-CSRF-Token': csrf },
           credentials: 'include',
           body: JSON.stringify({ token })
         });
