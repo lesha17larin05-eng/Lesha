@@ -177,16 +177,43 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
         return getCsrf();
       }
       const orig = window.fetch;
+      let refreshing = null;
+      async function tryRefresh() {
+        if (refreshing) return refreshing;
+        refreshing = (async () => {
+          try {
+            const csrf = (await ensureCsrf()) || '';
+            const r = await orig.call(window, '/api/auth/refresh', {
+              method: 'POST', credentials: 'include',
+              headers: { 'X-CSRF-Token': csrf, 'Content-Type': 'application/json' },
+            });
+            return r.ok;
+          } catch { return false; }
+          finally { setTimeout(() => { refreshing = null; }, 100); }
+        })();
+        return refreshing;
+      }
       window.fetch = async function(input, init = {}) {
         const method = (init.method || (typeof input === 'string' ? 'GET' : input.method) || 'GET').toUpperCase();
         if (method !== 'GET' && method !== 'HEAD') {
-          // Cookie могла ещё не прийти (первый визит) — синхронно ставим её
-          // через GET /api/me, иначе сервер вернёт csrf_failed.
           const csrf = (await ensureCsrf()) || '';
           init.headers = { ...(init.headers || {}), 'X-CSRF-Token': csrf };
           init.credentials = 'include';
+        } else {
+          init.credentials = init.credentials || 'include';
         }
-        return orig.call(this, input, init);
+        const url = typeof input === 'string' ? input : input.url;
+        let res = await orig.call(this, input, init);
+        // Если access_token истёк (401) на нашем /api/ — пытаемся
+        // обновить через refresh_token и повторить запрос один раз.
+        if (res.status === 401 && url && url.startsWith('/api/') &&
+            !url.includes('/auth/login') && !url.includes('/auth/refresh') &&
+            !url.includes('/auth/register') && !url.includes('/auth/quick-signup')) {
+          if (await tryRefresh()) {
+            res = await orig.call(this, input, init);
+          }
+        }
+        return res;
       };
       // прогреваем cookie в фоне сразу при загрузке страницы — чтобы клик по форме
       // не тратил время на лишний round-trip

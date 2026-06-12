@@ -170,14 +170,41 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
         return getCsrf();
       }
       const orig = window.fetch;
+      let refreshing = null;
+      async function tryRefresh() {
+        if (refreshing) return refreshing;
+        refreshing = (async () => {
+          try {
+            const csrf = (await ensureCsrf()) || '';
+            const r = await orig.call(window, '/api/auth/refresh', {
+              method: 'POST', credentials: 'include',
+              headers: { 'X-CSRF-Token': csrf, 'Content-Type': 'application/json' },
+            });
+            return r.ok;
+          } catch { return false; }
+          finally { setTimeout(() => { refreshing = null; }, 100); }
+        })();
+        return refreshing;
+      }
       window.fetch = async function(input, init = {}) {
         const method = (init.method || (typeof input === 'string' ? 'GET' : input.method) || 'GET').toUpperCase();
         if (method !== 'GET' && method !== 'HEAD') {
           const csrf = (await ensureCsrf()) || '';
           init.headers = { ...(init.headers || {}), 'X-CSRF-Token': csrf };
           init.credentials = 'include';
+        } else {
+          init.credentials = init.credentials || 'include';
         }
-        return orig.call(this, input, init);
+        const url = typeof input === 'string' ? input : input.url;
+        let res = await orig.call(this, input, init);
+        if (res.status === 401 && url && url.startsWith('/api/') &&
+            !url.includes('/auth/login') && !url.includes('/auth/refresh') &&
+            !url.includes('/auth/register') && !url.includes('/auth/quick-signup')) {
+          if (await tryRefresh()) {
+            res = await orig.call(this, input, init);
+          }
+        }
+        return res;
       };
       ensureCsrf();
     })();
