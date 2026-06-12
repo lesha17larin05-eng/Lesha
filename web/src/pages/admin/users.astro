@@ -16,16 +16,57 @@ const user = (Astro.locals as any).user;
       <button class="btn">Найти</button>
     </form>
     <table>
-      <thead><tr><th>Email</th><th>Имя</th><th>Роль</th><th>Подтв.</th><th>Last seen</th></tr></thead>
+      <thead><tr><th>Email</th><th>Имя</th><th>Роль</th><th>Подтв.</th><th>Last seen</th><th></th></tr></thead>
       <tbody>
         {(data || []).map((u: any) => (
-          <tr>
+          <tr data-uid={u.id} data-email={u.email}>
             <td>{u.email}</td><td>{u.name}</td><td>{u.role}</td>
             <td>{u.email_verified ? '✅' : '—'}</td>
             <td>{u.last_seen_at?.toString?.().slice(0,16) || '—'}</td>
+            <td>
+              {u.role !== 'admin' && (
+                <button class="btn-del" type="button" aria-label="Удалить пользователя">Удалить</button>
+              )}
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
   </section>
+  <style is:global>
+    .btn-del { background: transparent; border: 1px solid #d0d0d0; color: #b34040; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; transition: background 0.15s, color 0.15s; }
+    .btn-del:hover { background: #b34040; color: white; border-color: #b34040; }
+    .btn-del:disabled { opacity: 0.5; cursor: wait; }
+  </style>
+  <script>
+    document.querySelectorAll('.btn-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const row = btn.closest('tr');
+        const uid = row?.getAttribute('data-uid');
+        const email = row?.getAttribute('data-email');
+        if (!uid) return;
+        if (!confirm(`Удалить пользователя ${email}?\nДействие необратимо. Если у него были оплаченные заказы — система откажет.`)) return;
+        btn.disabled = true; const old = btn.textContent; btn.textContent = 'Удаляем…';
+        try {
+          const r = await fetch('/api/admin/users/' + uid, { method: 'DELETE', credentials: 'include' });
+          const data = await r.json().catch(() => ({}));
+          if (r.ok) {
+            row?.remove();
+          } else {
+            const errMap = {
+              has_paid_orders: 'У пользователя есть оплаченные заказы — удалять нельзя.',
+              cannot_delete_admin: 'Админа удалить нельзя.',
+              cannot_delete_self: 'Себя удалить нельзя.',
+              not_found: 'Пользователь уже удалён.',
+            };
+            alert(errMap[data.error] || ('Ошибка: ' + (data.error || r.status)));
+            btn.disabled = false; btn.textContent = old;
+          }
+        } catch {
+          alert('Сеть отвалилась, попробуйте ещё раз');
+          btn.disabled = false; btn.textContent = old;
+        }
+      });
+    });
+  </script>
 </Base>

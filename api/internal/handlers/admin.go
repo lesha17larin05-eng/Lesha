@@ -121,6 +121,45 @@ func (a *App) AdminRevoke(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
 
+// AdminDeleteUser удаляет пользователя из БД вместе с зависимыми
+// записями (enrollments, sessions, tokens, lesson_progress) через каскад FK.
+// Защита: запрещаем удалять админа и пользователей с оплаченными заказами
+// (для аудита 152-ФЗ и контроля выплат).
+func (a *App) AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
+	uid, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		writeErr(w, 400, "bad_id")
+		return
+	}
+	adminID, _ := middleware.UserID(r.Context())
+	if uid == adminID {
+		writeErr(w, 400, "cannot_delete_self")
+		return
+	}
+	u, err := a.Repo.GetUser(r.Context(), uid)
+	if err != nil {
+		writeErr(w, 404, "not_found")
+		return
+	}
+	if u.Role == "admin" {
+		writeErr(w, 403, "cannot_delete_admin")
+		return
+	}
+	// Проверка: есть ли оплаченные заказы — таких пользователей не удаляем.
+	var hasPaid bool
+	if err := a.Repo.Pool.QueryRow(r.Context(),
+		`SELECT EXISTS(SELECT 1 FROM orders WHERE user_id=$1 AND status='paid')`, uid).Scan(&hasPaid); err == nil && hasPaid {
+		writeErr(w, 409, "has_paid_orders")
+		return
+	}
+	if _, err := a.Repo.Pool.Exec(r.Context(), `DELETE FROM users WHERE id=$1`, uid); err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	a.Repo.Audit(r.Context(), adminID, "delete", "user", &uid, map[string]any{"email": u.Email})
+	writeJSON(w, 200, map[string]string{"ok": "1"})
+}
+
 // --- COURSES CRUD ---
 
 // AdminGetCourse returns a course with full modules + lessons (no filtering).
