@@ -95,6 +95,7 @@ func main() {
 		r.Get("/api/admin/stats", app.AdminStats)
 		r.Get("/api/admin/users", app.AdminUsers)
 		r.Get("/api/admin/users/{id}", app.AdminUser)
+		r.Delete("/api/admin/users/{id}", app.AdminDeleteUser)
 		r.Post("/api/admin/users/{id}/enrollments", app.AdminGrant)
 		r.Delete("/api/admin/users/{id}/enrollments/{course_id}", app.AdminRevoke)
 		r.Get("/api/admin/courses", app.AdminListCourses)
