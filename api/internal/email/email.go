@@ -29,6 +29,12 @@ func (s *Sender) Send(to, subject, body string) error {
 		slog.Info("email skipped (no SMTP configured)", "to", to, "subject", subject)
 		return nil
 	}
+	// RFC 2606 reserved domains/TLDs — гарантированно никуда не доставятся,
+	// а попытка обернётся bounce'ом в inbox отправителя. Не шлём.
+	if isReservedTestDomain(to) {
+		slog.Info("email skipped (test domain)", "to", to, "subject", subject)
+		return nil
+	}
 
 	addr := net.JoinHostPort(s.Host, s.Port)
 
@@ -121,6 +127,28 @@ func encodeAddress(from, fallbackAddr string) string {
 	// (mime.WordEncoder) Encode сам решит — Q или B, и оставит ASCII как есть.
 	encoded := mime.BEncoding.Encode("UTF-8", addr.Name)
 	return encoded + " <" + addr.Address + ">"
+}
+
+// isReservedTestDomain — true если адрес попадает в зарезервированные RFC 2606
+// домены/TLD (example.com/.org/.net, .example, .test, .invalid, .localhost)
+// или явные одноразовые алиасы.
+func isReservedTestDomain(addr string) bool {
+	d := strings.ToLower(domainFromEmail(addr))
+	if d == "" {
+		return false
+	}
+	// RFC 2606 reserved TLDs
+	for _, tld := range []string{".example", ".test", ".invalid", ".localhost"} {
+		if strings.HasSuffix(d, tld) {
+			return true
+		}
+	}
+	// RFC 2606 reserved second-level domains
+	switch d {
+	case "example.com", "example.org", "example.net", "localhost":
+		return true
+	}
+	return false
 }
 
 func domainFromEmail(addr string) string {
