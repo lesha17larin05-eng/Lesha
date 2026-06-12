@@ -43,8 +43,8 @@ func (r *Repo) SetUserPhone(ctx context.Context, uid uuid.UUID, phone string) er
 func (r *Repo) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	u := &User{}
 	err := r.Pool.QueryRow(ctx,
-		`SELECT id,email,password_hash,COALESCE(name,''),role,email_verified_at,last_seen_at,created_at FROM users WHERE email=$1`,
-		email).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.Role, &u.EmailVerifiedAt, &u.LastSeenAt, &u.CreatedAt)
+		`SELECT id,email,password_hash,COALESCE(name,''),COALESCE(phone,''),role,email_verified_at,last_seen_at,created_at FROM users WHERE email=$1`,
+		email).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.Phone, &u.Role, &u.EmailVerifiedAt, &u.LastSeenAt, &u.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -54,8 +54,8 @@ func (r *Repo) GetUserByEmail(ctx context.Context, email string) (*User, error) 
 func (r *Repo) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
 	u := &User{}
 	err := r.Pool.QueryRow(ctx,
-		`SELECT id,email,password_hash,COALESCE(name,''),role,email_verified_at,last_seen_at,created_at FROM users WHERE id=$1`,
-		id).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.Role, &u.EmailVerifiedAt, &u.LastSeenAt, &u.CreatedAt)
+		`SELECT id,email,password_hash,COALESCE(name,''),COALESCE(phone,''),role,email_verified_at,last_seen_at,created_at FROM users WHERE id=$1`,
+		id).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.Phone, &u.Role, &u.EmailVerifiedAt, &u.LastSeenAt, &u.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -104,8 +104,8 @@ func (r *Repo) TouchLastSeen(ctx context.Context, userID uuid.UUID) {
 
 func (r *Repo) ListUsers(ctx context.Context, search string, limit, offset int) ([]*User, error) {
 	rows, err := r.Pool.Query(ctx,
-		`SELECT id,email,'',COALESCE(name,''),role,email_verified_at,last_seen_at,created_at FROM users
-		 WHERE ($1='' OR email ILIKE '%'||$1||'%' OR name ILIKE '%'||$1||'%')
+		`SELECT id,email,'',COALESCE(name,''),COALESCE(phone,''),role,email_verified_at,last_seen_at,created_at FROM users
+		 WHERE ($1='' OR email ILIKE '%'||$1||'%' OR name ILIKE '%'||$1||'%' OR phone ILIKE '%'||$1||'%')
 		 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, search, limit, offset)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (r *Repo) ListUsers(ctx context.Context, search string, limit, offset int) 
 	var out []*User
 	for rows.Next() {
 		u := &User{}
-		if err := rows.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.Role, &u.EmailVerifiedAt, &u.LastSeenAt, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Name, &u.Phone, &u.Role, &u.EmailVerifiedAt, &u.LastSeenAt, &u.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, u)

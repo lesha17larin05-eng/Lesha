@@ -48,7 +48,7 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	out := make([]map[string]any, 0, len(users))
 	for _, u := range users {
 		out = append(out, map[string]any{
-			"id": u.ID, "email": u.Email, "name": u.Name, "role": u.Role,
+			"id": u.ID, "email": u.Email, "name": u.Name, "phone": u.Phone, "role": u.Role,
 			"email_verified": u.EmailVerifiedAt != nil, "last_seen_at": u.LastSeenAt, "created_at": u.CreatedAt,
 		})
 	}

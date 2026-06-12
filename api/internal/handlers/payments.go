@@ -105,6 +105,10 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		"urlReturn":       a.Cfg.AppHost + "/cabinet/courses",
 		"urlSuccess":      a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
 		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
+		// ВАЖНО: касса в режиме самозанятого подмешивает npd_income_type в подпись
+		// ДО проверки. Если этого параметра нет в наших params — Продамус считает
+		// подпись с ним, а наша подпись посчитана без него → «Ошибка подписи».
+		"npd_income_type": "FROM_INDIVIDUAL",
 	}
 	if a.Cfg.ProdamusTestMode {
 		// in test mode return our fake-payment endpoint
