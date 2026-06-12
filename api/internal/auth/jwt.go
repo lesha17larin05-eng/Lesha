@@ -11,8 +11,10 @@ import (
 	"github.com/google/uuid"
 )
 
-const AccessTTL = 15 * time.Minute
-const RefreshTTL = 30 * 24 * time.Hour
+// Длинные сессии: access живёт 7 дней, refresh — 60 дней.
+// Так Алексею не приходится перелогиниваться каждые 15 минут.
+const AccessTTL = 7 * 24 * time.Hour
+const RefreshTTL = 60 * 24 * time.Hour
 
 type Claims struct {
 	UserID uuid.UUID `json:"uid"`
