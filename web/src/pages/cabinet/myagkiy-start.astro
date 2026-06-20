@@ -14,7 +14,7 @@ if (status !== 200) return Astro.redirect('/course', 302);
 // Ссылки на YouTube/ВК для каждого урока (захардкожены, как и на лендинге)
 const videoLinks: Record<string, { youtube: string; vk: string }> = {
   'vvodnyy':               { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },
-  'sustavnaya-gimnastika': { youtube: 'https://youtu.be/h1v7X47GZf8', vk: 'https://vkvideo.ru/video-141544391_456239601?list=ln-Vzl3j8EOqEjlcztrPI' },
+  'sustavnaya-gimnastika': { youtube: 'https://youtu.be/FmMPe-kj-vc', vk: 'https://vkvideo.ru/video-141544391_456239626?list=ln-0zqbHz4u7E4LIi08BF' },
   'sheya':                 { youtube: 'https://youtu.be/WkpJ91SuzMQ', vk: 'https://vkvideo.ru/video-141544391_456239602?list=ln-lJenrW8Aw9WvjKOUph' },
   'zdorovaya-spina':       { youtube: 'https://youtu.be/2SteUTw8W70', vk: 'https://vkvideo.ru/video-141544391_456239603?list=ln-3uhrATQFzcGbPm733E' },
   'stopy':                 { youtube: 'https://youtu.be/YjBP2ZfncGQ', vk: 'https://vkvideo.ru/video-141544391_456239604?list=ln-gWUMLYyhdzuOpH97Ev' },
@@ -73,6 +73,16 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
       overflow: hidden;
       box-shadow: 0 2px 12px rgba(0,0,0,0.04);
       transition: box-shadow 0.2s, transform 0.2s;
+      /* при переходе по якорю — отступ от фикс-шапки сайта (64px) + воздух */
+      scroll-margin-top: 84px;
+    }
+    /* Краткая жёлтая подсветка целевого урока — чтобы было видно, куда пришли */
+    .ms-cab-lesson:target {
+      animation: lessonTargetFlash 1.6s ease-out;
+    }
+    @keyframes lessonTargetFlash {
+      0%   { box-shadow: 0 0 0 4px rgba(232,101,42,0.45), 0 2px 12px rgba(0,0,0,0.04); }
+      100% { box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
     }
     .ms-cab-lesson:hover {
       box-shadow: 0 8px 32px rgba(0,0,0,0.08);
@@ -217,7 +227,7 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
         // #t=0.5 — браузер показывает первый кадр видео как превью при preload=metadata
         const mp4Url = `/lesson-videos/myagkiy-start/${l.slug}.mp4#t=0.5`;
         return (
-          <article class="ms-cab-lesson">
+          <article class="ms-cab-lesson" id={l.slug}>
             {/* 1. Заголовок: номер + название */}
             <div class="ms-cab-lesson-head">
               <div class={`ms-cab-lesson-num${l.num === 0 ? ' first' : ''}`}>{l.num}</div>

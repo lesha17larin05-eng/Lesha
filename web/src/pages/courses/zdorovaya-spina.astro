@@ -26,11 +26,11 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
     if (enrolled) {
       // Eyebrow
       const eyebrow = document.querySelector('.eyebrow-text');
-      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 11 уроков · онлайн';
+      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 12 уроков · онлайн';
 
       // Promise
       const promise = document.querySelector('.hero-promise p');
-      if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 11 уроков открыты</strong> – переходите к занятиям и начинайте в любом порядке.';
+      if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 12 уроков открыты</strong> — переходите к занятиям и начинайте в любом порядке.';
 
       // CTA button
       const btn = document.querySelector('.btn-hero');
@@ -51,12 +51,198 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       });
     }
 
+    // ─── Inline auth modal: регистрация/вход без перехода на /auth/* ─────
+    let _pendingTariff = null;
+
+    function openAuthModal(tariff, mode) {
+      _pendingTariff = tariff;
+      if (document.getElementById('zs-auth-modal')) {
+        switchAuthMode(mode || 'register');
+        return;
+      }
+      const wrap = document.createElement('div');
+      wrap.id = 'zs-auth-modal';
+      wrap.innerHTML = `
+        <div class="zs-modal-back" data-close></div>
+        <div class="zs-modal-card" role="dialog" aria-modal="true" aria-labelledby="zs-modal-title">
+          <button class="zs-modal-close" data-close aria-label="Закрыть">×</button>
+
+          <div data-mode="register">
+            <h3 id="zs-modal-title">Регистрация</h3>
+            <p class="zs-modal-switch">Уже есть аккаунт? <a href="#" data-switch="login">Войти</a></p>
+            <form class="zs-form" data-form="register" novalidate>
+              <label><span class="zs-lbl">Имя <i class="zs-req">*</i></span><input name="name" required autocomplete="name" /></label>
+              <label><span class="zs-lbl">Email <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" /></label>
+              <label><span class="zs-lbl">Телефон</span><input name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" /></label>
+              <label><span class="zs-lbl">Пароль <em class="zs-opt">минимум 8 символов</em> <i class="zs-req">*</i></span><input name="password" type="password" required minlength="8" autocomplete="new-password" /></label>
+              <label class="zs-check">
+                <input type="checkbox" name="consent_pd" required checked />
+                <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
+              </label>
+              <label class="zs-check">
+                <input type="checkbox" name="consent_marketing" checked />
+                <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом.</span>
+              </label>
+              <button class="zs-submit" type="submit">Создать аккаунт</button>
+              <div class="zs-msg" hidden></div>
+            </form>
+          </div>
+
+          <div data-mode="login" hidden>
+            <h3>Вход</h3>
+            <p class="zs-modal-switch">Нет аккаунта? <a href="#" data-switch="register">Зарегистрироваться</a></p>
+            <form class="zs-form" data-form="login" novalidate>
+              <label><span class="zs-lbl">Email <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" /></label>
+              <label><span class="zs-lbl">Пароль <i class="zs-req">*</i></span><input name="password" type="password" required autocomplete="current-password" /></label>
+              <button class="zs-submit" type="submit">Войти и продолжить</button>
+              <p class="zs-forgot"><a href="/auth/forgot">Забыли пароль?</a></p>
+              <div class="zs-msg" hidden></div>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(wrap);
+      document.body.style.overflow = 'hidden';
+
+      const close = () => {
+        wrap.remove();
+        document.body.style.overflow = '';
+        _pendingTariff = null;
+      };
+      wrap.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close));
+      wrap.querySelectorAll('[data-switch]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchAuthMode(el.getAttribute('data-switch'));
+        });
+      });
+      document.addEventListener('keydown', function onEsc(e) {
+        if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
+      });
+
+      wrap.querySelector('[data-form="register"]').addEventListener('submit', handleRegister);
+      wrap.querySelector('[data-form="login"]').addEventListener('submit', handleLogin);
+
+      switchAuthMode(mode || 'register');
+      setTimeout(() => {
+        const firstInput = wrap.querySelector('[data-mode="register"]:not([hidden]) input[name="email"], [data-mode="login"]:not([hidden]) input[name="email"]');
+        if (firstInput) firstInput.focus();
+      }, 50);
+    }
+
+    function switchAuthMode(mode) {
+      const wrap = document.getElementById('zs-auth-modal');
+      if (!wrap) return;
+      wrap.querySelectorAll('[data-mode]').forEach(el => {
+        el.hidden = el.getAttribute('data-mode') !== mode;
+      });
+      const titleEl = wrap.querySelector('#zs-modal-title');
+      if (titleEl) titleEl.textContent = mode === 'login' ? 'Вход' : 'Регистрация';
+      const focusInput = wrap.querySelector(`[data-mode="${mode}"] input[name="email"]`);
+      if (focusInput) focusInput.focus();
+    }
+
+    function setSubmitState(form, busy, busyLabel) {
+      const btn = form.querySelector('.zs-submit');
+      if (!btn) return;
+      if (busy) {
+        btn.dataset.orig = btn.textContent;
+        btn.textContent = busyLabel || 'Подождите…';
+        btn.disabled = true;
+      } else {
+        if (btn.dataset.orig) btn.textContent = btn.dataset.orig;
+        btn.disabled = false;
+      }
+    }
+
+    function showMsg(form, text, ok) {
+      const m = form.querySelector('.zs-msg');
+      if (!m) return;
+      m.textContent = text;
+      m.className = 'zs-msg ' + (ok ? 'is-ok' : 'is-err');
+      m.hidden = false;
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      if (!String(fd.get('name') || '').trim()) {
+        showMsg(form, 'Укажите имя — обращаемся к вам в кабинете и в письмах.', false);
+        return;
+      }
+      if (!fd.get('consent_pd')) {
+        showMsg(form, 'Чтобы продолжить, нужно согласиться с обработкой персональных данных.', false);
+        return;
+      }
+      setSubmitState(form, true, 'Создаём аккаунт…');
+      try {
+        const r = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            email: fd.get('email'),
+            password: fd.get('password'),
+            name: fd.get('name'),
+            phone: fd.get('phone'),
+            consent_pd: true,
+            consent_marketing: !!fd.get('consent_marketing'),
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok) {
+          showMsg(form, 'Аккаунт создан. Мы отправили письмо на ' + fd.get('email') + ' — подтвердите email по ссылке в письме, и оплата откроется автоматически.', true);
+          form.querySelector('.zs-submit').style.display = 'none';
+        } else {
+          showMsg(form, j.error === 'email_taken'
+            ? 'Этот email уже зарегистрирован. Войдите по ссылке выше.'
+            : (j.error || 'Не удалось создать аккаунт.'), false);
+        }
+      } catch {
+        showMsg(form, 'Ошибка соединения. Попробуйте ещё раз.', false);
+      } finally {
+        setSubmitState(form, false);
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      setSubmitState(form, true, 'Входим…');
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok) {
+          // Перезагружаем страницу с tariff=… — autoTariff-логика ниже сама запустит checkout
+          const tariff = _pendingTariff;
+          if (tariff) {
+            location.href = '/courses/zdorovaya-spina?tariff=' + encodeURIComponent(tariff);
+          } else {
+            location.reload();
+          }
+        } else if (j.error === 'email_not_verified') {
+          showMsg(form, 'Email не подтверждён. Проверьте почту и пройдите по ссылке из письма.', false);
+        } else {
+          showMsg(form, j.error === 'invalid_credentials' || j.error === 'bad_credentials'
+            ? 'Неверный email или пароль.' : (j.error || 'Не удалось войти.'), false);
+        }
+      } catch {
+        showMsg(form, 'Ошибка соединения. Попробуйте ещё раз.', false);
+      } finally {
+        setSubmitState(form, false);
+      }
+    }
+
     // ─── Tariff buttons → POST /checkout → редирект на Продамус ─────────
     async function startCheckout(tariff) {
-      // незалогиненный юзер: редирект на регистрацию с возвратом сюда
+      // незалогиненный юзер: открываем inline-форму регистрации (с переключением на вход)
       if (!isLoggedIn) {
-        const next = encodeURIComponent('/courses/zdorovaya-spina?tariff=' + tariff);
-        window.location.href = '/auth/register?next=' + next;
+        openAuthModal(tariff, 'register');
         return;
       }
       const r = await fetch('/api/courses/zdorovaya-spina/checkout?tariff=' + encodeURIComponent(tariff), {
@@ -109,4 +295,155 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       startCheckout(_autoTariff);
     }
   </script>
+  <style is:global>
+    #zs-auth-modal {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      animation: zs-modal-fade .18s ease-out;
+    }
+    @keyframes zs-modal-fade { from { opacity: 0; } to { opacity: 1; } }
+    .zs-modal-back {
+      position: absolute; inset: 0;
+      background: rgba(15, 21, 32, 0.55);
+      backdrop-filter: blur(4px);
+      cursor: pointer;
+    }
+    .zs-modal-card {
+      position: relative;
+      background: var(--warm-white, #fdfaf5);
+      border-radius: 20px;
+      padding: 36px 32px 28px;
+      max-width: 460px; width: 100%;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(15, 21, 32, 0.25);
+      animation: zs-modal-pop .22s cubic-bezier(.2,.9,.3,1.2);
+    }
+    @keyframes zs-modal-pop { from { transform: translateY(12px) scale(.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    .zs-modal-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 32px; height: 32px; border: none; border-radius: 50%;
+      background: transparent; color: var(--text-muted, #777);
+      font-size: 22px; line-height: 1; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, color .15s;
+    }
+    .zs-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--text, #1a1a1a); }
+    .zs-modal-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px; font-weight: 500;
+      color: var(--navy, #1a2744);
+      margin: 0 0 6px;
+      letter-spacing: -0.01em;
+    }
+    .zs-modal-switch {
+      font-size: 14px;
+      color: var(--text-mid, #444);
+      margin: 0 0 18px;
+    }
+    .zs-modal-switch a {
+      color: var(--orange, #e8652a);
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid transparent;
+      transition: border-color .2s;
+    }
+    @media (hover: hover) {
+      .zs-modal-switch a:hover { border-bottom-color: var(--orange, #e8652a); }
+    }
+    .zs-form {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .zs-form label {
+      display: flex; flex-direction: column; gap: 6px;
+      font-size: 13px; color: var(--text-mid, #444);
+      font-weight: 500;
+    }
+    .zs-lbl { display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+    .zs-req {
+      display: inline-block; color: var(--orange, #e8652a);
+      font-style: normal; font-weight: 700; font-size: 13px; line-height: 1;
+    }
+    .zs-opt {
+      display: inline-block; color: var(--text-muted, #777);
+      font-style: normal; font-weight: 400; font-size: 12px; line-height: 1;
+    }
+    .zs-form input[type="email"],
+    .zs-form input[type="password"],
+    .zs-form input[type="tel"],
+    .zs-form input[type="text"],
+    .zs-form input:not([type]) {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border, #ece8e0);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      background: white;
+      color: var(--text, #1a1a1a);
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+    .zs-form input:focus {
+      outline: none;
+      border-color: var(--orange, #e8652a);
+      box-shadow: 0 0 0 3px rgba(232,101,42,0.12);
+    }
+    .zs-check {
+      flex-direction: row !important;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px; line-height: 1.5;
+      cursor: pointer;
+      font-weight: 400 !important;
+      margin-top: 4px;
+    }
+    .zs-check input[type="checkbox"] {
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--orange, #e8652a);
+      width: 16px; height: 16px;
+      cursor: pointer;
+    }
+    .zs-check a {
+      color: var(--orange, #e8652a);
+      text-decoration: underline;
+    }
+    .zs-submit {
+      margin-top: 8px;
+      padding: 14px 22px;
+      border-radius: 100px;
+      border: none;
+      background: var(--orange, #e8652a);
+      color: white;
+      font-size: 15px; font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(232, 101, 42, 0.32);
+      transition: background .2s, transform .15s, box-shadow .2s;
+    }
+    @media (hover: hover) {
+      .zs-submit:hover:not(:disabled) {
+        background: var(--orange-warm, #f07530);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(232,101,42,0.38);
+      }
+    }
+    .zs-submit:disabled { opacity: 0.7; cursor: progress; }
+    .zs-forgot { font-size: 13px; text-align: center; margin: 0; }
+    .zs-forgot a { color: var(--text-muted, #777); text-decoration: none; border-bottom: 1px dashed currentColor; }
+    .zs-forgot a:hover { color: var(--navy, #1a2744); }
+    .zs-msg {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px; line-height: 1.45;
+    }
+    .zs-msg.is-err { background: rgba(220, 38, 38, 0.08); color: #b91c1c; border: 1px solid rgba(220,38,38,0.18); }
+    .zs-msg.is-ok  { background: rgba(34, 139, 84, 0.08); color: #1b6e3e; border: 1px solid rgba(34,139,84,0.18); }
+    @media (max-width: 480px) {
+      .zs-modal-card { padding: 28px 22px 22px; border-radius: 16px; }
+      .zs-modal-card h3 { font-size: 24px; }
+      .zs-form input { font-size: 16px; /* iOS не зумит при 16px+ */ }
+    }
+  </style>
 </SiteLayout>

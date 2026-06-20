@@ -31,7 +31,7 @@ const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }>
 // Ссылки на YouTube и ВК для каждого урока — кнопки под видео.
 const videoLinks: Record<string, { youtube: string; vk: string }> = {
   'vvodnyy':               { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },
-  'sustavnaya-gimnastika': { youtube: 'https://youtu.be/h1v7X47GZf8', vk: 'https://vkvideo.ru/video-141544391_456239601?list=ln-Vzl3j8EOqEjlcztrPI' },
+  'sustavnaya-gimnastika': { youtube: 'https://youtu.be/FmMPe-kj-vc', vk: 'https://vkvideo.ru/video-141544391_456239626?list=ln-0zqbHz4u7E4LIi08BF' },
   'sheya':                 { youtube: 'https://youtu.be/WkpJ91SuzMQ', vk: 'https://vkvideo.ru/video-141544391_456239602?list=ln-lJenrW8Aw9WvjKOUph' },
   'zdorovaya-spina':       { youtube: 'https://youtu.be/2SteUTw8W70', vk: 'https://vkvideo.ru/video-141544391_456239603?list=ln-3uhrATQFzcGbPm733E' },
   'stopy':                 { youtube: 'https://youtu.be/YjBP2ZfncGQ', vk: 'https://vkvideo.ru/video-141544391_456239604?list=ln-gWUMLYyhdzuOpH97Ev' },
@@ -178,9 +178,32 @@ const lessons = rawLessons.map((l: any, i: number) => {
       display: flex; align-items: flex-start; gap: 14px;
       padding: 12px 14px; background: white; border-radius: 12px;
       border: 1px solid var(--border);
-      transition: box-shadow 0.2s;
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+      color: inherit; text-decoration: none;
     }
-    .ms-lesson-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+    .ms-lesson-item.is-link { cursor: pointer; }
+    .ms-lesson-arrow {
+      margin-left: auto; align-self: center;
+      font-size: 18px; color: var(--text-light);
+      transition: color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+    @media (hover: hover) {
+      .ms-lesson-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+      .ms-lesson-item.is-link:hover {
+        border-color: var(--orange);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(232,101,42,0.12);
+      }
+      .ms-lesson-item.is-link:hover .ms-lesson-arrow {
+        color: var(--orange);
+        transform: translateX(3px);
+      }
+      .ms-lesson-item.is-link:hover .ms-lesson-text strong { color: var(--orange); }
+    }
+    .ms-lesson-item.is-link:focus-visible {
+      outline: 2px solid var(--orange); outline-offset: 2px;
+    }
     .ms-lesson-num {
       width: 28px; height: 28px; border-radius: 50%; background: var(--navy);
       display: flex; align-items: center; justify-content: center;
@@ -458,15 +481,36 @@ const lessons = rawLessons.map((l: any, i: number) => {
       <div class="ms-free-badge">✓ Бесплатно</div>
       <div class="ms-hero-right-title">Что внутри курса</div>
       <div class="ms-lesson-list">
-        {lessons.map(l => (
-          <div class="ms-lesson-item">
-            <div class={`ms-lesson-num${l.isFree ? ' free' : ''}`}>{l.num}</div>
-            <div class="ms-lesson-text">
-              <strong>{l.title}</strong>
-              <span>{l.desc.split('.')[0]}.</span>
+        {lessons.map(l => {
+          // Курс бесплатный — клик ведёт на конкретный урок в кабинете всегда.
+          // Для платного курса клик активен только если есть enrollment.
+          const canClick = isFreeCourse || enrolled;
+          // Ведём прямо в кабинет, чтобы открывался свой плеер и описание.
+          // Если не авторизован — middleware кабинета вернёт на /auth/login,
+          // что для общего бесплатного курса допустимо (логин — короткий шаг).
+          const lessonUrl = `/cabinet/${slug}#${l.slug}`;
+          if (canClick) {
+            return (
+              <a href={lessonUrl} class="ms-lesson-item is-link">
+                <div class={`ms-lesson-num${l.isFree ? ' free' : ''}`}>{l.num}</div>
+                <div class="ms-lesson-text">
+                  <strong>{l.title}</strong>
+                  <span>{l.desc.split('.')[0]}.</span>
+                </div>
+                <div class="ms-lesson-arrow" aria-hidden="true">→</div>
+              </a>
+            );
+          }
+          return (
+            <div class="ms-lesson-item">
+              <div class={`ms-lesson-num${l.isFree ? ' free' : ''}`}>{l.num}</div>
+              <div class="ms-lesson-text">
+                <strong>{l.title}</strong>
+                <span>{l.desc.split('.')[0]}.</span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   </section>

@@ -1,0 +1,146 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data } = await apiJson<any[]>('/api/admin/courses', { cookie });
+const user = (Astro.locals as any).user;
+const courses = Array.isArray(data) ? data : [];
+---
+<Base title="Выдать доступ (админ)" user={user}>
+  <AdminNav active="grant" />
+  <section class="container" style="padding:50px 0; max-width:720px;">
+    <h1>Выдать доступ по email</h1>
+    <p class="muted">
+      Для каждого email: если человек уже зарегистрирован — просто откроем ему курс
+      в кабинете. Если нет — создадим аккаунт и отправим письмо со ссылкой для
+      установки пароля.
+    </p>
+
+    <form id="grant" class="form" style="margin-top:24px;">
+      <div>
+        <label class="label">Курс</label>
+        <select class="input" name="slug" required>
+          {courses.map((c: any) => (
+            <option value={c.slug}>{c.title} ({c.slug})</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label class="label">Email (по одному в строке, можно через запятую)</label>
+        <textarea class="input" name="emails" rows="4" required
+          placeholder="ivan@example.com&#10;maria@example.com&#10;peter@example.com"></textarea>
+        <p class="muted" style="font-size:13px; margin-top:6px;">
+          Поддерживается до нескольких email сразу. Лишние пробелы и пустые
+          строки игнорируются. Регистр не важен.
+        </p>
+      </div>
+      <button class="btn" type="submit" style="margin-top:8px;">Открыть курс</button>
+    </form>
+
+    <div id="results" style="margin-top:30px;" hidden>
+      <h2 style="font-size:20px; margin-bottom:14px;">Результат</h2>
+      <div id="results-list"></div>
+    </div>
+  </section>
+
+  <style>
+    .res-row {
+      padding: 14px 16px; margin-bottom: 10px;
+      border-radius: 10px; border: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+      flex-wrap: wrap;
+    }
+    .res-row.is-ok { background: rgba(34,139,84,0.06); border-color: rgba(34,139,84,0.25); }
+    .res-row.is-warn { background: rgba(245,197,84,0.10); border-color: rgba(245,197,84,0.35); }
+    .res-row.is-err { background: rgba(220,38,38,0.06); border-color: rgba(220,38,38,0.25); }
+    .res-email { font-weight: 600; }
+    .res-status { font-size: 13px; color: var(--text-mid); }
+    .res-invite { width: 100%; margin-top: 8px; font-size: 13px; }
+    .res-invite code { display:block; padding:8px 10px; background:#f6f3ec; border-radius:6px; word-break:break-all; }
+    .res-invite-btn { font-size:12px; padding:3px 10px; margin-left:6px; cursor:pointer;
+      background:transparent; border:1px solid var(--border); border-radius:6px; }
+  </style>
+
+  <script>
+    const form = document.getElementById('grant');
+    const resBox = document.getElementById('results');
+    const resList = document.getElementById('results-list');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const slug = fd.get('slug');
+      // Парсим email: по строкам, по запятой/точке-запятой
+      const raw = String(fd.get('emails') || '');
+      const emails = raw.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+      if (emails.length === 0) {
+        alert('Не нашёл ни одного email');
+        return;
+      }
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Открываю…';
+      try {
+        const r = await fetch(`/api/admin/courses/${encodeURIComponent(slug)}/grant-by-email`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ emails }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          alert('Ошибка: ' + (j.error || r.status));
+          return;
+        }
+        renderResults(j.results || []);
+        resBox.hidden = false;
+        form.querySelector('textarea[name=emails]').value = '';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Открыть курс';
+      }
+    });
+
+    function renderResults(results) {
+      resList.innerHTML = '';
+      for (const r of results) {
+        const div = document.createElement('div');
+        let cls = 'is-ok', label = 'Доступ открыт';
+        if (r.status === 'already_enrolled') { cls = 'is-warn'; label = 'Уже был доступ'; }
+        else if (r.status === 'invalid_email') { cls = 'is-err'; label = 'Невалидный email'; }
+        else if (r.status === 'error') { cls = 'is-err'; label = 'Ошибка: ' + (r.error || '?'); }
+        else if (r.is_new_user) { label = 'Создан аккаунт, письмо отправлено'; }
+        else { label = 'Доступ открыт, письмо отправлено'; }
+
+        div.className = 'res-row ' + cls;
+        let html = `<div><div class="res-email">${escapeHtml(r.email)}</div>
+                    <div class="res-status">${escapeHtml(label)}</div></div>`;
+        if (r.invite_url) {
+          const safe = escapeHtml(r.invite_url);
+          html += `<div class="res-invite">
+            <div class="res-status">Запасная ссылка для пересылки (если письмо потерялось):</div>
+            <code>${safe}</code>
+            <button type="button" class="res-invite-btn" data-copy="${safe}">Скопировать</button>
+          </div>`;
+        }
+        div.innerHTML = html;
+        resList.appendChild(div);
+      }
+      // Кнопки «скопировать»
+      resList.querySelectorAll('[data-copy]').forEach(b => {
+        b.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(b.getAttribute('data-copy'));
+            const orig = b.textContent;
+            b.textContent = 'Скопировано ✓';
+            setTimeout(() => b.textContent = orig, 1500);
+          } catch {}
+        });
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+  </script>
+</Base>

@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/leshalarin/api/internal/auth"
 	"github.com/leshalarin/api/internal/db"
 	"github.com/leshalarin/api/internal/middleware"
 )
@@ -413,12 +416,55 @@ func (a *App) AdminDeleteLesson(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) AdminOrders(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
-	orders, err := a.Repo.ListOrders(r.Context(), status, nil, nil, 200, 0)
+	// Берём оплаты с JOIN на курсы и пользователей, чтобы в админке сразу
+	// были видны человекочитаемые названия (а не UUID).
+	q := `
+SELECT o.id, o.order_num, o.amount_rub, o.status, o.created_at,
+       o.course_id, COALESCE(c.title,''), COALESCE(c.slug,''),
+       o.user_id, COALESCE(u.email,''), COALESCE(u.name,'')
+FROM orders o
+LEFT JOIN courses c ON c.id = o.course_id
+LEFT JOIN users u ON u.id = o.user_id
+`
+	args := []any{}
+	if status != "" {
+		q += " WHERE o.status = $1"
+		args = append(args, status)
+	}
+	q += " ORDER BY o.created_at DESC LIMIT 200"
+	rows, err := a.Repo.Pool.Query(r.Context(), q, args...)
 	if err != nil {
 		writeErr(w, 500, "db")
 		return
 	}
-	writeJSON(w, 200, orders)
+	defer rows.Close()
+	out := []map[string]any{}
+	for rows.Next() {
+		var id, courseID, userID uuid.UUID
+		var orderNum int64
+		var amount int
+		var status, courseTitle, courseSlug, userEmail, userName string
+		var createdAt time.Time
+		if err := rows.Scan(&id, &orderNum, &amount, &status, &createdAt,
+			&courseID, &courseTitle, &courseSlug,
+			&userID, &userEmail, &userName); err != nil {
+			continue
+		}
+		out = append(out, map[string]any{
+			"id":           id,
+			"order_num":    orderNum,
+			"amount_rub":   amount,
+			"status":       status,
+			"created_at":   createdAt,
+			"course_id":    courseID,
+			"course_title": courseTitle,
+			"course_slug":  courseSlug,
+			"user_id":      userID,
+			"user_email":   userEmail,
+			"user_name":    userName,
+		})
+	}
+	writeJSON(w, 200, out)
 }
 
 func (a *App) AdminOnline(w http.ResponseWriter, r *http.Request) {
@@ -462,4 +508,134 @@ func (a *App) AdminAuditLog(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	writeJSON(w, 200, out)
+}
+
+// grantByEmailReq — тело запроса для массовой выдачи доступа по email.
+// Поддерживает 1+ email; для каждого создаётся юзер (если его нет),
+// выдаётся enrollment в курс, отправляется письмо с reset-ссылкой
+// (для новых) или с уведомлением о доступе (для существующих).
+type grantByEmailReq struct {
+	Emails []string `json:"emails"`
+}
+
+type grantByEmailResult struct {
+	Email     string `json:"email"`
+	Status    string `json:"status"`               // ok | already_enrolled | invalid_email | error
+	IsNewUser bool   `json:"is_new_user"`          // создали нового юзера
+	InviteURL string `json:"invite_url,omitempty"` // для новых — ссылка установки пароля
+	Error     string `json:"error,omitempty"`
+}
+
+// AdminGrantByEmail — массовая выдача доступа к курсу по списку email.
+// Для каждого email: создаёт юзера если не было, выдаёт enrollment в курс,
+// шлёт приветственное письмо. Идемпотентно: повторный вызов не сломает уже
+// выданный доступ. Возвращает per-email статус, чтобы UI показал результат.
+func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+	c, err := a.Repo.GetCourseBySlug(r.Context(), slug)
+	if err != nil {
+		writeErr(w, 404, "course_not_found")
+		return
+	}
+	var in grantByEmailReq
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		writeErr(w, 400, "bad_json")
+		return
+	}
+	if len(in.Emails) == 0 {
+		writeErr(w, 400, "no_emails")
+		return
+	}
+	adminID, _ := middleware.UserID(r.Context())
+	out := make([]grantByEmailResult, 0, len(in.Emails))
+	for _, raw := range in.Emails {
+		email := strings.TrimSpace(strings.ToLower(raw))
+		res := grantByEmailResult{Email: email}
+		if !strings.Contains(email, "@") || len(email) < 5 {
+			res.Status = "invalid_email"
+			out = append(out, res)
+			continue
+		}
+
+		// Найдём юзера или создадим нового
+		u, err := a.Repo.GetUserByEmail(r.Context(), email)
+		var uid uuid.UUID
+		// needsInvite — пароль не установлен, надо прислать reset-ссылку
+		// (актуально и для новых, и для тех, кого создали ранее через SQL).
+		needsInvite := false
+		if errors.Is(err, db.ErrNotFound) {
+			// Создаём с unusable-паролем — реальный пароль юзер установит по reset-ссылке.
+			// Согласие на ПД считаем выставленным админом от имени пользователя — без
+			// этого по 152-ФЗ хранение PII запрещено. Это решение Алексея как контролёра данных.
+			uid, err = a.Repo.CreateUser(r.Context(), email, "!unusable!"+uuid.New().String(), "", "user")
+			if err != nil {
+				res.Status = "error"
+				res.Error = "create_user_failed"
+				out = append(out, res)
+				continue
+			}
+			// email_verified=true, потому что доступ выдаёт админ — email доверенный.
+			_ = a.Repo.MarkEmailVerified(r.Context(), uid)
+			_ = a.Repo.SaveConsent(r.Context(), uid, true, false)
+			res.IsNewUser = true
+			needsInvite = true
+		} else if err != nil {
+			res.Status = "error"
+			res.Error = "lookup_failed"
+			out = append(out, res)
+			continue
+		} else {
+			uid = u.ID
+			// Если у уже существующего юзера unusable-пароль — он ещё не активировал
+			// аккаунт, ему тоже нужно прислать reset-ссылку, иначе войти не сможет.
+			if strings.HasPrefix(u.PasswordHash, "!unusable!") {
+				needsInvite = true
+			}
+		}
+
+		// Выдаём enrollment (идемпотентно, ON CONFLICT DO NOTHING).
+		// Проверим: была ли запись раньше — для статуса в ответе.
+		existed, _ := a.Repo.HasEnrollment(r.Context(), uid, c.ID)
+		if err := a.Repo.Grant(r.Context(), uid, c.ID, "admin", &adminID); err != nil {
+			res.Status = "error"
+			res.Error = "grant_failed"
+			out = append(out, res)
+			continue
+		}
+		a.Repo.Audit(r.Context(), adminID, "grant_by_email", "enrollment", &uid, map[string]any{
+			"course_id": c.ID, "course_slug": c.Slug, "email": email,
+		})
+		if existed {
+			res.Status = "already_enrolled"
+		} else {
+			res.Status = "ok"
+		}
+
+		// Письмо отправляем ВСЕГДА — пользователь должен узнать о доступе.
+		// Если пароль не установлен (новый юзер или ранее созданный через SQL/массовый
+		// импорт) — добавляем reset-ссылку, иначе только уведомление.
+		var body string
+		subject := "Доступ к курсу «" + c.Title + "» открыт"
+		if needsInvite {
+			raw, hash, _ := auth.RandomToken(32)
+			_ = a.Repo.CreatePasswordResetToken(r.Context(), uid, hash, 7*24*time.Hour)
+			inviteURL := a.Cfg.AppHost + "/auth/reset?token=" + raw
+			res.InviteURL = inviteURL
+			body = "<p>Здравствуйте!</p>" +
+				"<p>Алексей Ларин открыл вам доступ к курсу <b>«" + c.Title + "»</b> на сайте leshalarin.ru.</p>" +
+				"<p>Установите пароль по ссылке (живёт 7 дней):<br><a href=\"" + inviteURL + "\">" + inviteURL + "</a></p>" +
+				"<p>Логин — этот email. После установки пароля курс будет доступен в кабинете: " +
+				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
+		} else {
+			body = "<p>Здравствуйте!</p>" +
+				"<p>Алексей Ларин открыл вам доступ к курсу <b>«" + c.Title + "»</b>.</p>" +
+				"<p>Курс уже доступен в вашем кабинете: " +
+				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
+		}
+		a.Mail.Async(email, subject, body)
+		out = append(out, res)
+	}
+	writeJSON(w, 200, map[string]any{"results": out, "course": map[string]any{
+		"slug": c.Slug, "title": c.Title,
+	}})
 }
