@@ -1,6 +1,6 @@
 # База данных
 
-PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), email — `CITEXT`, таймстемпы — `TIMESTAMPTZ`. Миграции — `golang-migrate`, файлы в `api/migrations/*.up.sql` / `*.down.sql`. Текущие миграции: `001_init`, `002_articles`, `003_users_phone`, `004_users_consent`.
+PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), email — `CITEXT`, таймстемпы — `TIMESTAMPTZ`. Миграции — `golang-migrate`, файлы в `api/migrations/*.up.sql` / `*.down.sql`. Текущие миграции: `001_init`, `002_articles`, `003_users_phone`, `004_users_consent`, `005_user_logs_set_null`, `006_zdorovaya_spina_v2` (чистит старую структуру `zdorovaya-spina` — 11 уроков / 4 модуля — чтобы сидер пересоздал 12 уроков в 5 модулях с новыми slug-ами).
 
 ## Таблицы
 

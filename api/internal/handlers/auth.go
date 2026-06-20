@@ -13,9 +13,9 @@ import (
 )
 
 type registerReq struct {
-	Email, Password, Name string
-	ConsentPD             bool `json:"consent_pd"`
-	ConsentMarketing      bool `json:"consent_marketing"`
+	Email, Password, Name, Phone string
+	ConsentPD                    bool `json:"consent_pd"`
+	ConsentMarketing             bool `json:"consent_marketing"`
 }
 
 func (a *App) Register(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +46,10 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	// Сохраняем факт согласий, чтобы можно было предъявить при жалобе/проверке.
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
+	// Опциональный телефон — пригодится для Продамуса и для связи через админку.
+	if phone := strings.TrimSpace(in.Phone); phone != "" {
+		_ = a.Repo.SetUserPhone(r.Context(), uid, phone)
+	}
 	raw, hashTok, _ := auth.RandomToken(32)
 	_ = a.Repo.CreateEmailToken(r.Context(), uid, hashTok, 24*time.Hour)
 	link := a.Cfg.AppHost + "/auth/verify?token=" + raw

@@ -137,8 +137,8 @@ func ensureZdorovayaSpina(ctx context.Context, repo *db.Repo) (uuid.UUID, error)
 	courseID, err := ensureCourse(ctx, repo, db.CourseInput{
 		Slug:        "zdorovaya-spina",
 		Title:       "Здоровая спина",
-		Subtitle:    "Курс на 3 недели – от мягкого старта к привычке",
-		Description: "11 уроков, 3 недели, ваш темп. Основные тренировки, короткие практики и теория – чтобы выстроить регулярность, которая держится после курса. Начинаете в любой день, доступ навсегда.",
+		Subtitle:    "Курс на 3 недели — от мягкого старта к привычке",
+		Description: "12 уроков в 5 модулях, аудио-практика расслабления в подарок и год доступа в кабинете. Начинаете в любой день, идёте в своём темпе.",
 		Kind:        "paid",
 		PriceRub:    &price,
 		IsPublished: true,
@@ -152,70 +152,73 @@ func ensureZdorovayaSpina(ctx context.Context, repo *db.Repo) (uuid.UUID, error)
 		return courseID, nil
 	}
 
-	modIntro, err := repo.CreateModule(ctx, courseID, "Модуль 1. Вводный", 1)
+	modStart, err := repo.CreateModule(ctx, courseID, "Модуль 1. Старт", 1)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	modW1, err := repo.CreateModule(ctx, courseID, "Неделя 1. Запуск", 2)
+	modW1, err := repo.CreateModule(ctx, courseID, "Модуль 2. Неделя 1 — знакомимся с базой", 2)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	modW2, err := repo.CreateModule(ctx, courseID, "Неделя 2. Углубление", 3)
+	modW2, err := repo.CreateModule(ctx, courseID, "Модуль 3. Неделя 2 — углубление", 3)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	modW3, err := repo.CreateModule(ctx, courseID, "Неделя 3. Закрепление", 4)
+	modW3, err := repo.CreateModule(ctx, courseID, "Модуль 4. Неделя 3 — закрепление", 4)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	modFinal, err := repo.CreateModule(ctx, courseID, "Модуль 5. Дальше", 5)
+	modFinal, err := repo.CreateModule(ctx, courseID, "Модуль 5. Бонус и итог", 5)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
 	lessons := []db.LessonInput{
-		// Модуль 1 – вводный (превью)
-		{Title: "Как проходить курс", Slug: "kak-prohodit-kurs",
-			ContentMD: "Знакомство с курсом, разметка под ваш уровень и расписание. Алексей рассказывает, как устроены недели, чем основная тренировка отличается от короткой практики и как выбрать интенсивность под свою ситуацию.",
-			SortOrder: 1, IsPreview: true, ModuleID: &modIntro},
+		// Модуль 1 — Старт
+		{Title: "С чего начнём", Slug: "vvodnoe",
+			ContentMD:   "Как пройти курс с пользой, не сорваться и не переусердствовать. Разбираем устройство недели, чем отличается основная тренировка от короткой и как выбрать интенсивность под свою ситуацию.",
+			DurationSec: 840, SortOrder: 1, IsPreview: true, ModuleID: &modStart},
 
-		// Неделя 1 – Запуск
-		{Title: "Неделя 1. Основная тренировка", Slug: "nedelya-1-osnovnaya",
-			ContentMD: "Главная тренировка первой недели – ~45 минут. Возвращаем подвижность, мягко прорабатываем спину, убираем страх движения. Подробно разбираю детали и нюансы каждого упражнения.",
-			SortOrder: 2, ModuleID: &modW1},
-		{Title: "Неделя 1. Короткая практика", Slug: "nedelya-1-korotkaya",
-			ContentMD: "Короткая практика 20–25 минут. Последовательно выполняете упражнения за мной. Подходит для тех дней, когда нет времени на полную тренировку – от 2 до 8 раз в неделю.",
-			SortOrder: 3, ModuleID: &modW1},
-		{Title: "Теория: грыжи и протрузии", Slug: "teoriya-gryzhi",
-			ContentMD: "Что такое грыжи и протрузии, почему движение – не враг, а инструмент восстановления. Как ориентироваться на ощущения и где проходит граница «полезного дискомфорта».",
-			SortOrder: 4, ModuleID: &modW1},
+		// Модуль 2 — Неделя 1
+		{Title: "Неделя 1 · Основная тренировка", Slug: "nedelya-1-osnovnaya",
+			ContentMD:   "Знакомимся с базой: мостики, кошка-корова, дыхание. Подробно разбираю детали и нюансы каждого упражнения, чтобы вы прочувствовали технику и не торопились.",
+			DurationSec: 2700, SortOrder: 2, ModuleID: &modW1},
+		{Title: "Неделя 1 · Короткая тренировка", Slug: "nedelya-1-korotkaya",
+			ContentMD:   "Та же база, но динамичнее — для будних дней. Делаете за мной, без пауз на объяснения. От 2 до 5 раз в неделю — выбираете сами.",
+			DurationSec: 1680, SortOrder: 3, ModuleID: &modW1},
+		{Title: "Грыжи и протрузии: чего бояться, а чего нет", Slug: "gryzhi-protruzii",
+			ContentMD:   "Лекция о том, что большая часть болей в спине лечится движением, а не покоем. Как ориентироваться на ощущения и где проходит граница «полезного дискомфорта».",
+			DurationSec: 1140, SortOrder: 4, ModuleID: &modW1},
 
-		// Неделя 2 – Углубление
-		{Title: "Неделя 2. Основная тренировка", Slug: "nedelya-2-osnovnaya",
-			ContentMD: "Главная тренировка второй недели – добавляем силу, работаем с осанкой. Тело уже привыкло к ритму, можно идти чуть глубже.",
-			SortOrder: 5, ModuleID: &modW2},
-		{Title: "Неделя 2. Короткая практика", Slug: "nedelya-2-korotkaya",
-			ContentMD: "Короткая практика второй недели. Можно подключать в перерывы рабочего дня или утром – небольшая зарядка, которая держит спину в тонусе.",
-			SortOrder: 6, ModuleID: &modW2},
-		{Title: "Теория: осанка", Slug: "teoriya-osanka",
-			ContentMD: "Что такое здоровая осанка, чем нам мешает «правильно сидеть» и что реально работает. Простые принципы, которые встраиваются в обычный день.",
-			SortOrder: 7, ModuleID: &modW2},
+		// Модуль 3 — Неделя 2
+		{Title: "Неделя 2 · Основная тренировка", Slug: "nedelya-2-osnovnaya",
+			ContentMD:   "Усложняем базу: боковые мостики, длиннее удержания. Тело уже привыкло к ритму — можно идти чуть глубже.",
+			DurationSec: 2880, SortOrder: 5, ModuleID: &modW2},
+		{Title: "Неделя 2 · Короткая тренировка", Slug: "nedelya-2-korotkaya",
+			ContentMD:   "Динамичная версия второй недели. Подключайте в перерыв рабочего дня или утром — небольшая зарядка, которая держит спину в тонусе.",
+			DurationSec: 2040, SortOrder: 6, ModuleID: &modW2},
+		{Title: "Осанка: про что она на самом деле", Slug: "osanka",
+			ContentMD:   "Осанка — не про положение лопаток, а про раскрытую грудную клетку и состояние, с которым вы заходите в день. Простые принципы, которые встраиваются в обычную жизнь.",
+			DurationSec: 540, SortOrder: 7, ModuleID: &modW2},
 
-		// Неделя 3 – Закрепление
-		{Title: "Неделя 3. Основная тренировка", Slug: "nedelya-3-osnovnaya",
-			ContentMD: "Финальная основная тренировка – закрепляем привычку, проверяем диапазон движения, разбираем точки роста.",
-			SortOrder: 8, ModuleID: &modW3},
-		{Title: "Неделя 3. Короткая практика", Slug: "nedelya-3-korotkaya",
-			ContentMD: "Короткая практика третьей недели. Финальный «набор» движений, который остаётся с вами и после курса.",
-			SortOrder: 9, ModuleID: &modW3},
-		{Title: "Бонус: расслабление и снятие стресса", Slug: "bonus-rasslablenie",
-			ContentMD: "Бонусный урок – практика для снятия стресса и расслабления. Дыхательные техники и мягкие движения, которые возвращают ощущение целостности.",
-			SortOrder: 10, ModuleID: &modW3},
+		// Модуль 4 — Неделя 3
+		{Title: "Неделя 3 · Основная тренировка", Slug: "nedelya-3-osnovnaya",
+			ContentMD:   "Финальная основная тренировка — закрепляем технику и сознательность движений. Проверяем диапазон, разбираем точки роста.",
+			DurationSec: 2880, SortOrder: 8, ModuleID: &modW3},
+		{Title: "Неделя 3 · Короткая тренировка", Slug: "nedelya-3-korotkaya",
+			ContentMD:   "Финальная динамическая — закрепляем то, что уже умеем. Этот «набор» движений остаётся с вами и после курса.",
+			DurationSec: 1800, SortOrder: 9, ModuleID: &modW3},
+		{Title: "Расслабление: как выходить из стресса через тело", Slug: "rasslablenie",
+			ContentMD:   "Почему стресс делает нас сутулыми и как это разворачивать. Дыхание и мягкие движения, после которых отпускает не только тело, но и голова.",
+			DurationSec: 1860, SortOrder: 10, ModuleID: &modW3},
 
-		// Модуль 5 – Дальше
-		{Title: "Циклы и следующий шаг", Slug: "cikly-i-shag",
-			ContentMD: "Как продолжать после курса. Циклы тренировок и периоды отдыха, разметка ритма на месяцы вперёд. Что делать, если выпали из режима – и как вернуться.",
-			SortOrder: 11, ModuleID: &modFinal},
+		// Модуль 5 — Бонус и итог
+		{Title: "Бонус-аудио: практика расслабления", Slug: "praktika-rasslableniya",
+			ContentMD:   "30-минутная йога-нидра. Слушайте в кровати, в дороге, в обеденный перерыв — там, где не до коврика. Хорошо помогает уснуть и снять напряжение, накопленное за день.",
+			DurationSec: 1800, SortOrder: 11, ModuleID: &modFinal},
+		{Title: "Что дальше — путь после курса", Slug: "itog",
+			ContentMD:   "Поздравление, неделя отдыха, как продолжать заниматься. Циклы тренировок и периоды паузы — простой принцип, по которому ритм держится без надрыва.",
+			DurationSec: 240, SortOrder: 12, ModuleID: &modFinal},
 	}
 	for _, l := range lessons {
 		l.CourseID = courseID

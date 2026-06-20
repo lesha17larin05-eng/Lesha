@@ -109,6 +109,20 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		// ДО проверки. Если этого параметра нет в наших params — Продамус считает
 		// подпись с ним, а наша подпись посчитана без него → «Ошибка подписи».
 		"npd_income_type": "FROM_INDIVIDUAL",
+		// sys согласован с Продамусом ("leshalarin" 15.06.2026). Включаем в HMAC,
+		// Продамус считает подпись с этим параметром — без него форма открывается
+		// с пустым полем суммы.
+		"sys": "leshalarin",
+		// Рекомендация поддержки: callbackType=json упрощает сверку подписи
+		// в webhook'ах (тело придёт в JSON, а не в php-keys formdata).
+		"callbackType": "json",
+	}
+	// Имя и телефон из профиля — чтобы Продамус не подставлял UUID order_id в поле «Имя».
+	if n := strings.TrimSpace(u.Name); n != "" {
+		params["customer_name"] = n
+	}
+	if p := strings.TrimSpace(u.Phone); p != "" {
+		params["customer_phone"] = p
 	}
 	if a.Cfg.ProdamusTestMode {
 		// in test mode return our fake-payment endpoint
@@ -123,7 +137,72 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "sign_failed")
 		return
 	}
+	// TEMP debug: лог итогового URL чтобы понять что отправляется Продамусу.
+	slog.Info("prodamus checkout url", "email", u.Email, "order_id", o.ID, "url", url)
 	writeJSON(w, 200, map[string]string{"payment_url": url, "order_id": o.ID.String()})
+}
+
+// PayShortcut — короткая ссылка /pay/{order_id}. По order_id ищет заказ,
+// генерит свежий подписанный payment_url и делает HTTP 302 на Продамус.
+// Нужен потому что полный payment_url длиной 600+ символов плохо переживает
+// копирование через мессенджеры и чаты — обрезается, и подпись ломается.
+func (a *App) PayShortcut(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "order_id"))
+	if err != nil {
+		http.Error(w, "bad id", 400)
+		return
+	}
+	o, err := a.Repo.GetOrder(r.Context(), id)
+	if err != nil {
+		http.Error(w, "order not found", 404)
+		return
+	}
+	if o.Status != "pending" {
+		// уже оплачен или отменён — отправим в кабинет
+		http.Redirect(w, r, a.Cfg.AppHost+"/cabinet/courses", http.StatusFound)
+		return
+	}
+	u, err := a.Repo.GetUser(r.Context(), o.UserID)
+	if err != nil {
+		http.Error(w, "user not found", 404)
+		return
+	}
+	c, err := a.Repo.GetCourseByID(r.Context(), o.CourseID)
+	if err != nil {
+		http.Error(w, "course not found", 404)
+		return
+	}
+	params := map[string]any{
+		"do":             "pay",
+		"order_id":       o.ID.String(),
+		"order_num":      strconv.FormatInt(o.OrderNum, 10),
+		"customer_email": u.Email,
+		"products": []any{
+			map[string]any{
+				"name":     c.Title,
+				"price":    strconv.Itoa(o.AmountRub),
+				"quantity": "1",
+			},
+		},
+		"urlReturn":       a.Cfg.AppHost + "/cabinet/courses",
+		"urlSuccess":      a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
+		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
+		"npd_income_type": "FROM_INDIVIDUAL",
+		"sys":             "leshalarin",
+		"callbackType":    "json",
+	}
+	if n := strings.TrimSpace(u.Name); n != "" {
+		params["customer_name"] = n
+	}
+	if p := strings.TrimSpace(u.Phone); p != "" {
+		params["customer_phone"] = p
+	}
+	url, err := a.Prodamus.PaymentURL(params)
+	if err != nil {
+		http.Error(w, "sign_failed", 500)
+		return
+	}
+	http.Redirect(w, r, url, http.StatusFound)
 }
 
 // FakePayment — dev-only endpoint that simulates a successful Prodamus webhook.

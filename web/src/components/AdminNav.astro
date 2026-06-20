@@ -4,6 +4,7 @@ const links = [
   { href: '/admin', label: 'Дашборд', key: 'dashboard' },
   { href: '/admin/users', label: 'Пользователи', key: 'users' },
   { href: '/admin/courses', label: 'Курсы', key: 'courses' },
+  { href: '/admin/grant', label: 'Выдать доступ', key: 'grant' },
   { href: '/admin/blog', label: 'Блог', key: 'blog' },
   { href: '/admin/orders', label: 'Оплаты', key: 'orders' },
   { href: '/admin/online', label: 'Онлайн', key: 'online' },
@@ -15,11 +16,14 @@ const links = [
   ))}
 </nav>
 <style>
+  /* AdminNav в обычном потоке, без sticky/fixed — иначе ловит заголовки страниц
+     или конфликтует с padding-top main. site-main имеет padding-top:64px (под фикс
+     шапку сайта), AdminNav — первый блок внутри main и рисуется ровно под шапкой. */
   .admin-nav {
     display: flex; gap: 4px; flex-wrap: wrap;
     padding: 12px 24px;
     background: var(--navy);
-    position: sticky; top: 64px; z-index: 90;
+    position: relative; z-index: 90;
   }
   .admin-nav-link {
     padding: 7px 16px; border-radius: 8px;

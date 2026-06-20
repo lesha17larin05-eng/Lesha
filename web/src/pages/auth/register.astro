@@ -1,13 +1,19 @@
 ---
 import Base from '../../layouts/Base.astro';
+const next = Astro.url.searchParams.get('next') || '';
+const loginHref = next ? '/auth/login?next=' + encodeURIComponent(next) : '/auth/login';
 ---
 <Base title="Регистрация">
   <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
     <h1>Регистрация</h1>
+    <p class="auth-switch">
+      Уже есть аккаунт? <a href={loginHref}>Войти</a>
+    </p>
     <form id="f" class="form">
-      <div><label class="label">Имя</label><input class="input" name="name" /></div>
-      <div><label class="label">Email</label><input class="input" name="email" type="email" required /></div>
-      <div><label class="label">Пароль (минимум 8 символов)</label><input class="input" name="password" type="password" required minlength="8" /></div>
+      <div><label class="label">Имя <i class="req">*</i></label><input class="input" name="name" required /></div>
+      <div><label class="label">Email <i class="req">*</i></label><input class="input" name="email" type="email" required /></div>
+      <div><label class="label">Телефон</label><input class="input" name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" /></div>
+      <div><label class="label">Пароль <em class="opt">минимум 8 символов</em> <i class="req">*</i></label><input class="input" name="password" type="password" required minlength="8" /></div>
 
       <label class="consent">
         <input type="checkbox" name="consent_pd" required checked />
@@ -24,10 +30,27 @@ import Base from '../../layouts/Base.astro';
   </section>
   <style>
     .auth-page { width: 100%; box-sizing: border-box; }
+    .auth-switch {
+      margin: -8px 0 22px;
+      font-size: 14px;
+      color: var(--text-mid);
+    }
+    .auth-switch a {
+      color: var(--orange);
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    @media (hover: hover) {
+      .auth-switch a:hover { border-bottom-color: var(--orange); }
+    }
+    .auth-switch a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; border-radius: 2px; }
     .consent { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text-mid); cursor: pointer; }
     .consent input { margin-top: 3px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
     .consent a { color: var(--orange); text-decoration: underline; }
-    .req { display: inline-block; margin-left: 4px; font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 0.04em; }
+    .req { display: inline-block; margin-left: 2px; font-size: 14px; font-weight: 700; font-style: normal; color: var(--orange); }
+    .opt { display: inline-block; margin-left: 6px; font-size: 12px; font-style: normal; color: var(--text-muted); font-weight: 400; }
     @media (max-width: 480px) {
       .auth-page { padding: 40px 16px !important; }
       .form { max-width: 100%; }
@@ -41,6 +64,12 @@ import Base from '../../layouts/Base.astro';
       e.preventDefault();
       const fd = new FormData(form);
       // Дополнительная проверка обязательного согласия — на случай, если кто-то обошёл нативную валидацию.
+      if (!String(fd.get('name') || '').trim()) {
+        msg.className = 'alert';
+        msg.textContent = 'Укажите имя — обращаемся к вам в кабинете и в письмах.';
+        msg.hidden = false;
+        return;
+      }
       if (!fd.get('consent_pd')) {
         msg.className = 'alert';
         msg.textContent = 'Чтобы продолжить, нужно согласиться с обработкой персональных данных.';
@@ -53,6 +82,7 @@ import Base from '../../layouts/Base.astro';
           email: fd.get('email'),
           password: fd.get('password'),
           name: fd.get('name'),
+          phone: fd.get('phone'),
           consent_pd: true,
           consent_marketing: !!fd.get('consent_marketing'),
         }),

@@ -86,6 +86,7 @@ func main() {
 	})
 
 	r.Post("/api/webhooks/prodamus", app.ProdamusWebhook)
+	r.Get("/api/pay/{order_id}", app.PayShortcut)
 	r.Get("/api/dev/fake-payment", app.FakePayment)
 	r.Get("/api/internal/video-auth", app.InternalVideoAuth)
 
@@ -98,6 +99,7 @@ func main() {
 		r.Delete("/api/admin/users/{id}", app.AdminDeleteUser)
 		r.Post("/api/admin/users/{id}/enrollments", app.AdminGrant)
 		r.Delete("/api/admin/users/{id}/enrollments/{course_id}", app.AdminRevoke)
+		r.Post("/api/admin/courses/{slug}/grant-by-email", app.AdminGrantByEmail)
 		r.Get("/api/admin/courses", app.AdminListCourses)
 		r.Post("/api/admin/courses", app.AdminCreateCourse)
 		r.Get("/api/admin/courses/{id}", app.AdminGetCourse)

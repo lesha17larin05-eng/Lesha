@@ -6,39 +6,196 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data: stats } = await apiJson<any>('/api/admin/stats', { cookie });
 const { data: orders } = await apiJson<any[]>('/api/admin/orders?status=paid', { cookie });
 const user = (Astro.locals as any).user;
-const recent = (orders || []).slice(0, 10);
+const recent = (orders || []).slice(0, 8);
+const fmt = (n: number) => new Intl.NumberFormat('ru-RU').format(n || 0);
+const fmtDate = (s: any) => {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(+d)) return String(s).slice(0, 16);
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ' ' +
+    d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+};
 ---
 <Base title="Админка" user={user}>
   <AdminNav active="dashboard" />
-  <section class="container" style="padding:50px 0;">
-    <h1>Админ-дашборд</h1>
-    <div class="grid grid-3" style="margin-top:20px;">
-      <div class="card"><div class="muted">Всего пользователей</div><div style="font-size:36px; font-family:'Playfair Display',serif;">{stats?.users_total ?? 0}</div></div>
-      <div class="card"><div class="muted">Онлайн сейчас</div><div style="font-size:36px; font-family:'Playfair Display',serif;" id="online">{stats?.online ?? 0}</div></div>
-      <div class="card"><div class="muted">Выручка за день / неделю / месяц</div>
-        <div>{stats?.revenue_day ?? 0} ₽ / {stats?.revenue_week ?? 0} ₽ / {stats?.revenue_month ?? 0} ₽</div>
+  <section class="container admin-dash">
+    <header class="dash-head">
+      <div>
+        <h1>Дашборд</h1>
+        <p class="muted">Обзор сайта и быстрые действия</p>
+      </div>
+      <div class="dash-quick">
+        <a class="quick-btn quick-orange" href="/admin/grant">
+          <span class="qico">＋</span>
+          Открыть курс по email
+        </a>
+        <a class="quick-btn quick-navy" href="/admin/blog">
+          <span class="qico">✎</span>
+          Новый пост
+        </a>
+      </div>
+    </header>
+
+    <div class="kpi-grid">
+      <div class="kpi kpi-users">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-body">
+          <div class="kpi-label">Всего пользователей</div>
+          <div class="kpi-num">{fmt(stats?.users_total ?? 0)}</div>
+        </div>
+      </div>
+
+      <div class="kpi kpi-online">
+        <div class="kpi-icon"><span class="dot"></span></div>
+        <div class="kpi-body">
+          <div class="kpi-label">Онлайн сейчас</div>
+          <div class="kpi-num" id="online">{fmt(stats?.online ?? 0)}</div>
+        </div>
+      </div>
+
+      <div class="kpi kpi-rev">
+        <div class="kpi-icon">₽</div>
+        <div class="kpi-body">
+          <div class="kpi-label">Выручка</div>
+          <div class="kpi-rev-grid">
+            <div><span class="rev-period">День</span><span class="rev-val">{fmt(stats?.revenue_day ?? 0)} ₽</span></div>
+            <div><span class="rev-period">Неделя</span><span class="rev-val">{fmt(stats?.revenue_week ?? 0)} ₽</span></div>
+            <div><span class="rev-period">Месяц</span><span class="rev-val">{fmt(stats?.revenue_month ?? 0)} ₽</span></div>
+          </div>
+        </div>
       </div>
     </div>
-    <h2 style="margin-top:40px;">Последние оплаты</h2>
-    <table>
-      <thead><tr><th>№</th><th>Курс</th><th>Юзер</th><th>Сумма</th><th>Дата</th></tr></thead>
-      <tbody>
-        {recent.map((o: any) => (
-          <tr>
-            <td>{o.OrderNum ?? o.order_num}</td>
-            <td>{o.CourseID ?? o.course_id}</td>
-            <td>{o.UserID ?? o.user_id}</td>
-            <td>{o.AmountRub ?? o.amount_rub} ₽</td>
-            <td>{(o.CreatedAt ?? o.created_at)?.toString?.().slice(0,16)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Последние оплаты</h2>
+        <a class="panel-link" href="/admin/orders">все оплаты →</a>
+      </div>
+      {recent.length === 0 ? (
+        <div class="empty">
+          <div class="empty-icon">📭</div>
+          <p>Оплат пока нет — здесь будут появляться последние успешные платежи.</p>
+        </div>
+      ) : (
+        <div class="orders">
+          {recent.map((o: any) => {
+            const num = o.OrderNum ?? o.order_num ?? '—';
+            const course = o.CourseTitle ?? o.course_title ?? o.CourseSlug ?? o.course_slug ?? (o.CourseID ?? o.course_id ?? '—');
+            const who = o.UserEmail ?? o.user_email ?? o.UserName ?? o.user_name ?? (o.UserID ?? o.user_id ?? '—');
+            const amt = o.AmountRub ?? o.amount_rub ?? 0;
+            const dt = o.CreatedAt ?? o.created_at;
+            return (
+              <div class="order-row">
+                <div class="order-num">#{num}</div>
+                <div class="order-course">{course}</div>
+                <div class="order-user">{who}</div>
+                <div class="order-amount">{fmt(amt)} ₽</div>
+                <div class="order-date">{fmtDate(dt)}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   </section>
+
+  <style>
+    .admin-dash { padding: 44px 24px 60px; }
+    .dash-head { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+    .dash-head h1 { margin: 0 0 4px; font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 500; color: var(--navy); letter-spacing: -0.01em; }
+    .dash-head .muted { font-size: 14px; color: var(--text-mid); margin: 0; }
+    .dash-quick { display: flex; gap: 10px; flex-wrap: wrap; }
+    .quick-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; text-decoration: none;
+      transition: transform .15s, box-shadow .2s, background .2s;
+    }
+    .quick-orange { background: var(--orange); color: white; box-shadow: 0 4px 14px rgba(232,101,42,0.28); }
+    @media (hover: hover) { .quick-orange:hover { background: var(--orange-warm); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(232,101,42,0.35); } }
+    .quick-navy { background: white; color: var(--navy); border: 1.5px solid var(--navy); }
+    @media (hover: hover) { .quick-navy:hover { background: var(--navy); color: white; transform: translateY(-1px); } }
+    .qico { font-size: 16px; line-height: 1; }
+
+    .kpi-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 36px; }
+    .kpi {
+      background: white; border-radius: 16px; padding: 22px;
+      border: 1px solid var(--border);
+      display: flex; gap: 16px; align-items: center;
+      transition: box-shadow .2s, transform .2s;
+    }
+    @media (hover: hover) { .kpi:hover { box-shadow: 0 8px 24px rgba(26,39,68,.08); transform: translateY(-2px); } }
+    .kpi-icon {
+      flex-shrink: 0; width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 700;
+    }
+    .kpi-users .kpi-icon { background: rgba(91,143,245,0.12); color: #3a73d9; }
+    .kpi-online .kpi-icon { background: rgba(6,169,107,0.12); }
+    .kpi-online .dot { width: 12px; height: 12px; border-radius: 50%; background: #06A96B; box-shadow: 0 0 0 4px rgba(6,169,107,0.18); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 4px rgba(6,169,107,0.18); } 50% { box-shadow: 0 0 0 7px rgba(6,169,107,0.10); } }
+    .kpi-rev .kpi-icon { background: rgba(232,101,42,0.12); color: var(--orange); font-family: 'Cormorant Garamond', serif; font-size: 32px; }
+    .kpi-body { flex: 1; min-width: 0; }
+    .kpi-label { font-size: 13px; color: var(--text-mid); margin-bottom: 4px; font-weight: 500; }
+    .kpi-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: var(--navy); line-height: 1.05; letter-spacing: -0.02em; }
+
+    .kpi-rev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .kpi-rev-grid > div { display: flex; flex-direction: column; }
+    .rev-period { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+    .rev-val { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; color: var(--navy); letter-spacing: -0.01em; }
+
+    .panel { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); }
+    .panel-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; gap: 16px; }
+    .panel-head h2 { margin: 0; font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: var(--navy); }
+    .panel-link { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color .15s; }
+    .panel-link:hover { color: var(--orange); }
+
+    .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-icon { font-size: 38px; margin-bottom: 8px; opacity: 0.6; }
+    .empty p { margin: 0; font-size: 14px; }
+
+    .orders { display: flex; flex-direction: column; }
+    .order-row {
+      display: grid; grid-template-columns: 70px 1.5fr 1.5fr 110px 130px;
+      align-items: center; gap: 14px;
+      padding: 12px 4px; border-bottom: 1px solid var(--border-light);
+      font-size: 14px;
+    }
+    .order-row:last-child { border-bottom: none; }
+    .order-num { font-size: 12px; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, monospace; }
+    .order-course { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .order-user { color: var(--text-mid); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .order-amount { color: var(--navy); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+    .order-date { color: var(--text-muted); font-size: 13px; text-align: right; }
+
+    @media (max-width: 700px) {
+      .admin-dash { padding: 30px 16px 40px; }
+      .dash-head h1 { font-size: 30px; }
+      .dash-head { margin-bottom: 24px; }
+      .panel { padding: 18px; }
+      .order-row {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: "course amount" "user date" "num num";
+        gap: 4px 12px;
+        padding: 14px 4px;
+      }
+      .order-course { grid-area: course; }
+      .order-amount { grid-area: amount; }
+      .order-user { grid-area: user; font-size: 12px; }
+      .order-date { grid-area: date; font-size: 12px; }
+      .order-num { grid-area: num; margin-top: 4px; }
+      .kpi-rev-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+  </style>
+
   <script>
     setInterval(async () => {
       const r = await fetch('/api/admin/stats');
-      if (r.ok) { const s = await r.json(); document.getElementById('online').textContent = s.online; }
+      if (r.ok) {
+        const s = await r.json();
+        const el = document.getElementById('online');
+        if (el) el.textContent = new Intl.NumberFormat('ru-RU').format(s.online || 0);
+      }
     }, 30000);
   </script>
 </Base>
