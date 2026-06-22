@@ -89,6 +89,7 @@ func main() {
 	r.Get("/api/pay/{order_id}", app.PayShortcut)
 	r.Get("/api/dev/fake-payment", app.FakePayment)
 	r.Get("/api/internal/video-auth", app.InternalVideoAuth)
+	r.Get("/api/internal/lesson-mp4-auth", app.LessonMp4Auth)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.RequireAuth)

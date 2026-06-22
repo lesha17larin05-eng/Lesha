@@ -39,6 +39,23 @@ function getLessonClass(title: string): string {
   return 'zs-cab-lesson-bonus';
 }
 
+// Резервные ссылки на YouTube/VK для каждого урока — Алексей заполнит позже.
+// Пока пусто — кнопки не показываются, если в обоих полях пустая строка.
+const videoLinks: Record<string, { youtube: string; vk: string }> = {
+  'vvodnoe':                { youtube: '', vk: '' },
+  'nedelya-1-osnovnaya':    { youtube: '', vk: '' },
+  'nedelya-1-korotkaya':    { youtube: '', vk: '' },
+  'gryzhi-protruzii':       { youtube: '', vk: '' },
+  'nedelya-2-osnovnaya':    { youtube: '', vk: '' },
+  'nedelya-2-korotkaya':    { youtube: '', vk: '' },
+  'osanka':                 { youtube: '', vk: '' },
+  'nedelya-3-osnovnaya':    { youtube: '', vk: '' },
+  'nedelya-3-korotkaya':    { youtube: '', vk: '' },
+  'rasslablenie':           { youtube: '', vk: '' },
+  'praktika-rasslableniya': { youtube: '', vk: '' },
+  'itog':                   { youtube: '', vk: '' },
+};
+
 // Файлы курса отдаются через защищённый эндпоинт /api/courses/:slug/files/:name —
 // доступ только при наличии enrollment (см. api/internal/handlers/course_files.go).
 // Прямые ссылки на /files/*.pdf больше не работают, чтобы материалы не утекали
@@ -247,40 +264,59 @@ const materials = [
       font-size: 15px; color: var(--text-muted); line-height: 1.75;
     }
 
-    /* Video placeholder */
+    /* Inline mp4 player */
     .zs-cab-video-wrap {
       margin: 0 28px 28px;
       aspect-ratio: 16 / 9;
       border-radius: 14px;
-      background: linear-gradient(135deg, var(--cream) 0%, #e8e4db 100%);
+      background: #000;
       border: 1px solid var(--border);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 12px;
       position: relative;
       overflow: hidden;
     }
-    .zs-cab-video-wrap::before {
-      content: '';
+    .zs-cab-video-wrap video {
+      width: 100%; height: 100%;
+      display: block;
+      background: #000;
+      object-fit: contain;
+    }
+    .zs-cab-bigplay {
       position: absolute; inset: 0;
-      background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 20px,
-        rgba(26,39,68,0.02) 20px,
-        rgba(26,39,68,0.02) 21px
-      );
-    }
-    .zs-cab-video-play-icon {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: rgba(26,39,68,0.08); border: 2px solid rgba(26,39,68,0.12);
       display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 1;
+      background: rgba(0,0,0,0.25);
+      border: none; padding: 0; margin: 0; cursor: pointer;
+      transition: opacity .2s, background .2s;
     }
-    .zs-cab-video-play-icon svg { width: 20px; height: 20px; fill: rgba(26,39,68,0.3); margin-left: 3px; }
-    .zs-cab-video-placeholder-text {
-      font-size: 14px; font-weight: 500; color: var(--text-light);
-      position: relative; z-index: 1;
+    .zs-cab-bigplay svg {
+      width: 72px; height: 72px;
+      fill: white;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+      transition: transform .2s;
     }
+    @media (hover: hover) {
+      .zs-cab-bigplay:hover { background: rgba(0,0,0,0.15); }
+      .zs-cab-bigplay:hover svg { transform: scale(1.08); }
+    }
+    .zs-cab-video-wrap.is-playing .zs-cab-bigplay { opacity: 0; pointer-events: none; }
+
+    /* Platform buttons (YouTube/VK) */
+    .zs-cab-platforms {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      padding: 0 28px 24px;
+    }
+    .zs-cab-platform {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 16px; border-radius: 100px;
+      font-size: 13px; font-weight: 600; color: white;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .2s;
+    }
+    .zs-cab-platform--yt { background: #ff0000; }
+    .zs-cab-platform--vk { background: #0077ff; }
+    @media (hover: hover) {
+      .zs-cab-platform:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+    }
+    .zs-cab-platform svg { width: 16px; height: 16px; }
 
     /* ─── FEEDBACK ─── */
     .zs-cab-feedback {
@@ -374,8 +410,11 @@ const materials = [
           {mod.lessons.map((l: any) => {
             const tag = lessonTag(l.title);
             const lessonClass = getLessonClass(l.title);
+            // #t=0.5 — браузер показывает первый кадр как превью при preload=metadata
+            const mp4Url = `/lesson-videos/zdorovaya-spina/${l.slug}.mp4#t=0.5`;
+            const v = videoLinks[l.slug] ?? { youtube: '', vk: '' };
             return (
-              <article class={`zs-cab-lesson ${lessonClass}`}>
+              <article class={`zs-cab-lesson ${lessonClass}`} id={l.slug}>
                 <div class="zs-cab-lesson-head">
                   <div class={`zs-cab-lesson-num${l.is_preview ? ' preview' : ''}`}>{l.sort_order}</div>
                   <div class="zs-cab-lesson-meta">
@@ -384,12 +423,28 @@ const materials = [
                     <div class="zs-cab-lesson-desc">{l.content_md}</div>
                   </div>
                 </div>
-                <div class="zs-cab-video-wrap">
-                  <div class="zs-cab-video-play-icon">
-                    <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-                  </div>
-                  <span class="zs-cab-video-placeholder-text">Видео появится здесь</span>
+                <div class="zs-cab-video-wrap" data-video-wrap>
+                  <video controls preload="metadata" playsinline src={mp4Url}></video>
+                  <button type="button" class="zs-cab-bigplay" aria-label="Воспроизвести">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="6,3 22,12 6,21"/></svg>
+                  </button>
                 </div>
+                {(v.youtube || v.vk) && (
+                  <div class="zs-cab-platforms">
+                    {v.youtube && (
+                      <a href={v.youtube} target="_blank" rel="noopener" class="zs-cab-platform zs-cab-platform--yt">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+                        YouTube
+                      </a>
+                    )}
+                    {v.vk && (
+                      <a href={v.vk} target="_blank" rel="noopener" class="zs-cab-platform zs-cab-platform--vk">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
+                        ВКонтакте
+                      </a>
+                    )}
+                  </div>
+                )}
               </article>
             );
           })}
@@ -408,8 +463,51 @@ const materials = [
       </a>
     </div>
     <div class="zs-cab-tg">
-      Подпишитесь на <a href="https://t.me/lesha_larin" target="_blank" rel="noopener">Телеграм-канал</a>, если вдруг ещё нет — впереди много интересного
+      Подпишитесь на <a href="https://t.me/lesha_larin" target="_blank" rel="noopener">Телеграм-канал</a>, если вдруг ещё нет – впереди много интересного
     </div>
 
   </div>
+
+  <script>
+    // Большая play-кнопка поверх плеера + Space переключает текущее видео,
+    // в том числе когда оно открыто во весь экран.
+    let activeVideo = null;
+    document.querySelectorAll('[data-video-wrap]').forEach((wrap) => {
+      const video = wrap.querySelector('video');
+      const btn = wrap.querySelector('.zs-cab-bigplay');
+      if (!video || !btn) return;
+      btn.addEventListener('click', () => { activeVideo = video; video.focus(); video.play(); });
+      video.addEventListener('play',  () => { activeVideo = video; wrap.classList.add('is-playing'); });
+      video.addEventListener('pause', () => wrap.classList.remove('is-playing'));
+      video.addEventListener('ended', () => wrap.classList.remove('is-playing'));
+      video.addEventListener('click',          () => activeVideo = video);
+      video.addEventListener('focus',          () => activeVideo = video, true);
+      video.addEventListener('webkitbeginfullscreen', () => activeVideo = video);
+      video.addEventListener('webkitendfullscreen',   () => activeVideo = null);
+    });
+    document.addEventListener('fullscreenchange', () => {
+      const fs = document.fullscreenElement;
+      if (fs && fs.tagName === 'VIDEO') { activeVideo = fs; fs.focus(); }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const t = e.target;
+      if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(t.tagName)) return;
+      if (t.isContentEditable) return;
+      if (t.tagName === 'VIDEO') return;
+      if (!activeVideo) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeVideo.paused) activeVideo.play();
+      else activeVideo.pause();
+    }, true);
+
+    // Подсветка урока при скроллe по #slug-якорю
+    if (window.location.hash) {
+      const el = document.querySelector(window.location.hash);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      }
+    }
+  </script>
 </SiteLayout>
