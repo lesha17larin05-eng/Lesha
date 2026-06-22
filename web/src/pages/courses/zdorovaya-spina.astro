@@ -30,7 +30,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
 
       // Promise
       const promise = document.querySelector('.hero-promise p');
-      if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 12 уроков открыты</strong> — переходите к занятиям и начинайте в любом порядке.';
+      if (promise) promise.innerHTML = '<strong>Все 12 уроков открыты</strong> – переходите к занятиям и практикуйте. Это единственный путь.';
 
       // CTA button
       const btn = document.querySelector('.btn-hero');
@@ -168,7 +168,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       const form = e.target;
       const fd = new FormData(form);
       if (!String(fd.get('name') || '').trim()) {
-        showMsg(form, 'Укажите имя — обращаемся к вам в кабинете и в письмах.', false);
+        showMsg(form, 'Укажите имя – обращаемся к вам в кабинете и в письмах.', false);
         return;
       }
       if (!fd.get('consent_pd')) {
@@ -191,7 +191,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
         });
         const j = await r.json().catch(() => ({}));
         if (r.ok) {
-          showMsg(form, 'Аккаунт создан. Мы отправили письмо на ' + fd.get('email') + ' — подтвердите email по ссылке в письме, и оплата откроется автоматически.', true);
+          showMsg(form, 'Аккаунт создан. Мы отправили письмо на ' + fd.get('email') + ' – подтвердите email по ссылке в письме, и оплата откроется автоматически.', true);
           form.querySelector('.zs-submit').style.display = 'none';
         } else {
           showMsg(form, j.error === 'email_taken'
@@ -218,7 +218,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
         });
         const j = await r.json().catch(() => ({}));
         if (r.ok) {
-          // Перезагружаем страницу с tariff=… — autoTariff-логика ниже сама запустит checkout
+          // Перезагружаем страницу с tariff=… – autoTariff-логика ниже сама запустит checkout
           const tariff = _pendingTariff;
           if (tariff) {
             location.href = '/courses/zdorovaya-spina?tariff=' + encodeURIComponent(tariff);
@@ -255,7 +255,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       }
       switch (data.error) {
         case 'email_not_verified':
-          alert('Перед оплатой подтвердите email — ссылка отправлена в письме после регистрации.');
+          alert('Перед оплатой подтвердите email – ссылка отправлена в письме после регистрации.');
           break;
         case 'already_enrolled':
           window.location.href = '/cabinet/zdorovaya-spina';
@@ -286,7 +286,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       });
     });
 
-    // Если страница открыта с ?tariff=... и юзер залогинен — автозапуск чекаута.
+    // Если страница открыта с ?tariff=... и юзер залогинен – автозапуск чекаута.
     // Это срабатывает после регистрации (мы редиректим обратно на эту URL).
     const _q = new URLSearchParams(window.location.search);
     const _autoTariff = _q.get('tariff');
