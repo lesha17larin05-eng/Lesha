@@ -24,13 +24,16 @@ const modulesWithLessons = modules
       .sort((a: any, b: any) => a.sort_order - b.sort_order),
   }));
 
-function lessonTag(title: string): { label: string; color: string; bg: string } {
-  if (title.includes('Основная')) return { label: 'Основная', color: '#1A2744', bg: 'rgba(26,39,68,0.08)' };
-  if (title.includes('Короткая')) return { label: 'Короткая', color: '#2a7a5a', bg: 'rgba(42,122,90,0.1)' };
-  if (title.includes('Теория')) return { label: 'Теория', color: '#4a4a9c', bg: 'rgba(74,74,156,0.1)' };
-  if (title.includes('Бонус')) return { label: 'Бонус', color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
-  if (title.includes('Как проходить')) return { label: 'Введение', color: '#555', bg: 'rgba(0,0,0,0.06)' };
-  return { label: 'Итог', color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+const LECTURE_SLUGS = new Set(['gryzhi-protruzii', 'osanka', 'rasslablenie']);
+
+function lessonTag(slug: string, title: string): { label: string; color: string; bg: string } {
+  if (slug === 'vvodnoe')                return { label: 'Введение', color: '#555',    bg: 'rgba(0,0,0,0.06)' };
+  if (title.includes('Основная'))        return { label: 'Основная', color: '#1A2744', bg: 'rgba(26,39,68,0.08)' };
+  if (title.includes('Короткая'))        return { label: 'Короткая', color: '#2a7a5a', bg: 'rgba(42,122,90,0.1)' };
+  if (LECTURE_SLUGS.has(slug))           return { label: 'Лекция',   color: '#4a4a9c', bg: 'rgba(74,74,156,0.1)' };
+  if (slug === 'praktika-rasslableniya') return { label: 'Бонус',    color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+  if (slug === 'itog')                   return { label: 'Итог',     color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+  return { label: 'Урок', color: '#555', bg: 'rgba(0,0,0,0.06)' };
 }
 
 function getLessonClass(title: string): string {
@@ -39,21 +42,22 @@ function getLessonClass(title: string): string {
   return 'zs-cab-lesson-bonus';
 }
 
-// Резервные ссылки на YouTube/VK для каждого урока — Алексей заполнит позже.
-// Пока пусто — кнопки не показываются, если в обоих полях пустая строка.
+// Резервные ссылки на YouTube/VK для каждого урока. Под видео в кабинете
+// появятся две дополнительные кнопки — клик ведёт на полное видео в той
+// платформе. Удобно, если пользователь хочет посмотреть с телефона / Smart TV.
 const videoLinks: Record<string, { youtube: string; vk: string }> = {
-  'vvodnoe':                { youtube: '', vk: '' },
-  'nedelya-1-osnovnaya':    { youtube: '', vk: '' },
-  'nedelya-1-korotkaya':    { youtube: '', vk: '' },
-  'gryzhi-protruzii':       { youtube: '', vk: '' },
-  'nedelya-2-osnovnaya':    { youtube: '', vk: '' },
-  'nedelya-2-korotkaya':    { youtube: '', vk: '' },
-  'osanka':                 { youtube: '', vk: '' },
-  'nedelya-3-osnovnaya':    { youtube: '', vk: '' },
-  'nedelya-3-korotkaya':    { youtube: '', vk: '' },
-  'rasslablenie':           { youtube: '', vk: '' },
-  'praktika-rasslableniya': { youtube: '', vk: '' },
-  'itog':                   { youtube: '', vk: '' },
+  'vvodnoe':                { youtube: 'https://youtu.be/cfH3IWMr48s',  vk: 'https://vkvideo.ru/video-141544391_456239642' },
+  'nedelya-1-osnovnaya':    { youtube: 'https://youtu.be/4oDpAoX1sFU',  vk: 'https://vkvideo.ru/video-141544391_456239629' },
+  'nedelya-1-korotkaya':    { youtube: 'https://youtu.be/Ykt1qDvwzk4',  vk: 'https://vkvideo.ru/video-141544391_456239611' },
+  'gryzhi-protruzii':       { youtube: 'https://youtu.be/rwC6n24e5vg',  vk: 'https://vkvideo.ru/video-141544391_456239630' },
+  'nedelya-2-osnovnaya':    { youtube: 'https://youtu.be/xkBOuzOBarw',  vk: 'https://vkvideo.ru/video-141544391_456239616' },
+  'nedelya-2-korotkaya':    { youtube: 'https://youtu.be/8icidvUi444',  vk: 'https://vkvideo.ru/video-141544391_456239615' },
+  'osanka':                 { youtube: 'https://youtu.be/vEsY21ZndNI',  vk: 'https://vkvideo.ru/video-141544391_456239637' },
+  'nedelya-3-osnovnaya':    { youtube: 'https://youtu.be/h3hoELWX5qQ',  vk: 'https://vkvideo.ru/video-141544391_456239617' },
+  'nedelya-3-korotkaya':    { youtube: 'https://youtu.be/k3n-tbTcO9E',  vk: 'https://vkvideo.ru/video-141544391_456239612' },
+  'rasslablenie':           { youtube: 'https://youtu.be/ALaNBqpkM9A',  vk: 'https://vkvideo.ru/video-141544391_456239643' },
+  'praktika-rasslableniya': { youtube: 'https://youtu.be/wcUE6y12Jkk',  vk: 'https://vkvideo.ru/video-141544391_456239644' },
+  'itog':                   { youtube: 'https://youtu.be/eKN43kjeqTg',  vk: 'https://vkvideo.ru/video-141544391_456239639' },
 };
 
 // Файлы курса отдаются через защищённый эндпоинт /api/courses/:slug/files/:name —
@@ -64,19 +68,19 @@ const materials = [
   {
     href: '/api/courses/zdorovaya-spina/files/metodichka.pdf',
     title: 'Методичка',
-    desc: 'Подробное описание упражнений, техника выполнения и принципы курса',
-    size: '94 KB',
+    desc: 'Как пройти курс без срывов, как выбрать интенсивность, что делать если что-то болит',
+    size: '43 KB',
   },
   {
     href: '/api/courses/zdorovaya-spina/files/kalendar.pdf',
     title: 'Календарь занятий',
-    desc: 'План на 3 недели – распечатайте и отмечайте каждую тренировку',
-    size: '105 KB',
+    desc: 'Распечатайте и повесьте на холодильник — ставьте галочку после каждой тренировки',
+    size: '35 KB',
   },
   {
     href: '/api/courses/zdorovaya-spina/files/zamery.pdf',
-    title: 'Замеры и самопроверка',
-    desc: 'Чек-листы, чтобы отслеживать прогресс до и после курса',
+    title: 'Замеры до и после',
+    desc: 'Шесть простых тестов на 5 минут. Сделайте сейчас и в конце курса — увидите разницу',
     size: '107 KB',
   },
 ];
@@ -331,7 +335,7 @@ const materials = [
       display: block; font-size: 18px; font-weight: 600; color: white; margin-bottom: 6px;
     }
     .zs-cab-feedback-text span {
-      font-size: 15px; color: rgba(255,255,255,0.5);
+      font-size: 15px; color: rgba(255,255,255,0.82);
     }
     .zs-cab-feedback-btn {
       display: inline-flex; align-items: center; gap: 10px;
@@ -408,7 +412,7 @@ const materials = [
         <div class="zs-cab-module-title">{mod.title}</div>
         <div class="zs-cab-lessons">
           {mod.lessons.map((l: any) => {
-            const tag = lessonTag(l.title);
+            const tag = lessonTag(l.slug, l.title);
             const lessonClass = getLessonClass(l.title);
             // #t=0.5 — браузер показывает первый кадр как превью при preload=metadata
             const mp4Url = `/lesson-videos/zdorovaya-spina/${l.slug}.mp4#t=0.5`;

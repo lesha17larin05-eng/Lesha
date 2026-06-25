@@ -68,10 +68,10 @@ nav {
 }
 .hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
 .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
-.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.82); }
 .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; line-height: 1.1; color: white; margin-bottom: 12px; letter-spacing: -0.01em; }
 .hero h1 em { font-style: italic; color: #8bb8f0; }
-.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.45); margin-bottom: 32px; line-height: 1.5; }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.75); margin-bottom: 32px; line-height: 1.5; }
 .hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
 .hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
 .hero-promise strong { color: white; font-weight: 600; }
@@ -90,15 +90,15 @@ nav {
   transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
 }
 .btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
-.btn-hero-alt { display: inline-flex; align-items: center; font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none; padding: 7px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-hero-alt { display: inline-flex; align-items: center; font-size: 13px; color: rgba(255,255,255,0.82); text-decoration: none; padding: 7px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
 .btn-hero-alt:hover { color: white; background: rgba(255,255,255,0.06); }
-.hero-safety { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
-.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.65); }
-.hero-geo { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.hero-safety { font-size: 15px; color: rgba(255,255,255,0.82); display: flex; align-items: center; gap: 6px; }
+.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.9); }
+.hero-geo { font-size: 15px; color: rgba(255,255,255,0.82); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .hero-geo::before { content: '🌍'; }
 .hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
 .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
-.stat-label { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 4px; display: block; }
+.stat-label { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 4px; display: block; }
 .hero-right { background: var(--cream); position: relative; min-height: 500px; overflow: hidden; }
 .hero-photo { position: absolute; inset: 0; background: linear-gradient(160deg, #ccd4e0 0%, #b8c4d4 100%); }
 .hero-photo picture, .hero-photo img { width: 100%; height: 100%; display: block; }
@@ -128,20 +128,20 @@ nav {
 
 .story { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; overflow: hidden; }
 .story::before { content: '"'; position: absolute; top: -20px; left: 60px; font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
-.story-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; background: linear-gradient(160deg, #2e3d6b 0%, #1a2744 100%); display: flex; align-items: center; justify-content: center; font-size: 14px; color: rgba(255,255,255,0.3); }
+.story-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; background: linear-gradient(160deg, #2e3d6b 0%, #1a2744 100%); display: flex; align-items: center; justify-content: center; font-size: 14px; color: rgba(255,255,255,0.6); }
 .story-content .section-label { color: #7ab0f0; }
 .story-content .section-title { color: white; }
 .story-pull { background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0; font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.75); line-height: 1.6; }
-.story-text { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.85; margin-bottom: 16px; }
+.story-text { font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.85; margin-bottom: 16px; }
 .creds { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
-.cred { display: flex; align-items: center; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.5); }
+.cred { display: flex; align-items: center; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.82); }
 .cred-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 .format { padding: 100px 80px; background: var(--cream); }
 .format-steps-wide { display: flex; flex-direction: column; margin-bottom: 72px; }
 .format-step-wide { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 40px; align-items: start; padding: 36px 0; border-bottom: 1px solid var(--border); }
 .format-step-wide:last-child { border-bottom: none; }
-.fsw-num { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: var(--border); line-height: 1; }
+.fsw-num { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 500; color: var(--orange); line-height: 1; }
 .fsw-main h3 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
 .fsw-main p { font-size: 16px; color: var(--text-muted); line-height: 1.8; }
 .fsw-highlight { color: var(--orange); font-weight: 600; }
@@ -232,29 +232,29 @@ section.results { padding: 100px 80px; background: white; }
 .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
 .cta-left .section-label { color: #7ab0f0; }
 .cta-left .section-title { color: white; }
-.cta-left .section-desc { color: rgba(255,255,255,0.45); max-width: none; margin-bottom: 16px; }
+.cta-left .section-desc { color: rgba(255,255,255,0.75); max-width: none; margin-bottom: 16px; }
 .price-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 40px; }
 .price-main { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 400; color: white; line-height: 1; margin-bottom: 4px; }
-.price-per { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+.price-per { font-size: 16px; color: rgba(255,255,255,0.82); margin-bottom: 28px; }
 .price-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
 .price-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 16px; color: rgba(255,255,255,0.7); line-height: 1.6; }
 .pf-check { color: #4ade80; font-weight: 700; flex-shrink: 0; }
-.price-guarantee { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; font-size: 15px; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 28px; }
-.price-guarantee strong { color: rgba(255,255,255,0.65); }
+.price-guarantee { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 20px; font-size: 15px; color: rgba(255,255,255,0.82); line-height: 1.7; margin-bottom: 28px; }
+.price-guarantee strong { color: rgba(255,255,255,0.9); }
 .btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer; padding: 18px 32px; border-radius: 100px; width: 100%; font-size: 15px; font-weight: 600; font-family: 'Manrope', sans-serif; transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.3); }
 .btn-cta:hover { background: var(--orange-warm); transform: translateY(-2px); }
 .cta-buttons { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
-.btn-cta-alt { display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(255,255,255,0.55); text-decoration: none; padding: 8px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-cta-alt { display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(255,255,255,0.85); text-decoration: none; padding: 8px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
 .btn-cta-alt:hover { color: white; background: rgba(255,255,255,0.06); }
-.spots-warning { text-align: center; margin-top: 16px; font-size: 15px; color: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; gap: 6px; }
+.spots-warning { text-align: center; margin-top: 16px; font-size: 15px; color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; gap: 6px; }
 .spots-warning span { color: #fbbf24; }
 
 footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
 .footer-links { display: flex; gap: 24px; }
-.footer-links a { font-size: 15px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.footer-links a { font-size: 15px; color: rgba(255,255,255,0.82); text-decoration: none; transition: color 0.2s; }
 .footer-links a:hover { color: white; }
-.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.6); }
 
 #edit-bar { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; gap: 10px; }
 #edit-btn { background: var(--navy); color: white; border: none; border-radius: 100px; padding: 12px 22px; font-size: 13px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
@@ -282,7 +282,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   /* «01 Анкета и погружение» — было 72px+1fr+1fr, теперь одна колонка */
   .format-step-wide{grid-template-columns:1fr; gap:10px; padding:20px 0;}
   /* на мобиле цифры заметнее — оранжевый с прозрачностью */
-  .fsw-num{font-size:36px; line-height:1; margin-bottom:4px; color:var(--orange); opacity:0.75; font-weight:500;}
+  .fsw-num{font-size:36px; line-height:1; margin-bottom:4px; color:var(--orange); font-weight:500;}
   /* hero h1 на мобиле — не такой огромный, чтобы не делил слова и дефисы */
   .hero h1{font-size:30px; line-height:1.15;}
   .hero-sub{font-size:17px;}
@@ -338,12 +338,12 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .base-pillars { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
 .base-pillar { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 12px; text-align: center; }
 .bp-icon { font-size: 28px; margin-bottom: 8px; }
-.bp-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); }
+.bp-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.88); }
 
 /* SCALES */
 .scales-visual { display: flex; flex-direction: column; gap: 40px; }
 .scale-item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.scale-label-top { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; text-transform: uppercase; }
+.scale-label-top { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 0.08em; text-transform: uppercase; }
 .scale-beam { display: flex; align-items: flex-end; gap: 0; position: relative; height: 80px; width: 280px; }
 .scale-pivot { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid rgba(255,255,255,0.25); position: absolute; left: 50%; transform: translateX(-50%) translateY(0); bottom: 0; }
 .scale-side { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 50%; }
@@ -362,7 +362,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .scales-visual{flex-direction:column; gap:32px; align-items:center;}
   .scale-beam{width:240px;}
 }
-.social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
+.social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.82); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
 .social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
 .footer-social { display: flex; flex-direction: row; gap: 8px; align-items: center; }
 .tg-section { padding: 80px 80px; background: #eef6ff; }
@@ -529,8 +529,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="base-content">
       <div class="section-label" style="color:#7ab0f0;">Скучная база</div>
       <h2 class="section-title" style="color:white;">Четыре вещи,<br>которые <em>реально влияют</em></h2>
-      <p style="font-size:17px; color:rgba(255,255,255,0.55); line-height:1.85; margin-bottom:32px;">Физическая активность, сон, питание, снижение стресса. Большинство людей знают, что это важно. Но мало кто понимает, как именно тренироваться под свой запрос, свой ритм жизни и своё тело.</p>
-      <p style="font-size:17px; color:rgba(255,255,255,0.55); line-height:1.85; margin-bottom:32px;">Со мной это становится понятным. Вы получаете конкретный план и понимаете что делать. А когда движение входит в жизнь — остальное подтягивается само: лучше спится, питание выравнивается, стресс снижается. Тело перестаёт быть фоном — становится домом. Отсюда и растёт то самое качество жизни, которое сложно описать словами, но легко почувствовать.</p>
+      <p style="font-size:17px; color:rgba(255,255,255,0.85); line-height:1.85; margin-bottom:32px;">Физическая активность, сон, питание, снижение стресса. Большинство людей знают, что это важно. Но мало кто понимает, как именно тренироваться под свой запрос, свой ритм жизни и своё тело.</p>
+      <p style="font-size:17px; color:rgba(255,255,255,0.85); line-height:1.85; margin-bottom:32px;">Со мной это становится понятным. Вы получаете конкретный план и понимаете что делать. А когда движение входит в жизнь — остальное подтягивается само: лучше спится, питание выравнивается, стресс снижается. Тело перестаёт быть фоном — становится домом. Отсюда и растёт то самое качество жизни, которое сложно описать словами, но легко почувствовать.</p>
       <div class="base-pillars">
         <div class="base-pillar">
           <div class="bp-icon">🏃</div>

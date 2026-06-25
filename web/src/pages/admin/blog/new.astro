@@ -3,7 +3,7 @@ import Base from '../../../layouts/Base.astro';
 const user = (Astro.locals as any).user;
 ---
 <Base title="Новая статья" user={user}>
-  <section class="container" style="padding:50px 0;">
+  <section class="container" style="padding:50px 16px;">
     <a href="/admin/blog" class="muted">← Список статей</a>
     <h1 style="margin-top:8px;">Новая статья</h1>
     <article-editor data-mode="create"></article-editor>

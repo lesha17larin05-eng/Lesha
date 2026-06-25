@@ -48,10 +48,10 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 }
 .hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; position: relative; }
 .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
-.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.85); }
 .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4.2vw,62px); font-weight: 400; line-height: 1.08; color: white; margin-bottom: 14px; letter-spacing: -0.015em; position: relative; }
 .hero h1 em { font-style: italic; color: var(--gold); }
-.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.5); margin-bottom: 32px; line-height: 1.5; position: relative; }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.82); margin-bottom: 32px; line-height: 1.5; position: relative; }
 .hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 22px 26px; margin-bottom: 36px; position: relative; }
 .hero-promise p { font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.82); }
 .hero-promise strong { color: white; font-weight: 600; }
@@ -69,12 +69,12 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
   padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.25);
   transition: color 0.2s;
 }
-.btn-hero-secondary:hover { color: white; border-color: rgba(255,255,255,0.5); }
-.hero-reply { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+.btn-hero-secondary:hover { color: white; border-color: rgba(255,255,255,0.82); }
+.hero-reply { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
 .hero-reply::before { content: '✓'; color: var(--green); }
 .hero-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 52px; padding-top: 36px; border-top: 1px solid rgba(255,255,255,0.08); position: relative; }
 .meta-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: white; line-height: 1; display: block; margin-bottom: 8px; }
-.meta-label { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.45; }
+.meta-label { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.45; }
 
 .hero-right { background: var(--cream); position: relative; overflow: hidden; }
 .hero-photo { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.04); transform-origin: center bottom; }
@@ -108,6 +108,12 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 .season-dates { font-size: 16px; color: var(--text-mid); line-height: 1.5; margin-bottom: 16px; }
 .season-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
 .season-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.season-card--done { background: #f5f1ea; }
+.season-status--done { color: var(--text-light); }
+.season-status--done::before { background: var(--text-light); }
+.season-card--live { border-color: var(--orange); box-shadow: 0 12px 36px rgba(232,101,42,0.08); }
+.season-status--live { color: var(--orange); }
+.season-status--live::before { background: var(--orange); animation: pulse 2s infinite; }
 
 /* FOR WHOM */
 .for-whom { padding: 100px 80px; background: white; }
@@ -125,6 +131,32 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 .prog-lessons-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
 .prog-lesson { background: white; border-radius: 16px; padding: 26px 28px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; align-items: flex-start; transition: all 0.2s; }
 .prog-lesson:hover { border-color: var(--orange); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.05); }
+
+/* Новая структура 5 занятий */
+.prog-sessions { display: flex; flex-direction: column; gap: 14px; margin-bottom: 48px; }
+.prog-session { background: white; border-radius: 18px; border: 1px solid var(--border); overflow: hidden; transition: all 0.2s; }
+.prog-session:hover { border-color: var(--orange); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.05); }
+.prog-session-head { display: flex; align-items: center; gap: 22px; padding: 22px 32px; background: linear-gradient(90deg, var(--navy) 0%, var(--navy-mid) 100%); }
+.prog-session-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: var(--gold); line-height: 1; flex-shrink: 0; min-width: 44px; }
+.prog-session-name { font-size: 21px; font-weight: 600; color: white; line-height: 1.3; }
+.prog-session-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.prog-session-block { padding: 26px 32px; }
+.prog-theory { background: var(--warm-white); border-right: 1px solid var(--border-light); }
+.prog-practice { background: white; }
+.prog-block-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 12px; }
+.prog-theory .prog-block-label { color: var(--orange); }
+.prog-practice .prog-block-label { color: var(--navy); }
+.prog-block-text { font-size: 16px; color: var(--text-mid); line-height: 1.65; }
+.prog-session--final .prog-session-head { background: linear-gradient(90deg, var(--orange) 0%, var(--orange-warm) 100%); }
+.prog-session--final .prog-session-num { color: white; }
+@media(max-width:760px){
+  .prog-session-head { padding: 18px 22px; gap: 16px; }
+  .prog-session-num { font-size: 26px; min-width: 36px; }
+  .prog-session-name { font-size: 18px; }
+  .prog-session-blocks { grid-template-columns: 1fr; }
+  .prog-session-block { padding: 22px 22px; }
+  .prog-theory { border-right: none; border-bottom: 1px solid var(--border-light); }
+}
 
 .prog-video-block { display: grid; grid-template-columns: 1fr 1.6fr; gap: 40px; align-items: center; background: white; border-radius: 22px; padding: 28px; border: 1px solid var(--border); margin-bottom: 56px; }
 .prog-video-text { padding: 8px 0; }
@@ -179,14 +211,14 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 .bonus-card-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
 .bonus-card-title { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 400; color: white; line-height: 1.05; letter-spacing: -0.01em; }
 .bonus-card-title em { font-style: italic; color: var(--gold); }
-.bonus-card-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.5); margin-top: 6px; }
+.bonus-card-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.82); margin-top: 6px; }
 .bonus-card-modules { display: flex; flex-direction: column; gap: 12px; padding: 22px 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
 .bcm-row { display: flex; align-items: center; gap: 16px; font-size: 15px; color: rgba(255,255,255,0.78); }
 .bcm-num { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--orange); font-weight: 500; min-width: 28px; }
 .bonus-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; }
 .bonus-card-stats > div { text-align: center; padding: 4px 0; }
 .bcs-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: white; line-height: 1; margin-bottom: 4px; }
-.bcs-lab { font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 0.04em; text-transform: uppercase; }
+.bcs-lab { font-size: 12px; color: rgba(255,255,255,0.82); letter-spacing: 0.04em; text-transform: uppercase; }
 
 /* ABOUT */
 .about { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1.2fr; gap: 72px; align-items: center; position: relative; overflow: hidden; }
@@ -198,8 +230,34 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 .about-pull { background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange); padding: 18px 22px; border-radius: 0 12px 12px 0; margin: 24px 0; font-family: 'Cormorant Garamond', serif; font-size: 21px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.78); line-height: 1.5; }
 .about-text { font-size: 17px; color: rgba(255,255,255,0.7); line-height: 1.8; margin-bottom: 14px; }
 .about-creds { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
-.about-cred { display: flex; align-items: center; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.65); }
+.about-cred { display: flex; align-items: center; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.9); }
 .cred-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+/* PERCEPTIONS — до/после анкеты */
+.perceptions { padding: 100px 80px; background: white; }
+.perc-head { max-width: 720px; margin-bottom: 56px; }
+.perc-head .section-desc { margin-bottom: 0; }
+.perc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.perc-pair { background: var(--cream); border-radius: 20px; padding: 28px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+.perc-pair--final { background: var(--gold-soft); border-color: var(--gold); }
+.perc-card { background: white; border-radius: 14px; padding: 22px 24px; border: 1px solid var(--border); }
+.perc-before { border-left: 3px solid var(--text-light); }
+.perc-after { border-left: 3px solid var(--orange); }
+.perc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+.perc-after .perc-label { color: var(--orange); }
+.perc-text { font-size: 16px; color: var(--text); line-height: 1.7; margin-bottom: 12px; }
+.perc-text strong { color: var(--navy); font-weight: 700; }
+.perc-text em { font-style: italic; color: var(--navy); }
+.perc-author { font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.02em; }
+.perc-arrow { text-align: center; font-size: 28px; color: var(--orange); line-height: 1; font-weight: 300; }
+@media(max-width:1100px){
+  .perc-grid { grid-template-columns: 1fr; }
+}
+@media(max-width:760px){
+  .perceptions { padding: 60px 24px; }
+  .perc-pair { padding: 22px; }
+  .perc-card { padding: 18px 20px; }
+}
 
 /* SAFETY */
 .safety { padding: 100px 80px; background: white; }
@@ -349,35 +407,35 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
 .cta-left .section-label { color: #7ab0f0; }
 .cta-left .section-title { color: white; }
-.cta-left .section-desc { color: rgba(255,255,255,0.55); max-width: none; margin-bottom: 24px; }
+.cta-left .section-desc { color: rgba(255,255,255,0.85); max-width: none; margin-bottom: 24px; }
 .cta-howto { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 24px; }
-.cta-howto-title { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.cta-howto-title { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.82); margin-bottom: 14px; }
 .cta-howto-list { display: flex; flex-direction: column; gap: 10px; }
 .cta-howto-item { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.5; }
 .cta-howto-num { width: 22px; height: 22px; border-radius: 50%; background: var(--orange); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
 
 .price-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 40px; }
 .price-main { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 400; color: white; line-height: 1; margin-bottom: 4px; }
-.price-per { font-size: 15px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+.price-per { font-size: 15px; color: rgba(255,255,255,0.82); margin-bottom: 28px; }
 .price-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
 .price-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: rgba(255,255,255,0.72); line-height: 1.5; }
 .pf-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
 .pf-highlight { color: var(--gold); font-weight: 600; }
-.price-discount { background: rgba(244,195,97,0.1); border: 1px solid rgba(244,195,97,0.2); border-radius: 12px; padding: 14px 18px; font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 24px; }
+.price-discount { background: rgba(244,195,97,0.1); border: 1px solid rgba(244,195,97,0.2); border-radius: 12px; padding: 14px 18px; font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.6; margin-bottom: 24px; }
 .price-discount strong { color: var(--gold); }
 .btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; padding: 17px 32px; border-radius: 100px; width: 100%; font-size: 15px; font-weight: 600; transition: all 0.25s; box-shadow: 0 8px 28px rgba(232,101,42,0.3); margin-bottom: 10px; }
 .btn-cta:hover { background: var(--orange-warm); transform: translateY(-2px); }
-.btn-cta-alt { display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.65); text-decoration: none; padding: 12px; font-size: 14px; transition: color 0.2s; border-bottom: 1px dashed rgba(255,255,255,0.18); }
+.btn-cta-alt { display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.9); text-decoration: none; padding: 12px; font-size: 14px; transition: color 0.2s; border-bottom: 1px dashed rgba(255,255,255,0.18); }
 .btn-cta-alt:hover { color: white; }
-.cta-reply { text-align: center; margin-top: 14px; font-size: 13px; color: rgba(255,255,255,0.4); }
+.cta-reply { text-align: center; margin-top: 14px; font-size: 13px; color: rgba(255,255,255,0.7); }
 
 /* FOOTER */
 footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
 .footer-links { display: flex; gap: 24px; }
-.footer-links a { font-size: 14px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.footer-links a { font-size: 14px; color: rgba(255,255,255,0.82); text-decoration: none; transition: color 0.2s; }
 .footer-links a:hover { color: white; }
-.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.6); }
 
 /* VIDEO PLAY OVERLAY */
 .video-wrap { position: relative; }
@@ -524,7 +582,7 @@ a:hover { text-decoration: none; }
   </div>
   <div class="hero-right">
     <img class="hero-photo" src="/salut-2026/img/trainer-stretch.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
-    <div class="seasons-pill"><div class="seasons-dot"></div>Открыта запись на 4 смены</div>
+    <div class="seasons-pill"><div class="seasons-dot"></div>Идёт смена 2 · запись на 3 и 4 открыта</div>
     <div class="hero-badge">
       <div class="badge-icon">🎁</div>
       <div>
@@ -540,18 +598,18 @@ a:hover { text-decoration: none; }
   <div class="seasons-head">
     <div class="section-label">Смены лагеря</div>
     <h2 class="section-title">Лето <em>2026</em></h2>
-    <p class="section-desc">Курс проходит в каждую из 4 смен. Выбирайте удобную и сообщайте при записи.</p>
+    <p class="section-desc">Курс проходит в каждую из 4 смен. Смена 1 уже завершилась — отзывы и анкеты родителей ниже. Смена 2 идёт прямо сейчас. На смены 3 и 4 открыта запись.</p>
   </div>
   <div class="seasons-grid">
-    <div class="season-card">
+    <div class="season-card season-card--done">
       <div class="season-name">Смена 1</div>
       <div class="season-dates">1 июня — 20 июня</div>
-      <div class="season-status">Идёт запись</div>
+      <div class="season-status season-status--done">Завершена · отзывы ниже</div>
     </div>
-    <div class="season-card">
+    <div class="season-card season-card--live">
       <div class="season-name">Смена 2</div>
       <div class="season-dates">23 июня — 12 июля</div>
-      <div class="season-status">Идёт запись</div>
+      <div class="season-status season-status--live">Идёт прямо сейчас</div>
     </div>
     <div class="season-card">
       <div class="season-name">Смена 3</div>
@@ -622,29 +680,92 @@ a:hover { text-decoration: none; }
   <div class="prog-head">
     <div class="section-label">Программа</div>
     <h2 class="section-title">5 занятий —<br>каждое <em>по 55 минут</em></h2>
-    <p class="section-desc">В каждом занятии — три части: коротко даём теорию, основное время — практика, в конце спокойно разбираем главное.</p>
+    <p class="section-desc">Каждое занятие построено одинаково: 15 минут — теория с разбором конкретной темы, 40 минут — практика. Темы теории идут в логическом порядке: от устройства спины к экзамену в конце.</p>
   </div>
 
-  <div class="prog-lessons-row">
-    <div class="prog-lesson">
-      <div class="prog-lesson-num">15′</div>
-      <div class="prog-lesson-content">
-        <h4>Теория</h4>
-        <p>О строении позвоночника, осанке, причинах нарушений. На примерах — как поднимать тяжести, как сидеть за партой.</p>
+  <div class="prog-sessions">
+    <div class="prog-session">
+      <div class="prog-session-head">
+        <div class="prog-session-num">01</div>
+        <div class="prog-session-name">Основы строения позвоночника</div>
+      </div>
+      <div class="prog-session-blocks">
+        <div class="prog-session-block prog-theory">
+          <div class="prog-block-label">15 минут · теория</div>
+          <div class="prog-block-text">Как устроен позвоночник: отделы, изгибы, диски. Откуда берутся сутулость, кифоз, сколиоз. Простыми словами и на схемах — чтобы ребёнок понимал, что у него внутри.</div>
+        </div>
+        <div class="prog-session-block prog-practice">
+          <div class="prog-block-label">40 минут · практика</div>
+          <div class="prog-block-text">Учимся чувствовать «нейтральный позвоночник». Базовые позиции, разогрев, знакомство с телом.</div>
+        </div>
       </div>
     </div>
-    <div class="prog-lesson">
-      <div class="prog-lesson-num">40′</div>
-      <div class="prog-lesson-content">
-        <h4>Практика</h4>
-        <p>Базовые упражнения для укрепления мышц спины и пресса. Мягкие скрутки. Учимся расслабляться.</p>
+
+    <div class="prog-session">
+      <div class="prog-session-head">
+        <div class="prog-session-num">02</div>
+        <div class="prog-session-name">Как правильно поднимать тяжести</div>
+      </div>
+      <div class="prog-session-blocks">
+        <div class="prog-session-block prog-theory">
+          <div class="prog-block-label">15 минут · теория</div>
+          <div class="prog-block-text">Почему люди срывают спину. Разбираем технику на портфеле и бутылке воды: что делают ноги, что делает спина. Это та привычка, которая останется на всю жизнь.</div>
+        </div>
+        <div class="prog-session-block prog-practice">
+          <div class="prog-block-label">40 минут · практика</div>
+          <div class="prog-block-text">Упражнения на мышцы кора и ноги. Учимся приседать с прямой спиной. Отрабатываем технику подъёма на конкретных предметах.</div>
+        </div>
       </div>
     </div>
-    <div class="prog-lesson">
-      <div class="prog-lesson-num">★</div>
-      <div class="prog-lesson-content">
-        <h4>Экзамен и сертификат</h4>
-        <p>В конце курса — без стресса, с фотофиксацией правильного выполнения упражнений. Ребёнок забирает сертификат и методички с собой.</p>
+
+    <div class="prog-session">
+      <div class="prog-session-head">
+        <div class="prog-session-num">03</div>
+        <div class="prog-session-name">Как организовать стол для учёбы и работы</div>
+      </div>
+      <div class="prog-session-blocks">
+        <div class="prog-session-block prog-theory">
+          <div class="prog-block-label">15 минут · теория</div>
+          <div class="prog-block-text">Высота стула, расстояние до монитора, угол локтей и колен. Как сидеть так, чтобы спина не уставала на уроках. Что делать, если стол неудобный — простые лайфхаки.</div>
+        </div>
+        <div class="prog-session-block prog-practice">
+          <div class="prog-block-label">40 минут · практика</div>
+          <div class="prog-block-text">Упражнения, которые снимают зажатость от сидения. Мягкие скрутки, растяжение грудного отдела. Расслабляем шею и плечи.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-session">
+      <div class="prog-session-head">
+        <div class="prog-session-num">04</div>
+        <div class="prog-session-name">Базовый комплекс упражнений для спины</div>
+      </div>
+      <div class="prog-session-blocks">
+        <div class="prog-session-block prog-theory">
+          <div class="prog-block-label">15 минут · теория</div>
+          <div class="prog-block-text">Детально разбираем каждое упражнение комплекса: какая мышца включается, что чувствовать, как делать дома без ошибок. Чтобы ребёнок мог сам, а не «по памяти».</div>
+        </div>
+        <div class="prog-session-block prog-practice">
+          <div class="prog-block-label">40 минут · практика</div>
+          <div class="prog-block-text">Весь комплекс с фокусом на технику. Я подхожу к каждому ребёнку и поправляю положение — индивидуально.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-session prog-session--final">
+      <div class="prog-session-head">
+        <div class="prog-session-num">05</div>
+        <div class="prog-session-name">Экзамен и закрепление</div>
+      </div>
+      <div class="prog-session-blocks">
+        <div class="prog-session-block prog-theory">
+          <div class="prog-block-label">15 минут · повторение</div>
+          <div class="prog-block-text">Собираем всё, что прошли: как сидеть, как поднимать тяжести, как делать комплекс. Ребёнок уезжает с готовой инструкцией в голове, а не с обрывками воспоминаний.</div>
+        </div>
+        <div class="prog-session-block prog-practice">
+          <div class="prog-block-label">40 минут · экзамен и сертификат</div>
+          <div class="prog-block-text">Каждый ребёнок показывает комплекс. Делаем фотофиксацию правильного положения — она потом будет на сертификате. Вручаем именной диплом и методички.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -756,6 +877,72 @@ a:hover { text-decoration: none; }
       <div class="about-cred"><div class="cred-icon">📅</div>8+ лет тренерской практики · более 8 000 человек через проекты</div>
       <div class="about-cred"><div class="cred-icon">❤️</div>Опыт реабилитации в фондах «Подари жизнь» и «Хрупкие люди»</div>
       <div class="about-cred"><div class="cred-icon">🏕</div>4-й год веду курс по здоровой спине в лагере «Салют»</div>
+    </div>
+  </div>
+</section>
+
+<!-- PERCEPTIONS — что писали до курса → что написали после -->
+<section class="perceptions">
+  <div class="perc-head">
+    <div class="section-label">Анкеты до и после</div>
+    <h2 class="section-title">Чего боялись родители —<br><em>и что увидели</em> после курса</h2>
+    <p class="section-desc">До курса я прошу родителей заполнить анкету: чего хотят, чего опасаются. После курса — анкету про результаты. Ниже — реальные пары цитат одних и тех же семей.</p>
+  </div>
+  <div class="perc-grid">
+    <div class="perc-pair">
+      <div class="perc-card perc-before">
+        <div class="perc-label">До курса</div>
+        <div class="perc-text">«Очень стеснительный, зажимается, боится показаться глупым и сделать что-то не так. К физкультуре относится нейтрально — без энтузиазма.»</div>
+        <div class="perc-author">— мама Савелия, 12 лет</div>
+      </div>
+      <div class="perc-arrow">↓</div>
+      <div class="perc-card perc-after">
+        <div class="perc-label">После курса</div>
+        <div class="perc-text">«Понравилось делать упражнения. Старается следить за спиной. Всё было ясно и понятно.» <strong>Курс — 10 из 10.</strong></div>
+        <div class="perc-author">— мама Савелия</div>
+      </div>
+    </div>
+
+    <div class="perc-pair">
+      <div class="perc-card perc-before">
+        <div class="perc-label">До курса</div>
+        <div class="perc-text">«Был вывих надколенника с операцией на связках. Осталась хромота, перекос спины, ранее была сутулость. Не любит, когда заставляют.»</div>
+        <div class="perc-author">— мама Даши, 10 лет</div>
+      </div>
+      <div class="perc-arrow">↓</div>
+      <div class="perc-card perc-after">
+        <div class="perc-label">После курса</div>
+        <div class="perc-text">«Понравились рассказы про строение позвоночника, упражнение птица-собака. Ребёнок заинтересовался теоретическим обоснованием — почему важно поддерживать состояние мышц спины и правильно поднимать тяжести.» <strong>10 из 10.</strong></div>
+        <div class="perc-author">— мама Даши</div>
+      </div>
+    </div>
+
+    <div class="perc-pair">
+      <div class="perc-card perc-before">
+        <div class="perc-label">До курса</div>
+        <div class="perc-text">«Ксения не любит спорт, могут быть сопротивления. Хочется, чтобы запомнила упражнения и выполняла дальше самостоятельно, не сутулилась.»</div>
+        <div class="perc-author">— мама Ксении и Влада Шестаковых</div>
+      </div>
+      <div class="perc-arrow">↓</div>
+      <div class="perc-card perc-after">
+        <div class="perc-label">После курса</div>
+        <div class="perc-text">«Понравились упражнения, информация о спине была новой и интересной, музыка на занятиях тоже понравилась. Ребёнок рассказывал о теоретическом материале, новые термины. Смогли продемонстрировать упражнения, обещали делать зарядку. <em>С первого занятия им понравилось.</em>»</div>
+        <div class="perc-author">— мама Ксении и Влада</div>
+      </div>
+    </div>
+
+    <div class="perc-pair perc-pair--final">
+      <div class="perc-card perc-before">
+        <div class="perc-label">До курса</div>
+        <div class="perc-text">«Кифоз. К спорту — нейтрально. Хочется победы над инертностью и ленью. Чтобы стал крепче физически и уверенней в себе. Будьте, пожалуйста, чуть строже.»</div>
+        <div class="perc-author">— мама Елисея, 11 лет</div>
+      </div>
+      <div class="perc-arrow">↓</div>
+      <div class="perc-card perc-after">
+        <div class="perc-label">После курса</div>
+        <div class="perc-text">«Уверенность в себе растёт.» <strong>10 из 10.</strong> «Алексей! От всей души желаю успехов в любых начинаниях, обретения активных участников и сторонников. Спасибо!»</div>
+        <div class="perc-author">— семья Елисея</div>
+      </div>
     </div>
   </div>
 </section>
@@ -1193,7 +1380,7 @@ a:hover { text-decoration: none; }
       <details class="faq-item">
         <summary>Что входит в подарочный онлайн-курс «Здоровая спина»?</summary>
         <div class="faq-content">
-          <p>Это мой полноценный авторский курс для дома: 3 недели программы, 11 видео-уроков, 5 модулей, PDF-материалы. Обычно его покупают отдельно — для участников курса в «Салюте» он включён.</p>
+          <p>Это мой полноценный авторский курс для дома: 3 недели программы, 12 уроков в 5 модулях, бонус-аудио расслабления и PDF-материалы. Обычно его покупают отдельно — для участников курса в «Салюте» он включён.</p>
           <p>Доступ открывается на 3 человек в семье — ребёнка, родителя и кого-то ещё (бабушка, второй родитель). Доступ — на 1 год.</p>
         </div>
       </details>

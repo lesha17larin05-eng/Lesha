@@ -20,13 +20,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,
 .page-header::before{content:'';position:absolute;top:-80px;left:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(46,61,107,0.6) 0%,transparent 65%);pointer-events:none;}
 .page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange) 0%,transparent 60%);}
 .ph-left{position:relative;z-index:1;}
-.header-label{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:16px;}
+.header-label{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:16px;}
 .page-header h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,4vw,60px);font-weight:400;color:white;line-height:1.1;margin-bottom:12px;}
 .page-header h1 em{font-style:italic;color:#8bb8f0;}
-.page-header p{font-size:17px;color:rgba(255,255,255,0.5);max-width:540px;line-height:1.75;}
+.page-header p{font-size:17px;color:rgba(255,255,255,0.82);max-width:540px;line-height:1.75;}
 .header-stats{display:flex;gap:40px;margin-top:40px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.1);}
 .hs-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:500;color:white;line-height:1;display:block;}
-.hs-label{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px;display:block;}
+.hs-label{font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;display:block;}
 .ph-collage{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:220px 220px;gap:8px;position:relative;z-index:1;}
 .ph-collage-item{border-radius:10px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.5);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;}
 .ph-collage-item:hover{transform:scale(1.02);box-shadow:0 8px 32px rgba(0,0,0,0.7);}
@@ -74,15 +74,42 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,
 
 .rv-hint{padding:12px 80px;background:var(--warm-white);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
 .rv-hint-icon{font-size:14px;opacity:0.5;flex-shrink:0;}
+
+/* ════ Галерея скринов отзывов ════ */
+.tx-section{background:var(--cream);padding:80px 80px 100px;border-top:1px solid var(--border);}
+.tx-head{max-width:760px;margin:0 auto 48px;text-align:center;}
+.tx-eyebrow{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--orange);margin-bottom:14px;}
+.tx-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,3.5vw,44px);font-weight:400;line-height:1.2;color:var(--navy);margin-bottom:14px;}
+.tx-title em{font-style:italic;}
+.tx-desc{font-size:16px;color:var(--text-muted);line-height:1.7;}
+.tx-gallery{max-width:1280px;margin:0 auto;column-count:4;column-gap:16px;}
+.tx-thumb{display:block;width:100%;margin:0 0 16px;border-radius:12px;border:1px solid var(--border);background:white;box-shadow:0 2px 8px rgba(0,0,0,0.04);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;break-inside:avoid;}
+.tx-thumb:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+@media(max-width:1100px){.tx-gallery{column-count:3;}.tx-section{padding:60px 32px 80px;}}
+@media(max-width:700px){.tx-gallery{column-count:2;column-gap:10px;}.tx-thumb{margin-bottom:10px;}.tx-section{padding:48px 16px 60px;}}
+@media(max-width:420px){.tx-gallery{column-count:1;}}
+
+/* Lightbox */
+.tx-lightbox[hidden]{display:none !important;}
+.tx-lightbox{position:fixed;inset:0;background:rgba(15,21,32,0.94);z-index:1000;display:flex;align-items:center;justify-content:center;padding:40px 60px;animation:tx-fade 0.18s ease-out;}
+@keyframes tx-fade{from{opacity:0;}to{opacity:1;}}
+.tx-lb-img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 24px 64px rgba(0,0,0,0.6);}
+.tx-lb-close,.tx-lb-prev,.tx-lb-next{position:absolute;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;cursor:pointer;font-family:inherit;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s,transform 0.15s;}
+.tx-lb-close{top:20px;right:20px;width:44px;height:44px;font-size:26px;line-height:1;}
+.tx-lb-prev,.tx-lb-next{top:50%;transform:translateY(-50%);width:52px;height:52px;font-size:32px;line-height:1;}
+.tx-lb-prev{left:20px;}.tx-lb-next{right:20px;}
+.tx-lb-close:hover,.tx-lb-prev:hover,.tx-lb-next:hover{background:rgba(255,255,255,0.22);}
+.tx-lb-counter{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:white;font-size:13px;font-weight:600;padding:7px 16px;border-radius:100px;}
+@media(max-width:700px){.tx-lightbox{padding:20px 12px;}.tx-lb-close{top:12px;right:12px;}.tx-lb-prev{left:8px;width:40px;height:40px;font-size:24px;}.tx-lb-next{right:8px;width:40px;height:40px;font-size:24px;}}
 .rv-hint p{font-size:13px;color:var(--text-muted);line-height:1.5;margin:0;}
 @media(max-width:700px){.rv-hint{padding:10px 24px;}}
 
 .footer-social{display:flex;flex-direction:row;gap:8px;align-items:center;}
-.social-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.2s;}
+.social-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.82);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.2s;}
 .social-btn:hover{background:rgba(255,255,255,0.15);color:white;}
 footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;justify-content:space-between;}
 .footer-logo{font-family:'Cormorant Garamond',serif;font-size:18px;color:white;text-decoration:none;}
-.footer-copy{font-size:13px;color:rgba(255,255,255,0.3);}
+.footer-copy{font-size:13px;color:rgba(255,255,255,0.6);}
 @media(max-width:700px){
   nav{padding:0 20px;}.nav-links{display:none;}
   .page-header,.filters,.rv-grid{padding-left:24px;padding-right:24px;}
@@ -953,6 +980,26 @@ footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;just
     </div>
   </div>
 </div>
+
+<!-- ════ ГАЛЕРЕЯ СКРИНОВ ОТЗЫВОВ ════ -->
+<section class="tx-section">
+  <div class="tx-head">
+    <div class="tx-eyebrow">Скрины отзывов</div>
+    <h2 class="tx-title">Что писали участники <em>моих курсов</em></h2>
+    <p class="tx-desc">Сообщения из чатов, формы обратной связи, личные посты в соцсетях. Открывайте, читайте.</p>
+  </div>
+  <div class="tx-gallery" id="tx-gallery"></div>
+</section>
+
+<!-- Lightbox -->
+<div class="tx-lightbox" id="tx-lightbox" hidden>
+  <button class="tx-lb-close" id="tx-lb-close" aria-label="Закрыть">×</button>
+  <button class="tx-lb-prev" id="tx-lb-prev" aria-label="Назад">‹</button>
+  <button class="tx-lb-next" id="tx-lb-next" aria-label="Вперёд">›</button>
+  <img class="tx-lb-img" id="tx-lb-img" alt="" />
+  <div class="tx-lb-counter" id="tx-lb-counter"></div>
+</div>
+
 <footer>
   <a href="index.html" class="footer-logo">Алексей Ларин</a>
   <div class="footer-social">
@@ -965,6 +1012,53 @@ footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;just
   <div class="footer-copy">© 2026 Алексей Ларин</div>
 </footer>
 <script>
+// ════ Галерея скринов отзывов (lightbox) ════
+(async () => {
+  const gallery = document.getElementById('tx-gallery');
+  if (!gallery) return;
+  let images = [];
+  try {
+    const r = await fetch('/img/text-reviews/manifest.json', { cache: 'no-cache' });
+    if (r.ok) images = await r.json();
+  } catch {}
+  if (!images.length) { gallery.style.display = 'none'; return; }
+  // Сетим thumbnails (loading="lazy", без img.src — реальная загрузка по lazy)
+  gallery.innerHTML = images.map((src, i) =>
+    `<img class="tx-thumb" loading="lazy" decoding="async" data-i="${i}" src="${src}" alt="Отзыв ${i+1}">`
+  ).join('');
+
+  const lb = document.getElementById('tx-lightbox');
+  const lbImg = document.getElementById('tx-lb-img');
+  const lbCounter = document.getElementById('tx-lb-counter');
+  let current = 0;
+  const open = (i) => {
+    current = i;
+    lbImg.src = images[i];
+    lbCounter.textContent = `${i+1} / ${images.length}`;
+    lb.hidden = false;
+    document.body.style.overflow = 'hidden';
+  };
+  const close = () => { lb.hidden = true; document.body.style.overflow = ''; lbImg.src = ''; };
+  const prev = () => open((current - 1 + images.length) % images.length);
+  const next = () => open((current + 1) % images.length);
+
+  gallery.addEventListener('click', (e) => {
+    const t = e.target.closest('.tx-thumb');
+    if (!t) return;
+    open(parseInt(t.dataset.i, 10));
+  });
+  document.getElementById('tx-lb-close').addEventListener('click', close);
+  document.getElementById('tx-lb-prev').addEventListener('click', prev);
+  document.getElementById('tx-lb-next').addEventListener('click', next);
+  lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', (e) => {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') prev();
+    else if (e.key === 'ArrowRight') next();
+  });
+})();
+
 document.querySelectorAll('.rv-video').forEach(container => {
   const video = container.querySelector('video');
   const overlay = container.querySelector('.rv-play');

@@ -7,7 +7,7 @@ const user = (Astro.locals as any).user;
 const paid = Astro.url.searchParams.get('paid');
 ---
 <Base title="Мои курсы" user={user}>
-  <section class="container" style="padding:60px 0;">
+  <section class="container" style="padding:60px 16px;">
     {paid && <div class="alert ok">Оплата принята! Курс открыт ниже.</div>}
     <h1>Мои курсы</h1>
     <div class="grid grid-3" style="margin-top:18px;">

@@ -294,6 +294,53 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       history.replaceState({}, '', window.location.pathname);
       startCheckout(_autoTariff);
     }
+
+    // Видеоотзывы: клик по play-кнопке запускает видео, активное видео ставит
+    // на паузу остальные.
+    let _activeVresVideo = null;
+    document.querySelectorAll('[data-vres]').forEach((card) => {
+      const video = card.querySelector('video');
+      const btn = card.querySelector('.zs-vres-play');
+      if (!video || !btn) return;
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (_activeVresVideo && _activeVresVideo !== video) _activeVresVideo.pause();
+        _activeVresVideo = video;
+        video.play();
+      });
+      video.addEventListener('play',  () => { card.classList.add('is-playing'); _activeVresVideo = video; });
+      video.addEventListener('pause', () => card.classList.remove('is-playing'));
+      video.addEventListener('ended', () => card.classList.remove('is-playing'));
+    });
+
+    // Слайдер видеоотзывов: стрелки prev/next прокручивают ленту на ширину
+    // одной карточки плюс gap. На краях стрелки блокируются.
+    (() => {
+      const track = document.getElementById('zs-vres-track');
+      const prev  = document.getElementById('zs-vres-prev');
+      const next  = document.getElementById('zs-vres-next');
+      if (!track || !prev || !next) return;
+
+      const step = () => {
+        const card = track.querySelector('.zs-vres-card');
+        if (!card) return 320;
+        const styles = window.getComputedStyle(track);
+        const gap = parseFloat(styles.columnGap || styles.gap || '20');
+        return card.getBoundingClientRect().width + gap;
+      };
+
+      const updateButtons = () => {
+        const max = track.scrollWidth - track.clientWidth - 2;
+        prev.toggleAttribute('disabled', track.scrollLeft <= 1);
+        next.toggleAttribute('disabled', track.scrollLeft >= max);
+      };
+
+      prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+      next.addEventListener('click', () => track.scrollBy({ left:  step(), behavior: 'smooth' }));
+      track.addEventListener('scroll', updateButtons, { passive: true });
+      window.addEventListener('resize', updateButtons);
+      updateButtons();
+    })();
   </script>
   <style is:global>
     #zs-auth-modal {
