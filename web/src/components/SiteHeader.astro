@@ -20,7 +20,7 @@ const isSalyut = active === 'salyut';
     transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
   .site-nav-salyut:hover { background: var(--orange); color: white; text-decoration: none; }
-  .site-nav-salyut.is-active { background: rgba(232,101,42,0.10); color: var(--orange); cursor: default; pointer-events: none; }
+  .site-nav-salyut.is-active { background: rgba(232,101,42,0.10); color: var(--orange); }
   @media (max-width: 960px) { .site-nav-salyut { display: none; } }
 
   /* ─── Гамбургер-кнопка (только мобильная) ─────────────────────────── */
@@ -64,7 +64,7 @@ const isSalyut = active === 'salyut';
   }
   .smm-salyut::after { content: '→'; font-size: 18px; }
   .smm-salyut:hover { background: var(--orange-warm); }
-  .smm-salyut.is-active { background: rgba(232,101,42,0.15); color: var(--orange); pointer-events: none; }
+  .smm-salyut.is-active { background: rgba(232,101,42,0.15); color: var(--orange); }
   .smm-salyut.is-active::after { display: none; }
   .smm-link {
     display: flex; align-items: center; justify-content: space-between;
