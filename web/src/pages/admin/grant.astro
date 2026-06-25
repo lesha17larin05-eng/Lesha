@@ -5,7 +5,10 @@ import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/admin/courses', { cookie });
 const user = (Astro.locals as any).user;
-const courses = Array.isArray(data) ? data : [];
+// Бесплатные курсы (мягкий старт) выдавать через эту форму бессмысленно —
+// они открыты любому зарегистрированному. В админке оставляем только платные.
+const FREE_COURSES = new Set(['myagkiy-start']);
+const courses = (Array.isArray(data) ? data : []).filter((c: any) => !FREE_COURSES.has(c.slug));
 ---
 <Base title="Выдать доступ (админ)" user={user}>
   <AdminNav active="grant" />
