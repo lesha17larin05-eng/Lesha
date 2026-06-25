@@ -231,31 +231,31 @@ body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .about-cred { display: flex; align-items: center; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.9); }
 .cred-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
-/* PERCEPTIONS — до/после анкеты */
+/* PERCEPTIONS — компактные строки «до → после» */
 .perceptions { padding: 100px 80px; background: white; }
-.perc-head { max-width: 720px; margin-bottom: 56px; }
+.perc-head { max-width: 720px; margin-bottom: 48px; }
 .perc-head .section-desc { margin-bottom: 0; }
-.perc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-.perc-pair { background: var(--cream); border-radius: 20px; padding: 28px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
-.perc-pair--final { background: var(--gold-soft); border-color: var(--gold); }
-.perc-card { background: white; border-radius: 14px; padding: 22px 24px; border: 1px solid var(--border); }
-.perc-before { border-left: 3px solid var(--text-light); }
-.perc-after { border-left: 3px solid var(--orange); }
-.perc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
-.perc-after .perc-label { color: var(--orange); }
-.perc-text { font-size: 16px; color: var(--text); line-height: 1.7; margin-bottom: 12px; }
-.perc-text strong { color: var(--navy); font-weight: 700; }
-.perc-text em { font-style: italic; color: var(--navy); }
-.perc-author { font-size: 13px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.02em; }
-.perc-source { font-size: 12px; color: var(--text-light); text-align: center; margin-top: 6px; letter-spacing: 0.04em; font-style: italic; }
-.perc-arrow { text-align: center; font-size: 28px; color: var(--orange); line-height: 1; font-weight: 300; }
+.perc-rows { display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+.perc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border); }
+.perc-row:last-child { border-bottom: none; }
+.perc-cell { padding: 22px 28px; font-size: 16px; color: var(--text-mid); line-height: 1.6; }
+.perc-before { background: var(--cream); border-right: 1px solid var(--border-light); }
+.perc-after { background: white; }
+.perc-label { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 9px; border-radius: 100px; margin-right: 10px; vertical-align: 2px; }
+.perc-before .perc-label { background: rgba(0,0,0,0.06); color: var(--text-muted); }
+.perc-after .perc-label { background: var(--orange-soft); color: var(--orange); }
+.perc-score { display: inline-block; font-weight: 700; color: var(--orange); padding: 2px 10px; background: var(--orange-soft); border-radius: 100px; font-size: 13px; margin: 0 4px; letter-spacing: 0.02em; vertical-align: 2px; }
+.perc-row--final { background: var(--gold-soft); }
+.perc-row--final .perc-before { background: var(--gold-soft); border-right-color: rgba(244,195,97,0.4); }
+.perc-row--final .perc-after { background: var(--gold-soft); }
 @media(max-width:1100px){
-  .perc-grid { grid-template-columns: 1fr; }
+  .perc-row { grid-template-columns: 1fr; }
+  .perc-before { border-right: none; border-bottom: 1px solid var(--border-light); }
+  .perc-row--final .perc-before { border-bottom-color: rgba(244,195,97,0.4); }
 }
 @media(max-width:760px){
   .perceptions { padding: 60px 24px; }
-  .perc-pair { padding: 22px; }
-  .perc-card { padding: 18px 20px; }
+  .perc-cell { padding: 18px 22px; font-size: 15.5px; }
 }
 
 /* SAFETY */
@@ -885,59 +885,73 @@ a:hover { text-decoration: none; }
   <div class="perc-head">
     <div class="section-label">Анкеты до и после</div>
     <h2 class="section-title">До курса <em>и после</em> —<br>что писали родители</h2>
-    <p class="section-desc">До курса родители заполняют короткую анкету: рассказывают про ребёнка, его особенности и чего ждут от занятий. После курса — другую, про впечатления и результаты. Ниже — пары цитат: что писали до и что написали после. Имена не указываю — сохраняю личное.</p>
+    <p class="section-desc">Родители заполняют две анкеты: до курса — про ребёнка и ожидания, после курса — про впечатления. Ниже — пары цитат из одних и тех же семей. Имена не указываю.</p>
   </div>
-  <div class="perc-grid">
-    <div class="perc-pair">
-      <div class="perc-card perc-before">
-        <div class="perc-label">До курса</div>
-        <div class="perc-text">«Очень стеснительный, зажимается, боится показаться глупым и сделать что-то не так. К физкультуре относится нейтрально — без энтузиазма.»</div>
+  <div class="perc-rows">
+    <div class="perc-row">
+      <div class="perc-cell perc-before">
+        <span class="perc-label">До</span>
+        «Очень стеснительный, зажимается, боится сделать что-то не так. К физкультуре — нейтрально.»
       </div>
-      <div class="perc-arrow">↓</div>
-      <div class="perc-card perc-after">
-        <div class="perc-label">После курса</div>
-        <div class="perc-text">«Понравилось делать упражнения. Старается следить за спиной. Всё было ясно и понятно.» <strong>Курс — 10 из 10.</strong></div>
+      <div class="perc-cell perc-after">
+        <span class="perc-label">После</span>
+        «Понравилось делать упражнения. Старается следить за спиной.» <span class="perc-score">10 / 10</span>
       </div>
-      <div class="perc-source">Одна семья · смена 1, июнь 2026</div>
     </div>
 
-    <div class="perc-pair">
-      <div class="perc-card perc-before">
-        <div class="perc-label">До курса</div>
-        <div class="perc-text">«Был вывих надколенника с операцией на связках. Осталась хромота, перекос спины, ранее была сутулость. Не любит, когда заставляют.»</div>
+    <div class="perc-row">
+      <div class="perc-cell perc-before">
+        <span class="perc-label">До</span>
+        «После операции на связках осталась хромота и перекос спины. Не любит, когда заставляют.»
       </div>
-      <div class="perc-arrow">↓</div>
-      <div class="perc-card perc-after">
-        <div class="perc-label">После курса</div>
-        <div class="perc-text">«Понравились рассказы про строение позвоночника. Ребёнок заинтересовался — почему важно поддерживать состояние мышц спины и правильно поднимать тяжести.» <strong>10 из 10.</strong></div>
+      <div class="perc-cell perc-after">
+        <span class="perc-label">После</span>
+        «Заинтересовался строением позвоночника — почему важно поддерживать мышцы спины и правильно поднимать тяжести.» <span class="perc-score">10 / 10</span>
       </div>
-      <div class="perc-source">Одна семья · смена 1, июнь 2026</div>
     </div>
 
-    <div class="perc-pair">
-      <div class="perc-card perc-before">
-        <div class="perc-label">До курса</div>
-        <div class="perc-text">«Не любит спорт, могут быть сопротивления. Хочется, чтобы запомнила упражнения и выполняла дальше самостоятельно, не сутулилась.»</div>
+    <div class="perc-row">
+      <div class="perc-cell perc-before">
+        <span class="perc-label">До</span>
+        «Сколиоз 2 степени. Активный, любит футбол. Боюсь, что на занятиях будет скучно.»
       </div>
-      <div class="perc-arrow">↓</div>
-      <div class="perc-card perc-after">
-        <div class="perc-label">После курса</div>
-        <div class="perc-text">«Понравились упражнения, информация о спине была новой и интересной, музыка на занятиях тоже понравилась. Ребёнок рассказывал о теоретическом материале, новые термины. Смогли продемонстрировать упражнения, обещали делать зарядку. <em>С первого занятия понравилось.</em>»</div>
+      <div class="perc-cell perc-after">
+        <span class="perc-label">После</span>
+        «Стал больше следить за осанкой и правильно поднимать тяжести. Хороший добрый тренер.» <span class="perc-score">10 / 10</span>
       </div>
-      <div class="perc-source">Одна семья · смена 1, июнь 2026</div>
     </div>
 
-    <div class="perc-pair perc-pair--final">
-      <div class="perc-card perc-before">
-        <div class="perc-label">До курса</div>
-        <div class="perc-text">«Кифоз. К спорту — нейтрально. Хочется, чтобы стал крепче физически и уверенней в себе. Будьте, пожалуйста, чуть строже.»</div>
+    <div class="perc-row">
+      <div class="perc-cell perc-before">
+        <span class="perc-label">До</span>
+        «Не любит спорт, могут быть сопротивления. Хочется, чтобы запомнила упражнения и выполняла дальше сама.»
       </div>
-      <div class="perc-arrow">↓</div>
-      <div class="perc-card perc-after">
-        <div class="perc-label">После курса</div>
-        <div class="perc-text">«Уверенность в себе растёт.» <strong>10 из 10.</strong> «От всей души желаю успехов в любых начинаниях, обретения активных участников и сторонников. Спасибо!»</div>
+      <div class="perc-cell perc-after">
+        <span class="perc-label">После</span>
+        «Упражнения и информация о спине были новой и интересной. Рассказывала о теоретическом материале, обещали делать зарядку.» <span class="perc-score">10 / 10</span>
       </div>
-      <div class="perc-source">Одна семья · смена 1, июнь 2026</div>
+    </div>
+
+    <div class="perc-row">
+      <div class="perc-cell perc-before">
+        <span class="perc-label">До</span>
+        «Интересуется модельной сферой и танцами. Хочется, чтобы сама стремилась к правильной осанке.»
+      </div>
+      <div class="perc-cell perc-after">
+        <span class="perc-label">После</span>
+        «Лучше осанка — лопатки сведены, плечи расправлены. Был ВАУ-эффект, когда увидел листовку с фото инструкций упражнений, сделанную моей дочерью.» <span class="perc-score">10 / 10</span>
+      </div>
+    </div>
+
+    <div class="perc-row perc-row--final">
+      <div class="perc-cell perc-before">
+        <span class="perc-label">До</span>
+        «Кифоз. К спорту — нейтрально. Хочется, чтобы стал крепче и уверенней в себе.»
+      </div>
+      <div class="perc-cell perc-after">
+        <span class="perc-label">После</span>
+        «Уверенность в себе растёт.» <span class="perc-score">10 / 10</span> «От всей души желаю успехов. Спасибо!»
+      </div>
     </div>
   </div>
 </section>
