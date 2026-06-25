@@ -139,23 +139,21 @@ body { font-family: 'Manrope', sans-serif; background: var(--warm-white); color:
 .prog-session-head { display: flex; align-items: center; gap: 22px; padding: 22px 32px; background: linear-gradient(90deg, var(--navy) 0%, var(--navy-mid) 100%); }
 .prog-session-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: var(--gold); line-height: 1; flex-shrink: 0; min-width: 44px; }
 .prog-session-name { font-size: 21px; font-weight: 600; color: white; line-height: 1.3; }
-.prog-session-blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-.prog-session-block { padding: 26px 32px; }
-.prog-theory { background: var(--warm-white); border-right: 1px solid var(--border-light); }
-.prog-practice { background: white; }
-.prog-block-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 12px; }
-.prog-theory .prog-block-label { color: var(--orange); }
-.prog-practice .prog-block-label { color: var(--navy); }
-.prog-block-text { font-size: 16px; color: var(--text-mid); line-height: 1.65; }
+.prog-session-body { padding: 22px 32px 26px; display: flex; flex-direction: column; gap: 16px; }
+.prog-session-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.prog-tag { display: inline-flex; align-items: center; padding: 7px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+.prog-tag--theory { background: var(--orange-soft); color: var(--orange); }
+.prog-tag--practice { background: #e8eef9; color: var(--navy); }
+.prog-session-result { font-size: 16px; color: var(--text-mid); line-height: 1.6; }
+.prog-result-label { font-weight: 700; color: var(--navy); margin-right: 6px; }
 .prog-session--final .prog-session-head { background: linear-gradient(90deg, var(--orange) 0%, var(--orange-warm) 100%); }
 .prog-session--final .prog-session-num { color: white; }
+.prog-session--final .prog-result-label { color: var(--orange); }
 @media(max-width:760px){
   .prog-session-head { padding: 18px 22px; gap: 16px; }
   .prog-session-num { font-size: 26px; min-width: 36px; }
   .prog-session-name { font-size: 18px; }
-  .prog-session-blocks { grid-template-columns: 1fr; }
-  .prog-session-block { padding: 22px 22px; }
-  .prog-theory { border-right: none; border-bottom: 1px solid var(--border-light); }
+  .prog-session-body { padding: 18px 22px 22px; }
 }
 
 .prog-video-block { display: grid; grid-template-columns: 1fr 1.6fr; gap: 40px; align-items: center; background: white; border-radius: 22px; padding: 28px; border: 1px solid var(--border); margin-bottom: 56px; }
@@ -681,7 +679,7 @@ a:hover { text-decoration: none; }
   <div class="prog-head">
     <div class="section-label">Программа</div>
     <h2 class="section-title">5 занятий —<br>каждое <em>по 55 минут</em></h2>
-    <p class="section-desc">Каждое занятие построено одинаково: 15 минут — короткая теория по одной теме, 40 минут — практика. К концу курса у ребёнка складывается понимание, как заботиться о спине в обычной жизни.</p>
+    <p class="section-desc">5 занятий — 5 тем. Каждое занятие: 15 минут теории по теме и 40 минут практики. Ниже — темы и желаемый результат после каждого занятия.</p>
   </div>
 
   <div class="prog-sessions">
@@ -690,14 +688,14 @@ a:hover { text-decoration: none; }
         <div class="prog-session-num">01</div>
         <div class="prog-session-name">Основы строения позвоночника</div>
       </div>
-      <div class="prog-session-blocks">
-        <div class="prog-session-block prog-theory">
-          <div class="prog-block-label">15 минут · теория</div>
-          <div class="prog-block-text">Поговорим, как устроена спина и от чего зависит осанка. Чтобы ребёнок понимал, как работает его тело.</div>
+      <div class="prog-session-body">
+        <div class="prog-session-tags">
+          <span class="prog-tag prog-tag--theory">15 мин · теория</span>
+          <span class="prog-tag prog-tag--practice">40 мин · практика</span>
         </div>
-        <div class="prog-session-block prog-practice">
-          <div class="prog-block-label">40 минут · практика</div>
-          <div class="prog-block-text">Знакомимся с базовыми упражнениями курса.</div>
+        <div class="prog-session-result">
+          <span class="prog-result-label">Результат:</span>
+          ребёнок понимает, как устроена его спина и от чего зависит осанка.
         </div>
       </div>
     </div>
@@ -707,14 +705,14 @@ a:hover { text-decoration: none; }
         <div class="prog-session-num">02</div>
         <div class="prog-session-name">Как правильно поднимать тяжести</div>
       </div>
-      <div class="prog-session-blocks">
-        <div class="prog-session-block prog-theory">
-          <div class="prog-block-label">15 минут · теория</div>
-          <div class="prog-block-text">Разбираем, почему важна правильная техника и как её отличить от «как удобно». Это привычка, которая останется на всю жизнь.</div>
+      <div class="prog-session-body">
+        <div class="prog-session-tags">
+          <span class="prog-tag prog-tag--theory">15 мин · теория</span>
+          <span class="prog-tag prog-tag--practice">40 мин · практика</span>
         </div>
-        <div class="prog-session-block prog-practice">
-          <div class="prog-block-label">40 минут · практика</div>
-          <div class="prog-block-text">Пробуем поднимать на простых предметах — закрепляем технику телом.</div>
+        <div class="prog-session-result">
+          <span class="prog-result-label">Результат:</span>
+          ребёнок знает, как правильно поднимать тяжести.
         </div>
       </div>
     </div>
@@ -724,14 +722,14 @@ a:hover { text-decoration: none; }
         <div class="prog-session-num">03</div>
         <div class="prog-session-name">Как организовать стол для учёбы и работы</div>
       </div>
-      <div class="prog-session-blocks">
-        <div class="prog-session-block prog-theory">
-          <div class="prog-block-label">15 минут · теория</div>
-          <div class="prog-block-text">На что обращать внимание, чтобы спина не уставала на уроках и за компьютером.</div>
+      <div class="prog-session-body">
+        <div class="prog-session-tags">
+          <span class="prog-tag prog-tag--theory">15 мин · теория</span>
+          <span class="prog-tag prog-tag--practice">40 мин · практика</span>
         </div>
-        <div class="prog-session-block prog-practice">
-          <div class="prog-block-label">40 минут · практика</div>
-          <div class="prog-block-text">Упражнения, которые помогают расслабиться после долгого сидения.</div>
+        <div class="prog-session-result">
+          <span class="prog-result-label">Результат:</span>
+          ребёнок знает, как правильно сидеть, чтобы спина не уставала.
         </div>
       </div>
     </div>
@@ -741,14 +739,14 @@ a:hover { text-decoration: none; }
         <div class="prog-session-num">04</div>
         <div class="prog-session-name">Базовый комплекс упражнений для спины</div>
       </div>
-      <div class="prog-session-blocks">
-        <div class="prog-session-block prog-theory">
-          <div class="prog-block-label">15 минут · теория</div>
-          <div class="prog-block-text">Проходим каждое упражнение комплекса — зачем оно и как делать его правильно дома.</div>
+      <div class="prog-session-body">
+        <div class="prog-session-tags">
+          <span class="prog-tag prog-tag--theory">15 мин · теория</span>
+          <span class="prog-tag prog-tag--practice">40 мин · практика</span>
         </div>
-        <div class="prog-session-block prog-practice">
-          <div class="prog-block-label">40 минут · практика</div>
-          <div class="prog-block-text">Весь комплекс целиком. Я подхожу к каждому и поправляю.</div>
+        <div class="prog-session-result">
+          <span class="prog-result-label">Результат:</span>
+          ребёнок умеет делать базовый комплекс для спины самостоятельно.
         </div>
       </div>
     </div>
@@ -758,14 +756,14 @@ a:hover { text-decoration: none; }
         <div class="prog-session-num">05</div>
         <div class="prog-session-name">Экзамен и закрепление</div>
       </div>
-      <div class="prog-session-blocks">
-        <div class="prog-session-block prog-theory">
-          <div class="prog-block-label">15 минут · повторение</div>
-          <div class="prog-block-text">Собираем вместе всё, что прошли. У ребёнка остаётся понятная картина — что делать дома.</div>
+      <div class="prog-session-body">
+        <div class="prog-session-tags">
+          <span class="prog-tag prog-tag--theory">15 мин · повторение</span>
+          <span class="prog-tag prog-tag--practice">40 мин · экзамен</span>
         </div>
-        <div class="prog-session-block prog-practice">
-          <div class="prog-block-label">40 минут · экзамен и сертификат</div>
-          <div class="prog-block-text">Каждый ребёнок показывает комплекс. Фото правильного положения, именной сертификат, методички.</div>
+        <div class="prog-session-result">
+          <span class="prog-result-label">Результат:</span>
+          ребёнок уезжает с сертификатом и методичкой — может продолжать дома.
         </div>
       </div>
     </div>
