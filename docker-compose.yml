@@ -8,7 +8,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ${DATA_DIR:-./data}/pgdata:/var/lib/postgresql/data
-      - ${DATA_DIR:-./data}/backups:/backups
+      # Бэкапы делает хостовый cron через `docker compose exec postgres pg_dump`,
+      # см. /root/bin/pg-backup.sh. Отдельный volume для них не нужен.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s

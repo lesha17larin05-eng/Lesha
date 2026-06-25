@@ -6,7 +6,7 @@ const { data: courses } = await apiJson<any[]>('/api/me/courses', { cookie });
 const user = (Astro.locals as any).user;
 ---
 <Base title="Личный кабинет" user={user}>
-  <section class="container" style="padding:60px 0;">
+  <section class="container" style="padding:60px 16px;">
     <h1>Здравствуйте, {user?.name || user?.email}</h1>
     {!user?.email_verified && <div class="alert">Подтвердите email — иначе оплата платных курсов недоступна.</div>}
     <h2 style="margin-top:30px;">Мои курсы</h2>

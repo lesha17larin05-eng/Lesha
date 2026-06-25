@@ -1,0 +1,82 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Установка пароля">
+  <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
+    <h1>Установите пароль</h1>
+    <p style="color:#555; margin-bottom:24px;">
+      Придумайте пароль для входа в личный кабинет. Минимум 8 символов.
+    </p>
+    <form id="f" class="form">
+      <div>
+        <label class="label">Новый пароль</label>
+        <input class="input" name="password" type="password" minlength="8" required autocomplete="new-password" />
+      </div>
+      <div>
+        <label class="label">Повторите пароль</label>
+        <input class="input" name="password2" type="password" minlength="8" required autocomplete="new-password" />
+      </div>
+      <button class="btn" type="submit" id="submit-btn">Сохранить пароль</button>
+      <div id="msg" hidden></div>
+    </form>
+    <p style="margin-top:20px; font-size:14px; color:#777;">
+      Уже знаете пароль? <a href="/auth/login">Войти</a>
+    </p>
+  </section>
+
+  <script>
+    const f = document.getElementById('f');
+    const m = document.getElementById('msg');
+    const btn = document.getElementById('submit-btn');
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+      m.className = 'alert err';
+      m.textContent = 'Ссылка некорректна — нет токена. Запросите новую через «Забыли пароль?».';
+      m.hidden = false;
+      btn.disabled = true;
+    }
+
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(f);
+      const p1 = String(fd.get('password') || '');
+      const p2 = String(fd.get('password2') || '');
+      if (p1.length < 8) {
+        m.className = 'alert err'; m.textContent = 'Пароль должен быть минимум 8 символов.'; m.hidden = false;
+        return;
+      }
+      if (p1 !== p2) {
+        m.className = 'alert err'; m.textContent = 'Пароли не совпадают.'; m.hidden = false;
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Сохраняем…';
+      try {
+        const r = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ Token: token, Password: p1 }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok) {
+          m.className = 'alert ok';
+          m.innerHTML = 'Пароль установлен. Сейчас перейдём в личный кабинет…';
+          m.hidden = false;
+          setTimeout(() => { window.location.href = '/cabinet'; }, 1500);
+          return;
+        }
+        let msg = 'Не удалось сохранить пароль.';
+        if (j.error === 'weak_password') msg = 'Пароль слишком слабый. Минимум 8 символов.';
+        else if (j.error === 'invalid_token') msg = 'Ссылка истекла или уже использована. Запросите новую через «Забыли пароль?».';
+        m.className = 'alert err'; m.textContent = msg; m.hidden = false;
+        btn.disabled = false; btn.textContent = 'Сохранить пароль';
+      } catch (err) {
+        m.className = 'alert err'; m.textContent = 'Ошибка сети. Попробуйте ещё раз.'; m.hidden = false;
+        btn.disabled = false; btn.textContent = 'Сохранить пароль';
+      }
+    });
+  </script>
+</Base>

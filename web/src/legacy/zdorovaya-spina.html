@@ -73,12 +73,12 @@ nav.top-nav {
 }
 .hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
 .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
-.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.eyebrow-text { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.82); }
 .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; line-height: 1.08; color: white; margin-bottom: 14px; letter-spacing: -0.01em; }
 .hero h1 em { font-style: italic; color: #8bb8f0; }
-.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.45); margin-bottom: 32px; line-height: 1.5; }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; font-style: italic; color: rgba(255,255,255,0.78); margin-bottom: 32px; line-height: 1.5; }
 .hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
-.hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.75); }
+.hero-promise p { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,0.92); }
 .hero-promise strong { color: white; font-weight: 600; }
 .hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
 .btn-hero {
@@ -88,11 +88,11 @@ nav.top-nav {
   transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
 }
 .btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
-.hero-safety { font-size: 15px; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 6px; }
-.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.65); }
+.hero-safety { font-size: 15px; color: rgba(255,255,255,0.82); display: flex; align-items: center; gap: 6px; }
+.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.9); }
 .hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
 .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
-.stat-label { font-size: 14px; color: rgba(255,255,255,0.45); margin-top: 4px; display: block; }
+.stat-label { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 4px; display: block; }
 
 .hero-right { background: var(--cream); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; overflow: hidden; }
 .hero-photo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 500px; }
@@ -132,11 +132,11 @@ nav.top-nav {
 .story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
 .story-content .section-label { color: #7ab0f0; }
 .story-content .section-title { color: white; }
-.story-pull { background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0; font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.75); line-height: 1.6; }
-.story-text { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.85; margin-bottom: 16px; }
+.story-pull { background: rgba(255,255,255,0.08); border-left: 3px solid var(--orange); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0; font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; font-weight: 400; color: white; line-height: 1.6; }
+.story-text { font-size: 16px; color: rgba(255,255,255,0.92); line-height: 1.85; margin-bottom: 16px; }
 .creds { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
-.cred { display: flex; align-items: center; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.5); }
-.cred-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.cred { display: flex; align-items: center; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.88); }
+.cred-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 /* ===== PROGRAM ===== */
 .program { padding: 100px 80px; background: var(--cream); }
@@ -183,27 +183,104 @@ nav.top-nav {
 .btn-outline { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--navy); color: var(--navy); padding: 15px 32px; border-radius: 100px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s; background: transparent; cursor: pointer; font-family: 'Manrope', sans-serif; }
 .btn-outline:hover { background: var(--navy); color: white; }
 
+/* Видеоотзывы — горизонтальный слайдер */
+.zs-vres-wrap { position: relative; margin-bottom: 40px; }
+.zs-vres-track {
+  display: flex; gap: 20px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 4px 80px 16px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.zs-vres-track::-webkit-scrollbar { display: none; }
+.zs-vres-card {
+  flex: 0 0 280px; scroll-snap-align: start;
+  display: flex; flex-direction: column;
+  background: white; border-radius: 20px; border: 1px solid var(--border);
+  overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+}
+.zs-vres-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+.zs-vres-video { position: relative; aspect-ratio: 9/16; background: #000; overflow: hidden; }
+.zs-vres-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.zs-vres-play {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.18);
+  transition: background 0.2s, opacity 0.2s;
+  border: none; padding: 0; cursor: pointer;
+}
+.zs-vres-play svg { width: 56px; height: 56px; filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)); transition: transform 0.2s; }
+@media (hover: hover) {
+  .zs-vres-play:hover { background: rgba(0,0,0,0.08); }
+  .zs-vres-play:hover svg { transform: scale(1.08); }
+}
+.zs-vres-card.is-playing .zs-vres-play { opacity: 0; pointer-events: none; }
+.zs-vres-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.zs-vres-name { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+.zs-vres-result { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; flex: 1; }
+.zs-vres-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.zs-vres-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 100px;
+  font-size: 12px; font-weight: 600; color: white;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.zs-vres-link--vk { background: #0077ff; }
+.zs-vres-link--yt { background: #ff0000; }
+@media (hover: hover) {
+  .zs-vres-link:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+}
+.zs-vres-link svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* Кнопки */
+.zs-vres-arrow {
+  position: absolute; top: calc(50% - 28px); transform: translateY(-50%);
+  width: 48px; height: 48px; border-radius: 50%;
+  background: white; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 2;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transition: background 0.2s, transform 0.15s, opacity 0.2s;
+}
+.zs-vres-arrow:hover { background: var(--navy); }
+.zs-vres-arrow:hover svg { stroke: white; }
+.zs-vres-arrow svg { width: 20px; height: 20px; stroke: var(--navy); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+.zs-vres-arrow--prev { left: 20px; }
+.zs-vres-arrow--next { right: 20px; }
+.zs-vres-arrow[disabled] { opacity: 0.35; cursor: default; pointer-events: none; }
+
+@media (max-width: 720px) {
+  .zs-vres-track { padding: 4px 16px 16px; }
+  .zs-vres-card { flex-basis: 240px; }
+  .zs-vres-arrow { display: none; }
+}
+.zs-vres-body { padding: 20px 22px; }
+.zs-vres-name { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.zs-vres-result { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
 /* ===== TARIFFS ===== */
 .tariffs { padding: 100px 80px; background: var(--navy); position: relative; }
 .tariffs .section-label { color: #7ab0f0; }
 .tariffs .section-title { color: white; }
-.tariffs .section-desc { color: rgba(255,255,255,0.5); }
+.tariffs .section-desc { color: rgba(255,255,255,0.85); }
 .tariff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
 .tariff-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; position: relative; transition: transform 0.2s, border-color 0.2s; }
 .tariff-card:hover { transform: translateY(-3px); }
 .tariff-card.featured { background: rgba(255,255,255,0.07); border: 1.5px solid var(--orange); }
 .tariff-badge { position: absolute; top: -14px; left: 40px; background: var(--orange); color: white; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; }
-.tariff-name { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.tariff-name { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.82); margin-bottom: 14px; }
 .tariff-price { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 400; color: white; line-height: 1; margin-bottom: 6px; }
-.tariff-price small { font-size: 18px; color: rgba(255,255,255,0.4); margin-left: 4px; font-family: 'Manrope', sans-serif; }
-.tariff-desc { font-size: 15px; color: rgba(255,255,255,0.55); margin-bottom: 28px; line-height: 1.65; }
+.tariff-price small { font-size: 18px; color: rgba(255,255,255,0.7); margin-left: 4px; font-family: 'Manrope', sans-serif; }
+.tariff-desc { font-size: 15px; color: rgba(255,255,255,0.85); margin-bottom: 28px; line-height: 1.65; }
 .tariff-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
-.tariff-feature { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.55; }
+.tariff-feature { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: rgba(255,255,255,0.9); line-height: 1.55; }
 .tf-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
 .tariff-feature.bonus { color: rgba(255,255,255,0.95); font-weight: 500; }
 .tariff-feature.bonus .tf-check { color: var(--orange); }
 .tariff-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0 16px; }
-.tariff-divider-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: 4px 0 8px; }
+.tariff-divider-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.7); padding: 4px 0 8px; }
 .btn-tariff { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; padding: 16px 24px; border-radius: 100px; font-size: 15px; font-weight: 600; transition: all 0.2s; cursor: pointer; font-family: 'Manrope', sans-serif; width: 100%; }
 .btn-tariff:hover { background: rgba(255,255,255,0.18); }
 .btn-tariff.primary { background: var(--orange); border-color: var(--orange); box-shadow: 0 8px 32px rgba(232,101,42,0.3); }
@@ -252,9 +329,9 @@ nav.top-nav {
 footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
 .footer-links { display: flex; gap: 24px; }
-.footer-links a { font-size: 15px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+.footer-links a { font-size: 15px; color: rgba(255,255,255,0.82); text-decoration: none; transition: color 0.2s; }
 .footer-links a:hover { color: white; }
-.footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.6); }
 
 /* ===== EDIT BAR ===== */
 #edit-bar { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; gap: 10px; }
@@ -324,7 +401,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <h1>Здоровая спина<br><em>за 3 недели</em></h1>
     <p class="hero-sub">Курс, который я собрал из своего опыта восстановления</p>
     <div class="hero-promise">
-      <p><strong>Тело без утренней скованности, без тяжести в пояснице к вечеру и без страха «прихватит».</strong> 12 уроков на 3 недели. Привычка к движению, которая остаётся с вами после курса.</p>
+      <p>«Болит спина или не болит спина – это только показатель: есть у человека физическая культура в жизни или нет». <strong>12 уроков, 3 недели тренировок, доступ на год.</strong> Практиковать – это единственный путь.</p>
     </div>
     <div class="hero-cta">
       <a href="#tariffs" class="btn-hero">Смотреть тарифы →</a>
@@ -467,7 +544,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая тренировка (~28 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Лекция: грыжи и протрузии</div>
       </div>
-      <p class="pm-focus">Мостики, кошка‑корова, дыхание. Снимаем страх движения и разбираемся, чего из «диагнозов» правда стоит бояться.</p>
+      <p class="pm-focus">Мостики, кошка‑корова, дыхание. На лекции – почему боль в спине от грыж это только 5%, а остальное про малоподвижный образ жизни.</p>
     </div>
 
     <div class="program-card">
@@ -478,7 +555,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая тренировка (~34 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Лекция: осанка</div>
       </div>
-      <p class="pm-focus">Боковые мостики, длиннее удержания. Разбираемся, что осанка – не про лопатки, а про состояние, с которым вы заходите в день.</p>
+      <p class="pm-focus">Боковые мостики, длиннее удержания. На лекции – почему осанка это не про лопатки назад, а про лёгкое усилие на раскрытие грудной клетки.</p>
     </div>
 
     <div class="program-card">
@@ -489,7 +566,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая тренировка (~30 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Лекция: расслабление и стресс</div>
       </div>
-      <p class="pm-focus">Закрепляем технику и сознательность движений. Учимся выходить из стресса через тело – а не накапливать его в плечах и пояснице.</p>
+      <p class="pm-focus">Закрепляем технику. На лекции – про эволюционную реакцию стресса, когда плечи закрывают шею, и как из этого состояния выходить.</p>
     </div>
 
     <div class="program-card final-card">
@@ -499,7 +576,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Бонус‑аудио: практика расслабления (~30 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Финал: что дальше – путь после курса</div>
       </div>
-      <p class="pm-focus">Аудио‑нидру слушать в кровати, в дороге, в обед – где угодно. И короткий урок, как продолжать заниматься, чтобы спина оставалась здоровой.</p>
+      <p class="pm-focus">Аудио‑нидру слушать в кровати, в дороге, в обед. И короткий итог: «Три недели тренируемся, четвёртая – отдых. И так три цикла, потом месяц отдых».</p>
     </div>
 
   </div>
@@ -530,8 +607,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <div class="inc-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       </div>
-      <h3>11 видео‑уроков</h3>
-      <p>Основные тренировки, короткие практики и три лекции – про грыжи, осанку и расслабление.</p>
+      <h3>12 уроков в 5 модулях</h3>
+      <p>Основные тренировки, короткие практики и три лекции – про грыжи, осанку и расслабление. Плюс вводный урок и финал.</p>
     </div>
     <div class="inc-card">
       <div class="inc-icon">
@@ -562,6 +639,35 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="section-label">Истории клиентов</div>
   <h2 class="section-title">Что говорят те, кто<br><em>работал со мной</em></h2>
   <p class="section-desc">Эти истории – из моих программ за 8 лет. У каждого свой запрос, свой темп, свой результат. Курс – это структурированная версия того, что им помогло.</p>
+
+  <div class="zs-vres-wrap" id="zs-vres-wrap">
+    <button type="button" class="zs-vres-arrow zs-vres-arrow--prev" id="zs-vres-prev" aria-label="Назад"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="zs-vres-track" id="zs-vres-track">
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/4.mp4" poster="/videos/thumbs/4.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Яна</div><div class="zs-vres-result">Протрузии ушли по МРТ, перекос таза уменьшился</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239382" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/_9ggbdaKaTQ" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/32.mp4" poster="/videos/thumbs/32.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Кристина</div><div class="zs-vres-result">Прошла 100% курса, поясница перестала болеть</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239366" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/pMWlF3AKlCM" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/9.mp4" poster="/videos/thumbs/9.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Анастасия</div><div class="zs-vres-result">Перестали болеть спина, поясница, ноги, голова, шея и плечи</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239417" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/_ouahlnjFgs" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/3.mp4" poster="/videos/thumbs/3.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Давидбек</div><div class="zs-vres-result">Спина перестала болеть</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/clip-141544391_456239415" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/culsTHJowA0" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/2.mp4" poster="/videos/thumbs/2.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Анастасия</div><div class="zs-vres-result">Прострелы ушли после первой же тренировки, появилась лёгкость</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239346" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/mbTC3RtPXNg" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/7.mp4" poster="/videos/thumbs/7.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Ольга</div><div class="zs-vres-result">Боль ушла на 1–2 неделе, энергии прибавилось</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239377" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/4156C0_-kOs" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/34.mp4" poster="/videos/thumbs/34.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Яна</div><div class="zs-vres-result">Боль в пояснице ушла, семья тренируется вместе</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239381" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/AGQ22MDg3Fk" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/15.mp4" poster="/videos/thumbs/15.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Яна</div><div class="zs-vres-result">Боли при сколиозе уменьшились, появилась уверенность</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239383" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/xiCROIKUIfs" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/10.mp4" poster="/videos/thumbs/10.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Елена</div><div class="zs-vres-result">Ушла скованность в шее и плечах</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239361" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/h0-uqHjnDNw" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/33.mp4" poster="/videos/thumbs/33.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Анна</div><div class="zs-vres-result">Мама с малышом: боли в спине уменьшились</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239348" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/M8UzPB7zUqI" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/43.mp4" poster="/videos/thumbs/43.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Рузана</div><div class="zs-vres-result">Страх после переломов прошёл, начала доверять телу</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/clip-141544391_456239419" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/bukmUUNi5dU" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/42.mp4" poster="/videos/thumbs/42.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Татьяна</div><div class="zs-vres-result">Комплекс подошёл при кифозе, сколиозе и переломах</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/clip-141544391_456239409" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/z6A-9dwStO8" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/52.mp4" poster="/videos/thumbs/52.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Сергей</div><div class="zs-vres-result">Почувствовал улучшение после травмы через системную работу</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239435" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/b5yWpxbqWuc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/17.mp4" poster="/videos/thumbs/17.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Марина</div><div class="zs-vres-result">Стала вставать без опоры, спина стала гибче</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239368" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/EBFGWtc0Xko" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/44.mp4" poster="/videos/thumbs/44.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Ирина</div><div class="zs-vres-result">При протрузиях тело стало ощущаться целостно</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239364" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/LlbJzjOBvHE" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/64.mp4" poster="/videos/thumbs/64.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Анна</div><div class="zs-vres-result">Встроила спорт в жизнь, ушли зажимы в плечах и спине</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239528" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/ZzKbTRkWV7E" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/36.mp4" poster="/videos/thumbs/36.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Алёна</div><div class="zs-vres-result">Позвоночник «кайфанул» уже после первой тренировки</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/clip-141544391_456239407" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/2oMgQ4SE1eo" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/59.mp4" poster="/videos/thumbs/59.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Кирилл</div><div class="zs-vres-result">Начал системно работать со спиной</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239365" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/6hDYyPu-UeI" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/6.mp4" poster="/videos/thumbs/6.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Марина</div><div class="zs-vres-result">Ушли боли в шее и ступне</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239369" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/OucZY4tSmso" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/5.mp4" poster="/videos/thumbs/5.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Диля</div><div class="zs-vres-result">58 лет: боли в суставах уменьшились</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239355" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtube.com/shorts/4h9ImOWh9Aw" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+      <div class="zs-vres-card" data-vres><div class="zs-vres-video"><video src="/videos/40.mp4" poster="/videos/thumbs/40.jpg" playsinline preload="none" controls></video><button type="button" class="zs-vres-play" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></button></div><div class="zs-vres-body"><div class="zs-vres-name">Ксения</div><div class="zs-vres-result">Ушли боли в тазобедренных суставах</div><div class="zs-vres-links"><a class="zs-vres-link zs-vres-link--vk" href="https://vkvideo.ru/video-141544391_456239367" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg> ВКонтакте</a><a class="zs-vres-link zs-vres-link--yt" href="https://youtu.be/CL1SAFuUKzY" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg> YouTube</a></div></div></div>
+    </div>
+    <button type="button" class="zs-vres-arrow zs-vres-arrow--next" id="zs-vres-next" aria-label="Вперёд"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></button>
+  </div>
+
   <div class="results-grid">
 
     <div class="result-card">

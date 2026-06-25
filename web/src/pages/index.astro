@@ -21,11 +21,11 @@ const servicesGroup = [
   },
   {
     href: '/coaching',
-    image: '/img/IMG_3979.jpg',
-    image2x: '/img/IMG_3979@2x.jpg',
-    imageWebp: '/img/IMG_3979.webp',
-    imageWebp2x: '/img/IMG_3979@2x.webp',
-    imgPos: 'center 18%',
+    image: '/img/IMG_4035.jpg',
+    image2x: '/img/IMG_4035@2x.jpg',
+    imageWebp: '/img/IMG_4035.webp',
+    imageWebp2x: '/img/IMG_4035@2x.webp',
+    imgPos: 'center 30%',
     eyebrow: 'Личное ведение',
     title: 'Перемены в теле и самочувствии за три месяца',
     desc: 'Персональный план и тренировки. Постоянная поддержка между ними. Двигаемся в своём ритме, без жёстких нагрузок.',
@@ -36,11 +36,11 @@ const servicesGroup = [
 const coursesGroup = [
   {
     href: '/course',
-    image: '/img/IMG_4046.jpg',
-    image2x: '/img/IMG_4046@2x.jpg',
-    imageWebp: '/img/IMG_4046.webp',
-    imageWebp2x: '/img/IMG_4046@2x.webp',
-    imgPos: 'center 25%',
+    image: '/img/IMG_4002.jpg',
+    image2x: '/img/IMG_4002@2x.jpg',
+    imageWebp: '/img/IMG_4002.webp',
+    imageWebp2x: '/img/IMG_4002@2x.webp',
+    imgPos: '60% 30%',
     eyebrow: 'Бесплатный курс',
     title: 'Снимаете напряжение и учитесь слышать тело',
     desc: '8 видеоуроков: суставная гимнастика, дыхание, медитация. Каждый отдельный — начните с того, что сейчас важно.',
@@ -48,25 +48,32 @@ const coursesGroup = [
   },
   {
     href: '/courses/zdorovaya-spina',
-    image: '/img/spina/hero.jpg',
-    image2x: '/img/spina/hero@2x.jpg',
-    imageWebp: '/img/spina/hero.webp',
-    imageWebp2x: '/img/spina/hero@2x.webp',
-    imgPos: 'center 25%',
+    image: '/img/IMG_4029.jpg',
+    image2x: '/img/IMG_4029@2x.jpg',
+    imageWebp: '/img/IMG_4029.webp',
+    imageWebp2x: '/img/IMG_4029@2x.webp',
+    imgPos: '70% 25%',
     eyebrow: 'Курс «Здоровая спина»',
     title: 'Сильная и подвижная спина без боли и зажимов',
-    desc: '11 уроков по 20–40 минут: теория, практика, разборы. Проходите сами или с поддержкой автора в Телеграме.',
+    desc: '12 уроков за 3 недели: тренировки, лекции и аудио-практика. Проходите сами или с поддержкой автора в Телеграме.',
     cta: 'Посмотреть программу',
   },
 ];
 
 const pageStyles = `
 .home-hero {
-  position: relative; padding: 120px 80px 100px;
+  position: relative;
   background: var(--navy);
   overflow: hidden;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;
   min-height: calc(100vh - 64px);
+}
+.home-hero-grid {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 64px; align-items: center;
+  /* На больших мониторах не даём контенту растянуться шире 1280px — иначе
+     текст слева и фото справа разлетаются по краям и центр пустеет. */
+  max-width: 1280px; margin: 0 auto; padding: 120px 80px 100px;
 }
 .home-hero-left { display: flex; flex-direction: column; }
 .home-hero::before {
@@ -83,7 +90,7 @@ const pageStyles = `
 .home-eyebrow {
   display: inline-flex; align-items: center; gap: 10px; margin-bottom: 28px;
   font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.82);
 }
 .home-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
 .home-hero h1 {
@@ -94,14 +101,14 @@ const pageStyles = `
 .home-hero h1 em { font-style: italic; color: #8bb8f0; }
 .home-hero-sub {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 300; font-style: italic;
-  color: rgba(255,255,255,0.55); margin-bottom: 36px; line-height: 1.5; max-width: 540px;
+  font-size: 22px; font-weight: 400; font-style: italic;
+  color: rgba(255,255,255,0.92); margin-bottom: 36px; line-height: 1.5; max-width: 540px;
 }
 .home-hero-points {
   display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px;
 }
 .home-hero-point {
-  display: flex; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.78); line-height: 1.65;
+  display: flex; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.92); line-height: 1.65;
 }
 .home-hero-point::before {
   content: '·'; color: var(--orange); font-size: 24px; line-height: 1.2; flex-shrink: 0;
@@ -116,12 +123,12 @@ const pageStyles = `
 .btn-hero-primary:hover { background: var(--orange-warm); transform: translateY(-2px); }
 .btn-hero-ghost {
   display: inline-flex; align-items: center; gap: 8px;
-  color: rgba(255,255,255,0.65); text-decoration: none;
+  color: rgba(255,255,255,0.9); text-decoration: none;
   font-size: 15px; font-weight: 500;
   border-bottom: 1px solid rgba(255,255,255,0.18); padding-bottom: 4px;
   transition: color 0.2s, border-color 0.2s;
 }
-.btn-hero-ghost:hover { color: white; border-bottom-color: rgba(255,255,255,0.5); }
+.btn-hero-ghost:hover { color: white; border-bottom-color: rgba(255,255,255,0.82); }
 
 .home-hero-photo {
   position: relative; z-index: 1;
@@ -292,11 +299,10 @@ const pageStyles = `
 /* MOBILE */
 @media (max-width: 900px) {
   /* hero на мобиле — центрируем контент, как на /coaching и других страницах */
-  .home-hero {
+  .home-hero-grid {
     grid-template-columns: 1fr;
     padding: 100px 24px 60px;
     gap: 40px;
-    min-height: calc(100vh - 64px);
     align-items: center;
   }
   .home-hero-left { justify-content: center; }
@@ -335,25 +341,27 @@ const pageStyles = `
 >
   <!-- HERO -->
   <section class="home-hero">
-    <div class="home-hero-left">
-      <div class="home-eyebrow">Тренер по развитию здоровья · с 2017 года</div>
-      <h1>Алексей <em>Ларин</em></h1>
-      <p class="home-hero-sub">Помогаю мягко вернуться к движению — без изнурительных диет и сложных программ.</p>
-      <div class="home-hero-points">
-        <div class="home-hero-point">Работаю онлайн с людьми из разных стран и очно — в Москве.</div>
-        <div class="home-hero-point">Магистр с отличием Российского университета спорта. 8000+ человек через проекты.</div>
-        <div class="home-hero-point">Подход — внимательный к телу, без насилия над собой.</div>
+    <div class="home-hero-grid">
+      <div class="home-hero-left">
+        <div class="home-eyebrow">Тренер по развитию здоровья · с 2017 года</div>
+        <h1>Алексей <em>Ларин</em></h1>
+        <p class="home-hero-sub">Помогаю мягко вернуться к движению — без изнурительных диет и сложных программ.</p>
+        <div class="home-hero-points">
+          <div class="home-hero-point">Работаю онлайн с людьми из разных стран и очно — в Москве.</div>
+          <div class="home-hero-point">Магистр с отличием Российского университета спорта. 8000+ человек через проекты.</div>
+          <div class="home-hero-point">Подход — внимательный к телу, без насилия над собой.</div>
+        </div>
+        <div class="home-hero-cta">
+          <a href="#services" class="btn-hero-primary">Подобрать формат →</a>
+          <a href="/course" class="btn-hero-ghost">Попробовать бесплатно</a>
+        </div>
       </div>
-      <div class="home-hero-cta">
-        <a href="#services" class="btn-hero-primary">Подобрать формат →</a>
-        <a href="/course" class="btn-hero-ghost">Попробовать бесплатно</a>
+      <div class="home-hero-photo">
+        <picture>
+          <source type="image/webp" srcset="/img/IMG_3979.webp 1x, /img/IMG_3979@2x.webp 2x" />
+          <img src="/img/IMG_3979.jpg" srcset="/img/IMG_3979.jpg 1x, /img/IMG_3979@2x.jpg 2x" alt="Алексей Ларин" loading="eager" fetchpriority="high" />
+        </picture>
       </div>
-    </div>
-    <div class="home-hero-photo">
-      <picture>
-        <source type="image/webp" srcset="/img/IMG_3979.webp 1x, /img/IMG_3979@2x.webp 2x" />
-        <img src="/img/IMG_3979.jpg" srcset="/img/IMG_3979.jpg 1x, /img/IMG_3979@2x.jpg 2x" alt="Алексей Ларин" loading="eager" fetchpriority="high" />
-      </picture>
     </div>
   </section>
 
