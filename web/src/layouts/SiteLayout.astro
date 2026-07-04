@@ -17,6 +17,9 @@ const siteUrl = 'https://leshalarin.ru';
 // (например, /courses/myagkiy-start указывает на /course).
 const canonicalPath = canonical || Astro.url.pathname;
 const canonicalUrl = siteUrl + canonicalPath;
+// Яндекс.Метрика: номер счётчика из env (runtime SSR, задаётся в .env → compose).
+// Пусто — счётчик не подключается, reachGoal превращается в no-op.
+const metrikaId = (typeof process !== 'undefined' && process.env.METRIKA_ID) || '';
 const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage;
 ---
 <!doctype html>
@@ -49,9 +52,10 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={absoluteOgImage} />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  {/* Self-hosted шрифты (в РФ Google Fonts медленный/нестабильный). Preload — два основных начертания. */}
+  <link rel="preload" href="/fonts/Manrope-400-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/CormorantGaramond-400-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/fonts/fonts.css" />
   <style is:global>
     /* Токены, шапка, футер, контейнер, базовая типографика и responsive —
        в ../styles/site.css (общий с Base.astro). Здесь — специфика публичного сайта. */
@@ -77,6 +81,27 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
     .btn-secondary:hover { background: var(--navy); color: white; }
   </style>
   {pageStyles && <style is:global set:html={pageStyles} />}
+
+  <script is:inline define:vars={{ metrikaId }}>
+    // Яндекс.Метрика + глобальный helper для целей.
+    // window.reachGoal('goal_name') безопасен и без счётчика (no-op).
+    window.__ymid = metrikaId || '';
+    window.reachGoal = function (goal) {
+      try { if (window.__ymid && window.ym) window.ym(Number(window.__ymid), 'reachGoal', goal); } catch (e) {}
+    };
+    if (metrikaId) {
+      (function (m, e, t, r, i, k, a) {
+        m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); };
+        m[i].l = 1 * new Date();
+        k = e.createElement(t); a = e.getElementsByTagName(t)[0];
+        k.async = 1; k.src = r; a.parentNode.insertBefore(k, a);
+      })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+      window.ym(Number(metrikaId), 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true });
+    }
+  </script>
+  {metrikaId && (
+    <noscript><div><img src={`https://mc.yandex.ru/watch/${metrikaId}`} style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  )}
 </head>
 <body>
   <SiteHeader active={active} user={user} />

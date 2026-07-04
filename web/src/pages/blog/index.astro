@@ -1,10 +1,14 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { apiJson } from '../../lib/api';
+import { coverPositionsCard as coverPositions } from '../../lib/covers';
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/articles?limit=100', { cookie });
 const articles = Array.isArray(data) ? data : [];
+
+// Фильтр по тегу из URL (?tag=...) — SSR, чтобы ссылку можно было пошарить.
+const activeTag = Astro.url.searchParams.get('tag') || '';
 
 const tagClasses: Record<string, string> = {
   'Начало пути':        'tag-start',
@@ -14,39 +18,11 @@ const tagClasses: Record<string, string> = {
   'Похудение':          'tag-weight',
 };
 
-const coverPositions: Record<string, string> = {
-  'kak-nachat-trenirovatsya':                  'center 25%',
-  'pochemu-brosaju-trenirovki':                'center 5%',
-  'zaryadka':                                  'center center',
-  'bolit-poyasnitsa-sidjachaja-rabota':        'center center',
-  'pochemu-net-energii':                       'center 30%',
-  'pochemu-ne-hudeu-hotja-treniruus':          'center 25%',
-  'kak-uluchshit-son':                         'center 30%',
-  'sustavnaja-gimnastika-dlja-nachinajuschih': 'center 25%',
-  'kak-uluchshit-osanku':                      'center 40%',
-  'kak-snizit-trevozhnost':                    'center 30%',
-  'istorija-pereloma-pozvonochnika':           'center 15%',
-  'kak-pravilno-podnimat-tyazhesti':           'center center',
-  'mpk-chto-eto-i-kak-uluchshit':             'center 20%',
-  'kak-sformirovat-privychku-trenirovatsya':   'center 25%',
-  'kak-nachat-begat':                          'center 50%',
-  'trenirovki-i-mentalnoe-zdorove':            'center 25%',
-  'kak-pitatsya-chtoby-pohudjet':              'center 20%',
-  'sotsialnoe-zdorove':                        'center 25%',
-  'princip-malenkih-shagov':                   'center 30%',
-  'uprazhnenija-ot-otekov':                    'center 65%',
-  'gimnastika-dlja-glaz':                      'center 25%',
-  'uprazhnenija-dlja-shei':                    'center 20%',
-  'uprazhnenija-pri-sidjachej-rabote':         'center center',
-  'kak-razvit-gibkost':                        'center 30%',
-  'kak-begat-zimoj':                           'center 30%',
-  'banja-i-zdorove':                           'center center',
-  'kak-nauchitsja-meditirovat':                'center center',
-  'akrojoga-chto-eto':                         'center center',
-  'obuchenie-novomu-navyku':                   'center 15%',
-  'dyhatelnye-tehniki':                        'center center',
-  'kak-trenirujet-detej':                      'center center',
-  'muzhskoe-zhenskoe-zdorove':                 'center center',
+const fmtDate = (iso?: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 const blogStyles = `
@@ -95,12 +71,10 @@ const blogStyles = `
   </div>
 
   <div class="blog-filters">
-    <button class="filter-btn active" data-filter="all">Все</button>
-    <button class="filter-btn" data-filter="Начало пути">Начало пути</button>
-    <button class="filter-btn" data-filter="Спина и суставы">Спина и суставы</button>
-    <button class="filter-btn" data-filter="Энергия">Энергия</button>
-    <button class="filter-btn" data-filter="Похудение">Похудение</button>
-    <button class="filter-btn" data-filter="Ментальное здоровье">Ментальное здоровье</button>
+    <button class={`filter-btn${!activeTag ? ' active' : ''}`} data-filter="all">Все</button>
+    {Object.keys(tagClasses).map(tag => (
+      <button class={`filter-btn${activeTag === tag ? ' active' : ''}`} data-filter={tag}>{tag}</button>
+    ))}
   </div>
 
   {articles.length === 0
@@ -109,7 +83,7 @@ const blogStyles = `
         {articles.map(a => {
           const tagClass = tagClasses[a.tag] ?? 'tag-start';
           return (
-            <a href={`/blog/${a.slug}`} class="article-card" data-tag={a.tag || ''}>
+            <a href={`/blog/${a.slug}`} class="article-card" data-tag={a.tag || ''} style={activeTag && a.tag !== activeTag ? 'display:none;' : ''}>
               <div class="card-img" style={a.cover_image_url ? `background-image:url(${a.cover_image_url});background-position:${coverPositions[a.slug] ?? 'center center'}` : ''}>
                 {!a.cover_image_url && <span>Фото к статье</span>}
               </div>
@@ -118,7 +92,7 @@ const blogStyles = `
                 <div class="card-title">{a.title}</div>
                 {a.excerpt && <p class="card-desc">{a.excerpt}</p>}
                 <div class="card-meta">
-                  <span>{a.reading_minutes ? `${a.reading_minutes} мин` : 'Читать'}</span>
+                  <span>{[fmtDate(a.published_at), a.reading_minutes ? `${a.reading_minutes} мин` : ''].filter(Boolean).join(' · ') || 'Читать'}</span>
                   <span class="card-read">Читать →</span>
                 </div>
               </div>
@@ -147,6 +121,11 @@ const blogStyles = `
         cards.forEach(card => {
           card.style.display = (filter === 'all' || card.dataset.tag === filter) ? '' : 'none';
         });
+        // Фильтр в URL — ссылку можно пошарить, SSR отрендерит уже отфильтрованный список
+        const url = new URL(location.href);
+        if (filter === 'all') url.searchParams.delete('tag');
+        else url.searchParams.set('tag', filter || '');
+        history.replaceState({}, '', url);
       });
     });
   </script>

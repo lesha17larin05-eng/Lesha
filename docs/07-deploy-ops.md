@@ -93,6 +93,7 @@ make deploy
 | `VIDEO_STORAGE_PATH`    | Путь внутри контейнера api.                        | `/var/videos`  |
 | `ADMIN_EMAIL/PASSWORD`  | Сидер создаст этого юзера с `role=admin`.          | `admin@leshalarin.ru / admin12345` |
 | `LEAD_NOTIFY_EMAIL` | Куда слать письма о новых заявках с форм сайта (default `les-larin@yandex.ru`) |
+| `METRIKA_ID` | Номер счётчика Яндекс.Метрики (пусто — аналитика выключена) |
 | `USER_EMAIL/PASSWORD`   | Сидер создаст обычного юзера с записью на free курс. | `user@leshalarin.ru / user12345` |
 | `CORS_ORIGIN`           | Origin для CORS. В проде — `https://leshalarin.ru`. | `http://localhost` |
 

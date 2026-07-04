@@ -250,6 +250,7 @@ const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
       });
       const data = await r.json().catch(() => ({}));
       if (r.ok && data.payment_url) {
+        window.reachGoal?.('checkout_start');
         window.location.href = data.payment_url;
         return;
       }

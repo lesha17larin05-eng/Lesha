@@ -140,3 +140,15 @@ h1, h2, h3 { overflow-wrap: break-word; }
   .site-main > .container,
   .site-main > section > .container { max-width: 1480px; margin-left: auto; margin-right: auto; }
 }
+
+/* ─── Доступность: уважаем настройку «уменьшить движение» ────────────
+   Отключает fadeUp/pulse/hover-трансформы на всех страницах (включая
+   legacy — их стили грузятся после, но !important здесь сильнее). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto !important; }
+}

@@ -73,14 +73,14 @@ web/src/
 - `--cream: #f8f5ef`, `--warm-white: #fdfaf5`
 - `--text: #1a1a1a`, `--text-mid: #444`, `--text-muted: #777`, `--text-light: #aaa`, `--border: #ece8e0`
 
-Шрифты публичного сайта: **Cormorant Garamond** (заголовки, italic-акценты) + **Manrope** (sans, основной).
+Шрифты публичного сайта: **Cormorant Garamond** (заголовки, italic-акценты) + **Manrope** (sans, основной). Self-hosted: woff2-файлы в `web/public/fonts/` + `fonts.css` (subsets cyrillic/latin), Google CDN не используется.
 
 В `Base.astro` (кабинет/админка):
 - `--navy: #1a2744`, `--navy-light: #243058`
 - `--orange: #e8652a`, `--orange-light: #f07840`
 - `--blue: #2b5fa8`, `--cream: #f9f7f3`, `--warm: #fefcf8`
 
-Шрифты: Manrope (sans, основной), Playfair Display (serif, заголовки) — подключены через `fonts.googleapis.com`.
+Шрифты: те же self-hosted Manrope + Cormorant Garamond из `web/public/fonts/`.
 
 Базовые классы: `.container`, `.btn / .btn.secondary`, `.card`, `.grid / .grid-3`, `.badge.{free,paid,owned}`, `.input`, `.form`, `.alert / .alert.ok`, `.progress`, `.muted`, `.lock` (затенение заблокированных уроков).
 
@@ -111,3 +111,14 @@ API-проверки на бэкенде дублируют — middleware фр�
 - `web/Dockerfile`: stage 1 — `npm install` + `npm run build` (Astro собирает SSR в `dist/`). Stage 2 — node:20-alpine + только `package.json` + `node_modules` + `dist/`.
 - Команда: `make web-build` (только web) или `make build` (api + web).
 - Запуск контейнера: `node ./dist/server/entry.mjs` слушает `0.0.0.0:4321`.
+
+## Аналитика (Яндекс.Метрика)
+
+Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/consultation), `quick_signup` (форма /course), `checkout_start` (переход к оплате «Здоровой спины»).
+
+## Блог: даты, похожие статьи, JSON-LD
+
+- Карточки и шапка статьи показывают дату публикации (`published_at`).
+- Фильтр тегов на /blog синхронизируется с `?tag=` (SSR рендерит уже отфильтрованный список — ссылку можно шарить).
+- В статье блок «Похожие статьи» (по тегу, добор свежими) и `BlogPosting` JSON-LD.
+- Позиции обложек — общий модуль `web/src/lib/covers.ts` (карточная и полноразмерная версии).
