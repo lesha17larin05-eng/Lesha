@@ -423,25 +423,49 @@ func TestQuickSignupCreatesAndAuthenticates(t *testing.T) {
 	if r.StatusCode != 201 {
 		t.Fatalf("quick-signup: %d %s", r.StatusCode, body)
 	}
-	if !strings.Contains(string(body), "\"created\":true") {
-		t.Fatalf("missing created flag: %s", body)
+	if !strings.Contains(string(body), "\"created\":true") || !strings.Contains(string(body), "\"verify_required\":true") {
+		t.Fatalf("missing created/verify_required flags: %s", body)
 	}
 	u, err := repo.GetUserByEmail(ctx, "quick@b.ru")
 	if err != nil {
 		t.Fatalf("user not created: %v", err)
 	}
-	if u.EmailVerifiedAt == nil {
-		t.Fatalf("email should be auto-verified")
+	// До подтверждения почты: email НЕ верифицирован, доступа к курсу нет,
+	// сессия не выдана (защита от опечаток в email и фейковых регистраций).
+	if u.EmailVerifiedAt != nil {
+		t.Fatalf("email must NOT be verified before clicking the link")
 	}
-	r, body = c.do("GET", "/api/me", nil)
+	if has, _ := repo.HasEnrollment(ctx, u.ID, freeID); has {
+		t.Fatalf("enrollment must NOT be granted before email verification")
+	}
+	if r, _ = c.do("GET", "/api/me", nil); r.StatusCode != 401 {
+		t.Fatalf("quick-signup must not authenticate, got /api/me = %d", r.StatusCode)
+	}
+
+	// Достаём verify-токен из dev-ссылки (AppEnv=test → verify_link_dev в ответе).
+	var qsResp struct {
+		VerifyLinkDev string `json:"verify_link_dev"`
+	}
+	if err := json.Unmarshal(body, &qsResp); err != nil || !strings.Contains(qsResp.VerifyLinkDev, "token=") {
+		t.Fatalf("verify_link_dev missing: %s", body)
+	}
+	token := qsResp.VerifyLinkDev[strings.Index(qsResp.VerifyLinkDev, "token=")+len("token="):]
+
+	// После verify: email подтверждён, выдан enrollment в published free курсы, юзер залогинен.
+	r, body = c.do("POST", "/api/auth/verify-email", map[string]any{"token": token})
 	if r.StatusCode != 200 {
-		t.Fatalf("me failed after quick-signup: %d %s", r.StatusCode, body)
+		t.Fatalf("verify-email: %d %s", r.StatusCode, body)
 	}
-	if !strings.Contains(string(body), "quick@b.ru") {
-		t.Fatalf("me missing email: %s", body)
+	u, _ = repo.GetUserByEmail(ctx, "quick@b.ru")
+	if u.EmailVerifiedAt == nil {
+		t.Fatalf("email should be verified after verify-email")
 	}
 	if has, _ := repo.HasEnrollment(ctx, u.ID, freeID); !has {
-		t.Fatalf("expected auto-enrollment in published free course")
+		t.Fatalf("expected enrollment in published free course after verify")
+	}
+	r, body = c.do("GET", "/api/me", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "quick@b.ru") {
+		t.Fatalf("me after verify: %d %s", r.StatusCode, body)
 	}
 	r, body = c.do("GET", "/api/me/courses", nil)
 	if !strings.Contains(string(body), "qs-free") || strings.Contains(string(body), "qs-paid") || strings.Contains(string(body), "qs-free-draft") {
