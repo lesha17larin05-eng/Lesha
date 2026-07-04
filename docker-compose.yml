@@ -61,6 +61,7 @@ services:
       VIDEO_TOKEN_TTL: ${VIDEO_TOKEN_TTL}
       VIDEO_STORAGE_PATH: ${VIDEO_STORAGE_PATH}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
+      LEAD_NOTIFY_EMAIL: ${LEAD_NOTIFY_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       USER_EMAIL: ${USER_EMAIL}
       USER_PASSWORD: ${USER_PASSWORD}
@@ -81,6 +82,8 @@ services:
       PORT: 4321
       API_URL_INTERNAL: http://api:8080
       PUBLIC_API_URL: /api
+      # Номер счётчика Яндекс.Метрики (пусто = аналитика выключена)
+      METRIKA_ID: ${METRIKA_ID:-}
     networks:
       - internal
 

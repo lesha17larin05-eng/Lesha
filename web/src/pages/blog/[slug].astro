@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { apiJson } from '../../lib/api';
+import { coverPositionsArticle, coverPositionsCard } from '../../lib/covers';
 
 const slug = Astro.params.slug;
 const cookie = Astro.request.headers.get('cookie') || '';
@@ -9,33 +10,34 @@ if (status !== 200 || !data) {
   return new Response('Not found', { status: 404 });
 }
 const a = data;
+const coverPos = coverPositionsArticle[a.slug] ?? 'center center';
 
-const coverPositions: Record<string, string> = {
-  'kak-nachat-trenirovatsya':                  'center 25%',
-  'pochemu-brosaju-trenirovki':                'center 15%',
-  'pochemu-net-energii':                       'center 30%',
-  'pochemu-ne-hudeu-hotja-treniruus':          'center 25%',
-  'kak-uluchshit-son':                         'center 30%',
-  'sustavnaja-gimnastika-dlja-nachinajuschih': 'center 25%',
-  'kak-uluchshit-osanku':                      'center 40%',
-  'kak-snizit-trevozhnost':                    'center 30%',
-  'istorija-pereloma-pozvonochnika':           'center 15%',
-  'mpk-chto-eto-i-kak-uluchshit':             'center 20%',
-  'kak-sformirovat-privychku-trenirovatsya':   'center 25%',
-  'kak-nachat-begat':                          'center 50%',
-  'trenirovki-i-mentalnoe-zdorove':            'center 25%',
-  'kak-pitatsya-chtoby-pohudjet':              'center 20%',
-  'sotsialnoe-zdorove':                        'center 25%',
-  'princip-malenkih-shagov':                   'center 30%',
-  'uprazhnenija-ot-otekov':                    'center 65%',
-  'uprazhnenija-dlja-shei':                    'center 20%',
-  'gimnastika-dlja-glaz':                      'center 25%',
-  'kak-razvit-gibkost':                        'center 30%',
-  'kak-begat-zimoj':                           'center 30%',
-  'obuchenie-novomu-navyku':                   'center 15%',
-  'muzhskoe-zhenskoe-zdorove':                 'center center',
+// Похожие статьи: тот же тег, кроме текущей; добираем свежими, если мало.
+const { data: allData } = await apiJson<any[]>('/api/articles?limit=100', { cookie });
+const all = Array.isArray(allData) ? allData : [];
+const sameTag = all.filter(x => x.slug !== a.slug && x.tag && x.tag === a.tag);
+const others = all.filter(x => x.slug !== a.slug && (!x.tag || x.tag !== a.tag));
+const related = [...sameTag, ...others].slice(0, 3);
+
+const fmtDate = (iso?: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 };
-const coverPos = coverPositions[a.slug] ?? 'center center';
+const published = fmtDate(a.published_at);
+
+// BlogPosting JSON-LD — rich snippets в Яндексе/Google
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: a.title,
+  ...(a.excerpt ? { description: a.excerpt } : {}),
+  ...(a.cover_image_url ? { image: 'https://leshalarin.ru' + a.cover_image_url } : {}),
+  ...(a.published_at ? { datePublished: a.published_at } : {}),
+  author: { '@type': 'Person', name: 'Алексей Ларин', url: 'https://leshalarin.ru/' },
+  mainEntityOfPage: `https://leshalarin.ru/blog/${a.slug}`,
+});
 
 const articleStyles = `
 .article-header { padding: 120px 80px 60px; background: var(--navy); position: relative; overflow: hidden; }
@@ -73,14 +75,29 @@ const articleStyles = `
 @media (hover: hover) { .tg-inline .tg-inline-btn:hover { background: #229ed9; transform: translateY(-1px); } }
 .tg-inline .tg-inline-btn:focus-visible { outline: 2px solid #2aabee; outline-offset: 3px; }
 @media (max-width: 700px) { .article-header { padding: 100px 24px 48px; } .article-cta-final { padding: 32px 24px; } .tg-inline { flex-direction: column; text-align: center; } .tg-inline .tg-inline-btn { width: 100%; justify-content: center; } }
+
+/* Похожие статьи */
+.related { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); }
+.related-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); margin-bottom: 20px; }
+.related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.related-card { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+@media (hover: hover) { .related-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.07); } }
+.related-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.related-img { width: 100%; aspect-ratio: 16/10; background: var(--cream) center/cover no-repeat; }
+.related-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.related-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--navy); line-height: 1.3; flex: 1; }
+.related-meta { font-size: 12px; color: var(--text-light); }
+@media (max-width: 700px) { .related-grid { grid-template-columns: 1fr; } }
 `;
 ---
-<SiteLayout title={`${a.title} — Алексей Ларин`} description={a.excerpt} active="blog" pageStyles={articleStyles}>
+<SiteLayout title={`${a.title} — Алексей Ларин`} description={a.excerpt} active="blog" pageStyles={articleStyles} ogImage={a.cover_image_url || undefined}>
+  <script type="application/ld+json" set:html={jsonLd} />
   <div class="article-header">
     {a.tag && <span class="article-tag">{a.tag}</span>}
     <h1 set:html={a.title} />
     <div class="article-meta">
       <span>Алексей Ларин</span>
+      {published ? <span>· {published}</span> : null}
       {a.reading_minutes ? <span>· {a.reading_minutes} мин чтения</span> : null}
     </div>
   </div>
@@ -88,6 +105,23 @@ const articleStyles = `
     <a href="/blog" class="back-link">← Все статьи</a>
     {a.cover_image_url && <img src={a.cover_image_url} alt={a.title} class="article-cover" loading="eager" style={`object-position:${coverPos}`} />}
     <Fragment set:html={a.content_html} />
+    {related.length > 0 && (
+      <div class="related">
+        <div class="related-title">Похожие статьи</div>
+        <div class="related-grid">
+          {related.map(r => (
+            <a href={`/blog/${r.slug}`} class="related-card">
+              <div class="related-img" style={r.cover_image_url ? `background-image:url(${r.cover_image_url});background-position:${coverPositionsCard[r.slug] ?? 'center center'}` : ''}></div>
+              <div class="related-body">
+                <div class="related-name">{r.title}</div>
+                <div class="related-meta">{[r.tag, r.reading_minutes ? `${r.reading_minutes} мин` : ''].filter(Boolean).join(' · ')}</div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
     <div class="article-cta-final">
       <p><strong>Хотите начать мягко — с поддержкой и конкретным планом?</strong><br/>Пройдите бесплатный курс — несколько уроков, которые помогут начать и не бросить.</p>
       <a href="/course">Получить курс бесплатно →</a>

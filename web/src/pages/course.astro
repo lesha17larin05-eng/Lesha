@@ -143,6 +143,7 @@ const authedStyles = user ? `
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {
+            window.reachGoal?.('quick_signup');
             // Письмо с ссылкой подтверждения и паролем уже улетело.
             // Перебрасываем на страницу-инструкцию.
             window.location.href = '/auth/check-email?email=' + encodeURIComponent(email);

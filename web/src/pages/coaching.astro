@@ -41,6 +41,7 @@ const { styles, body } = extractLegacy(rawHtml);
             }),
           });
           if (r.ok) {
+            (window as any).reachGoal?.('lead_submit');
             const box = document.createElement('div');
             box.className = 'lead-success';
             box.innerHTML = '<h3>Заявка отправлена</h3><p>Я отвечу в порядке очереди — как только вернусь к набору. Если вопрос срочный — напишите в Телеграм по кнопке ниже.</p>';
