@@ -58,7 +58,8 @@ const lessons = rawLessons.map((l: any, i: number) => {
   };
 });
 ---
-<SiteLayout title="Мягкий старт — бесплатный курс Алексея Ларина" active="course" padTop={false}>
+{/* canonical → /course: две страницы описывают один курс, лендинг /course — основной */}
+<SiteLayout title="Мягкий старт — бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 видеоуроков — суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="course" canonical="/course" padTop={false}>
   <style>
     /* ───── HERO ───── */
     .ms-hero {
@@ -405,7 +406,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
       text-decoration: none; display: block;
     }
     .ms-enroll-btn:hover, .ms-enroll-btn:focus-visible { background: var(--orange-warm); transform: translateY(-2px); outline: none; }
-    .ms-enroll-note { font-size: 14px; color: rgba(255,255,255,0.65); text-align: center; }
+    .ms-enroll-note { font-size: 14px; color: rgba(255,255,255,0.78); text-align: center; }
 
     /* ───── ENROLLED BANNER ───── */
     .ms-enrolled-banner {

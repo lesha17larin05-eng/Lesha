@@ -15,7 +15,7 @@ web/src/
       index.astro                 — список статей (fetch /api/articles, дизайн как в сайт/blog.html)
       [slug].astro                — статья (fetch /api/articles/{slug}, content_html через set:html)
     courses/
-      index.astro                 — каталог
+      index.astro                 — каталог (SiteLayout, маркетинговые карточки с фото/ценой/CTA)
       [slug].astro                — страница курса
       [slug]/lessons/[lesson].astro — урок (HLS-плеер, прогресс)
     cabinet/
@@ -41,7 +41,7 @@ web/src/
       forgot.astro
   layouts/
     Base.astro                    — кабинет/админ-layout (palette navy/orange, .container/.btn/.card)
-    SiteLayout.astro              — публичный layout сайта (Cormorant + Manrope, общая шапка + футер, поддержка pageStyles)
+    SiteLayout.astro              — публичный layout сайта (Cormorant + Manrope, общая шапка + футер, поддержка pageStyles; проп `canonical` переопределяет canonical-URL — используется на /courses/myagkiy-start → /course)
   components/
     SiteHeader.astro              — фиксированная навигация для публичных страниц; на ≤1080px ссылки скрываются и включается бургер-меню (6 пунктов + логотип + кнопка Салюта не влезают на планшетах)
     SiteFooter.astro              — футер с социальными иконками
@@ -55,6 +55,9 @@ web/src/
 ```
 
 ## Дизайн-система
+
+**Общий CSS:** дизайн-токены (`:root`), шапка `.site-nav`, футер `.site-footer`, `.container`, базовая типографика и универсальные responsive-правила вынесены в `web/src/styles/site.css` — его импортируют оба layout'а. В `SiteLayout.astro` и `Base.astro` остаётся только специфика (утилиты кабинета, `.btn-primary` публичного сайта и т.п.). Legacy-страницы несут свои копии `:root` — значения должны совпадать с site.css (сейчас `--text-light: #6e6e6e`).
+
 
 Публичные страницы (главная, блог, consultation, course, results) используют **`SiteLayout.astro`** + общие `SiteHeader`/`SiteFooter`. Внутренний кабинет/админка — **`Base.astro`** (минималистичная палитра, таблицы, формы).
 
