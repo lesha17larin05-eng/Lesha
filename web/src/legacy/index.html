@@ -17,7 +17,7 @@
   --text: #1a1a1a;
   --text-mid: #3a3a3a;
   --text-muted: #555;
-  --text-light: #7e7e7e;
+  --text-light: #6e6e6e;
   --border: #ece8e0;
   --border-light: #f2ede5;
 }
@@ -302,7 +302,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .fsw-num{font-size:36px; line-height:1; margin-bottom:4px; color:var(--orange); font-weight:500;}
   /* hero h1 на мобиле — не такой огромный, чтобы не делил слова и дефисы */
   .hero h1{font-size:30px; line-height:1.15;}
-  .hero-sub{font-size:17px;}
+  /* Cormorant weight 300 на мобиле читается плохо — поднимаем до 400 */
+  .hero-sub{font-size:17px; font-weight:400;}
   /* фотографии-коллажи в карточках клиентов — целиком, без обрезки по бокам */
   .rc-photo{height:auto; min-height:0; object-fit:contain; background:transparent;}
   .fsw-aside{padding-top:0;}

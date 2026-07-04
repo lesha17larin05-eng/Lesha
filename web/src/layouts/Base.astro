@@ -1,4 +1,5 @@
 ---
+import '../styles/site.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 const {
@@ -40,63 +41,11 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style is:global>
-    :root {
-      --navy: #1a2744;
-      --navy-mid: #243058;
-      --navy-light: #2e3d6b;
-      --orange: #e8652a;
-      --orange-warm: #f07530;
-      --cream: #f8f5ef;
-      --warm-white: #fdfaf5;
-      --text: #1a1a1a;
-      --text-mid: #3a3a3a;
-      --text-muted: #555;
-      --text-light: #7e7e7e;
-      --border: #ece8e0;
-    }
+    /* Токены, шапка, футер, контейнер, базовая типографика и responsive —
+       в ../styles/site.css (общий с SiteLayout.astro). Здесь — специфика кабинета/админки. */
     *,*::before,*::after { box-sizing: border-box; }
-    /* НЕ задавать height: 100% на body — иначе body становится scroll-container,
-       window.scrollTo/scrollIntoView идут в html (где ничего не скроллится).
-       min-height: 100vh ниже даёт sticky-footer без поломки скролла. */
-    html, body { margin: 0; padding: 0; max-width: 100vw; }
-    /* overflow-x: clip вместо hidden — не делает html scroll-container
-       и не ломает smooth scroll / scrollIntoView */
-    html { scroll-behavior: smooth; overflow-x: clip; }
-    body {
-      font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
-      font-size: 17px;
-      font-weight: 400;
-      line-height: 1.65;
-      color: var(--text);
-      background: var(--warm-white);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-      font-feature-settings: 'kern', 'liga', 'calt';
-      display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
-    }
-    /* Базовая типографика для абзацев и списков — комфортный кегль и межстрочный.
-       Конкретные блоки могут переопределять, но дефолт уже комфортный. */
-    p, li { font-size: 17px; line-height: 1.65; }
-    /* На крупных экранах основной текст ещё чуть крупнее. */
-    @media (min-width: 1100px) {
-      body { font-size: 17.5px; }
-      p, li { font-size: 17.5px; }
-    }
-    /* Главный контейнер тоже не должен выходить за вьюпорт */
-    .site-main { width: 100%; max-width: 100vw; overflow-x: hidden; }
-    /* Защита от вылазящих за viewport элементов на мобиле */
-    img, video, picture, svg, iframe { max-width: 100%; height: auto; }
-    @media (max-width: 700px) {
-      /* всё внутри страницы не шире вьюпорта */
-      main, section, header, footer, nav, article, aside, div { max-width: 100%; }
-      /* длинные слова и URL переносить по словам, а не по буквам */
-      p, li, h1, h2, h3, h4, h5, h6, span, a, blockquote, td, th { overflow-wrap: break-word; word-wrap: break-word; }
-      /* типовые заголовки — компактнее, чтобы не дробились на 4 строки.
-         Конкретные .hero h1 на страницах могут переопределить это своим селектором. */
-      h1 { font-size: clamp(26px, 7.5vw, 36px); line-height: 1.15; }
-      h2 { font-size: clamp(22px, 6vw, 30px); line-height: 1.2; }
-    }
+    html, body { margin: 0; padding: 0; }
+
     a { color: var(--orange); text-decoration: none; }
     a:hover { text-decoration: underline; }
     h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 500; color: var(--navy); margin: 0 0 .5em; line-height: 1.2; }
@@ -104,52 +53,9 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
     h2 { font-size: 28px; }
     h3 { font-size: 20px; }
 
-    /* Site nav (shared with SiteLayout) */
-    .site-nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(253,250,245,0.94); backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      height: 64px; padding: 0 48px;
-      display: flex; align-items: center; gap: 24px;
-    }
-    .site-nav-logo { text-decoration: none; flex-shrink: 0; display: inline-flex; align-items: center; }
-    .site-nav-links { display: flex; gap: 32px; margin-left: auto; margin-right: 40px; align-items: center; }
-    .site-nav-links a { display: inline-flex; align-items: center; justify-content: center; text-align: center; min-height: 32px; line-height: 1.2; font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; border-bottom: 2px solid transparent; }
-    .site-nav-links a:hover { color: var(--navy); }
-    .site-nav-links a.active { color: var(--navy); font-weight: 600; border-bottom-color: var(--orange); }
-    .site-nav-right { display: flex; gap: 16px; align-items: center; }
-    .site-nav-login { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; color: var(--text-muted); text-decoration: none; }
-    .site-nav-login:hover { color: var(--navy); }
-    .site-nav-logout { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; padding: 0 16px; border-radius: 100px; border: 1.5px solid var(--navy); background: transparent; color: var(--navy); cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s; }
-    .site-nav-logout:hover { background: var(--navy); color: white; }
-
-    .site-main { flex: 1 0 auto; padding-top: 64px; }
-    .site-footer {
-      flex-shrink: 0;
-      background: #0f1520; padding: 36px 80px;
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-    }
-    .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
-    .footer-social { display: flex; gap: 8px; align-items: center; }
-    .social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.82); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
-    .social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
-    .footer-copy { font-size: 13px; color: rgba(255,255,255,0.6); }
-    @media (max-width: 700px) {
-      .site-nav { padding: 0 20px; }
-      .site-nav-links { display: none; }
-      .site-footer {
-        flex-direction: column; align-items: center; gap: 18px;
-        padding: 32px 24px; text-align: center;
-      }
-      /* все блоки внутри футера: ширина 100%, центр по горизонтали */
-      .site-footer > * { width: 100%; max-width: 100%; }
-      .footer-logo { text-align: center; display: block; }
-      .footer-copy { text-align: center; }
-      .footer-social { justify-content: center; flex-wrap: wrap; }
-    }
+    .site-main { padding-top: 64px; }
 
     /* Cabinet/admin utility classes */
-    .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
     .btn { display: inline-block; padding: 12px 22px; border-radius: 100px; background: var(--orange); color: #fff; font-weight: 600; border: none; cursor: pointer; transition: background .2s; font-family: inherit; font-size: 15px; text-decoration: none; }
     .btn:hover { background: var(--orange-warm); text-decoration: none; }
     .btn.secondary { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); }
@@ -175,38 +81,6 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
     .progress > i { display: block; height: 100%; background: var(--orange); }
     .muted { color: var(--text-muted); font-size: 14px; }
     .lock { opacity: .55; pointer-events: none; }
-
-    /* ─── Адаптивность: универсальные правила для всех страниц ─────────── */
-    /* На айфонах < 16px шрифт в инпутах = автозум. Поднимаем минимум. */
-    @media (max-width: 760px) {
-      input, select, textarea { font-size: 16px; }
-      /* Тач-таргеты минимум 44px (Apple HIG / WCAG 2.5.5) */
-      .btn, .btn-primary, .btn-secondary, button.btn,
-      .site-nav-logout, .smm-logout { min-height: 44px; }
-      /* Контейнеры из .container — компактнее на мобилке */
-      .container { padding-left: 16px !important; padding-right: 16px !important; }
-      /* Сужаем большие h1 на узком экране */
-      h1 { font-size: clamp(26px, 7vw, 38px); }
-      h2 { font-size: clamp(22px, 5.5vw, 30px); }
-      /* Таблицы в админке — горизонтальный скролл, чтоб не ломали верстку */
-      table { display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
-    }
-    /* Совсем узкие телефоны (320–390) */
-    @media (max-width: 400px) {
-      .container { padding-left: 12px !important; padding-right: 12px !important; }
-      h1 { font-size: clamp(22px, 7vw, 28px); }
-    }
-    /* Адаптивный класс для главного контейнера маркетинга и админки */
-    .container { width: 100%; box-sizing: border-box; }
-    /* Длинные слова и URL переносятся, не вылазят за вьюпорт */
-    p, li, td, th, blockquote { overflow-wrap: break-word; word-break: normal; }
-    h1, h2, h3 { overflow-wrap: break-word; }
-    /* На гигантских мониторах основной контент центрируется,
-       чтобы строки не растягивались бесконечно */
-    @media (min-width: 1700px) {
-      .site-main > .container,
-      .site-main > section > .container { max-width: 1480px; margin-left: auto; margin-right: auto; }
-    }
   </style>
 </head>
 <body>

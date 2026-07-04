@@ -1,0 +1,142 @@
+/* ───────────────────────────────────────────────────────────────────
+   site.css — единый источник дизайн-токенов и общих компонентов
+   (шапка, футер, контейнер, базовая типографика, responsive-правила).
+   Подключается ОБОИМИ layout'ами: SiteLayout.astro (публичный сайт)
+   и Base.astro (кабинет/админка). Специфика каждого layout'а остаётся
+   в его <style is:global>. Legacy-страницы (web/src/legacy/*.html)
+   несут свои копии :root — их значения должны совпадать с этими.
+   ─────────────────────────────────────────────────────────────────── */
+
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243058;
+  --navy-light: #2e3d6b;
+  --orange: #e8652a;
+  --orange-warm: #f07530;
+  --cream: #f8f5ef;
+  --warm-white: #fdfaf5;
+  --text: #1a1a1a;
+  --text-mid: #3a3a3a;
+  --text-muted: #555;
+  /* #6e6e6e (было #7e7e7e): контраст ≥4.5:1 на белом для мелких подписей */
+  --text-light: #6e6e6e;
+  --border: #ece8e0;
+  --border-light: #f2ede5;
+}
+
+/* НЕ задавать height: 100% на body — иначе body становится scroll-container
+   и ломает window.scrollTo/scrollIntoView. min-height на body ниже
+   сохраняет sticky-footer. overflow-x: clip (не hidden) на html — не делает
+   его scroll-container и не ломает smooth scroll. */
+html { max-width: 100vw; overflow-x: clip; scroll-behavior: smooth; }
+
+body {
+  max-width: 100vw; overflow-x: clip;
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
+  background: var(--warm-white);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern', 'liga', 'calt';
+  display: flex; flex-direction: column; min-height: 100vh; position: relative;
+}
+
+/* Базовая типографика: комфортный кегль. Конкретные блоки могут переопределять. */
+p, li { font-size: 17px; line-height: 1.65; }
+@media (min-width: 1100px) {
+  body { font-size: 17.5px; }
+  p, li { font-size: 17.5px; }
+}
+
+/* Главный контейнер не вылезает за viewport; sticky footer */
+.site-main { width: 100%; max-width: 100vw; overflow-x: hidden; flex: 1 0 auto; }
+.site-footer { flex-shrink: 0; }
+
+/* Медиа не растягиваются */
+img, video, picture, svg, iframe { max-width: 100%; height: auto; }
+
+/* Длинные слова и URL переносятся, не вылазят за вьюпорт */
+p, li, td, th, blockquote { overflow-wrap: break-word; word-break: normal; }
+h1, h2, h3 { overflow-wrap: break-word; }
+
+@media (max-width: 700px) {
+  main, section, header, footer, nav, article, aside, div { max-width: 100%; }
+  p, li, h1, h2, h3, h4, h5, h6, span, a, blockquote, td, th { overflow-wrap: break-word; word-wrap: break-word; }
+  /* типовые заголовки — компактнее; .hero h1 на страницах могут переопределить */
+  h1 { font-size: clamp(26px, 7.5vw, 36px); line-height: 1.15; }
+  h2 { font-size: clamp(22px, 6vw, 30px); line-height: 1.2; }
+}
+
+/* ─── Site nav (шапка, разметка в SiteHeader.astro) ─────────────────── */
+.site-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(253,250,245,0.94); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 64px; padding: 0 48px;
+  display: flex; align-items: center; gap: 24px;
+}
+.site-nav-logo { text-decoration: none; flex-shrink: 0; display: inline-flex; align-items: center; }
+.site-nav-links { display: flex; gap: 32px; margin-left: auto; margin-right: 40px; align-items: center; }
+.site-nav-links a { display: inline-flex; align-items: center; justify-content: center; text-align: center; min-height: 32px; line-height: 1.2; font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; border-bottom: 2px solid transparent; }
+.site-nav-links a:hover { color: var(--navy); }
+.site-nav-links a.active { color: var(--navy); font-weight: 600; border-bottom-color: var(--orange); }
+.site-nav-right { display: flex; gap: 16px; align-items: center; }
+.site-nav-login { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; color: var(--text-muted); text-decoration: none; }
+.site-nav-login:hover { color: var(--navy); }
+.site-nav-logout { display: inline-flex; align-items: center; height: 32px; line-height: 1; font-size: 13px; padding: 0 16px; border-radius: 100px; border: 1.5px solid var(--navy); background: transparent; color: var(--navy); cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s; }
+.site-nav-logout:hover { background: var(--navy); color: white; }
+
+/* ─── Footer (разметка в SiteFooter.astro) ──────────────────────────── */
+.site-footer {
+  background: #0f1520; padding: 36px 80px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
+.footer-social { display: flex; gap: 8px; align-items: center; }
+.social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.82); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
+.social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+.footer-copy { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+@media (max-width: 700px) {
+  .site-nav { padding: 0 20px; }
+  .site-nav-links { display: none; }
+  .site-footer {
+    flex-direction: column; align-items: center; gap: 18px;
+    padding: 32px 24px; text-align: center;
+  }
+  .site-footer > * { width: 100%; max-width: 100%; }
+  .footer-logo { text-align: center; display: block; }
+  .footer-copy { text-align: center; }
+  .footer-social { justify-content: center; flex-wrap: wrap; }
+}
+
+/* ─── Контейнер ─────────────────────────────────────────────────────── */
+.container { max-width: 1180px; margin: 0 auto; padding: 0 24px; width: 100%; box-sizing: border-box; }
+
+/* ─── Адаптивность: универсальные правила ───────────────────────────── */
+@media (max-width: 760px) {
+  /* На айфонах < 16px шрифт в инпутах = автозум */
+  input, select, textarea { font-size: 16px; }
+  /* Тач-таргеты минимум 44px (Apple HIG / WCAG 2.5.5) */
+  .btn, .btn-primary, .btn-secondary, button.btn,
+  .site-nav-logout, .smm-logout { min-height: 44px; }
+  .container { padding-left: 16px !important; padding-right: 16px !important; }
+  h1 { font-size: clamp(26px, 7vw, 38px); }
+  h2 { font-size: clamp(22px, 5.5vw, 30px); }
+  /* Таблицы — горизонтальный скролл вместо поломанной вёрстки */
+  table { display: block; overflow-x: auto; white-space: nowrap; max-width: 100%; }
+}
+@media (max-width: 400px) {
+  .container { padding-left: 12px !important; padding-right: 12px !important; }
+  h1 { font-size: clamp(22px, 7vw, 28px); }
+}
+
+/* На гигантских мониторах контент центрируется, строки не растягиваются */
+@media (min-width: 1700px) {
+  .site-main > .container,
+  .site-main > section > .container { max-width: 1480px; margin-left: auto; margin-right: auto; }
+}
