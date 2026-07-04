@@ -23,6 +23,7 @@ type Config struct {
 	VideoTokenTTL      time.Duration
 	VideoStoragePath   string
 	AdminEmail         string
+	LeadNotifyEmail    string
 	AdminPassword      string
 	UserEmail          string
 	UserPassword       string
@@ -59,6 +60,7 @@ func Load() *Config {
 		VideoTokenTTL:      ttl,
 		VideoStoragePath:   env("VIDEO_STORAGE_PATH", "/var/videos"),
 		AdminEmail:         env("ADMIN_EMAIL", "admin@leshalarin.ru"),
+		LeadNotifyEmail:    env("LEAD_NOTIFY_EMAIL", "les-larin@yandex.ru"),
 		AdminPassword:      env("ADMIN_PASSWORD", "admin12345"),
 		UserEmail:          env("USER_EMAIL", "user@leshalarin.ru"),
 		UserPassword:       env("USER_PASSWORD", "user12345"),

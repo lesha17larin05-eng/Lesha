@@ -39,7 +39,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -83,11 +83,14 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/api/courses/{slug}/checkout", app.Checkout)
 		r.Get("/api/courses/{slug}/files/{name}", app.CourseFile)
 	})
+	r.Post("/api/leads", app.CreateLead)
 	r.Post("/api/webhooks/prodamus", app.ProdamusWebhook)
 	r.Get("/api/dev/fake-payment", app.FakePayment)
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth, mw.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
+		r.Get("/api/admin/leads", app.AdminLeads)
+		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
 		r.Post("/api/admin/courses", app.AdminCreateCourse)
 		r.Get("/api/admin/courses/{id}", app.AdminGetCourse)
@@ -957,4 +960,79 @@ func pgConnFromEnv(t *testing.T) *pgxpool.Pool {
 		t.Fatalf("pool: %v", err)
 	}
 	return pool
+}
+
+// TestLeadsFlow — публичная заявка + админский флоу.
+// POST /api/leads: валидация (имя/контакт/согласие), 201 при успехе.
+// GET/PATCH /api/admin/leads — только для admin; смена статуса пишется.
+func TestLeadsFlow(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	anon := newClient(srv)
+
+	// без согласия → 400
+	r, body := anon.do("POST", "/api/leads", map[string]any{
+		"name": "Иван", "contact": "ivan@x.ru", "source": "coaching"})
+	if r.StatusCode != 400 || !strings.Contains(string(body), "consent_pd_required") {
+		t.Fatalf("no consent: %d %s", r.StatusCode, body)
+	}
+
+	// без имени/контакта → 400
+	r, body = anon.do("POST", "/api/leads", map[string]any{
+		"name": "", "contact": "ivan@x.ru", "consent_pd": true})
+	if r.StatusCode != 400 || !strings.Contains(string(body), "invalid_input") {
+		t.Fatalf("no name: %d %s", r.StatusCode, body)
+	}
+
+	// валидная заявка → 201, неизвестный source нормализуется в other
+	r, body = anon.do("POST", "/api/leads", map[string]any{
+		"name": "Иван", "contact": "@ivan_tg", "message": "Болит спина",
+		"source": "hacker", "consent_pd": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("create lead: %d %s", r.StatusCode, body)
+	}
+	leads, err := repo.ListLeads(ctx, 10)
+	if err != nil || len(leads) != 1 {
+		t.Fatalf("list leads: %v %d", err, len(leads))
+	}
+	if leads[0].Source != "other" || leads[0].Status != "new" || leads[0].Contact != "@ivan_tg" {
+		t.Fatalf("lead fields: %+v", leads[0])
+	}
+
+	// обычному юзеру админский список недоступен
+	user := newClient(srv)
+	user.do("POST", "/api/auth/register", map[string]any{
+		"email": "lead-user@b.ru", "password": "password123", "consent_pd": true})
+	user.do("POST", "/api/auth/login", map[string]string{
+		"email": "lead-user@b.ru", "password": "password123"})
+	if r, _ = user.do("GET", "/api/admin/leads", nil); r.StatusCode == 200 {
+		t.Fatalf("admin leads must be closed for users, got 200")
+	}
+
+	// админ: видит заявку и меняет статус
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "lead-adm@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "lead-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{
+		"email": "lead-adm@b.ru", "password": "password123"})
+	r, body = adm.do("GET", "/api/admin/leads", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "@ivan_tg") {
+		t.Fatalf("admin list: %d %s", r.StatusCode, body)
+	}
+	r, body = adm.do("PATCH", "/api/admin/leads/"+leads[0].ID.String(), map[string]string{"status": "done"})
+	if r.StatusCode != 200 {
+		t.Fatalf("patch lead: %d %s", r.StatusCode, body)
+	}
+	leads, _ = repo.ListLeads(ctx, 10)
+	if leads[0].Status != "done" {
+		t.Fatalf("status not updated: %+v", leads[0])
+	}
+	// невалидный статус → 400
+	r, _ = adm.do("PATCH", "/api/admin/leads/"+leads[0].ID.String(), map[string]string{"status": "hacked"})
+	if r.StatusCode != 400 {
+		t.Fatalf("bad status must be 400, got %d", r.StatusCode)
+	}
 }

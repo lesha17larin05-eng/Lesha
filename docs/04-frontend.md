@@ -7,8 +7,9 @@
 ```
 web/src/
   pages/
-    index.astro                   — главная (маркетинг, оригинальный дизайн из сайт/index.html, через ?raw + extractLegacy)
-    consultation.astro            — страница консультации (legacy import)
+    index.astro                   — главная (новый дизайн: hero, услуги/курсы 2×2, обо мне, статьи)
+    coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
+    consultation.astro            — страница консультации (legacy import) + форма заявки в лист ожидания (#lead-form → POST /api/leads, source=consultation)
     course.astro                  — лендинг бесплатного курса (legacy import). Форма «Начните сегодня» (`#quick-signup-form`) шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе создаём аккаунт, генерим пароль (на email), ставим cookies и ведём в `/cabinet`.
     results.astro                 — кейсы/результаты учеников (legacy import)
     blog/
@@ -32,6 +33,7 @@ web/src/
       blog/
         new.astro                 — создание статьи
         [id].astro                — редактирование статьи
+      leads.astro                 — заявки с сайта: таблица + смена статуса (PATCH /api/admin/leads/{id})
       orders.astro
       online.astro
     auth/

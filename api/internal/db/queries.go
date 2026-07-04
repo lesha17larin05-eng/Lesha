@@ -575,3 +575,43 @@ func (r *Repo) MarkWebhookProcessed(ctx context.Context, id uuid.UUID, orderID *
 		`UPDATE payment_webhooks SET processed=true, processing_error=NULLIF($2,''), order_id=$3 WHERE id=$1`,
 		id, errMsg, orderID)
 }
+
+// ---- LEADS ----
+
+func (r *Repo) CreateLead(ctx context.Context, name, contact, message, source string, consentPD bool) (uuid.UUID, error) {
+	var id uuid.UUID
+	err := r.Pool.QueryRow(ctx,
+		`INSERT INTO leads(name,contact,message,source,consent_pd) VALUES($1,$2,$3,$4,$5) RETURNING id`,
+		name, contact, message, source, consentPD).Scan(&id)
+	return id, err
+}
+
+func (r *Repo) ListLeads(ctx context.Context, limit int) ([]Lead, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT id,name,contact,message,source,status,consent_pd,created_at
+		   FROM leads ORDER BY created_at DESC LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Lead
+	for rows.Next() {
+		var l Lead
+		if err := rows.Scan(&l.ID, &l.Name, &l.Contact, &l.Message, &l.Source, &l.Status, &l.ConsentPD, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, l)
+	}
+	return out, rows.Err()
+}
+
+func (r *Repo) UpdateLeadStatus(ctx context.Context, id uuid.UUID, status string) error {
+	ct, err := r.Pool.Exec(ctx, `UPDATE leads SET status=$2 WHERE id=$1`, id, status)
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}

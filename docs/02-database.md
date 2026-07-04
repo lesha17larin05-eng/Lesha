@@ -47,3 +47,20 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 - `make psql` — psql внутри контейнера.
 - Из приложения: pgxpool, репозитории в `api/internal/db/queries.go`.
 - **Все запросы — параметризованные.** Конкатенация строк в SQL запрещена (см. CLAUDE.md).
+
+## leads (миграция 009)
+
+Заявки с маркетинговых страниц (`/coaching`, `/consultation`).
+
+| Колонка | Тип | Комментарий |
+|---|---|---|
+| id | UUID PK | |
+| name | TEXT | имя |
+| contact | TEXT | email / телефон / @telegram — одно поле, как удобно человеку |
+| message | TEXT | необязательное сообщение |
+| source | TEXT | `coaching` / `consultation` / `other` (неизвестные значения нормализуются) |
+| status | TEXT | `new` / `in_progress` / `done` (CHECK) |
+| consent_pd | BOOLEAN | факт согласия на обработку ПД (152-ФЗ) |
+| created_at | TIMESTAMPTZ | индекс по убыванию |
+
+Записи не удаляются (обращения с ПД), обработка — сменой `status`.
