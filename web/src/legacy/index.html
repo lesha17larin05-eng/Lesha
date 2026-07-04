@@ -243,6 +243,21 @@ section.results { padding: 100px 80px; background: white; }
 .price-guarantee strong { color: rgba(255,255,255,0.9); }
 .btn-cta { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer; padding: 18px 32px; border-radius: 100px; width: 100%; font-size: 15px; font-weight: 600; font-family: 'Manrope', sans-serif; transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.3); }
 .btn-cta:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.btn-cta:disabled { opacity: 0.7; cursor: progress; transform: none; }
+
+/* ─── Форма заявки в price-box (тёмный фон) ─── */
+.lead-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.lead-input { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); color: white; font-size: 16px; font-family: 'Manrope', sans-serif; outline: none; transition: border-color 0.2s; }
+.lead-input::placeholder { color: rgba(255,255,255,0.65); }
+.lead-input:focus { border-color: rgba(255,255,255,0.65); }
+textarea.lead-input { resize: vertical; min-height: 72px; }
+.lead-consent { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.9); cursor: pointer; text-align: left; }
+.lead-consent input { margin-top: 2px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
+.lead-consent a { color: rgba(255,255,255,0.9); text-decoration: underline; }
+.lead-note { font-size: 14px; color: rgba(255,255,255,0.78); margin: 0; text-align: center; min-height: 18px; }
+.lead-success { text-align: center; padding: 24px 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; margin-bottom: 12px; }
+.lead-success h3 { font-size: 19px; font-weight: 600; color: white; margin-bottom: 8px; }
+.lead-success p { font-size: 15px; color: rgba(255,255,255,0.82); }
 .cta-buttons { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
 .btn-cta-alt { display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(255,255,255,0.85); text-decoration: none; padding: 8px 14px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
 .btn-cta-alt:hover { color: white; background: rgba(255,255,255,0.06); }
@@ -851,8 +866,19 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       </div>
       <div class="price-guarantee"><strong>Гарантия первой недели.</strong> Если в первые 7 дней работы поймёте, что формат вам не подходит — верну всю оплату, без объяснений и анкет.</div>
       <div class="price-guarantee" style="margin-top:-18px;">Стоимость обсудим на первом созвоне — после того как разберёмся с вашим запросом.</div>
+      <form id="lead-form" class="lead-form" data-source="coaching" novalidate>
+        <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
+        <input class="lead-input" name="contact" placeholder="Email, телефон или @телеграм *" required>
+        <textarea class="lead-input" name="message" rows="3" placeholder="Коротко о вашем запросе (по желанию)"></textarea>
+        <label class="lead-consent">
+          <input type="checkbox" name="consent_pd" checked required>
+          <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
+        </label>
+        <button type="submit" class="btn-cta lead-submit">Записаться в лист ожидания →</button>
+        <p class="lead-note" id="lead-note"></p>
+      </form>
       <div class="cta-buttons">
-        <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BF%D0%B0%D1%81%D1%82%D1%8C%20%D0%B2%20%D0%BB%D0%B8%D1%81%D1%82%20%D0%BE%D0%B6%D0%B8%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%20%D0%BD%D0%B0%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta" target="_blank">Написать Алексею →</a>
+        <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BF%D0%B0%D1%81%D1%82%D1%8C%20%D0%B2%20%D0%BB%D0%B8%D1%81%D1%82%20%D0%BE%D0%B6%D0%B8%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%20%D0%BD%D0%B0%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta-alt" target="_blank">Удобнее в Телеграме — написать напрямую</a>
         <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BF%D0%B0%D1%81%D1%82%D1%8C%20%D0%B2%20%D0%BB%D0%B8%D1%81%D1%82%20%D0%BE%D0%B6%D0%B8%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%20%D0%BD%D0%B0%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
       </div>
       <div class="spots-warning"><span>🌿</span> Новый набор — с сентября · отвечаю в порядке очереди</div>

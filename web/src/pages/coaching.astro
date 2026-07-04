@@ -6,4 +6,54 @@ const { styles, body } = extractLegacy(rawHtml);
 ---
 <SiteLayout title="Личное ведение — Алексей Ларин" active="home" pageStyles={styles}>
   <Fragment set:html={body} />
+  <script>
+    // Форма заявки в лист ожидания → POST /api/leads.
+    // CSRF подставляет fetch-обёртка из SiteLayout.
+    const form = document.getElementById('lead-form') as HTMLFormElement | null;
+    if (form) {
+      const note = document.getElementById('lead-note') as HTMLElement | null;
+      const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      const setNote = (msg: string, isErr = false) => {
+        if (!note) return;
+        note.textContent = msg;
+        note.style.color = isErr ? '#ff8a8a' : '';
+      };
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const name = String(fd.get('name') || '').trim();
+        const contact = String(fd.get('contact') || '').trim();
+        if (!name) { setNote('Укажите имя', true); return; }
+        if (contact.length < 5) { setNote('Укажите email, телефон или @телеграм — как с вами связаться', true); return; }
+        if (!fd.get('consent_pd')) { setNote('Чтобы продолжить, нужно согласиться с обработкой персональных данных', true); return; }
+        const orig = btn?.textContent || '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
+        try {
+          const r = await fetch('/api/leads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              name, contact,
+              message: String(fd.get('message') || '').trim(),
+              source: form.dataset.source || 'coaching',
+              consent_pd: true,
+            }),
+          });
+          if (r.ok) {
+            const box = document.createElement('div');
+            box.className = 'lead-success';
+            box.innerHTML = '<h3>Заявка отправлена</h3><p>Я отвечу в порядке очереди — как только вернусь к набору. Если вопрос срочный — напишите в Телеграм по кнопке ниже.</p>';
+            form.replaceWith(box);
+            return;
+          }
+          setNote('Не получилось отправить — попробуйте ещё раз или напишите в Телеграм', true);
+        } catch {
+          setNote('Ошибка сети — попробуйте ещё раз', true);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = orig; }
+        }
+      });
+    }
+  </script>
 </SiteLayout>

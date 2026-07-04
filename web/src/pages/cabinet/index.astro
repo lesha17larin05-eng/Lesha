@@ -12,7 +12,10 @@ const user = (Astro.locals as any).user;
     <h2 style="margin-top:30px;">Мои курсы</h2>
     <div class="grid grid-3" style="margin-top:18px;">
       {(courses || []).map((c: any) => {
-        const href = c.slug === 'myagkiy-start' ? '/cabinet/myagkiy-start' : `/courses/${c.slug}`;
+        // У курсов с кастомной страницей кабинета ведём сразу туда,
+        // а не на публичный лендинг (лишний переход).
+        const cabinetPages = new Set(['myagkiy-start', 'zdorovaya-spina']);
+        const href = cabinetPages.has(c.slug) ? `/cabinet/${c.slug}` : `/courses/${c.slug}`;
         return (
           <a class="card" href={href} style="color:inherit; display:block;">
             <h3>{c.title}</h3>

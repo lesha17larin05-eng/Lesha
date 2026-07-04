@@ -98,3 +98,14 @@ type Video struct {
 	Status            string    `json:"status"`
 	CreatedAt         time.Time `json:"created_at"`
 }
+
+type Lead struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Contact   string    `json:"contact"`
+	Message   string    `json:"message"`
+	Source    string    `json:"source"`
+	Status    string    `json:"status"`
+	ConsentPD bool      `json:"consent_pd"`
+	CreatedAt time.Time `json:"created_at"`
+}

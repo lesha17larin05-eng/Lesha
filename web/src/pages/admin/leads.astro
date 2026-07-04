@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data } = await apiJson<any[]>('/api/admin/leads', { cookie });
+const leads = Array.isArray(data) ? data : [];
+const user = (Astro.locals as any).user;
+
+const sourceLabels: Record<string, string> = {
+  coaching: 'Личное ведение',
+  consultation: 'Консультация',
+  other: 'Другое',
+};
+const statusLabels: Record<string, string> = {
+  new: 'Новая',
+  in_progress: 'В работе',
+  done: 'Обработана',
+};
+const fmt = (iso: string) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+};
+---
+<Base title="Заявки" user={user}>
+  <AdminNav active="leads" />
+  <section class="container" style="padding:50px 16px;">
+    <h1>Заявки</h1>
+    <p class="muted">С форм «Личное ведение» и «Консультация». Новые — сверху.</p>
+    {leads.length === 0
+      ? <p class="muted" style="margin-top:20px;">Заявок пока нет.</p>
+      : <table style="margin-top:16px;">
+          <thead><tr><th>Когда</th><th>Имя</th><th>Контакт</th><th>Откуда</th><th>Сообщение</th><th>Статус</th></tr></thead>
+          <tbody>
+            {leads.map((l: any) => (
+              <tr class={l.status === 'done' ? 'lead-done' : ''}>
+                <td style="white-space:nowrap;">{fmt(l.created_at)}</td>
+                <td>{l.name}</td>
+                <td>{l.contact}</td>
+                <td>{sourceLabels[l.source] ?? l.source}</td>
+                <td style="max-width:340px; white-space:normal;">{l.message || '—'}</td>
+                <td>
+                  <select class="lead-status input" data-id={l.id} style="width:auto; padding:6px 10px; font-size:13px;">
+                    {Object.entries(statusLabels).map(([val, label]) => (
+                      <option value={val} selected={l.status === val}>{label}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+    }
+  </section>
+  <style>
+    .lead-done { opacity: 0.55; }
+  </style>
+  <script>
+    document.querySelectorAll<HTMLSelectElement>('.lead-status').forEach((sel) => {
+      sel.addEventListener('change', async () => {
+        const id = sel.dataset.id;
+        const prev = sel.dataset.prev || '';
+        sel.disabled = true;
+        const r = await fetch(`/api/admin/leads/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: sel.value }),
+        }).catch(() => null);
+        sel.disabled = false;
+        if (!r || !r.ok) {
+          alert('Не удалось сохранить статус');
+          if (prev) sel.value = prev;
+          return;
+        }
+        sel.dataset.prev = sel.value;
+        sel.closest('tr')?.classList.toggle('lead-done', sel.value === 'done');
+      });
+      sel.dataset.prev = sel.value;
+    });
+  </script>
+</Base>

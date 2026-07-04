@@ -104,6 +104,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,
 .rv-hint p{font-size:13px;color:var(--text-muted);line-height:1.5;margin:0;}
 @media(max-width:700px){.rv-hint{padding:10px 24px;}}
 
+/* ─── CTA в конце страницы ─── */
+.results-cta{background:var(--navy);padding:90px 80px;text-align:center;position:relative;overflow:hidden;}
+.results-cta::before{content:'';position:absolute;top:-80px;right:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(46,61,107,0.6) 0%,transparent 65%);pointer-events:none;}
+.results-cta-inner{max-width:640px;margin:0 auto;position:relative;}
+.rc-cta-label{font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#7ab0f0;margin-bottom:16px;}
+.rc-cta-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,3.5vw,48px);font-weight:400;line-height:1.15;color:white;margin-bottom:14px;}
+.rc-cta-title em{font-style:italic;color:#8bb8f0;}
+.rc-cta-desc{font-size:17px;color:rgba(255,255,255,0.85);line-height:1.75;margin-bottom:32px;}
+.rc-cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.rc-cta-btn{display:inline-flex;align-items:center;gap:10px;background:var(--orange);color:white;text-decoration:none;padding:17px 34px;border-radius:100px;font-size:16px;font-weight:600;transition:background .2s,transform .2s;box-shadow:0 8px 32px rgba(232,101,42,0.35);}
+@media(hover:hover){.rc-cta-btn:hover{background:#f07530;transform:translateY(-2px);}}
+.rc-cta-btn:focus-visible{outline:2px solid white;outline-offset:3px;}
+.rc-cta-btn-alt{display:inline-flex;align-items:center;justify-content:center;padding:17px 30px;border-radius:100px;border:1.5px solid rgba(255,255,255,0.4);color:white;text-decoration:none;font-size:15px;font-weight:600;transition:background .2s,border-color .2s;}
+@media(hover:hover){.rc-cta-btn-alt:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.7);}}
+.rc-cta-btn-alt:focus-visible{outline:2px solid white;outline-offset:3px;}
+@media(max-width:700px){.results-cta{padding:60px 24px;}.rc-cta-actions{flex-direction:column;align-items:stretch;}}
+
 .footer-social{display:flex;flex-direction:row;gap:8px;align-items:center;}
 .social-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.82);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all 0.2s;}
 .social-btn:hover{background:rgba(255,255,255,0.15);color:white;}
@@ -1000,6 +1017,19 @@ footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;just
     <p class="tx-desc">Сообщения из чатов, формы обратной связи, личные посты в соцсетях. Открывайте, читайте.</p>
   </div>
   <div class="tx-gallery" id="tx-gallery"></div>
+</section>
+
+<!-- CTA: со страницы отзывов должен быть следующий шаг, а не тупик -->
+<section class="results-cta">
+  <div class="results-cta-inner">
+    <div class="rc-cta-label">Хотите так же?</div>
+    <h2 class="rc-cta-title">Начните со своего <em>первого шага</em></h2>
+    <p class="rc-cta-desc">Попробуйте бесплатный курс — 8 коротких практик, чтобы почувствовать формат. Или запишитесь на консультацию — разберём вашу ситуацию и составим план.</p>
+    <div class="rc-cta-actions">
+      <a href="/course" class="rc-cta-btn">Пройти бесплатный курс →</a>
+      <a href="/consultation" class="rc-cta-btn-alt">Записаться на консультацию</a>
+    </div>
+  </div>
 </section>
 
 <!-- Lightbox -->
