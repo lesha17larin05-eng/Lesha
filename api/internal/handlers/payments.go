@@ -30,9 +30,14 @@ var tariffPresets = map[string]map[string]tariffPreset{
 		"support": {PriceRub: 12990, Title: "Здоровая спина — С поддержкой"},
 		// Временный тариф для проверки интеграции с Продамусом — после успешной
 		// тестовой оплаты + возврата эту строку удалим.
+		// Доступен ТОЛЬКО админам (см. проверку роли в Checkout).
 		"test10": {PriceRub: 10, Title: "ТЕСТ — проверка интеграции"},
 	},
 }
+
+// adminOnlyTariffs — тарифы, которые может оформить только admin
+// (служебные/тестовые, не должны быть доступны обычным пользователям).
+var adminOnlyTariffs = map[string]bool{"test10": true}
 
 func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
@@ -44,8 +49,9 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	// Выбор тарифа: либо пресет (для курсов в tariffPresets), либо courses.price_rub.
 	price := 0
 	title := c.Title
+	tariffKey := ""
 	if presets, ok := tariffPresets[c.Slug]; ok {
-		tariffKey := r.URL.Query().Get("tariff")
+		tariffKey = r.URL.Query().Get("tariff")
 		if tariffKey == "" {
 			writeErr(w, 400, "tariff_required")
 			return
@@ -72,6 +78,12 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	}
 	if u.EmailVerifiedAt == nil {
 		writeErr(w, 400, "email_not_verified")
+		return
+	}
+	// Служебные тарифы (test10) доступны только админам — иначе любой,
+	// кто узнал ключ тарифа, купит курс за тестовую цену.
+	if adminOnlyTariffs[tariffKey] && u.Role != "admin" {
+		writeErr(w, 400, "bad_tariff")
 		return
 	}
 	has, _ := a.Repo.HasEnrollment(r.Context(), uid, c.ID)

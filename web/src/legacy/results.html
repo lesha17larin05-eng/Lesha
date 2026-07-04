@@ -110,6 +110,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,250,245,
 footer{background:#0f1520;padding:36px 80px;display:flex;align-items:center;justify-content:space-between;}
 .footer-logo{font-family:'Cormorant Garamond',serif;font-size:18px;color:white;text-decoration:none;}
 .footer-copy{font-size:13px;color:rgba(255,255,255,0.6);}
+/* ─── Планшеты 701–1280: 4 колонки видеоотзывов не влезают — 3, потом 2 ─── */
+@media(max-width:1280px){
+  .rv-grid{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:1000px){
+  .rv-grid{grid-template-columns:repeat(2,1fr);padding:40px 32px 64px;}
+  .page-header{grid-template-columns:1fr;padding:110px 48px 56px;gap:40px;}
+  .filters{padding:16px 32px;}
+  .rv-hint{padding:12px 32px;}
+}
+
 @media(max-width:700px){
   nav{padding:0 20px;}.nav-links{display:none;}
   .page-header,.filters,.rv-grid{padding-left:24px;padding-right:24px;}

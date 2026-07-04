@@ -43,7 +43,7 @@ web/src/
     Base.astro                    — кабинет/админ-layout (palette navy/orange, .container/.btn/.card)
     SiteLayout.astro              — публичный layout сайта (Cormorant + Manrope, общая шапка + футер, поддержка pageStyles)
   components/
-    SiteHeader.astro              — фиксированная навигация для публичных страниц
+    SiteHeader.astro              — фиксированная навигация для публичных страниц; на ≤1080px ссылки скрываются и включается бургер-меню (6 пунктов + логотип + кнопка Салюта не влезают на планшетах)
     SiteFooter.astro              — футер с социальными иконками
   legacy/                         — оригинальные HTML-исходники маркетинговых страниц, импортируются через ?raw
   lib/
@@ -57,6 +57,10 @@ web/src/
 ## Дизайн-система
 
 Публичные страницы (главная, блог, consultation, course, results) используют **`SiteLayout.astro`** + общие `SiteHeader`/`SiteFooter`. Внутренний кабинет/админка — **`Base.astro`** (минималистичная палитра, таблицы, формы).
+
+Адаптивность: помимо мобильного брейкпоинта 700px, у legacy-страниц (index/consultation/course/results) есть планшетные брейкпоинты 1000–1280px (промежуточные сетки 2–3 колонки, уменьшенные паддинги); у zdorovaya-spina исторически 960/1100. Hero-секции используют `min-height: 100svh` (с fallback `100vh`).
+
+Служебная страница `/test-pay` (проверка интеграции с Продамусом, тариф `test10`) доступна только `role=admin`, остальным — 404.
 
 Палитра публичного сайта (CSS-переменные в `SiteLayout.astro`):
 - `--navy: #1a2744`, `--navy-mid: #243058`, `--navy-light: #2e3d6b`
