@@ -46,7 +46,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestPaidCheckoutTestModeReturnsFakeURL` | После verify checkout возвращает URL `fake-payment`. |
 | `TestCheckoutTariffPresets`            | Курс `zdorovaya-spina`: `?tariff=self` → order.AmountRub=3990, `?tariff=support` → 12990, без `?tariff` → 400 `tariff_required`, неизвестный → 400 `bad_tariff`, `?tariff=test10` обычному юзеру → 400 `bad_tariff`, админу → 200 и AmountRub=10. |
 | `TestAdminEndpointsRequireAdminRole`   | Юзер без `role=admin` → 403 на `/api/admin/stats`. |
-| `TestQuickSignupCreatesAndAuthenticates` | `POST /api/auth/quick-signup` для нового email → 201 `{created:true}`, юзер создан, `email_verified_at != NULL`, cookies дают доступ к `/api/me`. |
+| `TestQuickSignupCreatesAndAuthenticates` | Quick-signup: 201 + `verify_required`, ДО verify — email не подтверждён, enrollment не выдан, `/api/me` 401; ПОСЛЕ `verify-email` — подтверждён, enrollment в published free, залогинен, в `/api/me/courses` только published free. |
 | `TestQuickSignupExistingEmailReturnsExists` | Тот же endpoint для уже существующего email → 200 `{exists:true}` без создания сессии. |
 | `TestQuickSignupRejectsBadEmail`       | Невалидный email → 400. |
 | `TestQuickSignupRequiresCSRF`          | Без `X-CSRF-Token` → 403 (защита write-эндпоинта). |
