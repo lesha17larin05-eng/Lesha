@@ -368,6 +368,26 @@ func TestCheckoutTariffPresets(t *testing.T) {
 	if r.StatusCode != 400 || !strings.Contains(string(body), "bad_tariff") {
 		t.Fatalf("bad tariff: %d %s", r.StatusCode, body)
 	}
+
+	// 5) служебный tariff=test10 обычному юзеру → 400 bad_tariff
+	c5 := makeVerified("t-test10@b.ru")
+	r, body = c5.do("POST", "/api/courses/zdorovaya-spina/checkout?tariff=test10", nil)
+	if r.StatusCode != 400 || !strings.Contains(string(body), "bad_tariff") {
+		t.Fatalf("test10 as user: %d %s", r.StatusCode, body)
+	}
+
+	// 6) tariff=test10 админу → 200 и сумма 10 ₽
+	c6 := makeVerified("t-admin10@b.ru")
+	ua, _ := repo.GetUserByEmail(ctx, "t-admin10@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	// перелогин, чтобы токен подхватил новую роль (роль читается из БД в Checkout,
+	// но перелогин делает сценарий честным)
+	c6.do("POST", "/api/auth/login", map[string]string{"email": "t-admin10@b.ru", "password": "password123"})
+	r, body = c6.do("POST", "/api/courses/zdorovaya-spina/checkout?tariff=test10", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "fake-payment") {
+		t.Fatalf("test10 as admin: %d %s", r.StatusCode, body)
+	}
+	checkAmount(t, body, 10)
 }
 
 func TestAdminEndpointsRequireAdminRole(t *testing.T) {

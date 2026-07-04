@@ -43,7 +43,7 @@ nav {
 
 /* HERO */
 .hero {
-  min-height: 100vh; padding-top: 64px;
+  min-height: 100vh; min-height: 100svh; padding-top: 64px;
   display: grid; grid-template-columns: 55% 45%;
 }
 .hero-left {
@@ -240,6 +240,18 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .fwl-item:nth-child(3){animation:fadeUp 0.5s 0.4s both;}
 .fwl-item:nth-child(4){animation:fadeUp 0.5s 0.5s both;}
 .fwl-item:nth-child(5){animation:fadeUp 0.5s 0.6s both;}
+
+/* ─── Планшеты 701–1200: промежуточные сетки ─── */
+@media(max-width:1200px){
+  .for-whom-cards,.stages,.reassurance-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:1000px){
+  .hero{grid-template-columns:1fr;}
+  .hero-left{padding:70px 48px;}
+  .for-whom-section,.what-happens,.reassurance,.author-section,.cta-bottom{padding:80px 48px;}
+  .author-section{grid-template-columns:1fr;gap:48px;}
+  .result-banner{grid-template-columns:1fr;gap:32px;padding:36px 40px;}
+}
 
 @media(max-width:700px){
   nav{padding:0 20px;} .nav-links{display:none;}

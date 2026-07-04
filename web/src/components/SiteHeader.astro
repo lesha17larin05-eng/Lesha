@@ -34,7 +34,9 @@ const isSalyut = active === 'salyut';
   }
   .site-nav-burger:hover { background: rgba(26,39,68,0.06); }
   .site-nav-burger svg { width: 22px; height: 22px; display: block; }
-  @media (max-width: 700px) {
+  /* Бургер включается уже на 1080px: 6 ссылок + логотип + кнопка Салюта
+     не влезают на планшетах и узких ноутбуках (700–1080). */
+  @media (max-width: 1080px) {
     .site-nav-burger { display: inline-flex; }
     .site-nav-links, .site-nav-right { display: none !important; }
   }
@@ -85,7 +87,7 @@ const isSalyut = active === 'salyut';
     text-align: center; transition: all 0.2s;
   }
   .smm-logout:hover { background: var(--navy); color: white; }
-  @media (min-width: 701px) { .site-mobile-menu { display: none; } }
+  @media (min-width: 1081px) { .site-mobile-menu { display: none; } }
 
   /* блокировка скролла фона при открытом меню */
   body.has-open-menu { overflow: hidden; }
@@ -182,6 +184,6 @@ const isSalyut = active === 'salyut';
     if (e.key === 'Escape') closeMenu();
   });
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 700) closeMenu();
+    if (window.innerWidth > 1080) closeMenu();
   });
 </script>

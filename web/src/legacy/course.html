@@ -39,7 +39,7 @@ nav {
 .nav-login { font-size: 13px; color: var(--text-muted); text-decoration: none; }
 
 /* HERO */
-.hero { min-height: 100vh; display: grid; grid-template-columns: 55% 45%; padding-top: 64px; }
+.hero { min-height: 100vh; min-height: 100svh; display: grid; grid-template-columns: 55% 45%; padding-top: 64px; }
 .hero-left {
   background: var(--navy); padding: 80px 72px 80px 80px;
   display: flex; flex-direction: column; justify-content: flex-start;
@@ -181,6 +181,18 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .hero-promise{animation:fadeUp 0.6s 0.4s both;}
 .hero-cta{animation:fadeUp 0.6s 0.5s both;}
 .hero-stats{animation:fadeUp 0.6s 0.6s both;}
+
+/* ─── Планшеты 701–1200: промежуточные сетки ─── */
+@media(max-width:1200px){
+  .benefits-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:1000px){
+  .hero{grid-template-columns:1fr;}
+  .hero-left{padding:70px 48px;}
+  .hero-right{padding:60px 48px;}
+  .about,.what-get,.cta-section{padding:80px 48px;}
+  .about{grid-template-columns:1fr;gap:48px;}
+}
 
 @media(max-width:700px){
   nav{padding:0 20px;} .nav-links{display:none;}
@@ -357,7 +369,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
       </label>
       <label class="qs-consent">
-        <input type="checkbox" name="consent_marketing" id="quick-consent-marketing" required checked>
+        <input type="checkbox" name="consent_marketing" id="quick-consent-marketing" checked>
         <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом из любого письма.</span>
       </label>
 
