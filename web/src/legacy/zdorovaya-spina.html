@@ -142,7 +142,12 @@ nav.top-nav {
 
 /* ===== PROGRAM ===== */
 .program { padding: 100px 80px; background: var(--cream); }
-.program-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.program-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* Широкие карточки (вводный и бонус) — полоса на всю ширину, контент в две колонки */
+.program-card--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 260px 1fr; gap: 8px 36px; align-items: start; }
+.program-card--wide .pm-title { min-height: auto; margin-bottom: 0; }
+.program-card--wide .pm-lessons { margin-bottom: 10px; }
+@media(max-width:960px){ .program-card--wide { grid-template-columns: 1fr; gap: 12px; } .program-card--wide .pm-title { margin-bottom: 4px; } }
 .program-card { background: white; border-radius: 20px; padding: 28px 24px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: transform 0.2s; }
 .program-card:hover { transform: translateY(-3px); }
 .program-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--navy); }
@@ -525,23 +530,24 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <!-- ===== PROGRAM ===== -->
 <section class="program" id="program">
   <div class="section-label">Программа</div>
-  <h2 class="section-title">12 уроков, 5 модулей&nbsp;–<br><em>от мягкого старта к привычке</em></h2>
-  <p class="section-desc">Каждая неделя – одна основная тренировка, одна короткая практика и одна лекция. Бонусом – 30‑минутная аудио‑практика расслабления и финальный урок «что дальше». Воскресенье – отдых. Начинать рекомендую в субботу утром, но подстроите под себя.</p>
+  <h2 class="section-title">Три недели&nbsp;–<br><em>каждая со своей задачей</em></h2>
+  <p class="section-desc">В каждой неделе – основная тренировка на выходные, короткая на будни и одна лекция о том, как устроена спина. Воскресенье – всегда отдых.</p>
 
   <div class="program-grid">
 
-    <div class="program-card intro-card">
-      <div class="pm-num">Модуль 1 · Старт</div>
-      <div class="pm-title">С чего начнём</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Урок 1 · Вводный (~14 мин)</div>
+    <div class="program-card intro-card program-card--wide">
+      <div>
+        <div class="pm-num">Перед стартом</div>
+        <div class="pm-title">Вводный урок · 14 минут</div>
       </div>
-      <p class="pm-focus">Как пройти курс с пользой, не сорваться и не переусердствовать.</p>
+      <div>
+        <p class="pm-focus" style="border-top:none; padding-top:0;">Как пройти курс с пользой: в каком порядке заниматься, как не переусердствовать в первые дни и что делать, если пропустили тренировку.</p>
+      </div>
     </div>
 
     <div class="program-card">
-      <div class="pm-num">Модуль 2 · Неделя 1</div>
-      <div class="pm-title">Знакомимся с базой</div>
+      <div class="pm-num">Неделя 1</div>
+      <div class="pm-title">База: учимся двигаться правильно</div>
       <div class="pm-lessons">
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Основная тренировка (~45 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая тренировка (~28 мин)</div>
@@ -551,8 +557,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     </div>
 
     <div class="program-card">
-      <div class="pm-num">Модуль 3 · Неделя 2</div>
-      <div class="pm-title">Углубление</div>
+      <div class="pm-num">Неделя 2</div>
+      <div class="pm-title">Нагрузка аккуратно растёт</div>
       <div class="pm-lessons">
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Основная тренировка (~48 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая тренировка (~34 мин)</div>
@@ -562,8 +568,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     </div>
 
     <div class="program-card">
-      <div class="pm-num">Модуль 4 · Неделя 3</div>
-      <div class="pm-title">Закрепление</div>
+      <div class="pm-num">Неделя 3</div>
+      <div class="pm-title">Техника закрепляется</div>
       <div class="pm-lessons">
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Основная тренировка (~48 мин)</div>
         <div class="pm-lesson"><div class="pm-lesson-dot"></div>Короткая тренировка (~30 мин)</div>
@@ -572,14 +578,18 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <p class="pm-focus">Закрепляем технику. На лекции – про эволюционную реакцию стресса, когда плечи закрывают шею, и как из этого состояния выходить.</p>
     </div>
 
-    <div class="program-card final-card">
-      <div class="pm-num">Модуль 5 · Бонус и итог</div>
-      <div class="pm-title">Дальше</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Бонус‑аудио: практика расслабления (~30 мин)</div>
-        <div class="pm-lesson"><div class="pm-lesson-dot"></div>Финал: что дальше – путь после курса</div>
+    <div class="program-card final-card program-card--wide">
+      <div>
+        <div class="pm-num">После курса</div>
+        <div class="pm-title">Бонус и план дальше</div>
       </div>
-      <p class="pm-focus">Аудио‑нидру слушать в кровати, в дороге, в обед. И короткий итог: «Три недели тренируемся, четвёртая – отдых. И так три цикла, потом месяц отдых».</p>
+      <div>
+        <div class="pm-lessons">
+          <div class="pm-lesson"><div class="pm-lesson-dot"></div>Бонус‑аудио: практика расслабления (~30 мин) – слушать в кровати, в дороге, в обед</div>
+          <div class="pm-lesson"><div class="pm-lesson-dot"></div>Финальный урок: как заниматься после курса</div>
+        </div>
+        <p class="pm-focus" style="border-top:none; padding-top:0;">Схема, по которой тренируюсь сам: «Три недели тренируемся, четвёртая – отдых. И так три цикла, потом месяц отдыха».</p>
+      </div>
     </div>
 
   </div>
