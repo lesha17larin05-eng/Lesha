@@ -747,3 +747,45 @@ func (r *Repo) CountUsers(ctx context.Context, search, courseSlug string, verifi
 		search, courseSlug, verified).Scan(&n)
 	return n, err
 }
+
+// ExportUserRow — строка CSV-выгрузки для рассылок.
+type ExportUserRow struct {
+	Email     string
+	Name      string
+	Phone     string
+	CreatedAt time.Time
+	Courses   string // названия курсов через "; "
+}
+
+// ListUsersForExport — пользователи для выгрузки в сервис рассылок.
+// ТОЛЬКО с действующим согласием на рассылку (consent_marketing_at NOT NULL) —
+// по закону о рекламе промо-письма можно слать только им.
+// Фильтры те же, что в ListUsers.
+func (r *Repo) ListUsersForExport(ctx context.Context, search, courseSlug string, verified *bool) ([]ExportUserRow, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT u.email, COALESCE(u.name,''), COALESCE(u.phone,''), u.created_at,
+		        COALESCE((SELECT string_agg(c.title, '; ' ORDER BY c.title)
+		                    FROM enrollments e JOIN courses c ON c.id=e.course_id
+		                   WHERE e.user_id=u.id), '')
+		   FROM users u
+		  WHERE u.consent_marketing_at IS NOT NULL
+		    AND ($1='' OR u.email ILIKE '%'||$1||'%' OR u.name ILIKE '%'||$1||'%' OR u.phone ILIKE '%'||$1||'%')
+		    AND ($2='' OR EXISTS (
+		          SELECT 1 FROM enrollments e JOIN courses c ON c.id=e.course_id
+		           WHERE e.user_id=u.id AND c.slug=$2))
+		    AND ($3::boolean IS NULL OR (u.email_verified_at IS NOT NULL)=$3)
+		  ORDER BY u.created_at DESC`, search, courseSlug, verified)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []ExportUserRow
+	for rows.Next() {
+		var e ExportUserRow
+		if err := rows.Scan(&e.Email, &e.Name, &e.Phone, &e.CreatedAt, &e.Courses); err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	return out, rows.Err()
+}

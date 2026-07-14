@@ -44,6 +44,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestEnrollFreeFlow`                   | Бесплатная запись → курс появляется в `/api/me/courses`. |
 | `TestPaidCheckoutRequiresVerification` | Checkout без `email_verified` → 400 `email_not_verified`. |
 | `TestPaidCheckoutTestModeReturnsFakeURL` | После verify checkout возвращает URL `fake-payment`. |
+| `TestAdminUsersExportCSV`              | Выгрузка admin-only; в CSV только согласившиеся на рассылку; Content-Type text/csv. |
 | `TestAdminUsersFilters`                | /api/admin/users: `?course=` отбирает только с доступом, `?verified=0/1` — по подтверждению email, комбинация работает. |
 | `TestAdminUserCard`                    | Карточка пользователя: закрыта для не-админа; админ видит профиль (согласие ПД не null), доступ (`granted_by=free`), прогресс 1/2 (50%), список уроков, заказ 990 ₽. |
 | `TestLeadsFlow`                        | POST /api/leads: 400 без согласия/имени, 201 при успехе (source нормализуется, status=new); /api/admin/leads закрыт для юзера, доступен админу; PATCH статуса работает, невалидный статус → 400. |
