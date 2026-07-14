@@ -4,17 +4,47 @@ import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const search = Astro.url.searchParams.get('search') || '';
-const { data } = await apiJson<any[]>(`/api/admin/users?search=${encodeURIComponent(search)}`, { cookie });
+const course = Astro.url.searchParams.get('course') || '';
+const verified = Astro.url.searchParams.get('verified') || '';
+const sort = Astro.url.searchParams.get('sort') || '';
+
+const qs = new URLSearchParams();
+if (search) qs.set('search', search);
+if (course) qs.set('course', course);
+if (verified) qs.set('verified', verified);
+if (sort) qs.set('sort', sort);
+const { data } = await apiJson<any[]>(`/api/admin/users?${qs.toString()}`, { cookie });
+
+// курсы для фильтра
+const { data: coursesData } = await apiJson<any[]>('/api/admin/courses', { cookie });
+const courses = Array.isArray(coursesData) ? coursesData : [];
 const user = (Astro.locals as any).user;
 ---
 <Base title="Пользователи" user={user}>
   <AdminNav active="users" />
   <section class="container" style="padding:50px 16px;">
     <h1>Пользователи</h1>
-    <form method="get" style="display:flex; gap:10px; margin:20px 0;">
-      <input class="input" name="search" value={search} placeholder="email или имя" />
-      <button class="btn">Найти</button>
+    <form method="get" class="users-filters">
+      <input class="input" name="search" value={search} placeholder="email, имя или телефон" style="max-width:260px;" />
+      <select class="input" name="course" style="width:auto;">
+        <option value="">Курс: любой</option>
+        {courses.map((c: any) => (
+          <option value={c.slug} selected={course === c.slug}>{c.title}</option>
+        ))}
+      </select>
+      <select class="input" name="verified" style="width:auto;">
+        <option value="">Email: все</option>
+        <option value="1" selected={verified === '1'}>подтверждён</option>
+        <option value="0" selected={verified === '0'}>не подтверждён</option>
+      </select>
+      <select class="input" name="sort" style="width:auto;">
+        <option value="">Сначала новые</option>
+        <option value="last_seen" selected={sort === 'last_seen'}>По последнему визиту</option>
+      </select>
+      <button class="btn">Показать</button>
+      {(search || course || verified || sort) && <a href="/admin/users" class="muted" style="align-self:center;">Сбросить</a>}
     </form>
+    <p class="muted" style="margin-bottom:8px;">Найдено: {(data || []).length}{(data || []).length === 50 ? '+ (показаны первые 50)' : ''}</p>
     <table>
       <thead><tr><th>Email</th><th>Имя</th><th>Телефон</th><th>Роль</th><th>Подтв.</th><th>Last seen</th><th></th></tr></thead>
       <tbody>
@@ -37,6 +67,8 @@ const user = (Astro.locals as any).user;
     </table>
   </section>
   <style is:global>
+    .users-filters { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; align-items: center; }
+    .users-filters .input { width: auto; }
     .btn-del { background: transparent; border: 1px solid #d0d0d0; color: #b34040; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; transition: background 0.15s, color 0.15s; }
     .btn-del:hover { background: #b34040; color: white; border-color: #b34040; }
     .btn-del:disabled { opacity: 0.5; cursor: wait; }
