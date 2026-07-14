@@ -37,21 +37,23 @@ const fmtDate = (s: any) => {
     </header>
 
     <div class="kpi-grid">
-      <div class="kpi kpi-users">
+      <a class="kpi kpi-users kpi-link" href="/admin/users">
         <div class="kpi-icon">👥</div>
         <div class="kpi-body">
           <div class="kpi-label">Всего пользователей</div>
           <div class="kpi-num">{fmt(stats?.users_total ?? 0)}</div>
         </div>
-      </div>
+        <span class="kpi-arrow" aria-hidden="true">→</span>
+      </a>
 
-      <div class="kpi kpi-online">
+      <a class="kpi kpi-online kpi-link" href="/admin/online">
         <div class="kpi-icon"><span class="dot"></span></div>
         <div class="kpi-body">
           <div class="kpi-label">Онлайн сейчас</div>
           <div class="kpi-num" id="online">{fmt(stats?.online ?? 0)}</div>
         </div>
-      </div>
+        <span class="kpi-arrow" aria-hidden="true">→</span>
+      </a>
 
       <div class="kpi kpi-rev">
         <div class="kpi-icon">₽</div>
@@ -125,6 +127,11 @@ const fmtDate = (s: any) => {
       transition: box-shadow .2s, transform .2s;
     }
     @media (hover: hover) { .kpi:hover { box-shadow: 0 8px 24px rgba(26,39,68,.08); transform: translateY(-2px); } }
+    .kpi-link { text-decoration: none; color: inherit; cursor: pointer; position: relative; }
+    .kpi-link:hover { text-decoration: none; }
+    .kpi-arrow { color: var(--text-light); font-size: 18px; flex-shrink: 0; transition: color .15s, transform .15s; }
+    @media (hover: hover) { .kpi-link:hover .kpi-arrow { color: var(--orange); transform: translateX(3px); } }
+    .kpi-link:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
     .kpi-icon {
       flex-shrink: 0; width: 52px; height: 52px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
