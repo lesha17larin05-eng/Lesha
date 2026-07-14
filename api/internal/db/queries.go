@@ -102,11 +102,24 @@ func (r *Repo) TouchLastSeen(ctx context.Context, userID uuid.UUID) {
 	_, _ = r.Pool.Exec(ctx, `UPDATE users SET last_seen_at=now() WHERE id=$1 AND (last_seen_at IS NULL OR last_seen_at < now() - interval '60 seconds')`, userID)
 }
 
-func (r *Repo) ListUsers(ctx context.Context, search string, limit, offset int) ([]*User, error) {
+// ListUsers — список пользователей для админки с фильтрами:
+//   - search — подстрока в email/имени/телефоне;
+//   - courseSlug — только с доступом к курсу (пусто = все);
+//   - verified — nil = все, true/false = по статусу подтверждения email;
+//   - sort — "created" (по умолчанию, новые сверху) или "last_seen".
+func (r *Repo) ListUsers(ctx context.Context, search, courseSlug string, verified *bool, sort string, limit, offset int) ([]*User, error) {
+	orderBy := `created_at DESC`
+	if sort == "last_seen" {
+		orderBy = `last_seen_at DESC NULLS LAST`
+	}
 	rows, err := r.Pool.Query(ctx,
-		`SELECT id,email,'',COALESCE(name,''),COALESCE(phone,''),role,email_verified_at,last_seen_at,created_at FROM users
+		`SELECT id,email,'',COALESCE(name,''),COALESCE(phone,''),role,email_verified_at,last_seen_at,created_at FROM users u
 		 WHERE ($1='' OR email ILIKE '%'||$1||'%' OR name ILIKE '%'||$1||'%' OR phone ILIKE '%'||$1||'%')
-		 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, search, limit, offset)
+		   AND ($2='' OR EXISTS (
+		         SELECT 1 FROM enrollments e JOIN courses c ON c.id=e.course_id
+		          WHERE e.user_id=u.id AND c.slug=$2))
+		   AND ($3::boolean IS NULL OR (email_verified_at IS NOT NULL)=$3)
+		 ORDER BY `+orderBy+` LIMIT $4 OFFSET $5`, search, courseSlug, verified, limit, offset)
 	if err != nil {
 		return nil, err
 	}

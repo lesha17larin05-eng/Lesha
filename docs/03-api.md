@@ -116,3 +116,5 @@ JSON `{"error": "<code>"}`:
 | `PATCH /api/admin/leads/{id}` | Admin. `{status: new|in_progress|done}` → 200; иное → 400 `bad_status`. Пишет `audit_log` (`lead_status`). |
 
 | `GET /api/admin/users/{id}` | Карточка пользователя: профиль+согласия, `courses[]` с прогрессом и поурочной детализацией, `orders[]`. |
+
+| `GET /api/admin/users` | Фильтры: `?search=`, `?course=<slug>` (только с доступом к курсу), `?verified=1|0`, `?sort=last_seen`. |

@@ -1104,3 +1104,48 @@ func TestAdminUserCard(t *testing.T) {
 		t.Fatalf("consent_pd_at must be set after register: %s", s)
 	}
 }
+
+// TestAdminUsersFilters — фильтры списка пользователей: по курсу и по
+// статусу подтверждения email.
+func TestAdminUsersFilters(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	cid, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "flt-course", Title: "Фильтр-курс", Kind: "free", IsPublished: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// A: с курсом и подтверждённым email; B: без курса, не подтверждён
+	ca := newClient(srv)
+	ca.do("POST", "/api/auth/register", map[string]any{"email": "flt-a@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "flt-a@b.ru")
+	_ = repo.MarkEmailVerified(ctx, ua.ID)
+	_ = repo.Grant(ctx, ua.ID, cid, "free", nil)
+	cb := newClient(srv)
+	cb.do("POST", "/api/auth/register", map[string]any{"email": "flt-b@b.ru", "password": "password123", "consent_pd": true})
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{"email": "flt-adm@b.ru", "password": "password123", "consent_pd": true})
+	uadm, _ := repo.GetUserByEmail(ctx, "flt-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, uadm.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "flt-adm@b.ru", "password": "password123"})
+
+	// по курсу: только A
+	r, body := adm.do("GET", "/api/admin/users?course=flt-course", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "flt-a@b.ru") || strings.Contains(string(body), "flt-b@b.ru") {
+		t.Fatalf("course filter: %d %s", r.StatusCode, body)
+	}
+	// не подтверждённые: B есть, A нет
+	r, body = adm.do("GET", "/api/admin/users?verified=0", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "flt-b@b.ru") || strings.Contains(string(body), "flt-a@b.ru") {
+		t.Fatalf("verified=0 filter: %d %s", r.StatusCode, body)
+	}
+	// комбинация: verified=1 + course → только A
+	r, body = adm.do("GET", "/api/admin/users?verified=1&course=flt-course", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "flt-a@b.ru") || strings.Contains(string(body), "flt-b@b.ru") {
+		t.Fatalf("combo filter: %d %s", r.StatusCode, body)
+	}
+}

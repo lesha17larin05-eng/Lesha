@@ -42,8 +42,21 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	if page < 1 {
 		page = 1
 	}
+	// Фильтры: ?course=<slug> — только с доступом к курсу;
+	// ?verified=1|0 — по статусу подтверждения email; ?sort=last_seen.
+	course := r.URL.Query().Get("course")
+	var verified *bool
+	switch r.URL.Query().Get("verified") {
+	case "1", "true":
+		v := true
+		verified = &v
+	case "0", "false":
+		v := false
+		verified = &v
+	}
+	sort := r.URL.Query().Get("sort")
 	limit := 50
-	users, err := a.Repo.ListUsers(r.Context(), q, limit, (page-1)*limit)
+	users, err := a.Repo.ListUsers(r.Context(), q, course, verified, sort, limit, (page-1)*limit)
 	if err != nil {
 		writeErr(w, 500, "db")
 		return
