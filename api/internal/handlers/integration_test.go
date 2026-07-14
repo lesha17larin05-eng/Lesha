@@ -92,6 +92,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
+		r.Get("/api/admin/users/{id}", app.AdminUser)
 		r.Post("/api/admin/courses", app.AdminCreateCourse)
 		r.Get("/api/admin/courses/{id}", app.AdminGetCourse)
 		r.Patch("/api/admin/courses/{id}", app.AdminUpdateCourse)
@@ -1034,5 +1035,72 @@ func TestLeadsFlow(t *testing.T) {
 	r, _ = adm.do("PATCH", "/api/admin/leads/"+leads[0].ID.String(), map[string]string{"status": "hacked"})
 	if r.StatusCode != 400 {
 		t.Fatalf("bad status must be 400, got %d", r.StatusCode)
+	}
+}
+
+// TestAdminUserCard — карточка пользователя в админке: профиль с согласиями,
+// доступы с прогрессом по урокам, заказы. Доступна только админу.
+func TestAdminUserCard(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	// курс с двумя уроками
+	cid, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "card-course", Title: "Курс для карточки", Kind: "free", IsPublished: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	l1, _ := repo.CreateLesson(ctx, db.LessonInput{CourseID: cid, Title: "Урок 1", Slug: "cl1", ContentMD: "x", SortOrder: 1})
+	_, _ = repo.CreateLesson(ctx, db.LessonInput{CourseID: cid, Title: "Урок 2", Slug: "cl2", ContentMD: "x", SortOrder: 2})
+
+	// пользователь: регистрация, доступ, прогресс по одному уроку, заказ
+	uc := newClient(srv)
+	uc.do("POST", "/api/auth/register", map[string]any{
+		"email": "card@b.ru", "password": "password123", "name": "Карточкин", "consent_pd": true})
+	u, _ := repo.GetUserByEmail(ctx, "card@b.ru")
+	if err := repo.Grant(ctx, u.ID, cid, "free", nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.UpsertProgress(ctx, u.ID, l1, true, 120); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := repo.CreateOrder(ctx, u.ID, cid, 990); err != nil {
+		t.Fatal(err)
+	}
+
+	// обычному пользователю карточка недоступна
+	if r, _ := uc.do("GET", "/api/admin/users/"+u.ID.String(), nil); r.StatusCode == 200 {
+		t.Fatalf("user card must be admin-only, got 200")
+	}
+
+	// админ видит всё
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "card-adm@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "card-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "card-adm@b.ru", "password": "password123"})
+
+	r, body := adm.do("GET", "/api/admin/users/"+u.ID.String(), nil)
+	if r.StatusCode != 200 {
+		t.Fatalf("admin user card: %d %s", r.StatusCode, body)
+	}
+	s := string(body)
+	for _, want := range []string{
+		"card@b.ru", "Карточкин",
+		"\"granted_by\":\"free\"",
+		"\"lessons_total\":2", "\"lessons_done\":1", "\"progress_pct\":50",
+		"Урок 1", "Урок 2",
+		"\"order_num\"", "\"amount_rub\":990",
+		"consent_pd_at",
+	} {
+		if !strings.Contains(s, want) {
+			t.Fatalf("card missing %q: %s", want, s)
+		}
+	}
+	// согласие ПД должно быть заполнено (не null)
+	if strings.Contains(s, "\"consent_pd_at\":null") {
+		t.Fatalf("consent_pd_at must be set after register: %s", s)
 	}
 }

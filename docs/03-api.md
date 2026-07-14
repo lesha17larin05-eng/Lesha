@@ -114,3 +114,5 @@ JSON `{"error": "<code>"}`:
 | `POST /api/leads` | Публичный. `{name, contact, message?, source, consent_pd}` → 201. Валидация: имя и контакт (≥5 симв.) обязательны, `consent_pd` обязателен (400 `consent_pd_required`), лимиты длины (400 `too_long`). Неизвестный `source` → `other`. Rate-limit 10/15мин на IP, CSRF обязателен. Шлёт письмо на `LEAD_NOTIFY_EMAIL`. |
 | `GET /api/admin/leads` | Admin. Последние 500 заявок, новые сверху. |
 | `PATCH /api/admin/leads/{id}` | Admin. `{status: new|in_progress|done}` → 200; иное → 400 `bad_status`. Пишет `audit_log` (`lead_status`). |
+
+| `GET /api/admin/users/{id}` | Карточка пользователя: профиль+согласия, `courses[]` с прогрессом и поурочной детализацией, `orders[]`. |

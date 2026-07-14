@@ -615,3 +615,108 @@ func (r *Repo) UpdateLeadStatus(ctx context.Context, id uuid.UUID, status string
 	}
 	return nil
 }
+
+// ---- ADMIN: карточка пользователя ----
+
+// UserConsents — даты согласий (152-ФЗ) для карточки пользователя в админке.
+func (r *Repo) UserConsents(ctx context.Context, userID uuid.UUID) (pdAt, marketingAt *time.Time, err error) {
+	err = r.Pool.QueryRow(ctx,
+		`SELECT consent_pd_at, consent_marketing_at FROM users WHERE id=$1`, userID).Scan(&pdAt, &marketingAt)
+	return
+}
+
+// UserEnrollmentInfo — доступ пользователя к курсу: кто/когда выдал.
+type UserEnrollmentInfo struct {
+	CourseID  uuid.UUID `json:"course_id"`
+	Slug      string    `json:"slug"`
+	Title     string    `json:"title"`
+	Kind      string    `json:"kind"`
+	GrantedBy string    `json:"granted_by"` // purchase | admin | free
+	GrantedAt time.Time `json:"granted_at"`
+}
+
+func (r *Repo) UserEnrollmentsInfo(ctx context.Context, userID uuid.UUID) ([]UserEnrollmentInfo, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT c.id, c.slug, c.title, c.kind, e.granted_by, e.granted_at
+		   FROM enrollments e JOIN courses c ON c.id = e.course_id
+		  WHERE e.user_id = $1 ORDER BY e.granted_at DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []UserEnrollmentInfo
+	for rows.Next() {
+		var e UserEnrollmentInfo
+		if err := rows.Scan(&e.CourseID, &e.Slug, &e.Title, &e.Kind, &e.GrantedBy, &e.GrantedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	return out, rows.Err()
+}
+
+// UserLessonState — состояние одного урока у пользователя (для карточки в админке).
+type UserLessonState struct {
+	LessonID        uuid.UUID  `json:"lesson_id"`
+	Title           string     `json:"title"`
+	SortOrder       int        `json:"sort_order"`
+	DurationSec     int        `json:"duration_sec"`
+	Completed       bool       `json:"completed"`
+	CompletedAt     *time.Time `json:"completed_at,omitempty"`
+	LastPositionSec int        `json:"last_position_sec"`
+	UpdatedAt       *time.Time `json:"updated_at,omitempty"`
+}
+
+func (r *Repo) UserCourseLessons(ctx context.Context, userID, courseID uuid.UUID) ([]UserLessonState, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT l.id, l.title, l.sort_order, l.duration_sec,
+		        (p.completed_at IS NOT NULL) AS completed, p.completed_at,
+		        COALESCE(p.last_position_sec, 0), p.updated_at
+		   FROM lessons l
+		   LEFT JOIN lesson_progress p ON p.lesson_id = l.id AND p.user_id = $1
+		  WHERE l.course_id = $2 ORDER BY l.sort_order`, userID, courseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []UserLessonState
+	for rows.Next() {
+		var s UserLessonState
+		if err := rows.Scan(&s.LessonID, &s.Title, &s.SortOrder, &s.DurationSec, &s.Completed, &s.CompletedAt, &s.LastPositionSec, &s.UpdatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}
+
+// UserOrderInfo — заказ пользователя с названием курса (для карточки в админке).
+type UserOrderInfo struct {
+	ID          uuid.UUID  `json:"id"`
+	OrderNum    int64      `json:"order_num"`
+	CourseTitle string     `json:"course_title"`
+	AmountRub   int        `json:"amount_rub"`
+	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"created_at"`
+	PaidAt      *time.Time `json:"paid_at,omitempty"`
+}
+
+func (r *Repo) OrdersByUser(ctx context.Context, userID uuid.UUID) ([]UserOrderInfo, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT o.id, o.order_num, c.title, o.amount_rub, o.status, o.created_at, o.paid_at
+		   FROM orders o JOIN courses c ON c.id = o.course_id
+		  WHERE o.user_id = $1 ORDER BY o.created_at DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []UserOrderInfo
+	for rows.Next() {
+		var o UserOrderInfo
+		if err := rows.Scan(&o.ID, &o.OrderNum, &o.CourseTitle, &o.AmountRub, &o.Status, &o.CreatedAt, &o.PaidAt); err != nil {
+			return nil, err
+		}
+		out = append(out, o)
+	}
+	return out, rows.Err()
+}

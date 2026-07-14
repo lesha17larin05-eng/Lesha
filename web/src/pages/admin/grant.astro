@@ -9,6 +9,8 @@ const user = (Astro.locals as any).user;
 // они открыты любому зарегистрированному. В админке оставляем только платные.
 const FREE_COURSES = new Set(['myagkiy-start']);
 const courses = (Array.isArray(data) ? data : []).filter((c: any) => !FREE_COURSES.has(c.slug));
+// ?email=... — предзаполнение из карточки пользователя (/admin/users/[id])
+const prefillEmail = Astro.url.searchParams.get('email') || '';
 ---
 <Base title="Выдать доступ (админ)" user={user}>
   <AdminNav active="grant" />
@@ -32,7 +34,7 @@ const courses = (Array.isArray(data) ? data : []).filter((c: any) => !FREE_COURS
       <div>
         <label class="label">Email (по одному в строке, можно через запятую)</label>
         <textarea class="input" name="emails" rows="4" required
-          placeholder="ivan@example.com&#10;maria@example.com&#10;peter@example.com"></textarea>
+          placeholder="ivan@example.com&#10;maria@example.com&#10;peter@example.com">{prefillEmail}</textarea>
         <p class="muted" style="font-size:13px; margin-top:6px;">
           Поддерживается до нескольких email сразу. Лишние пробелы и пустые
           строки игнорируются. Регистр не важен.
