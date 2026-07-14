@@ -61,6 +61,7 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
+	total, _ := a.Repo.CountUsers(r.Context(), q, course, verified)
 	out := make([]map[string]any, 0, len(users))
 	for _, u := range users {
 		out = append(out, map[string]any{
@@ -68,7 +69,9 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 			"email_verified": u.EmailVerifiedAt != nil, "last_seen_at": u.LastSeenAt, "created_at": u.CreatedAt,
 		})
 	}
-	writeJSON(w, 200, out)
+	writeJSON(w, 200, map[string]any{
+		"users": out, "total": total, "page": page, "per_page": limit,
+	})
 }
 
 // AdminUser — полная карточка пользователя: профиль + согласия (152-ФЗ) +

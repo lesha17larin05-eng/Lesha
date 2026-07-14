@@ -733,3 +733,17 @@ func (r *Repo) OrdersByUser(ctx context.Context, userID uuid.UUID) ([]UserOrderI
 	}
 	return out, rows.Err()
 }
+
+// CountUsers — точное количество пользователей под те же фильтры, что ListUsers.
+func (r *Repo) CountUsers(ctx context.Context, search, courseSlug string, verified *bool) (int, error) {
+	var n int
+	err := r.Pool.QueryRow(ctx,
+		`SELECT count(*) FROM users u
+		 WHERE ($1='' OR email ILIKE '%'||$1||'%' OR name ILIKE '%'||$1||'%' OR phone ILIKE '%'||$1||'%')
+		   AND ($2='' OR EXISTS (
+		         SELECT 1 FROM enrollments e JOIN courses c ON c.id=e.course_id
+		          WHERE e.user_id=u.id AND c.slug=$2))
+		   AND ($3::boolean IS NULL OR (email_verified_at IS NOT NULL)=$3)`,
+		search, courseSlug, verified).Scan(&n)
+	return n, err
+}
