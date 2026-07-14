@@ -44,6 +44,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestEnrollFreeFlow`                   | Бесплатная запись → курс появляется в `/api/me/courses`. |
 | `TestPaidCheckoutRequiresVerification` | Checkout без `email_verified` → 400 `email_not_verified`. |
 | `TestPaidCheckoutTestModeReturnsFakeURL` | После verify checkout возвращает URL `fake-payment`. |
+| `TestAdminUserCard`                    | Карточка пользователя: закрыта для не-админа; админ видит профиль (согласие ПД не null), доступ (`granted_by=free`), прогресс 1/2 (50%), список уроков, заказ 990 ₽. |
 | `TestLeadsFlow`                        | POST /api/leads: 400 без согласия/имени, 201 при успехе (source нормализуется, status=new); /api/admin/leads закрыт для юзера, доступен админу; PATCH статуса работает, невалидный статус → 400. |
 | `TestCheckoutTariffPresets`            | Курс `zdorovaya-spina`: `?tariff=self` → order.AmountRub=3990, `?tariff=support` → 12990, без `?tariff` → 400 `tariff_required`, неизвестный → 400 `bad_tariff`, `?tariff=test10` обычному юзеру → 400 `bad_tariff`, админу → 200 и AmountRub=10. |
 | `TestAdminEndpointsRequireAdminRole`   | Юзер без `role=admin` → 403 на `/api/admin/stats`. |

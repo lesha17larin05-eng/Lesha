@@ -25,7 +25,8 @@ web/src/
       settings.astro              — имя/пароль
     admin/
       index.astro                 — дашборд (stats + последние оплаты)
-      users.astro
+      users.astro                 — список (email → ссылка на карточку)
+      users/[id].astro            — карточка пользователя: профиль/согласия, курсы с прогрессом и уроками, оплаты; ссылки на «Выдать доступ» (grant предзаполняется через ?email=)
       courses.astro               — таблица курсов + кнопка «+ Создать курс» (открывает модалку); по клику «Открыть» — переход на страницу курса
       courses/
         [id].astro                — редактор курса: метаданные (collapsible), модули (создание/редактирование/удаление + reorder ↑/↓), уроки сгруппированы по модулям, edit/delete/reorder, модалка с HTML-редактором (toolbar + live preview) + загрузка видео. Использует web-компоненты `<lesson-editor>` и `<module-editor>` из `/admin-course-editor.js`. HTML сохраняется в `lessons.content_md` и рендерится через `marked.parse` (HTML проходит насквозь). |

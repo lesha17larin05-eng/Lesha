@@ -1,0 +1,122 @@
+---
+import Base from '../../../layouts/Base.astro';
+import AdminNav from '../../../components/AdminNav.astro';
+import { apiJson } from '../../../lib/api';
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const { id } = Astro.params;
+const { status, data } = await apiJson<any>(`/api/admin/users/${id}`, { cookie });
+if (status !== 200 || !data?.user) {
+  return new Response('Not found', { status: 404 });
+}
+const u = data.user;
+const courses = Array.isArray(data.courses) ? data.courses : [];
+const orders = Array.isArray(data.orders) ? data.orders : [];
+const me = (Astro.locals as any).user;
+
+const fmt = (iso?: string | null, withTime = true) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('ru-RU') + (withTime ? ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '');
+};
+const grantedByLabel: Record<string, string> = { purchase: 'покупка', admin: 'выдан админом', free: 'бесплатный' };
+const orderStatusLabel: Record<string, string> = { pending: 'ожидает оплаты', paid: 'оплачен', failed: 'ошибка' };
+const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
+---
+<Base title={`${u.name || u.email} — пользователь`} user={me}>
+  <AdminNav active="users" />
+  <section class="container" style="padding:50px 16px; max-width:960px;">
+    <p><a href="/admin/users" class="muted">← Все пользователи</a></p>
+    <h1 style="margin-top:10px;">{u.name || u.email}</h1>
+    <div class="uc-badges">
+      {u.role === 'admin' && <span class="badge paid">админ</span>}
+      <span class={`badge ${u.email_verified_at ? 'owned' : ''}`} style={!u.email_verified_at ? 'background:#ffe4e4; color:#a02020;' : ''}>
+        {u.email_verified_at ? 'email подтверждён' : 'email не подтверждён'}
+      </span>
+    </div>
+
+    <h2 style="margin-top:32px;">Профиль</h2>
+    <table class="uc-profile">
+      <tbody>
+        <tr><th>Email</th><td><a href={`mailto:${u.email}`}>{u.email}</a></td></tr>
+        <tr><th>Имя</th><td>{u.name || '—'}</td></tr>
+        <tr><th>Телефон</th><td>{u.phone ? <a href={`tel:${u.phone}`}>{u.phone}</a> : '—'}</td></tr>
+        <tr><th>Зарегистрирован</th><td>{fmt(u.created_at)}</td></tr>
+        <tr><th>Последний визит</th><td>{fmt(u.last_seen_at)}</td></tr>
+        <tr><th>Email подтверждён</th><td>{fmt(u.email_verified_at)}</td></tr>
+        <tr><th>Согласие на обработку ПД</th><td>{fmt(u.consent_pd_at)}</td></tr>
+        <tr><th>Согласие на рассылку</th><td>{u.consent_marketing_at ? fmt(u.consent_marketing_at) : 'не давал(а)'}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top:36px;">Курсы и прогресс</h2>
+    {courses.length === 0
+      ? <p class="muted">Доступов к курсам нет. <a href={`/admin/grant?email=${encodeURIComponent(u.email)}`}>Выдать доступ →</a></p>
+      : courses.map((c: any) => (
+          <div class="uc-course card" style="margin-bottom:16px;">
+            <div class="uc-course-head">
+              <div>
+                <strong>{c.title}</strong>
+                <span class={`badge ${c.kind === 'free' ? 'free' : 'paid'}`} style="margin-left:8px;">{c.kind === 'free' ? 'бесплатный' : 'платный'}</span>
+              </div>
+              <span class="muted">{grantedByLabel[c.granted_by] ?? c.granted_by} · {fmt(c.granted_at, false)}</span>
+            </div>
+            <div class="uc-progress-row">
+              <div class="progress" style="flex:1;"><i style={`width:${c.progress_pct}%`}></i></div>
+              <span class="muted" style="white-space:nowrap;">{c.lessons_done}/{c.lessons_total} уроков · {c.progress_pct}%</span>
+            </div>
+            {c.last_activity_at && <p class="muted" style="margin:6px 0 0;">Последняя активность по курсу: {fmt(c.last_activity_at)}</p>}
+            {Array.isArray(c.lessons) && c.lessons.length > 0 && (
+              <details style="margin-top:12px;">
+                <summary class="uc-lessons-toggle">Уроки подробно</summary>
+                <table style="margin-top:10px;">
+                  <thead><tr><th></th><th>Урок</th><th>Длит.</th><th>Пройден</th><th>Последнее касание</th></tr></thead>
+                  <tbody>
+                    {c.lessons.map((l: any) => (
+                      <tr>
+                        <td>{l.completed ? '✅' : (l.updated_at ? '▶️' : '—')}</td>
+                        <td>{l.title}</td>
+                        <td class="muted">{mins(l.duration_sec)}</td>
+                        <td class="muted">{l.completed ? fmt(l.completed_at) : (l.updated_at ? 'начат' : '—')}</td>
+                        <td class="muted">{fmt(l.updated_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
+            )}
+          </div>
+        ))
+    }
+    {courses.length > 0 && <p><a href={`/admin/grant?email=${encodeURIComponent(u.email)}`} class="muted">Выдать ещё один доступ →</a></p>}
+
+    <h2 style="margin-top:36px;">Оплаты</h2>
+    {orders.length === 0
+      ? <p class="muted">Заказов нет.</p>
+      : <table>
+          <thead><tr><th>№</th><th>Курс</th><th>Сумма</th><th>Статус</th><th>Создан</th><th>Оплачен</th></tr></thead>
+          <tbody>
+            {orders.map((o: any) => (
+              <tr>
+                <td>{o.order_num}</td>
+                <td>{o.course_title}</td>
+                <td>{o.amount_rub} ₽</td>
+                <td>{orderStatusLabel[o.status] ?? o.status}</td>
+                <td class="muted">{fmt(o.created_at)}</td>
+                <td class="muted">{fmt(o.paid_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+    }
+  </section>
+  <style>
+    .uc-badges { display: flex; gap: 8px; margin-top: 4px; }
+    .uc-profile th { width: 240px; background: var(--cream); color: var(--navy); font-weight: 600; text-align: left; }
+    .uc-course-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .uc-progress-row { display: flex; align-items: center; gap: 14px; }
+    .uc-lessons-toggle { cursor: pointer; font-size: 14px; color: var(--orange); font-weight: 600; }
+    .uc-lessons-toggle:hover { text-decoration: underline; }
+  </style>
+</Base>

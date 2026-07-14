@@ -58,6 +58,8 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
+// AdminUser — полная карточка пользователя: профиль + согласия (152-ФЗ) +
+// доступы с прогрессом и поурочной детализацией + заказы.
 func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
@@ -69,19 +71,46 @@ func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "not_found")
 		return
 	}
-	enrolls, _ := a.Repo.UserEnrollments(r.Context(), id)
-	orders, _ := a.Repo.ListOrders(r.Context(), "", nil, nil, 100, 0)
-	// filter to this user
-	myOrders := []*db.Order{}
-	for _, o := range orders {
-		if o.UserID == id {
-			myOrders = append(myOrders, o)
+	pdAt, mktAt, _ := a.Repo.UserConsents(r.Context(), id)
+
+	enrolls, _ := a.Repo.UserEnrollmentsInfo(r.Context(), id)
+	courses := make([]map[string]any, 0, len(enrolls))
+	for _, e := range enrolls {
+		total, done, _ := a.Repo.CourseProgress(r.Context(), id, e.CourseID)
+		lessons, _ := a.Repo.UserCourseLessons(r.Context(), id, e.CourseID)
+		// последняя активность по курсу — самый свежий updated_at из уроков
+		var lastActivity *time.Time
+		for _, l := range lessons {
+			if l.UpdatedAt != nil && (lastActivity == nil || l.UpdatedAt.After(*lastActivity)) {
+				lastActivity = l.UpdatedAt
+			}
 		}
+		pct := 0
+		if total > 0 {
+			pct = done * 100 / total
+		}
+		courses = append(courses, map[string]any{
+			"course_id": e.CourseID, "slug": e.Slug, "title": e.Title, "kind": e.Kind,
+			"granted_by": e.GrantedBy, "granted_at": e.GrantedAt,
+			"lessons_total": total, "lessons_done": done, "progress_pct": pct,
+			"last_activity_at": lastActivity,
+			"lessons":          lessons,
+		})
 	}
+
+	orders, _ := a.Repo.OrdersByUser(r.Context(), id)
+	if orders == nil {
+		orders = []db.UserOrderInfo{}
+	}
+
 	writeJSON(w, 200, map[string]any{
-		"user":        u,
-		"enrollments": enrolls,
-		"orders":      myOrders,
+		"user": map[string]any{
+			"id": u.ID, "email": u.Email, "name": u.Name, "phone": u.Phone, "role": u.Role,
+			"email_verified_at": u.EmailVerifiedAt, "created_at": u.CreatedAt, "last_seen_at": u.LastSeenAt,
+			"consent_pd_at": pdAt, "consent_marketing_at": mktAt,
+		},
+		"courses": courses,
+		"orders":  orders,
 	})
 }
 
