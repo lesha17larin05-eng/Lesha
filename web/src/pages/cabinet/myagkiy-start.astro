@@ -24,6 +24,7 @@ const videoLinks: Record<string, { youtube: string; vk: string }> = {
 };
 
 const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
+  id: l.id,
   num: i,
   slug: l.slug,
   title: l.title,
@@ -237,7 +238,7 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
             </div>
             {/* 2. Плеер */}
             <div class="ms-cab-video-wrap" data-video-wrap>
-              <video controls preload="metadata" playsinline src={mp4Url}></video>
+              <video controls preload="metadata" playsinline src={mp4Url} data-lesson-id={l.id}></video>
               <button type="button" class="ms-cab-bigplay" aria-label="Воспроизвести">
                 <svg class="icon-play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="6,3 22,12 6,21"/></svg>
               </button>
@@ -321,5 +322,34 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
       if (activeVideo.paused) activeVideo.play();
       else activeVideo.pause();
     }, true);
+
+    // ─── Прогресс уроков → POST /api/lessons/{id}/progress ───────────
+    // «Начал» при play, позиция каждые 30 секунд и на паузе,
+    // «пройден» на 90% просмотра или по окончании.
+    // CSRF подставляет fetch-обёртка SiteLayout. Повторные отправки
+    // безопасны: бэкенд хранит максимум позиции и первый completed_at.
+    const sendProgress = (id: string, completed: boolean, pos: number) => {
+      fetch(`/api/lessons/${id}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ completed, last_position_sec: Math.floor(pos || 0) }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+    document.querySelectorAll<HTMLVideoElement>('video[data-lesson-id]').forEach((v) => {
+      const id = v.dataset.lessonId || '';
+      if (!id) return;
+      let lastSent = 0;
+      let done = false;
+      v.addEventListener('play', () => { if (!done) sendProgress(id, false, v.currentTime); });
+      v.addEventListener('timeupdate', () => {
+        if (done || !v.duration) return;
+        if (v.currentTime / v.duration >= 0.9) { done = true; sendProgress(id, true, v.currentTime); return; }
+        if (v.currentTime - lastSent >= 30) { lastSent = v.currentTime; sendProgress(id, false, v.currentTime); }
+      });
+      v.addEventListener('pause', () => { if (!done) sendProgress(id, false, v.currentTime); });
+      v.addEventListener('ended', () => { if (!done) { done = true; sendProgress(id, true, v.duration || v.currentTime); } });
+    });
   </script>
 </SiteLayout>
