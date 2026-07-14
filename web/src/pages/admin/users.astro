@@ -8,12 +8,25 @@ const course = Astro.url.searchParams.get('course') || '';
 const verified = Astro.url.searchParams.get('verified') || '';
 const sort = Astro.url.searchParams.get('sort') || '';
 
+const page = Math.max(1, parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);
+
 const qs = new URLSearchParams();
 if (search) qs.set('search', search);
 if (course) qs.set('course', course);
 if (verified) qs.set('verified', verified);
 if (sort) qs.set('sort', sort);
-const { data } = await apiJson<any[]>(`/api/admin/users?${qs.toString()}`, { cookie });
+if (page > 1) qs.set('page', String(page));
+const { data: resp } = await apiJson<any>(`/api/admin/users?${qs.toString()}`, { cookie });
+const data = Array.isArray(resp?.users) ? resp.users : [];
+const total: number = resp?.total ?? data.length;
+const perPage: number = resp?.per_page ?? 50;
+const pages = Math.max(1, Math.ceil(total / perPage));
+const pageUrl = (p: number) => {
+  const u = new URLSearchParams(qs);
+  if (p > 1) u.set('page', String(p)); else u.delete('page');
+  const s = u.toString();
+  return '/admin/users' + (s ? '?' + s : '');
+};
 
 // курсы для фильтра
 const { data: coursesData } = await apiJson<any[]>('/api/admin/courses', { cookie });
@@ -44,7 +57,9 @@ const user = (Astro.locals as any).user;
       <button class="btn">Показать</button>
       {(search || course || verified || sort) && <a href="/admin/users" class="muted" style="align-self:center;">Сбросить</a>}
     </form>
-    <p class="muted" style="margin-bottom:8px;">Найдено: {(data || []).length}{(data || []).length === 50 ? '+ (показаны первые 50)' : ''}</p>
+    <p class="muted" style="margin-bottom:8px;">
+      Найдено: {total}{pages > 1 ? ` · страница ${page} из ${pages}` : ''}
+    </p>
     <table>
       <thead><tr><th>Email</th><th>Имя</th><th>Телефон</th><th>Роль</th><th>Подтв.</th><th>Last seen</th><th></th></tr></thead>
       <tbody>
@@ -65,6 +80,12 @@ const user = (Astro.locals as any).user;
         ))}
       </tbody>
     </table>
+    {pages > 1 && (
+      <p style="margin-top:16px; display:flex; gap:14px;">
+        {page > 1 && <a href={pageUrl(page - 1)}>← Назад</a>}
+        {page < pages && <a href={pageUrl(page + 1)}>Вперёд →</a>}
+      </p>
+    )}
   </section>
   <style is:global>
     .users-filters { display: flex; gap: 10px; margin: 20px 0; flex-wrap: wrap; align-items: center; }

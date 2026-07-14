@@ -55,7 +55,7 @@ const fmtDate = (s: any) => {
         <span class="kpi-arrow" aria-hidden="true">→</span>
       </a>
 
-      <div class="kpi kpi-rev">
+      <a class="kpi kpi-rev kpi-link" href="/admin/orders?status=paid">
         <div class="kpi-icon">₽</div>
         <div class="kpi-body">
           <div class="kpi-label">Выручка</div>
@@ -65,7 +65,8 @@ const fmtDate = (s: any) => {
             <div><span class="rev-period">Месяц</span><span class="rev-val">{fmt(stats?.revenue_month ?? 0)} ₽</span></div>
           </div>
         </div>
-      </div>
+        <span class="kpi-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
 
     <section class="panel">
