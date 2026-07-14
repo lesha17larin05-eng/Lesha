@@ -92,6 +92,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
+		r.Get("/api/admin/users/export.csv", app.AdminUsersExport)
 		r.Get("/api/admin/users/{id}", app.AdminUser)
 		r.Post("/api/admin/courses", app.AdminCreateCourse)
 		r.Get("/api/admin/courses/{id}", app.AdminGetCourse)
@@ -1147,5 +1148,48 @@ func TestAdminUsersFilters(t *testing.T) {
 	r, body = adm.do("GET", "/api/admin/users?verified=1&course=flt-course", nil)
 	if r.StatusCode != 200 || !strings.Contains(string(body), "flt-a@b.ru") || strings.Contains(string(body), "flt-b@b.ru") {
 		t.Fatalf("combo filter: %d %s", r.StatusCode, body)
+	}
+}
+
+// TestAdminUsersExportCSV — CSV-выгрузка для рассылок: только пользователи
+// с согласием на маркетинг, admin-only, корректный Content-Type.
+func TestAdminUsersExportCSV(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	// A согласен на рассылку, B — нет
+	ca := newClient(srv)
+	ca.do("POST", "/api/auth/register", map[string]any{
+		"email": "exp-a@b.ru", "password": "password123", "name": "Экспортов",
+		"consent_pd": true, "consent_marketing": true})
+	cb := newClient(srv)
+	cb.do("POST", "/api/auth/register", map[string]any{
+		"email": "exp-b@b.ru", "password": "password123", "consent_pd": true})
+
+	// не-админу закрыто
+	ca.do("POST", "/api/auth/login", map[string]string{"email": "exp-a@b.ru", "password": "password123"})
+	if r, _ := ca.do("GET", "/api/admin/users/export.csv", nil); r.StatusCode == 200 {
+		t.Fatalf("export must be admin-only, got 200")
+	}
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{"email": "exp-adm@b.ru", "password": "password123", "consent_pd": true})
+	uadm, _ := repo.GetUserByEmail(ctx, "exp-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, uadm.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "exp-adm@b.ru", "password": "password123"})
+
+	r, body := adm.do("GET", "/api/admin/users/export.csv", nil)
+	if r.StatusCode != 200 {
+		t.Fatalf("export: %d %s", r.StatusCode, body)
+	}
+	if ct := r.Header.Get("Content-Type"); !strings.Contains(ct, "text/csv") {
+		t.Fatalf("content-type: %s", ct)
+	}
+	s := string(body)
+	if !strings.Contains(s, "exp-a@b.ru") || !strings.Contains(s, "Экспортов") {
+		t.Fatalf("csv missing subscriber: %s", s)
+	}
+	if strings.Contains(s, "exp-b@b.ru") {
+		t.Fatalf("csv must contain ONLY marketing-consented users: %s", s)
 	}
 }

@@ -100,6 +100,7 @@ func main() {
 		r.Use(middleware.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
 		r.Get("/api/admin/users", app.AdminUsers)
+		r.Get("/api/admin/users/export.csv", app.AdminUsersExport)
 		r.Get("/api/admin/users/{id}", app.AdminUser)
 		r.Delete("/api/admin/users/{id}", app.AdminDeleteUser)
 		r.Post("/api/admin/users/{id}/enrollments", app.AdminGrant)

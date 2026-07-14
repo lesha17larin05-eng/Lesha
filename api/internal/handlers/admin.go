@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -683,4 +684,39 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{"results": out, "course": map[string]any{
 		"slug": c.Slug, "title": c.Title,
 	}})
+}
+
+// AdminUsersExport — CSV-выгрузка подписчиков для сервиса рассылок.
+// Только пользователи с согласием на рассылку; фильтры как у списка.
+// UTF-8 BOM — чтобы Excel корректно открывал кириллицу.
+func (a *App) AdminUsersExport(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("search")
+	course := r.URL.Query().Get("course")
+	var verified *bool
+	switch r.URL.Query().Get("verified") {
+	case "1", "true":
+		v := true
+		verified = &v
+	case "0", "false":
+		v := false
+		verified = &v
+	}
+	rows, err := a.Repo.ListUsersForExport(r.Context(), q, course, verified)
+	if err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	adminID, _ := middleware.UserID(r.Context())
+	a.Repo.Audit(r.Context(), adminID, "users_export_csv", "user", nil,
+		map[string]any{"count": len(rows), "course": course, "verified": r.URL.Query().Get("verified")})
+
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="subscribers.csv"`)
+	_, _ = w.Write([]byte{0xEF, 0xBB, 0xBF}) // BOM для Excel
+	cw := csv.NewWriter(w)
+	_ = cw.Write([]string{"email", "name", "phone", "registered_at", "courses"})
+	for _, u := range rows {
+		_ = cw.Write([]string{u.Email, u.Name, u.Phone, u.CreatedAt.Format("2006-01-02"), u.Courses})
+	}
+	cw.Flush()
 }
