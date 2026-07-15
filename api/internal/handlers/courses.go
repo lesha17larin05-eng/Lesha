@@ -164,3 +164,15 @@ func (a *App) EnrollFree(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
+
+// MeContinue — последняя учебная активность текущего пользователя
+// для блока «Продолжить с того же места» в кабинете. 204 — активности нет.
+func (a *App) MeContinue(w http.ResponseWriter, r *http.Request) {
+	uid, _ := middleware.UserID(r.Context())
+	act, err := a.Repo.LastActivityForUser(r.Context(), uid)
+	if err != nil {
+		w.WriteHeader(204)
+		return
+	}
+	writeJSON(w, 200, act)
+}

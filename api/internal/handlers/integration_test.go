@@ -67,6 +67,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/logout", app.Logout)
 		r.Post("/refresh", app.Refresh)
 		r.Post("/verify-email", app.VerifyEmail)
+		r.Post("/resend-verification", app.ResendVerification)
 	})
 	r.Get("/api/courses", app.ListCourses)
 	r.Get("/api/courses/{slug}", app.GetCourse)
@@ -78,6 +79,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/me", app.Me)
 		r.Patch("/api/me", app.PatchMe)
 		r.Get("/api/me/courses", app.MyCourses)
+		r.Get("/api/me/continue", app.MeContinue)
 		r.Post("/api/lessons/{id}/progress", app.PostProgress)
 		r.Post("/api/courses/{slug}/enroll-free", app.EnrollFree)
 		r.Post("/api/courses/{slug}/checkout", app.Checkout)
@@ -1235,5 +1237,36 @@ func TestAdminActivity(t *testing.T) {
 	r, body = adm.do("GET", "/api/admin/activity?course=no-such", nil)
 	if r.StatusCode != 200 || strings.Contains(string(body), "act@b.ru") {
 		t.Fatalf("activity filter: %d %s", r.StatusCode, body)
+	}
+}
+
+// TestResendVerification — повторное письмо подтверждения: 200 и новый токен
+// для неподтверждённого; для неизвестного email тоже 200 (не раскрываем базу).
+func TestResendVerification(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	c := newClient(srv)
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "rv@b.ru", "password": "password123", "consent_pd": true})
+	u, _ := repo.GetUserByEmail(ctx, "rv@b.ru")
+
+	var before int
+	_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM email_verification_tokens WHERE user_id=$1`, u.ID).Scan(&before)
+
+	r, body := c.do("POST", "/api/auth/resend-verification", map[string]string{"email": "rv@b.ru"})
+	if r.StatusCode != 200 {
+		t.Fatalf("resend: %d %s", r.StatusCode, body)
+	}
+	var after int
+	_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM email_verification_tokens WHERE user_id=$1`, u.ID).Scan(&after)
+	if after != before+1 {
+		t.Fatalf("token not created: before=%d after=%d", before, after)
+	}
+
+	// неизвестный email → всё равно 200
+	r, _ = c.do("POST", "/api/auth/resend-verification", map[string]string{"email": "ghost@b.ru"})
+	if r.StatusCode != 200 {
+		t.Fatalf("resend unknown: %d", r.StatusCode)
 	}
 }

@@ -31,6 +31,14 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
   desc: l.content_md || '',
   video: videoLinks[l.slug] ?? { youtube: '', vk: '' },
 }));
+
+// Cross-sell: если бесплатный курс пройден целиком, а «Здоровой спины» ещё нет —
+// показываем поздравление с предложением платного курса.
+const { data: myCourses } = await apiJson<any[]>('/api/me/courses', { cookie });
+const my = Array.isArray(myCourses) ? myCourses : [];
+const msProgress = my.find((c: any) => c.slug === 'myagkiy-start')?.progress_pct ?? 0;
+const hasZS = my.some((c: any) => c.slug === 'zdorovaya-spina');
+const showCrossSell = msProgress >= 100 && !hasZS;
 ---
 <SiteLayout title="Мягкий старт — уроки курса" active="course" padTop={true}>
   <style>
@@ -205,12 +213,31 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
 
     @media (max-width: 600px) {
       .ms-cab-page { padding: 40px 16px 80px; }
+      .ms-crosssell { padding: 22px 20px; }
       .ms-cab-lesson-head { padding: 20px 20px 16px; }
       .ms-cab-video-wrap { margin: 0 16px 16px; }
       .ms-cab-platforms { margin: 0 16px 20px; }
       .ms-cab-feedback { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
       .ms-cab-feedback-btn { width: 100%; justify-content: center; }
     }
+
+    /* ─── Cross-sell после прохождения курса ─── */
+    .ms-crosssell {
+      background: var(--navy); border-radius: 18px; padding: 28px 30px;
+      margin-bottom: 32px; color: white;
+      border-left: 4px solid var(--orange);
+    }
+    .ms-crosssell-label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8bb8f0; margin-bottom: 10px; }
+    .ms-crosssell-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; line-height: 1.25; margin-bottom: 10px; }
+    .ms-crosssell-text { font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.7; margin: 0 0 18px; }
+    .ms-crosssell-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--orange); color: white; text-decoration: none;
+      padding: 13px 26px; border-radius: 100px; font-size: 15px; font-weight: 600;
+      transition: background 0.2s, transform 0.15s;
+    }
+    @media (hover: hover) { .ms-crosssell-btn:hover { background: var(--orange-warm); transform: translateY(-1px); } }
+    .ms-crosssell-btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
   </style>
 
   <div class="ms-cab-page">
@@ -222,6 +249,15 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
 
     <h1 class="ms-cab-title">Мягкий <em>старт</em></h1>
     <p class="ms-cab-subtitle">Все уроки курса — смотрите в любом порядке</p>
+
+    {showCrossSell && (
+      <div class="ms-crosssell">
+        <div class="ms-crosssell-label">🎉 Вы прошли весь курс — поздравляем!</div>
+        <div class="ms-crosssell-title">Понравился формат? Следующий шаг — «Здоровая спина»</div>
+        <p class="ms-crosssell-text">12 уроков за 3 недели: полноценные тренировки, лекции о том, как устроена спина, и аудио-практика расслабления. Урок «Тренировка для спины», который вы уже прошли, — как раз оттуда.</p>
+        <a href="/courses/zdorovaya-spina" class="ms-crosssell-btn" onclick="window.reachGoal && window.reachGoal('crosssell_click')">Посмотреть программу курса →</a>
+      </div>
+    )}
 
     <div class="ms-cab-lessons">
       {lessons.map(l => {
