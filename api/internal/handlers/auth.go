@@ -341,3 +341,36 @@ func (a *App) PatchMe(w http.ResponseWriter, r *http.Request) {
 // helper for tests
 var _ = errors.New
 var _ = db.ErrNotFound
+
+type resendReq struct{ Email string }
+
+// ResendVerification — повторная отправка письма подтверждения email.
+// Не раскрывает существование адреса: ответ всегда 200 {ok}.
+// Rate-limit — общий для /api/auth/* (см. main.go).
+func (a *App) ResendVerification(w http.ResponseWriter, r *http.Request) {
+	var in resendReq
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		writeErr(w, 400, "bad_json")
+		return
+	}
+	email := strings.TrimSpace(strings.ToLower(in.Email))
+	if !strings.Contains(email, "@") {
+		writeErr(w, 400, "invalid_input")
+		return
+	}
+	u, err := a.Repo.GetUserByEmail(r.Context(), email)
+	if err == nil && u.EmailVerifiedAt == nil {
+		rawTok, hashTok, tokErr := auth.RandomToken(32)
+		if tokErr == nil {
+			_ = a.Repo.CreateEmailToken(r.Context(), u.ID, hashTok, 24*time.Hour)
+			link := a.Cfg.AppHost + "/auth/verify?token=" + rawTok
+			a.Mail.Async(email, "Подтвердите почту — доступ к курсу",
+				"<p>Здравствуйте! Вы (или кто-то от вашего имени) запросили повторное письмо подтверждения на сайте Алексея Ларина.</p>"+
+					"<p>Чтобы подтвердить почту и открыть доступ, перейдите по ссылке: "+
+					"<a href=\""+link+"\">"+link+"</a></p>"+
+					"<p>Ссылка действительна 24 часа. Если вы не запрашивали письмо — просто проигнорируйте его.</p>")
+		}
+	}
+	// Всегда ok — не раскрываем, существует ли адрес и подтверждён ли он.
+	writeJSON(w, 200, map[string]any{"ok": 1})
+}

@@ -26,8 +26,48 @@ const styles = `
       <b>Не пришло?</b> Загляните в папку <b>«Спам»</b>. Если нашли — отметьте «Не спам», тогда следующие письма попадут во «Входящие».
     </div>
     <div class="check-email-actions">
+      {email && <button type="button" id="resend-btn" class="resend-btn">Письмо не пришло — отправить ещё раз</button>}
+      <p id="resend-note" class="resend-note" hidden></p>
       <a href="/auth/login">Уже подтвердили — войти</a>
       <a href="/course">На страницу курса</a>
     </div>
   </section>
+  <style is:global>
+    .resend-btn {
+      background: var(--orange); color: white; border: none; cursor: pointer;
+      padding: 13px 26px; border-radius: 100px; font-size: 15px; font-weight: 600;
+      font-family: 'Manrope', sans-serif; transition: background 0.2s;
+    }
+    .resend-btn:hover { background: var(--orange-warm); }
+    .resend-btn:disabled { opacity: 0.6; cursor: wait; }
+    .resend-note { font-size: 14px; color: var(--text-muted); margin: 0; }
+  </style>
+  <script define:vars={{ email }}>
+    const btn = document.getElementById('resend-btn');
+    const note = document.getElementById('resend-note');
+    btn?.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = 'Отправляем…';
+      try {
+        const r = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email }),
+        });
+        if (r.ok) {
+          note.textContent = 'Отправили ещё раз — проверьте почту и папку «Спам».';
+          note.hidden = false;
+          btn.remove();
+          return;
+        }
+        note.textContent = 'Не получилось — подождите пару минут и попробуйте снова.';
+        note.hidden = false;
+      } catch {
+        note.textContent = 'Ошибка сети — попробуйте ещё раз.';
+        note.hidden = false;
+      } finally {
+        if (btn.isConnected) { btn.disabled = false; btn.textContent = 'Письмо не пришло — отправить ещё раз'; }
+      }
+    });
+  </script>
 </SiteLayout>

@@ -4,11 +4,30 @@ import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data: courses } = await apiJson<any[]>('/api/me/courses', { cookie });
 const user = (Astro.locals as any).user;
+
+// «Продолжить с того же места» — последняя учебная активность
+const { data: cont, status: contStatus } = await apiJson<any>('/api/me/continue', { cookie });
+const cabinetPagesSet = new Set(['myagkiy-start', 'zdorovaya-spina']);
+const contHref = cont && contStatus === 200
+  ? (cabinetPagesSet.has(cont.course_slug) ? `/cabinet/${cont.course_slug}#${cont.lesson_slug}` : `/courses/${cont.course_slug}`)
+  : '';
+const contMins = (sec: number) => Math.max(1, Math.round((sec || 0) / 60));
 ---
 <Base title="Личный кабинет" user={user}>
   <section class="container" style="padding:60px 16px;">
     <h1>Здравствуйте, {user?.name || user?.email}</h1>
     {!user?.email_verified && <div class="alert">Подтвердите email — иначе оплата платных курсов недоступна.</div>}
+
+    {contHref && (
+      <a href={contHref} class="continue-card card">
+        <div>
+          <div class="continue-label">{cont.completed ? 'Вы прошли урок — продолжайте!' : 'Продолжить с того же места'}</div>
+          <div class="continue-title">{cont.lesson_title}</div>
+          <div class="muted">{cont.course_title}{!cont.completed && cont.duration_sec ? ` · остановились на ${contMins(cont.last_position_sec)} мин из ${contMins(cont.duration_sec)}` : ''}</div>
+        </div>
+        <span class="continue-arrow" aria-hidden="true">→</span>
+      </a>
+    )}
     <h2 style="margin-top:30px;">Мои курсы</h2>
     <div class="grid grid-3" style="margin-top:18px;">
       {(courses || []).map((c: any) => {
@@ -30,4 +49,16 @@ const user = (Astro.locals as any).user;
       <a href="/cabinet/settings" class="muted">Настройки аккаунта →</a>
     </div>
   </section>
+  <style>
+    .continue-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin-top: 22px; padding: 22px 26px; text-decoration: none; color: inherit;
+      border-left: 4px solid var(--orange);
+    }
+    .continue-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); margin-bottom: 6px; }
+    .continue-title { font-size: 19px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+    .continue-arrow { font-size: 22px; color: var(--text-light); transition: color .15s, transform .15s; flex-shrink: 0; }
+    @media (hover: hover) { .continue-card:hover .continue-arrow { color: var(--orange); transform: translateX(4px); } }
+    .continue-card:hover { text-decoration: none; }
+  </style>
 </Base>

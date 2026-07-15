@@ -304,8 +304,14 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 			u, _ := a.Repo.GetUser(r.Context(), o.UserID)
 			c, _ := a.Repo.GetCourseByID(r.Context(), o.CourseID)
 			if u != nil && c != nil {
-				a.Mail.Async(u.Email, "Доступ к курсу открыт",
-					"<p>Спасибо за оплату! Курс \""+c.Title+"\" доступен в личном кабинете.</p>")
+				cabinetURL := a.Cfg.AppHost + "/cabinet/" + c.Slug
+				a.Mail.Async(u.Email, "Оплата получена — курс «"+c.Title+"» открыт",
+					"<p>Здравствуйте! Спасибо за оплату — доступ к курсу «"+c.Title+"» уже открыт.</p>"+
+						"<p><b>Начать заниматься:</b> <a href=\""+cabinetURL+"\">"+cabinetURL+"</a><br>"+
+						"Уроки открываются в личном кабинете, доступ действует год, темп выбираете сами.</p>"+
+						"<p>Если возникнут вопросы по курсу или оплате — просто ответьте на это письмо "+
+						"или напишите в Телеграм: <a href=\"https://t.me/larin_lesha\">@larin_lesha</a>.</p>"+
+						"<p>Хорошей практики!<br>Алексей Ларин</p>")
 			}
 		}
 	}

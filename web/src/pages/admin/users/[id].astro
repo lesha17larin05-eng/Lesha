@@ -34,7 +34,23 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
       <span class={`badge ${u.email_verified_at ? 'owned' : ''}`} style={!u.email_verified_at ? 'background:#ffe4e4; color:#a02020;' : ''}>
         {u.email_verified_at ? 'email подтверждён' : 'email не подтверждён'}
       </span>
+      {!u.email_verified_at && (
+        <button type="button" id="uc-resend" class="btn secondary" style="padding:5px 14px; font-size:13px;" data-email={u.email}>Отправить подтверждение повторно</button>
+      )}
     </div>
+    <script>
+      const rb = document.getElementById('uc-resend') as HTMLButtonElement | null;
+      rb?.addEventListener('click', async () => {
+        rb.disabled = true; const orig = rb.textContent; rb.textContent = 'Отправляем…';
+        const r = await fetch('/api/auth/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: rb.dataset.email }),
+        }).catch(() => null);
+        rb.textContent = r?.ok ? 'Письмо отправлено ✓' : (orig || '');
+        if (!r?.ok) rb.disabled = false;
+      });
+    </script>
 
     <h2 style="margin-top:32px;">Профиль</h2>
     <table class="uc-profile">

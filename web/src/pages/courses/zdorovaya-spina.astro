@@ -19,8 +19,22 @@ const { styles, body: rawBody } = extractLegacy(rawHtml);
 const reSecondNav = /<nav[\s\S]*?<\/nav>/i;
 const reEditBar  = /<div\s+id=["']edit-bar["'][\s\S]*?<\/div>/i;
 const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
+
+// FAQPage JSON-LD — собирается из FAQ прямо на странице (rich snippet в поиске).
+const stripTags = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const faqMatches = [...rawHtml.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<div class="faq-content">([\s\S]*?)<\/div>/g)];
+const faqJsonLd = faqMatches.length ? JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqMatches.map((m) => ({
+    '@type': 'Question',
+    name: stripTags(m[1]),
+    acceptedAnswer: { '@type': 'Answer', text: stripTags(m[2]) },
+  })),
+}) : '';
 ---
 <SiteLayout title="Здоровая спина – курс Алексея Ларина" active="spina" pageStyles={styles}>
+  {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
   <Fragment set:html={body} />
   <script define:vars={{ enrolled, isLoggedIn: !!user }}>
     if (enrolled) {

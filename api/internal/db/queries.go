@@ -800,6 +800,7 @@ type ActivityRow struct {
 	Email           string    `json:"email"`
 	Name            string    `json:"name"`
 	LessonTitle     string    `json:"lesson_title"`
+	LessonSlug      string    `json:"lesson_slug,omitempty"`
 	DurationSec     int       `json:"duration_sec"`
 	CourseTitle     string    `json:"course_title"`
 	CourseSlug      string    `json:"course_slug"`
@@ -859,4 +860,31 @@ func (r *Repo) TouchLessonActivity(ctx context.Context, userID, lessonID uuid.UU
 		`INSERT INTO lesson_activity(user_id, lesson_id, max_position_sec, completed)
 		 VALUES($1,$2,$3,$4)`, userID, lessonID, pos, completed)
 	return err
+}
+
+// LastActivityForUser — последняя учебная активность пользователя
+// (для блока «Продолжить» в кабинете).
+func (r *Repo) LastActivityForUser(ctx context.Context, userID uuid.UUID) (*ActivityRow, error) {
+	var a ActivityRow
+	var lessonSlug string
+	err := r.Pool.QueryRow(ctx,
+		`SELECT la.started_at, la.updated_at, la.completed, la.max_position_sec,
+		        u.id, u.email, COALESCE(u.name,''),
+		        l.title, l.slug, l.duration_sec, c.title, c.slug
+		   FROM lesson_activity la
+		   JOIN users u   ON u.id = la.user_id
+		   JOIN lessons l ON l.id = la.lesson_id
+		   JOIN courses c ON c.id = l.course_id
+		  WHERE la.user_id = $1
+		  ORDER BY la.updated_at DESC LIMIT 1`, userID).Scan(
+		&a.StartedAt, &a.UpdatedAt, &a.Completed, &a.LastPositionSec,
+		&a.UserID, &a.Email, &a.Name, &a.LessonTitle, &lessonSlug, &a.DurationSec, &a.CourseTitle, &a.CourseSlug)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	a.LessonSlug = lessonSlug
+	return &a, nil
 }
