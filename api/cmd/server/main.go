@@ -119,6 +119,7 @@ func main() {
 		r.Patch("/api/admin/lessons/{id}", app.AdminUpdateLesson)
 		r.Delete("/api/admin/lessons/{id}", app.AdminDeleteLesson)
 		r.Post("/api/admin/videos/upload", app.AdminUploadVideo)
+		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/orders", app.AdminOrders)

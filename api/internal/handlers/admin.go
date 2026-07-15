@@ -720,3 +720,21 @@ func (a *App) AdminUsersExport(w http.ResponseWriter, r *http.Request) {
 	}
 	cw.Flush()
 }
+
+// AdminActivity — журнал занятий: кто какой урок смотрел/прошёл и когда.
+func (a *App) AdminActivity(w http.ResponseWriter, r *http.Request) {
+	course := r.URL.Query().Get("course")
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit < 1 || limit > 500 {
+		limit = 200
+	}
+	rows, err := a.Repo.ListLessonActivity(r.Context(), course, limit)
+	if err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	if rows == nil {
+		rows = []db.ActivityRow{}
+	}
+	writeJSON(w, 200, rows)
+}

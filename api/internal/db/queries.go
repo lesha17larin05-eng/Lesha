@@ -789,3 +789,46 @@ func (r *Repo) ListUsersForExport(ctx context.Context, search, courseSlug string
 	}
 	return out, rows.Err()
 }
+
+// ActivityRow — запись журнала занятий для админки: кто, какой урок, когда.
+type ActivityRow struct {
+	UpdatedAt       time.Time  `json:"updated_at"`
+	CompletedAt     *time.Time `json:"completed_at,omitempty"`
+	LastPositionSec int        `json:"last_position_sec"`
+	UserID          uuid.UUID  `json:"user_id"`
+	Email           string     `json:"email"`
+	Name            string     `json:"name"`
+	LessonTitle     string     `json:"lesson_title"`
+	DurationSec     int        `json:"duration_sec"`
+	CourseTitle     string     `json:"course_title"`
+	CourseSlug      string     `json:"course_slug"`
+}
+
+// ListLessonActivity — последние касания уроков (журнал посещений).
+// Одна строка на пару пользователь+урок (последнее состояние), новые сверху.
+func (r *Repo) ListLessonActivity(ctx context.Context, courseSlug string, limit int) ([]ActivityRow, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT lp.updated_at, lp.completed_at, lp.last_position_sec,
+		        u.id, u.email, COALESCE(u.name,''),
+		        l.title, l.duration_sec, c.title, c.slug
+		   FROM lesson_progress lp
+		   JOIN users u   ON u.id = lp.user_id
+		   JOIN lessons l ON l.id = lp.lesson_id
+		   JOIN courses c ON c.id = l.course_id
+		  WHERE ($1='' OR c.slug=$1)
+		  ORDER BY lp.updated_at DESC LIMIT $2`, courseSlug, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []ActivityRow
+	for rows.Next() {
+		var a ActivityRow
+		if err := rows.Scan(&a.UpdatedAt, &a.CompletedAt, &a.LastPositionSec,
+			&a.UserID, &a.Email, &a.Name, &a.LessonTitle, &a.DurationSec, &a.CourseTitle, &a.CourseSlug); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}

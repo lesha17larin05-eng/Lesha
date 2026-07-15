@@ -34,6 +34,7 @@ web/src/
       blog/
         new.astro                 — создание статьи
         [id].astro                — редактирование статьи
+      activity.astro              — журнал занятий: кто какой урок смотрел/прошёл, группировка по дням, фильтр по курсу
       leads.astro                 — заявки с сайта: таблица + смена статуса (PATCH /api/admin/leads/{id})
       orders.astro
       online.astro

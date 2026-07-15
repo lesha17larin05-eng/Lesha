@@ -89,6 +89,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth, mw.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
+		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
@@ -1191,5 +1192,45 @@ func TestAdminUsersExportCSV(t *testing.T) {
 	}
 	if strings.Contains(s, "exp-b@b.ru") {
 		t.Fatalf("csv must contain ONLY marketing-consented users: %s", s)
+	}
+}
+
+// TestAdminActivity — журнал занятий: admin-only, показывает касание урока
+// с email/названиями, фильтр по курсу работает.
+func TestAdminActivity(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	cid, _ := repo.CreateCourse(ctx, db.CourseInput{Slug: "act-c", Title: "Журнальный курс", Kind: "free", IsPublished: true})
+	lid, _ := repo.CreateLesson(ctx, db.LessonInput{CourseID: cid, Title: "Журнальный урок", Slug: "act-l", ContentMD: "x", SortOrder: 1})
+
+	uc := newClient(srv)
+	uc.do("POST", "/api/auth/register", map[string]any{"email": "act@b.ru", "password": "password123", "name": "Журналов", "consent_pd": true})
+	u, _ := repo.GetUserByEmail(ctx, "act@b.ru")
+	if err := repo.UpsertProgress(ctx, u.ID, lid, true, 300); err != nil {
+		t.Fatal(err)
+	}
+
+	// не-админу закрыто
+	uc.do("POST", "/api/auth/login", map[string]string{"email": "act@b.ru", "password": "password123"})
+	if r, _ := uc.do("GET", "/api/admin/activity", nil); r.StatusCode == 200 {
+		t.Fatalf("activity must be admin-only")
+	}
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{"email": "act-adm@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "act-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "act-adm@b.ru", "password": "password123"})
+
+	r, body := adm.do("GET", "/api/admin/activity?course=act-c", nil)
+	s := string(body)
+	if r.StatusCode != 200 || !strings.Contains(s, "act@b.ru") || !strings.Contains(s, "Журнальный урок") || !strings.Contains(s, "completed_at") {
+		t.Fatalf("activity: %d %s", r.StatusCode, s)
+	}
+	// фильтр по несуществующему курсу — пусто
+	r, body = adm.do("GET", "/api/admin/activity?course=no-such", nil)
+	if r.StatusCode != 200 || strings.Contains(string(body), "act@b.ru") {
+		t.Fatalf("activity filter: %d %s", r.StatusCode, body)
 	}
 }

@@ -1,0 +1,83 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
+import { apiJson } from '../../lib/api';
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const course = Astro.url.searchParams.get('course') || '';
+
+const { data } = await apiJson<any[]>(`/api/admin/activity${course ? '?course=' + encodeURIComponent(course) : ''}`, { cookie });
+const rows = Array.isArray(data) ? data : [];
+
+const { data: coursesData } = await apiJson<any[]>('/api/admin/courses', { cookie });
+const courses = Array.isArray(coursesData) ? coursesData : [];
+const user = (Astro.locals as any).user;
+
+const fmt = (iso?: string | null) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ' ' +
+    d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+};
+const mins = (sec: number) => Math.max(1, Math.round((sec || 0) / 60));
+
+// группировка по дням для читаемости
+const dayKey = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+const groups: { day: string; items: any[] }[] = [];
+for (const r of rows) {
+  const k = dayKey(r.updated_at);
+  const last = groups[groups.length - 1];
+  if (last && last.day === k) last.items.push(r);
+  else groups.push({ day: k, items: [r] });
+}
+---
+<Base title="Журнал занятий" user={user}>
+  <AdminNav active="activity" />
+  <section class="container" style="padding:50px 16px;">
+    <h1>Журнал занятий</h1>
+    <p class="muted">Кто какой урок смотрел и когда. Показано последнее состояние по каждой паре «человек + урок» (до 200 записей). Данные собираются с 13 июля 2026 — более ранние просмотры не фиксировались.</p>
+    <form method="get" style="display:flex; gap:10px; margin:18px 0; align-items:center;">
+      <select class="input" name="course" style="width:auto;">
+        <option value="">Курс: любой</option>
+        {courses.map((c: any) => (
+          <option value={c.slug} selected={course === c.slug}>{c.title}</option>
+        ))}
+      </select>
+      <button class="btn">Показать</button>
+      {course && <a href="/admin/activity" class="muted">Сбросить</a>}
+    </form>
+
+    {rows.length === 0
+      ? <p class="muted" style="margin-top:20px;">Записей пока нет — журнал наполняется по мере того, как ученики открывают уроки.</p>
+      : groups.map(g => (
+          <div class="act-day">
+            <h2 class="act-day-title">{g.day}</h2>
+            <table>
+              <thead><tr><th>Время</th><th>Кто</th><th>Курс</th><th>Урок</th><th>Статус</th></tr></thead>
+              <tbody>
+                {g.items.map((r: any) => (
+                  <tr>
+                    <td style="white-space:nowrap;" class="muted">{new Date(r.updated_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td><a href={`/admin/users/${r.user_id}`} style="font-weight:600;">{r.name || r.email}</a></td>
+                    <td class="muted">{r.course_title}</td>
+                    <td>{r.lesson_title}</td>
+                    <td style="white-space:nowrap;">
+                      {r.completed_at
+                        ? <span class="act-done">✅ пройден {fmt(r.completed_at)}</span>
+                        : <span class="muted">▶️ смотрел · {mins(r.last_position_sec)} мин из {mins(r.duration_sec)}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))
+    }
+  </section>
+  <style>
+    .act-day { margin-top: 26px; }
+    .act-day-title { font-size: 18px; margin-bottom: 8px; }
+    .act-done { color: #0a6040; font-size: 14px; }
+  </style>
+</Base>

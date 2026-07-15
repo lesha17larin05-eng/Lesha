@@ -120,3 +120,5 @@ JSON `{"error": "<code>"}`:
 | `GET /api/admin/users` | Ответ: `{users, total, page, per_page}` (точное количество + пагинация по 50). Фильтры: `?search=`, `?course=<slug>` (только с доступом к курсу), `?verified=1|0`, `?sort=last_seen`, `?page=`. |
 
 | `GET /api/admin/users/export.csv` | CSV-выгрузка для сервиса рассылок: ТОЛЬКО пользователи с `consent_marketing_at NOT NULL`. Колонки: email, name, phone, registered_at, courses. Фильтры `?search/?course/?verified` как у списка. UTF-8 BOM. Факт выгрузки пишется в audit_log (`users_export_csv`). |
+
+| `GET /api/admin/activity` | Журнал занятий: последние касания уроков (user+lesson, новые сверху). `?course=<slug>` — фильтр, `?limit=` (по умолчанию 200, максимум 500). Строка: время, пользователь, курс, урок, completed_at/позиция. |
