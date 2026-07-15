@@ -64,3 +64,15 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 | created_at | TIMESTAMPTZ | индекс по убыванию |
 
 Записи не удаляются (обращения с ПД), обработка — сменой `status`.
+
+## lesson_activity (миграция 010)
+
+Журнал просмотров уроков: одна строка = одна «сессия». Повторные просмотры — отдельные записи (перерыв > 30 минут = новая сессия, логика в `Repo.TouchLessonActivity`). Заполняется из `PostProgress` (best-effort). Миграция переносит существующее состояние из `lesson_progress` как стартовые сессии.
+
+| Колонка | Тип | Комментарий |
+|---|---|---|
+| id | UUID PK | |
+| user_id / lesson_id | UUID FK | каскадное удаление |
+| started_at / updated_at | TIMESTAMPTZ | начало и последнее касание сессии |
+| max_position_sec | INTEGER | максимум досмотра в сессии |
+| completed | BOOLEAN | урок досмотрен в этой сессии |

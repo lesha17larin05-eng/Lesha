@@ -121,4 +121,4 @@ JSON `{"error": "<code>"}`:
 
 | `GET /api/admin/users/export.csv` | CSV-выгрузка для сервиса рассылок: ТОЛЬКО пользователи с `consent_marketing_at NOT NULL`. Колонки: email, name, phone, registered_at, courses. Фильтры `?search/?course/?verified` как у списка. UTF-8 BOM. Факт выгрузки пишется в audit_log (`users_export_csv`). |
 
-| `GET /api/admin/activity` | Журнал занятий: последние касания уроков (user+lesson, новые сверху). `?course=<slug>` — фильтр, `?limit=` (по умолчанию 200, максимум 500). Строка: время, пользователь, курс, урок, completed_at/позиция. |
+| `GET /api/admin/activity` | Журнал просмотров (lesson_activity): каждая сессия отдельной строкой, включая повторные просмотры; поля started_at/updated_at/completed/max_position_sec. `?course=<slug>` — фильтр, `?limit=` (по умолчанию 200, максимум 500). Строка: время, пользователь, курс, урок, completed_at/позиция. |

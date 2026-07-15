@@ -11,6 +11,7 @@ services:
       - ./api/migrations/003_users_phone.up.sql:/docker-entrypoint-initdb.d/003_users_phone.up.sql:ro
       - ./api/migrations/004_users_consent.up.sql:/docker-entrypoint-initdb.d/004_users_consent.up.sql:ro
       - ./api/migrations/009_leads.up.sql:/docker-entrypoint-initdb.d/009_leads.up.sql:ro
+      - ./api/migrations/010_lesson_activity.up.sql:/docker-entrypoint-initdb.d/010_lesson_activity.up.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d test"]
       interval: 2s
