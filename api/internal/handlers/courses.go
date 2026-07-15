@@ -121,6 +121,8 @@ func (a *App) PostProgress(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
+	// Журнал просмотров (сессии) — best-effort, ошибка не ломает прогресс.
+	_ = a.Repo.TouchLessonActivity(r.Context(), uid, lid, in.Completed, in.LastPositionSec)
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
 

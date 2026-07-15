@@ -39,7 +39,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -1206,13 +1206,15 @@ func TestAdminActivity(t *testing.T) {
 
 	uc := newClient(srv)
 	uc.do("POST", "/api/auth/register", map[string]any{"email": "act@b.ru", "password": "password123", "name": "Журналов", "consent_pd": true})
-	u, _ := repo.GetUserByEmail(ctx, "act@b.ru")
-	if err := repo.UpsertProgress(ctx, u.ID, lid, true, 300); err != nil {
-		t.Fatal(err)
+	uc.do("POST", "/api/auth/login", map[string]string{"email": "act@b.ru", "password": "password123"})
+	// просмотр через реальный эндпоинт — он пишет и прогресс, и журнал сессий
+	r0, body0 := uc.do("POST", "/api/lessons/"+lid.String()+"/progress",
+		map[string]any{"completed": true, "last_position_sec": 300})
+	if r0.StatusCode != 200 {
+		t.Fatalf("post progress: %d %s", r0.StatusCode, body0)
 	}
 
-	// не-админу закрыто
-	uc.do("POST", "/api/auth/login", map[string]string{"email": "act@b.ru", "password": "password123"})
+	// не-админу журнал закрыт
 	if r, _ := uc.do("GET", "/api/admin/activity", nil); r.StatusCode == 200 {
 		t.Fatalf("activity must be admin-only")
 	}
@@ -1225,7 +1227,8 @@ func TestAdminActivity(t *testing.T) {
 
 	r, body := adm.do("GET", "/api/admin/activity?course=act-c", nil)
 	s := string(body)
-	if r.StatusCode != 200 || !strings.Contains(s, "act@b.ru") || !strings.Contains(s, "Журнальный урок") || !strings.Contains(s, "completed_at") {
+	if r.StatusCode != 200 || !strings.Contains(s, "act@b.ru") || !strings.Contains(s, "Журнальный урок") ||
+		!strings.Contains(s, "\"completed\":true") || !strings.Contains(s, "started_at") {
 		t.Fatalf("activity: %d %s", r.StatusCode, s)
 	}
 	// фильтр по несуществующему курсу — пусто

@@ -790,33 +790,34 @@ func (r *Repo) ListUsersForExport(ctx context.Context, search, courseSlug string
 	return out, rows.Err()
 }
 
-// ActivityRow — запись журнала занятий для админки: кто, какой урок, когда.
+// ActivityRow — запись журнала занятий: одна строка = одна сессия просмотра.
 type ActivityRow struct {
-	UpdatedAt       time.Time  `json:"updated_at"`
-	CompletedAt     *time.Time `json:"completed_at,omitempty"`
-	LastPositionSec int        `json:"last_position_sec"`
-	UserID          uuid.UUID  `json:"user_id"`
-	Email           string     `json:"email"`
-	Name            string     `json:"name"`
-	LessonTitle     string     `json:"lesson_title"`
-	DurationSec     int        `json:"duration_sec"`
-	CourseTitle     string     `json:"course_title"`
-	CourseSlug      string     `json:"course_slug"`
+	StartedAt       time.Time `json:"started_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	Completed       bool      `json:"completed"`
+	LastPositionSec int       `json:"last_position_sec"`
+	UserID          uuid.UUID `json:"user_id"`
+	Email           string    `json:"email"`
+	Name            string    `json:"name"`
+	LessonTitle     string    `json:"lesson_title"`
+	DurationSec     int       `json:"duration_sec"`
+	CourseTitle     string    `json:"course_title"`
+	CourseSlug      string    `json:"course_slug"`
 }
 
-// ListLessonActivity — последние касания уроков (журнал посещений).
-// Одна строка на пару пользователь+урок (последнее состояние), новые сверху.
+// ListLessonActivity — журнал просмотров (lesson_activity): каждая сессия
+// отдельной строкой, включая повторные просмотры. Новые сверху.
 func (r *Repo) ListLessonActivity(ctx context.Context, courseSlug string, limit int) ([]ActivityRow, error) {
 	rows, err := r.Pool.Query(ctx,
-		`SELECT lp.updated_at, lp.completed_at, lp.last_position_sec,
+		`SELECT la.started_at, la.updated_at, la.completed, la.max_position_sec,
 		        u.id, u.email, COALESCE(u.name,''),
 		        l.title, l.duration_sec, c.title, c.slug
-		   FROM lesson_progress lp
-		   JOIN users u   ON u.id = lp.user_id
-		   JOIN lessons l ON l.id = lp.lesson_id
+		   FROM lesson_activity la
+		   JOIN users u   ON u.id = la.user_id
+		   JOIN lessons l ON l.id = la.lesson_id
 		   JOIN courses c ON c.id = l.course_id
 		  WHERE ($1='' OR c.slug=$1)
-		  ORDER BY lp.updated_at DESC LIMIT $2`, courseSlug, limit)
+		  ORDER BY la.updated_at DESC LIMIT $2`, courseSlug, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -824,11 +825,38 @@ func (r *Repo) ListLessonActivity(ctx context.Context, courseSlug string, limit 
 	var out []ActivityRow
 	for rows.Next() {
 		var a ActivityRow
-		if err := rows.Scan(&a.UpdatedAt, &a.CompletedAt, &a.LastPositionSec,
+		if err := rows.Scan(&a.StartedAt, &a.UpdatedAt, &a.Completed, &a.LastPositionSec,
 			&a.UserID, &a.Email, &a.Name, &a.LessonTitle, &a.DurationSec, &a.CourseTitle, &a.CourseSlug); err != nil {
 			return nil, err
 		}
 		out = append(out, a)
 	}
 	return out, rows.Err()
+}
+
+// TouchLessonActivity — пишет «сессию» просмотра в журнал lesson_activity.
+// Если по паре user+lesson есть запись, обновлённая менее 30 минут назад, —
+// продлеваем её (это тот же просмотр). Иначе создаём новую строку —
+// так повторные просмотры видны отдельными записями.
+func (r *Repo) TouchLessonActivity(ctx context.Context, userID, lessonID uuid.UUID, completed bool, pos int) error {
+	ct, err := r.Pool.Exec(ctx,
+		`UPDATE lesson_activity SET
+		    updated_at = now(),
+		    max_position_sec = GREATEST(max_position_sec, $4),
+		    completed = completed OR $3
+		  WHERE id = (
+		    SELECT id FROM lesson_activity
+		     WHERE user_id=$1 AND lesson_id=$2 AND updated_at > now() - interval '30 minutes'
+		     ORDER BY updated_at DESC LIMIT 1)`,
+		userID, lessonID, completed, pos)
+	if err != nil {
+		return err
+	}
+	if ct.RowsAffected() > 0 {
+		return nil
+	}
+	_, err = r.Pool.Exec(ctx,
+		`INSERT INTO lesson_activity(user_id, lesson_id, max_position_sec, completed)
+		 VALUES($1,$2,$3,$4)`, userID, lessonID, pos, completed)
+	return err
 }
