@@ -141,3 +141,7 @@ tar -xzf larin.tgz -C /
 chown -R 1000:1000 /srv/leshalarin
 cd /opt/larin && make up
 ```
+
+## Offsite-бэкап базы (почта)
+
+Помимо локального `pg-backup.sh` (04:00, ротация 7 дней), крон `04:15 /root/bin/pg-backup-mail.sh` шифрует свежий дамп (AES-256-CBC, pbkdf2, пароль в `/root/.backup-pass`, копия пароля у владельца) и отправляет вложением на почту владельца через smtp.yandex.ru (креды из `.env`). Лог: `/var/log/pg-backup.log`. Восстановление: `openssl enc -d -aes-256-cbc -pbkdf2 -in <file>.enc -out dump.sql.gz && gunzip … && psql`.
