@@ -14,21 +14,21 @@ const styles = `
 .check-email-actions a:hover { color: var(--orange-warm); }
 `;
 ---
-<SiteLayout title="Проверьте почту — Алексей Ларин" padTop={true} pageStyles={styles}>
+<SiteLayout title="Проверьте почту – Алексей Ларин" padTop={true} pageStyles={styles}>
   <section class="check-email-wrap check-email">
     <div class="check-email-icon">📬</div>
     <h1>Проверьте почту</h1>
     <p class="check-email-lead">
       Отправили ссылку на <b>{email || 'вашу почту'}</b>.<br>
-      Откройте письмо и нажмите кнопку — попадёте в курс.
+      Откройте письмо и нажмите кнопку – попадёте в курс.
     </p>
     <div class="check-email-tip">
-      <b>Не пришло?</b> Загляните в папку <b>«Спам»</b>. Если нашли — отметьте «Не спам», тогда следующие письма попадут во «Входящие».
+      <b>Не пришло?</b> Загляните в папку <b>«Спам»</b>. Если нашли – отметьте «Не спам», тогда следующие письма попадут во «Входящие».
     </div>
     <div class="check-email-actions">
-      {email && <button type="button" id="resend-btn" class="resend-btn">Письмо не пришло — отправить ещё раз</button>}
+      {email && <button type="button" id="resend-btn" class="resend-btn">Письмо не пришло – отправить ещё раз</button>}
       <p id="resend-note" class="resend-note" hidden></p>
-      <a href="/auth/login">Уже подтвердили — войти</a>
+      <a href="/auth/login">Уже подтвердили – войти</a>
       <a href="/course">На страницу курса</a>
     </div>
   </section>
@@ -55,18 +55,18 @@ const styles = `
           body: JSON.stringify({ email }),
         });
         if (r.ok) {
-          note.textContent = 'Отправили ещё раз — проверьте почту и папку «Спам».';
+          note.textContent = 'Отправили ещё раз – проверьте почту и папку «Спам».';
           note.hidden = false;
           btn.remove();
           return;
         }
-        note.textContent = 'Не получилось — подождите пару минут и попробуйте снова.';
+        note.textContent = 'Не получилось – подождите пару минут и попробуйте снова.';
         note.hidden = false;
       } catch {
-        note.textContent = 'Ошибка сети — попробуйте ещё раз.';
+        note.textContent = 'Ошибка сети – попробуйте ещё раз.';
         note.hidden = false;
       } finally {
-        if (btn.isConnected) { btn.disabled = false; btn.textContent = 'Письмо не пришло — отправить ещё раз'; }
+        if (btn.isConnected) { btn.disabled = false; btn.textContent = 'Письмо не пришло – отправить ещё раз'; }
       }
     });
   </script>

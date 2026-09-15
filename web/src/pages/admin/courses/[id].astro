@@ -59,7 +59,7 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
         <h2 style="margin:0;">Модули</h2>
         <button class="btn" id="new-module">+ Добавить модуль</button>
       </div>
-      {modules.length === 0 && <p class="muted" style="margin-top:10px;">Модулей пока нет. Для бесплатных курсов модули необязательны — уроки можно создавать сразу.</p>}
+      {modules.length === 0 && <p class="muted" style="margin-top:10px;">Модулей пока нет. Для бесплатных курсов модули необязательны – уроки можно создавать сразу.</p>}
       {modules.length > 0 && (
         <table style="margin-top:14px;">
           <thead><tr><th style="width:60px;">#</th><th>Название</th><th style="width:140px;">Порядок</th><th style="width:200px;"></th></tr></thead>
@@ -95,7 +95,7 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
         <div style="margin-top:18px;">
           <h3 style="margin:0 0 8px; font-size:16px;">{g.module.title} <span class="muted" style="font-weight:normal;">(модуль · порядок {g.module.sort_order})</span></h3>
           {g.items.length === 0 ? (
-            <p class="muted" style="margin:6px 0 0;">— уроков нет —</p>
+            <p class="muted" style="margin:6px 0 0;">– уроков нет –</p>
           ) : (
             <table>
               <thead><tr><th style="width:60px;">#</th><th>Название</th><th>Slug</th><th>Превью</th><th>Видео</th><th style="width:160px;">Порядок</th><th style="width:200px;"></th></tr></thead>
@@ -105,8 +105,8 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
                     <td>{l.sort_order}</td>
                     <td>{l.title}</td>
                     <td><code>{l.slug}</code></td>
-                    <td>{l.is_preview ? '✅' : '—'}</td>
-                    <td>{l.video_id ? '🎬' : '—'}</td>
+                    <td>{l.is_preview ? '✅' : '–'}</td>
+                    <td>{l.video_id ? '🎬' : '–'}</td>
                     <td>
                       <button class="btn secondary tiny" data-lesson-up={l.id} title="Вверх" style="padding:2px 8px;">↑</button>
                       <button class="btn secondary tiny" data-lesson-down={l.id} title="Вниз" style="padding:2px 8px;">↓</button>
@@ -134,8 +134,8 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
                   <td>{l.sort_order}</td>
                   <td>{l.title}</td>
                   <td><code>{l.slug}</code></td>
-                  <td>{l.is_preview ? '✅' : '—'}</td>
-                  <td>{l.video_id ? '🎬' : '—'}</td>
+                  <td>{l.is_preview ? '✅' : '–'}</td>
+                  <td>{l.video_id ? '🎬' : '–'}</td>
                   <td>
                     <button class="btn secondary tiny" data-lesson-up={l.id} title="Вверх" style="padding:2px 8px;">↑</button>
                     <button class="btn secondary tiny" data-lesson-down={l.id} title="Вниз" style="padding:2px 8px;">↓</button>
@@ -227,7 +227,7 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
       });
     });
 
-    // Reorder helpers — swap sort_order with neighbour, then save both.
+    // Reorder helpers – swap sort_order with neighbour, then save both.
     async function moveLesson(id, dir) {
       // pick within the same module group
       const target = lessonsJSON.find((l) => l.id === id);

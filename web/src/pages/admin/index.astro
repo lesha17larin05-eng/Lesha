@@ -77,14 +77,14 @@ const fmtDate = (s: any) => {
       {recent.length === 0 ? (
         <div class="empty">
           <div class="empty-icon">📭</div>
-          <p>Оплат пока нет — здесь будут появляться последние успешные платежи.</p>
+          <p>Оплат пока нет – здесь будут появляться последние успешные платежи.</p>
         </div>
       ) : (
         <div class="orders">
           {recent.map((o: any) => {
-            const num = o.OrderNum ?? o.order_num ?? '—';
-            const course = o.CourseTitle ?? o.course_title ?? o.CourseSlug ?? o.course_slug ?? (o.CourseID ?? o.course_id ?? '—');
-            const who = o.UserEmail ?? o.user_email ?? o.UserName ?? o.user_name ?? (o.UserID ?? o.user_id ?? '—');
+            const num = o.OrderNum ?? o.order_num ?? '–';
+            const course = o.CourseTitle ?? o.course_title ?? o.CourseSlug ?? o.course_slug ?? (o.CourseID ?? o.course_id ?? '–');
+            const who = o.UserEmail ?? o.user_email ?? o.UserName ?? o.user_name ?? (o.UserID ?? o.user_id ?? '–');
             const amt = o.AmountRub ?? o.amount_rub ?? 0;
             const dt = o.CreatedAt ?? o.created_at;
             return (

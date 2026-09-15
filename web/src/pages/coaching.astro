@@ -4,7 +4,7 @@ import { extractLegacy } from '../lib/legacy';
 import rawHtml from '../legacy/index.html?raw';
 const { styles, body } = extractLegacy(rawHtml);
 ---
-<SiteLayout title="Личное ведение — Алексей Ларин" description="Личное ведение с тренером: персональная тренировка раз в неделю, план под вас и поддержка всю неделю. Первая неделя — бесплатно." active="home" pageStyles={styles}>
+<SiteLayout title="Личное ведение – Алексей Ларин" description="Личное ведение с тренером: персональная тренировка раз в неделю, план под вас и поддержка всю неделю. Первая неделя – бесплатно." active="home" pageStyles={styles}>
   <Fragment set:html={body} />
   <script>
     // Форма заявки → POST /api/leads.
@@ -24,7 +24,7 @@ const { styles, body } = extractLegacy(rawHtml);
         const name = String(fd.get('name') || '').trim();
         const contact = String(fd.get('contact') || '').trim();
         if (!name) { setNote('Укажите имя', true); return; }
-        if (contact.length < 5) { setNote('Укажите email, телефон или @телеграм — как с вами связаться', true); return; }
+        if (contact.length < 5) { setNote('Укажите email, телефон или @телеграм – как с вами связаться', true); return; }
         if (!fd.get('consent_pd')) { setNote('Чтобы продолжить, нужно согласиться с обработкой персональных данных', true); return; }
         const orig = btn?.textContent || '';
         if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
@@ -44,13 +44,13 @@ const { styles, body } = extractLegacy(rawHtml);
             (window as any).reachGoal?.('lead_submit');
             const box = document.createElement('div');
             box.className = 'lead-success';
-            box.innerHTML = '<h3>Заявка отправлена</h3><p>Отвечу в течение 1\u20112 дней: пришлю анкету и договоримся о времени первой тренировки. Если вопрос срочный — напишите в Телеграм по кнопке ниже.</p>';
+            box.innerHTML = '<h3>Заявка отправлена</h3><p>Отвечу в течение 1\u20112 дней: пришлю анкету и договоримся о времени первой тренировки. Если вопрос срочный – напишите в Телеграм по кнопке ниже.</p>';
             form.replaceWith(box);
             return;
           }
-          setNote('Не получилось отправить — попробуйте ещё раз или напишите в Телеграм', true);
+          setNote('Не получилось отправить – попробуйте ещё раз или напишите в Телеграм', true);
         } catch {
-          setNote('Ошибка сети — попробуйте ещё раз', true);
+          setNote('Ошибка сети – попробуйте ещё раз', true);
         } finally {
           if (btn) { btn.disabled = false; btn.textContent = orig; }
         }

@@ -9,7 +9,7 @@ const links = [
   { href: '/blog', key: 'blog', label: 'Статьи' },
 ];
 const isSalyut = active === 'salyut';
-// Кнопка «Здоровая спина в Салюте» показывается только в сезон —
+// Кнопка «Здоровая спина в Салюте» показывается только в сезон –
 // переключатель в админке (/admin/settings → salut_visible).
 const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === true;
 ---
@@ -96,7 +96,7 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
   body.has-open-menu { overflow: hidden; }
 </style>
 <nav class="site-nav">
-  <a href="/" class="site-nav-logo" aria-label="Алексей Ларин — на главную">
+  <a href="/" class="site-nav-logo" aria-label="Алексей Ларин – на главную">
     <img src="/img/logo.svg" alt="Алексей Ларин" style="height:34px; width:auto; display:block;" />
   </a>
   {showSalyut && (

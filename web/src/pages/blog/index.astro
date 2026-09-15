@@ -7,7 +7,7 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/articles?limit=100', { cookie });
 const articles = Array.isArray(data) ? data : [];
 
-// Фильтр по тегу из URL (?tag=...) — SSR, чтобы ссылку можно было пошарить.
+// Фильтр по тегу из URL (?tag=...) – SSR, чтобы ссылку можно было пошарить.
 const activeTag = Astro.url.searchParams.get('tag') || '';
 
 const tagClasses: Record<string, string> = {
@@ -63,7 +63,7 @@ const blogStyles = `
 @media (max-width: 700px) { .tg-strip { flex-direction: column; gap: 16px; padding: 32px 24px; text-align: center; } }
 `;
 ---
-<SiteLayout title="Статьи — Алексей Ларин" active="blog" pageStyles={blogStyles}>
+<SiteLayout title="Статьи – Алексей Ларин" active="blog" pageStyles={blogStyles}>
   <div class="blog-page-header">
     <div class="header-label">Статьи</div>
     <h1>О <em>здоровье</em><br>и движении</h1>
@@ -103,7 +103,7 @@ const blogStyles = `
   }
 
   <div class="tg-strip">
-    <span class="tg-strip-text">Не готовы к курсу? Подпишитесь на канал — советы приходят бесплатно</span>
+    <span class="tg-strip-text">Не готовы к курсу? Подпишитесь на канал – советы приходят бесплатно</span>
     <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-strip-btn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
       Подписаться на канал
@@ -121,7 +121,7 @@ const blogStyles = `
         cards.forEach(card => {
           card.style.display = (filter === 'all' || card.dataset.tag === filter) ? '' : 'none';
         });
-        // Фильтр в URL — ссылку можно пошарить, SSR отрендерит уже отфильтрованный список
+        // Фильтр в URL – ссылку можно пошарить, SSR отрендерит уже отфильтрованный список
         const url = new URL(location.href);
         if (filter === 'all') url.searchParams.delete('tag');
         else url.searchParams.set('tag', filter || '');

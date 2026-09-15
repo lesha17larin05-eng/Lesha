@@ -15,16 +15,16 @@ const orders = Array.isArray(data.orders) ? data.orders : [];
 const me = (Astro.locals as any).user;
 
 const fmt = (iso?: string | null, withTime = true) => {
-  if (!iso) return '—';
+  if (!iso) return '–';
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—';
+  if (isNaN(d.getTime())) return '–';
   return d.toLocaleDateString('ru-RU') + (withTime ? ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '');
 };
 const grantedByLabel: Record<string, string> = { purchase: 'покупка', admin: 'выдан админом', free: 'бесплатный' };
 const orderStatusLabel: Record<string, string> = { pending: 'ожидает оплаты', paid: 'оплачен', failed: 'ошибка' };
 const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
 ---
-<Base title={`${u.name || u.email} — пользователь`} user={me}>
+<Base title={`${u.name || u.email} – пользователь`} user={me}>
   <AdminNav active="users" />
   <section class="container" style="padding:50px 16px; max-width:960px;">
     <p><a href="/admin/users" class="muted">← Все пользователи</a></p>
@@ -56,8 +56,8 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
     <table class="uc-profile">
       <tbody>
         <tr><th>Email</th><td><a href={`mailto:${u.email}`}>{u.email}</a></td></tr>
-        <tr><th>Имя</th><td>{u.name || '—'}</td></tr>
-        <tr><th>Телефон</th><td>{u.phone ? <a href={`tel:${u.phone}`}>{u.phone}</a> : '—'}</td></tr>
+        <tr><th>Имя</th><td>{u.name || '–'}</td></tr>
+        <tr><th>Телефон</th><td>{u.phone ? <a href={`tel:${u.phone}`}>{u.phone}</a> : '–'}</td></tr>
         <tr><th>Зарегистрирован</th><td>{fmt(u.created_at)}</td></tr>
         <tr><th>Последний визит</th><td>{fmt(u.last_seen_at)}</td></tr>
         <tr><th>Email подтверждён</th><td>{fmt(u.email_verified_at)}</td></tr>
@@ -91,10 +91,10 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
                   <tbody>
                     {c.lessons.map((l: any) => (
                       <tr>
-                        <td>{l.completed ? '✅' : (l.updated_at ? '▶️' : '—')}</td>
+                        <td>{l.completed ? '✅' : (l.updated_at ? '▶️' : '–')}</td>
                         <td>{l.title}</td>
                         <td class="muted">{mins(l.duration_sec)}</td>
-                        <td class="muted">{l.completed ? fmt(l.completed_at) : (l.updated_at ? 'начат' : '—')}</td>
+                        <td class="muted">{l.completed ? fmt(l.completed_at) : (l.updated_at ? 'начат' : '–')}</td>
                         <td class="muted">{fmt(l.updated_at)}</td>
                       </tr>
                     ))}

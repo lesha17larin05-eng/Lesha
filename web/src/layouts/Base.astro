@@ -3,8 +3,8 @@ import '../styles/site.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 const {
-  title = 'Алексей Ларин — тренер по здоровью',
-  description = 'Здоровая спина в Салюте — курс для детей в детском лагере. 5 занятий по 55 минут.',
+  title = 'Алексей Ларин – тренер по здоровью',
+  description = 'Здоровая спина в Салюте – курс для детей в детском лагере. 5 занятий по 55 минут.',
   ogImage = '/salut-2026/img/trainer-stretch.jpg',
   active = '',
   noindex = false,
@@ -12,7 +12,7 @@ const {
 } = Astro.props as { title?: string; description?: string; ogImage?: string; active?: string; noindex?: boolean; user?: any };
 const siteUrl = 'https://leshalarin.ru';
 const canonicalUrl = siteUrl + Astro.url.pathname;
-// Яндекс.Метрика: номер счётчика из env; пусто — не подключается.
+// Яндекс.Метрика: номер счётчика из env; пусто – не подключается.
 const metrikaId = (typeof process !== 'undefined' && process.env.METRIKA_ID) || '';
 const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage;
 ---
@@ -46,8 +46,8 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <link rel="preload" href="/fonts/CormorantGaramond-400-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/fonts/fonts.css" />
   <style is:global>
-    /* Токены, шапка, футер, контейнер, базовая типографика и responsive —
-       в ../styles/site.css (общий с SiteLayout.astro). Здесь — специфика кабинета/админки. */
+    /* Токены, шапка, футер, контейнер, базовая типографика и responsive –
+       в ../styles/site.css (общий с SiteLayout.astro). Здесь – специфика кабинета/админки. */
     *,*::before,*::after { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
 
@@ -119,7 +119,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
         const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
         return m ? m[1] : '';
       }
-      // Если cookie csrf ещё нет (первый визит) — синхронно дёргаем
+      // Если cookie csrf ещё нет (первый визит) – синхронно дёргаем
       // /api/me, чтобы сервер её поставил, и только потом продолжаем.
       async function ensureCsrf() {
         if (getCsrf()) return getCsrf();
@@ -154,7 +154,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
         }
         const url = typeof input === 'string' ? input : input.url;
         let res = await orig.call(this, input, init);
-        // Если access_token истёк (401) на нашем /api/ — пытаемся
+        // Если access_token истёк (401) на нашем /api/ – пытаемся
         // обновить через refresh_token и повторить запрос один раз.
         if (res.status === 401 && url && url.startsWith('/api/') &&
             !url.includes('/auth/login') && !url.includes('/auth/refresh') &&
@@ -165,7 +165,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
         }
         return res;
       };
-      // прогреваем cookie в фоне сразу при загрузке страницы — чтобы клик по форме
+      // прогреваем cookie в фоне сразу при загрузке страницы – чтобы клик по форме
       // не тратил время на лишний round-trip
       ensureCsrf();
     })();

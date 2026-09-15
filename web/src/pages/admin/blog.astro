@@ -14,7 +14,7 @@ const articles = Array.isArray(data) ? data : [];
       <h1>Блог</h1>
       <a class="btn" href="/admin/blog/new">+ Новая статья</a>
     </div>
-    <p class="muted">Управление статьями. Контент — HTML с предпросмотром. Админка ставит CSRF автоматически.</p>
+    <p class="muted">Управление статьями. Контент – HTML с предпросмотром. Админка ставит CSRF автоматически.</p>
     <table style="margin-top:20px;">
       <thead>
         <tr>
@@ -32,8 +32,8 @@ const articles = Array.isArray(data) ? data : [];
           <tr>
             <td><code>{a.slug}</code></td>
             <td>{a.title}</td>
-            <td>{a.tag || '—'}</td>
-            <td>{a.is_published ? '✅' : '—'}</td>
+            <td>{a.tag || '–'}</td>
+            <td>{a.is_published ? '✅' : '–'}</td>
             <td>{(a.updated_at || '').toString().slice(0, 16).replace('T', ' ')}</td>
             <td>
               <a href={`/admin/blog/${a.id}`}>Редактировать →</a>

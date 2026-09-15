@@ -11,7 +11,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (status === 200) user = data;
   }
   (context.locals as any).user = user;
-  // Флаги сайта (кешируются на 10 секунд) — их читают шапка и лендинги.
+  // Флаги сайта (кешируются на 10 секунд) – их читают шапка и лендинги.
   (context.locals as any).settings = await getSiteSettings();
   if (protectedPath && !user) {
     return context.redirect('/auth/login?next=' + encodeURIComponent(context.url.pathname));

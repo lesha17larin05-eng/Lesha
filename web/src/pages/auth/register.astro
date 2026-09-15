@@ -63,10 +63,10 @@ const loginHref = next ? '/auth/login?next=' + encodeURIComponent(next) : '/auth
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(form);
-      // Дополнительная проверка обязательного согласия — на случай, если кто-то обошёл нативную валидацию.
+      // Дополнительная проверка обязательного согласия – на случай, если кто-то обошёл нативную валидацию.
       if (!String(fd.get('name') || '').trim()) {
         msg.className = 'alert';
-        msg.textContent = 'Укажите имя — обращаемся к вам в кабинете и в письмах.';
+        msg.textContent = 'Укажите имя – обращаемся к вам в кабинете и в письмах.';
         msg.hidden = false;
         return;
       }
@@ -93,11 +93,11 @@ const loginHref = next ? '/auth/login?next=' + encodeURIComponent(next) : '/auth
         // В dev-режиме показываем ссылку для подтверждения, чтобы не настраивать SMTP локально.
         // В проде показываем только сообщение об отправке письма (verify_link_dev не использовать!).
         if (import.meta.env.DEV && j.verify_link_dev) {
-          msg.innerHTML = 'Аккаунт создан. Подтвердите email — письмо отправлено.' +
+          msg.innerHTML = 'Аккаунт создан. Подтвердите email – письмо отправлено.' +
             ' <br/><small>Dev-ссылка: <a href="' + j.verify_link_dev + '">' + j.verify_link_dev + '</a></small>';
         } else {
           msg.textContent = 'Аккаунт создан. Мы отправили письмо на ' + (fd.get('email') || '') +
-            ' — перейдите по ссылке в письме, чтобы подтвердить email.';
+            ' – перейдите по ссылке в письме, чтобы подтвердить email.';
         }
       } else {
         msg.className = 'alert';

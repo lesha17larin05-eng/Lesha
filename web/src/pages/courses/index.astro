@@ -5,7 +5,7 @@ import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data: courses } = await apiJson<any[]>('/api/courses', { cookie });
 
-// Фото курсов — те же, что в карточках на главной (web/public/img/).
+// Фото курсов – те же, что в карточках на главной (web/public/img/).
 const covers: Record<string, { base: string; pos: string }> = {
   'myagkiy-start':   { base: '/img/IMG_4002', pos: '60% 30%' },
   'zdorovaya-spina': { base: '/img/IMG_4029', pos: '70% 25%' },
@@ -60,15 +60,15 @@ const pageStyles = `
 `;
 ---
 <SiteLayout
-  title="Курсы — Алексей Ларин"
+  title="Курсы – Алексей Ларин"
   description="Онлайн-курсы Алексея Ларина: бесплатный «Мягкий старт» и «Здоровая спина». Видеоуроки, доступ в личном кабинете."
   active=""
   pageStyles={pageStyles}
 >
   <div class="courses-header">
     <div class="header-label">Курсы</div>
-    <h1>Онлайн-курсы — <em>в своём темпе</em></h1>
-    <p>Видеоуроки в личном кабинете. Начните с бесплатного «Мягкого старта» — он короткий и сразу даёт пользу.</p>
+    <h1>Онлайн-курсы – <em>в своём темпе</em></h1>
+    <p>Видеоуроки в личном кабинете. Начните с бесплатного «Мягкого старта» – он короткий и сразу даёт пользу.</p>
   </div>
 
   {(!courses || courses.length === 0)

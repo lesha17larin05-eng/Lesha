@@ -16,7 +16,7 @@ const user = (Astro.locals as any).user;
 
 // ─── Видео-ссылки для бесплатного курса «Мягкий старт» ────────────
 // Захардкожены здесь (не в БД), потому что URL'ы фиксированные.
-// Если когда-нибудь захочется делать админку видео — перенесём в БД.
+// Если когда-нибудь захочется делать админку видео – перенесём в БД.
 const FREE_VIDEOS: Record<string, Record<string, { youtube?: string; vk?: string }>> = {
   'myagkiy-start': {
     'vvodnyy':              { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },

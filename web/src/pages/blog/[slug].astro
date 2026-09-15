@@ -27,7 +27,7 @@ const fmtDate = (iso?: string) => {
 };
 const published = fmtDate(a.published_at);
 
-// BlogPosting JSON-LD — rich snippets в Яндексе/Google
+// BlogPosting JSON-LD – rich snippets в Яндексе/Google
 const jsonLd = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -90,7 +90,7 @@ const articleStyles = `
 @media (max-width: 700px) { .related-grid { grid-template-columns: 1fr; } }
 `;
 ---
-<SiteLayout title={`${a.title} — Алексей Ларин`} description={a.excerpt} active="blog" pageStyles={articleStyles} ogImage={a.cover_image_url || undefined}>
+<SiteLayout title={`${a.title} – Алексей Ларин`} description={a.excerpt} active="blog" pageStyles={articleStyles} ogImage={a.cover_image_url || undefined}>
   <script type="application/ld+json" set:html={jsonLd} />
   <div class="article-header">
     {a.tag && <span class="article-tag">{a.tag}</span>}
@@ -123,7 +123,7 @@ const articleStyles = `
     )}
 
     <div class="article-cta-final">
-      <p><strong>Хотите начать мягко — с поддержкой и конкретным планом?</strong><br/>Пройдите бесплатный курс — несколько уроков, которые помогут начать и не бросить.</p>
+      <p><strong>Хотите начать мягко – с поддержкой и конкретным планом?</strong><br/>Пройдите бесплатный курс – несколько уроков, которые помогут начать и не бросить.</p>
       <a href="/course">Получить курс бесплатно →</a>
     </div>
     <div class="tg-inline">
@@ -132,7 +132,7 @@ const articleStyles = `
       </div>
       <div class="tg-inline-text">
         <strong>Пока не готовы к курсу?</strong>
-        <span>Подпишитесь на канал — советы о здоровье приходят бесплатно и без обязательств</span>
+        <span>Подпишитесь на канал – советы о здоровье приходят бесплатно и без обязательств</span>
       </div>
       <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-inline-btn">Подписаться →</a>
     </div>

@@ -10,7 +10,7 @@ const styles = `
 .verify-btn:hover { background: var(--orange-warm); }
 `;
 ---
-<SiteLayout title="Подтверждение email — Алексей Ларин" padTop={true} pageStyles={styles}>
+<SiteLayout title="Подтверждение email – Алексей Ларин" padTop={true} pageStyles={styles}>
   <section class="verify-wrap">
     <div id="icon" class="verify-icon">⏳</div>
     <h1 id="title">Проверяем ссылку…</h1>
@@ -31,7 +31,7 @@ const styles = `
       }
       try {
         // CSRF cookie может ещё не быть установлена (первый визит из почтового
-        // клиента в новой вкладке) — сначала прогреваем её через GET.
+        // клиента в новой вкладке) – сначала прогреваем её через GET.
         function getCsrf() {
           const m = document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/);
           return m ? m[1] : '';

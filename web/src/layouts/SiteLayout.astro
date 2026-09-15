@@ -3,7 +3,7 @@ import '../styles/site.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 const {
-  title = 'Алексей Ларин — тренер по здоровью',
+  title = 'Алексей Ларин – тренер по здоровью',
   description = 'Личное ведение, бесплатный курс, статьи и результаты учеников.',
   active = '',
   pageStyles = '',
@@ -13,12 +13,12 @@ const {
   user = (Astro.locals as any).user,
 } = Astro.props as { title?: string; description?: string; active?: string; pageStyles?: string; padTop?: boolean; ogImage?: string; canonical?: string; user?: any };
 const siteUrl = 'https://leshalarin.ru';
-// canonical можно переопределить пропом — для страниц-дублей
+// canonical можно переопределить пропом – для страниц-дублей
 // (например, /courses/myagkiy-start указывает на /course).
 const canonicalPath = canonical || Astro.url.pathname;
 const canonicalUrl = siteUrl + canonicalPath;
 // Яндекс.Метрика: номер счётчика из env (runtime SSR, задаётся в .env → compose).
-// Пусто — счётчик не подключается, reachGoal превращается в no-op.
+// Пусто – счётчик не подключается, reachGoal превращается в no-op.
 const metrikaId = (typeof process !== 'undefined' && process.env.METRIKA_ID) || '';
 const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage;
 ---
@@ -52,13 +52,13 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={absoluteOgImage} />
 
-  {/* Self-hosted шрифты (в РФ Google Fonts медленный/нестабильный). Preload — два основных начертания. */}
+  {/* Self-hosted шрифты (в РФ Google Fonts медленный/нестабильный). Preload – два основных начертания. */}
   <link rel="preload" href="/fonts/Manrope-400-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="/fonts/CormorantGaramond-400-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/fonts/fonts.css" />
   <style is:global>
-    /* Токены, шапка, футер, контейнер, базовая типографика и responsive —
-       в ../styles/site.css (общий с Base.astro). Здесь — специфика публичного сайта. */
+    /* Токены, шапка, футер, контейнер, базовая типографика и responsive –
+       в ../styles/site.css (общий с Base.astro). Здесь – специфика публичного сайта. */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     a { color: inherit; }
 
@@ -110,7 +110,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   </main>
   <SiteFooter />
   <script>
-    // Attach CSRF to fetch mutations. Если cookie csrf ещё нет (первый визит) —
+    // Attach CSRF to fetch mutations. Если cookie csrf ещё нет (первый визит) –
     // синхронно ставим её через GET /api/me, иначе сервер вернёт csrf_failed.
     (() => {
       function getCsrf() {

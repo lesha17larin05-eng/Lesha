@@ -5,7 +5,7 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data: courses } = await apiJson<any[]>('/api/me/courses', { cookie });
 const user = (Astro.locals as any).user;
 
-// «Продолжить с того же места» — последняя учебная активность
+// «Продолжить с того же места» – последняя учебная активность
 const { data: cont, status: contStatus } = await apiJson<any>('/api/me/continue', { cookie });
 const cabinetPagesSet = new Set(['myagkiy-start', 'zdorovaya-spina']);
 const contHref = cont && contStatus === 200
@@ -16,12 +16,12 @@ const contMins = (sec: number) => Math.max(1, Math.round((sec || 0) / 60));
 <Base title="Личный кабинет" user={user}>
   <section class="container" style="padding:60px 16px;">
     <h1>Здравствуйте, {user?.name || user?.email}</h1>
-    {!user?.email_verified && <div class="alert">Подтвердите email — иначе оплата платных курсов недоступна.</div>}
+    {!user?.email_verified && <div class="alert">Подтвердите email – иначе оплата платных курсов недоступна.</div>}
 
     {contHref && (
       <a href={contHref} class="continue-card card">
         <div>
-          <div class="continue-label">{cont.completed ? 'Вы прошли урок — продолжайте!' : 'Продолжить с того же места'}</div>
+          <div class="continue-label">{cont.completed ? 'Вы прошли урок – продолжайте!' : 'Продолжить с того же места'}</div>
           <div class="continue-title">{cont.lesson_title}</div>
           <div class="muted">{cont.course_title}{!cont.completed && cont.duration_sec ? ` · остановились на ${contMins(cont.last_position_sec)} мин из ${contMins(cont.duration_sec)}` : ''}</div>
         </div>

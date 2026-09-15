@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 // Вне летнего сезона страница скрыта (тумблер в админке): ссылок на неё нет,
-// в sitemap не попадает и отдаётся noindex — но по прямой ссылке открывается,
+// в sitemap не попадает и отдаётся noindex – но по прямой ссылке открывается,
 // чтобы не ломать то, что уже разослано родителям.
 const salutVisible = ((Astro.locals as any).settings?.salut_visible ?? false) === true;
 ---
@@ -235,7 +235,7 @@ body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .about-cred { display: flex; align-items: center; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.9); }
 .cred-icon { width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
-/* PERCEPTIONS — компактные строки «до → после» */
+/* PERCEPTIONS – компактные строки «до → после» */
 .perceptions { padding: 100px 80px; background: white; }
 .perc-head { max-width: 720px; margin-bottom: 48px; }
 .perc-head .section-desc { margin-bottom: 0; }
@@ -272,7 +272,7 @@ body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .safety-card h3 { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 14px; line-height: 1.3; }
 .safety-card p { font-size: 17px; color: var(--text-muted); line-height: 1.7; }
 
-/* TAKEAWAYS — методички и сертификат */
+/* TAKEAWAYS – методички и сертификат */
 .takeaways { padding: 100px 80px; background: var(--cream); }
 .takeaways-head { max-width: 680px; margin-bottom: 56px; }
 .takeaways-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
@@ -286,7 +286,7 @@ body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .takeaway-title { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 12px; line-height: 1.3; }
 .takeaway-desc { font-size: 16px; color: var(--text-muted); line-height: 1.7; }
 
-/* MEDIA SECTION — видео + фото */
+/* MEDIA SECTION – видео + фото */
 .media-section { padding: 100px 80px; background: white; }
 .media-head { max-width: 720px; margin-bottom: 48px; }
 .media-head .section-desc { margin-bottom: 0; }
@@ -312,7 +312,7 @@ body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
 .gallery-item:hover img { transform: scale(1.04); }
 
-/* REVIEWS — гибридный блок */
+/* REVIEWS – гибридный блок */
 .reviews { padding: 100px 80px; background: var(--cream); }
 .reviews-head { max-width: 680px; margin-bottom: 56px; }
 
@@ -358,7 +358,7 @@ body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 .parent-name { font-size: 15px; font-weight: 600; color: var(--navy); }
 .parent-role { font-size: 13px; color: var(--text-light); }
 
-/* Скрины переписок — лента после parent reviews, без отдельных заголовков */
+/* Скрины переписок – лента после parent reviews, без отдельных заголовков */
 .screens-section { margin-top: 24px; }
 .screens-strip { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: thin; }
 .screens-strip::-webkit-scrollbar { height: 8px; }
@@ -513,7 +513,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .hero-left { padding: 56px 24px; }
   .hero-right { min-height: 320px; }
 
-  /* CTA-кнопка на всю ширину — стрелка не съезжает на новую строку */
+  /* CTA-кнопка на всю ширину – стрелка не съезжает на новую строку */
   .hero-cta { align-items: stretch; }
   .btn-hero {
     width: 100%; justify-content: center;
@@ -522,7 +522,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   }
   .btn-hero-secondary { align-self: center; }
 
-  /* Hero-фото на мобиле — без масштабирования, в естественных пропорциях,
+  /* Hero-фото на мобиле – без масштабирования, в естественных пропорциях,
      лица не обрезаются ни сверху, ни снизу */
   .hero-right { min-height: 0; aspect-ratio: 4 / 5; }
   .hero-photo { transform: none; object-fit: cover; object-position: center top; }
@@ -570,7 +570,7 @@ a:hover { text-decoration: none; }
     <h1>Здоровая спина<br>для <em>вашего ребёнка</em></h1>
     <p class="hero-sub">5 занятий за смену. Без стресса, с удовольствием.</p>
     <div class="hero-promise">
-      <p>Укрепим спину, научим правильно поднимать тяжести, привьём интерес к движению — а ещё подарим <strong>онлайн-курс по здоровой спине для всей семьи</strong>.</p>
+      <p>Укрепим спину, научим правильно поднимать тяжести, привьём интерес к движению – а ещё подарим <strong>онлайн-курс по здоровой спине для всей семьи</strong>.</p>
     </div>
     <div class="hero-cta">
       <a href="#zapis" class="btn-hero">Записать ребёнка →</a>
@@ -590,7 +590,7 @@ a:hover { text-decoration: none; }
       <div class="badge-icon">🎁</div>
       <div>
         <div class="badge-title">Бонус каждой семье</div>
-        <div class="badge-sub">Онлайн-курс (3 990 ₽) — в подарок на 3-х человек</div>
+        <div class="badge-sub">Онлайн-курс (3 990 ₽) – в подарок на 3-х человек</div>
       </div>
     </div>
   </div>
@@ -601,27 +601,27 @@ a:hover { text-decoration: none; }
   <div class="seasons-head">
     <div class="section-label">Смены лагеря</div>
     <h2 class="section-title">Лето <em>2026</em></h2>
-    <p class="section-desc">Курс проходит в каждую из 4 смен. Смены 1 и 2 уже завершились — отзывы и анкеты родителей ниже. Смена 3 стартует 15 июля — запись идёт прямо сейчас. На смену 4 тоже открыта запись.</p>
+    <p class="section-desc">Курс проходит в каждую из 4 смен. Смены 1 и 2 уже завершились – отзывы и анкеты родителей ниже. Смена 3 стартует 15 июля – запись идёт прямо сейчас. На смену 4 тоже открыта запись.</p>
   </div>
   <div class="seasons-grid">
     <div class="season-card season-card--done">
       <div class="season-name">Смена 1</div>
-      <div class="season-dates">1 июня — 20 июня</div>
+      <div class="season-dates">1 июня – 20 июня</div>
       <div class="season-status season-status--done">Завершена · отзывы ниже</div>
     </div>
     <div class="season-card season-card--done">
       <div class="season-name">Смена 2</div>
-      <div class="season-dates">23 июня — 12 июля</div>
+      <div class="season-dates">23 июня – 12 июля</div>
       <div class="season-status season-status--done">Завершена</div>
     </div>
     <div class="season-card season-card--live">
       <div class="season-name">Смена 3</div>
-      <div class="season-dates">15 июля — 3 августа</div>
+      <div class="season-dates">15 июля – 3 августа</div>
       <div class="season-status season-status--live">Запись идёт прямо сейчас</div>
     </div>
     <div class="season-card">
       <div class="season-name">Смена 4</div>
-      <div class="season-dates">6 августа — 25 августа</div>
+      <div class="season-dates">6 августа – 25 августа</div>
       <div class="season-status">Идёт запись</div>
     </div>
   </div>
@@ -638,28 +638,28 @@ a:hover { text-decoration: none; }
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M5 9l7-7 7 7M5 15l7 7 7-7"/></svg>
       </div>
       <h3>Есть показания к ЛФК</h3>
-      <p>Нарушение осанки, сколиоз, плоскостопие, гипермобильность — врач или родитель видят, что спине ребёнка нужно внимание.</p>
+      <p>Нарушение осанки, сколиоз, плоскостопие, гипермобильность – врач или родитель видят, что спине ребёнка нужно внимание.</p>
     </div>
     <div class="fw-card">
       <div class="fw-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/><path d="M12 3v12"/></svg>
       </div>
       <h3>Ребёнок много сидит</h3>
-      <p>Школа, уроки, гаджеты — спина устаёт, плечи сводятся вперёд. Хочется компенсировать это движением и базовыми привычками.</p>
+      <p>Школа, уроки, гаджеты – спина устаёт, плечи сводятся вперёд. Хочется компенсировать это движением и базовыми привычками.</p>
     </div>
     <div class="fw-card">
       <div class="fw-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
       </div>
       <h3>Хочется укрепить осанку</h3>
-      <p>Без жалоб и диагнозов — просто чтобы ребёнок рос с крепкой спиной и понимал, как заботиться о теле с детства.</p>
+      <p>Без жалоб и диагнозов – просто чтобы ребёнок рос с крепкой спиной и понимал, как заботиться о теле с детства.</p>
     </div>
     <div class="fw-card">
       <div class="fw-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       </div>
       <h3>Нужен позитивный опыт с физкультурой</h3>
-      <p>В школе физра бывает стрессом. Здесь — мягкая атмосфера, мини-группа, никто никого не сравнивает и не ставит оценок.</p>
+      <p>В школе физра бывает стрессом. Здесь – мягкая атмосфера, мини-группа, никто никого не сравнивает и не ставит оценок.</p>
     </div>
     <div class="fw-card">
       <div class="fw-icon">
@@ -673,7 +673,7 @@ a:hover { text-decoration: none; }
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
       </div>
       <h3>Ребёнок уже был на курсе</h3>
-      <p>Многие возвращаются из лета в лето. Для повторников действует скидка 20% — программу углубляю под уровень.</p>
+      <p>Многие возвращаются из лета в лето. Для повторников действует скидка 20% – программу углубляю под уровень.</p>
     </div>
   </div>
 </section>
@@ -682,8 +682,8 @@ a:hover { text-decoration: none; }
 <section class="programme" id="programme">
   <div class="prog-head">
     <div class="section-label">Программа</div>
-    <h2 class="section-title">5 занятий&nbsp;—<br>каждое <em>по 55 минут</em></h2>
-    <p class="section-desc">5 занятий — 5 тем. Каждое занятие: 15 минут теории по теме и 40 минут практики. Ниже — темы и желаемый результат после каждого занятия.</p>
+    <h2 class="section-title">5 занятий&nbsp;–<br>каждое <em>по 55 минут</em></h2>
+    <p class="section-desc">5 занятий – 5 тем. Каждое занятие: 15 минут теории по теме и 40 минут практики. Ниже – темы и желаемый результат после каждого занятия.</p>
   </div>
 
   <div class="prog-sessions">
@@ -767,7 +767,7 @@ a:hover { text-decoration: none; }
         </div>
         <div class="prog-session-result">
           <span class="prog-result-label">Результат:</span>
-          ребёнок уезжает с сертификатом и методичкой — может продолжать дома.
+          ребёнок уезжает с сертификатом и методичкой – может продолжать дома.
         </div>
       </div>
     </div>
@@ -777,7 +777,7 @@ a:hover { text-decoration: none; }
     <div class="prog-video-text">
       <div class="prog-video-eyebrow">Видео с курса</div>
       <h3 class="prog-video-h">Пример проведения занятия</h3>
-      <p class="prog-video-desc">26-секундная нарезка — как одно занятие выглядит изнутри: от теоретической части до практики.</p>
+      <p class="prog-video-desc">26-секундная нарезка – как одно занятие выглядит изнутри: от теоретической части до практики.</p>
     </div>
     <div class="prog-video video-wrap">
       <video class="js-vid" controls preload="metadata" poster="/salut-2026/img/video-poster-process.jpg">
@@ -791,7 +791,7 @@ a:hover { text-decoration: none; }
     <div>
       <div class="prog-detail-icon">⏰</div>
       <div class="prog-detail-num">15:00</div>
-      <div class="prog-detail-label">В тихий час — не отнимает время от других активностей</div>
+      <div class="prog-detail-label">В тихий час – не отнимает время от других активностей</div>
     </div>
     <div>
       <div class="prog-detail-icon">👥</div>
@@ -801,7 +801,7 @@ a:hover { text-decoration: none; }
     <div>
       <div class="prog-detail-icon">📋</div>
       <div class="prog-detail-num">5</div>
-      <div class="prog-detail-label">Занятий за смену — оптимальная длительность для усвоения</div>
+      <div class="prog-detail-label">Занятий за смену – оптимальная длительность для усвоения</div>
     </div>
     <div>
       <div class="prog-detail-icon">🎓</div>
@@ -816,24 +816,24 @@ a:hover { text-decoration: none; }
   <div class="bonus-grid">
     <div>
       <div class="bonus-tag"><span>🎁</span>Подарок каждой семье</div>
-      <h2>Онлайн-курс «Здоровая спина»&nbsp;—<br><em>в подарок</em></h2>
-      <p class="bonus-lead">После лагеря вся семья получает доступ к моему авторскому онлайн-курсу «Здоровая спина» — <strong>чтобы ребёнок продолжал заниматься дома, а родители занимались вместе с ним</strong>.</p>
+      <h2>Онлайн-курс «Здоровая спина»&nbsp;–<br><em>в подарок</em></h2>
+      <p class="bonus-lead">После лагеря вся семья получает доступ к моему авторскому онлайн-курсу «Здоровая спина» – <strong>чтобы ребёнок продолжал заниматься дома, а родители занимались вместе с ним</strong>.</p>
       <div class="bonus-features">
         <div class="bonus-feature">
           <div class="bonus-check">✓</div>
-          <div><strong>3 недели программы</strong> по системе мягкого укрепления спины — видео-уроки и PDF-материалы</div>
+          <div><strong>3 недели программы</strong> по системе мягкого укрепления спины – видео-уроки и PDF-материалы</div>
         </div>
         <div class="bonus-feature">
           <div class="bonus-check">✓</div>
-          <div><strong>Доступ для 3 человек</strong> — ребёнку, родителю и кому-то ещё в семье (бабушка, дедушка, второй родитель)</div>
+          <div><strong>Доступ для 3 человек</strong> – ребёнку, родителю и кому-то ещё в семье (бабушка, дедушка, второй родитель)</div>
         </div>
         <div class="bonus-feature">
           <div class="bonus-check">✓</div>
-          <div><strong>Доступ на 1 год</strong> — можно вернуться к курсу в любой момент в течение года</div>
+          <div><strong>Доступ на 1 год</strong> – можно вернуться к курсу в любой момент в течение года</div>
         </div>
         <div class="bonus-feature">
           <div class="bonus-check">✓</div>
-          <div><strong>Активация через анкету</strong> на сайте после возвращения из лагеря — пришлю ссылку</div>
+          <div><strong>Активация через анкету</strong> на сайте после возвращения из лагеря – пришлю ссылку</div>
         </div>
       </div>
       <div class="bonus-value">
@@ -867,16 +867,16 @@ a:hover { text-decoration: none; }
 <!-- ABOUT -->
 <section class="about" id="about">
   <div class="about-photo">
-    <img src="/salut-2026/img/class-circle-quiet.jpg" alt="Алексей Ларин — тренер по здоровой спине">
+    <img src="/salut-2026/img/class-circle-quiet.jpg" alt="Алексей Ларин – тренер по здоровой спине">
   </div>
   <div class="about-content">
     <div class="section-label">Кто ведёт</div>
-    <h2 class="section-title">Алексей Ларин — <em>сам прошёл</em> через восстановление</h2>
-    <div class="about-pull">В 9 лет — перелом трёх позвонков. Месяц в больнице, полгода нельзя было сидеть, год в медицинском корсете.</div>
-    <p class="about-text">Именно через движение я восстановился. И именно поэтому понимаю, как осторожно нужно подходить к детской спине — особенно если есть особенности.</p>
-    <p class="about-text">С детьми работаю с 2017 года. Занятия — без давления, без сравнений, в формате постепенного освоения. Дети возвращаются на курс из года в год — это для меня главный показатель.</p>
+    <h2 class="section-title">Алексей Ларин – <em>сам прошёл</em> через восстановление</h2>
+    <div class="about-pull">В 9 лет – перелом трёх позвонков. Месяц в больнице, полгода нельзя было сидеть, год в медицинском корсете.</div>
+    <p class="about-text">Именно через движение я восстановился. И именно поэтому понимаю, как осторожно нужно подходить к детской спине – особенно если есть особенности.</p>
+    <p class="about-text">С детьми работаю с 2017 года. Занятия – без давления, без сравнений, в формате постепенного освоения. Дети возвращаются на курс из года в год – это для меня главный показатель.</p>
     <div class="about-creds">
-      <div class="about-cred"><div class="cred-icon">🎓</div>Магистр с отличием — РУС «ГЦОЛИФК» (ведущий спортивный вуз России)</div>
+      <div class="about-cred"><div class="cred-icon">🎓</div>Магистр с отличием – РУС «ГЦОЛИФК» (ведущий спортивный вуз России)</div>
       <div class="about-cred"><div class="cred-icon">📅</div>8+ лет тренерской практики · более 8 000 человек через проекты</div>
       <div class="about-cred"><div class="cred-icon">❤️</div>Опыт реабилитации в фондах «Подари жизнь» и «Хрупкие люди»</div>
       <div class="about-cred"><div class="cred-icon">🏕</div>4-й год веду курс по здоровой спине в лагере «Салют»</div>
@@ -884,18 +884,18 @@ a:hover { text-decoration: none; }
   </div>
 </section>
 
-<!-- PERCEPTIONS — что писали до курса → что написали после -->
+<!-- PERCEPTIONS – что писали до курса → что написали после -->
 <section class="perceptions">
   <div class="perc-head">
     <div class="section-label">Анкеты до и после</div>
-    <h2 class="section-title">До курса <em>и после</em>&nbsp;—<br>что писали родители</h2>
-    <p class="section-desc">Родители заполняют две анкеты: до курса — про ребёнка и ожидания, после курса — про впечатления. Ниже — пары цитат из одних и тех же семей. Имена не указываю.</p>
+    <h2 class="section-title">До курса <em>и после</em>&nbsp;–<br>что писали родители</h2>
+    <p class="section-desc">Родители заполняют две анкеты: до курса – про ребёнка и ожидания, после курса – про впечатления. Ниже – пары цитат из одних и тех же семей. Имена не указываю.</p>
   </div>
   <div class="perc-rows">
     <div class="perc-row">
       <div class="perc-cell perc-before">
         <span class="perc-label">До</span>
-        «Очень стеснительный, зажимается, боится сделать что-то не так. К физкультуре — нейтрально.»
+        «Очень стеснительный, зажимается, боится сделать что-то не так. К физкультуре – нейтрально.»
       </div>
       <div class="perc-cell perc-after">
         <span class="perc-label">После</span>
@@ -910,7 +910,7 @@ a:hover { text-decoration: none; }
       </div>
       <div class="perc-cell perc-after">
         <span class="perc-label">После</span>
-        «Заинтересовался строением позвоночника — почему важно поддерживать мышцы спины и правильно поднимать тяжести.» <span class="perc-score">10 / 10</span>
+        «Заинтересовался строением позвоночника – почему важно поддерживать мышцы спины и правильно поднимать тяжести.» <span class="perc-score">10 / 10</span>
       </div>
     </div>
 
@@ -943,14 +943,14 @@ a:hover { text-decoration: none; }
       </div>
       <div class="perc-cell perc-after">
         <span class="perc-label">После</span>
-        «Лучше осанка — лопатки сведены, плечи расправлены. Был ВАУ-эффект, когда увидел листовку с фото инструкций упражнений, сделанную моей дочерью.» <span class="perc-score">10 / 10</span>
+        «Лучше осанка – лопатки сведены, плечи расправлены. Был ВАУ-эффект, когда увидел листовку с фото инструкций упражнений, сделанную моей дочерью.» <span class="perc-score">10 / 10</span>
       </div>
     </div>
 
     <div class="perc-row perc-row--final">
       <div class="perc-cell perc-before">
         <span class="perc-label">До</span>
-        «Кифоз. К спорту — нейтрально. Хочется, чтобы стал крепче и уверенней в себе.»
+        «Кифоз. К спорту – нейтрально. Хочется, чтобы стал крепче и уверенней в себе.»
       </div>
       <div class="perc-cell perc-after">
         <span class="perc-label">После</span>
@@ -965,7 +965,7 @@ a:hover { text-decoration: none; }
   <div class="safety-head">
     <div class="section-label">Безопасно</div>
     <h2 class="section-title">Почему можно <em>не переживать</em></h2>
-    <p class="section-desc">Спина ребёнка — деликатная зона, особенно если есть особенности. Расскажу, как именно построена работа.</p>
+    <p class="section-desc">Спина ребёнка – деликатная зона, особенно если есть особенности. Расскажу, как именно построена работа.</p>
   </div>
   <div class="safety-grid">
     <div class="safety-card">
@@ -973,53 +973,53 @@ a:hover { text-decoration: none; }
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
       <h3>50+ проведённых курсов</h3>
-      <p>Комплексы выверены годами работы. Все упражнения — мягкие, посильные. Никаких рискованных нагрузок на детский позвоночник.</p>
+      <p>Комплексы выверены годами работы. Все упражнения – мягкие, посильные. Никаких рискованных нагрузок на детский позвоночник.</p>
     </div>
     <div class="safety-card">
       <div class="safety-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       </div>
       <h3>Опыт реабилитации</h3>
-      <p>Эти же комплексы применял для восстановления детей и взрослых в фондах «Подари жизнь» и «Хрупкие люди» — где требования к безопасности максимальные.</p>
+      <p>Эти же комплексы применял для восстановления детей и взрослых в фондах «Подари жизнь» и «Хрупкие люди» – где требования к безопасности максимальные.</p>
     </div>
     <div class="safety-card">
       <div class="safety-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       </div>
       <h3>Индивидуальная обратная связь</h3>
-      <p>Группа до 12 человек — каждого ребёнка я вижу. Если у ребёнка есть особенности — расскажите при записи, учту в работе.</p>
+      <p>Группа до 12 человек – каждого ребёнка я вижу. Если у ребёнка есть особенности – расскажите при записи, учту в работе.</p>
     </div>
   </div>
 </section>
 
-<!-- TAKEAWAYS — что ребёнок забирает с собой -->
+<!-- TAKEAWAYS – что ребёнок забирает с собой -->
 <section class="takeaways">
   <div class="takeaways-head">
     <div class="section-label">После курса</div>
     <h2 class="section-title">Что ребёнок<br><em>забирает с собой</em></h2>
-    <p class="section-desc">Курс не растворяется после лагеря. Ребёнок уезжает с осязаемыми материалами — чтобы продолжать дома.</p>
+    <p class="section-desc">Курс не растворяется после лагеря. Ребёнок уезжает с осязаемыми материалами – чтобы продолжать дома.</p>
   </div>
   <div class="takeaways-grid">
     <div class="takeaway-block">
       <div class="takeaway-images">
-        <img src="/salut-2026/img/certificate-front.jpg" alt="Сертификат — лицевая сторона" onclick="openTakeaway(0)">
-        <img src="/salut-2026/img/certificate-back.jpg" alt="Сертификат — обратная сторона" onclick="openTakeaway(1)">
+        <img src="/salut-2026/img/certificate-front.jpg" alt="Сертификат – лицевая сторона" onclick="openTakeaway(0)">
+        <img src="/salut-2026/img/certificate-back.jpg" alt="Сертификат – обратная сторона" onclick="openTakeaway(1)">
       </div>
       <div class="takeaway-body">
         <div class="takeaway-tag">🎓 Сертификат · с двух сторон</div>
         <div class="takeaway-title">Именной диплом с памяткой</div>
-        <div class="takeaway-desc">Спереди — имя ребёнка и общее фото группы: подтверждение, что программа пройдена до конца. На обороте — комплекс упражнений с фото самого ребёнка в правильной позе. Шпаргалка для дома.</div>
+        <div class="takeaway-desc">Спереди – имя ребёнка и общее фото группы: подтверждение, что программа пройдена до конца. На обороте – комплекс упражнений с фото самого ребёнка в правильной позе. Шпаргалка для дома.</div>
       </div>
     </div>
     <div class="takeaway-block">
       <div class="takeaway-images">
-        <img src="/salut-2026/img/methodichka-theory.jpg" alt="Методичка — теория курса" onclick="openTakeaway(2)">
-        <img src="/salut-2026/img/methodichka-exercises.jpg" alt="Методичка — строение позвоночника" onclick="openTakeaway(3)">
+        <img src="/salut-2026/img/methodichka-theory.jpg" alt="Методичка – теория курса" onclick="openTakeaway(2)">
+        <img src="/salut-2026/img/methodichka-exercises.jpg" alt="Методичка – строение позвоночника" onclick="openTakeaway(3)">
       </div>
       <div class="takeaway-body">
         <div class="takeaway-tag">📚 Две методички</div>
         <div class="takeaway-title">Теория курса и анатомия позвоночника</div>
-        <div class="takeaway-desc">Первая методичка — теория со всех 5 занятий: как устроен позвоночник, как сидеть за партой, как поднимать тяжести. Вторая — наглядная анатомия: что такое сколиоз, грыжа, протрузия, на медицинских иллюстрациях. Простыми словами и с картинками.</div>
+        <div class="takeaway-desc">Первая методичка – теория со всех 5 занятий: как устроен позвоночник, как сидеть за партой, как поднимать тяжести. Вторая – наглядная анатомия: что такое сколиоз, грыжа, протрузия, на медицинских иллюстрациях. Простыми словами и с картинками.</div>
       </div>
     </div>
   </div>
@@ -1030,7 +1030,7 @@ a:hover { text-decoration: none; }
   <div class="media-head">
     <div class="section-label">Видео и фото с курса</div>
     <h2 class="section-title">Как это <em>выглядит</em></h2>
-    <p class="section-desc">Реальные кадры с курсов прошлых лет в «Салюте» — без постановки, как есть. Сначала пара коротких видео с занятий, затем фотогалерея — нажмите на любое фото, чтобы открыть в полном размере.</p>
+    <p class="section-desc">Реальные кадры с курсов прошлых лет в «Салюте» – без постановки, как есть. Сначала пара коротких видео с занятий, затем фотогалерея – нажмите на любое фото, чтобы открыть в полном размере.</p>
   </div>
   <div class="course-videos-grid">
     <div class="course-video-item">
@@ -1081,10 +1081,10 @@ a:hover { text-decoration: none; }
       <img src="/salut-2026/img/group-teens-selfie.jpg" alt="Курс «Здоровая спина» в лагере «Салют»">
     </div>
     <div class="gallery-item" onclick="openGallery(7)">
-      <img src="/salut-2026/img/trainer-stretch.jpg" alt="Алексей Ларин — тренер">
+      <img src="/salut-2026/img/trainer-stretch.jpg" alt="Алексей Ларин – тренер">
     </div>
     <div class="gallery-item" onclick="openGallery(8)">
-      <img src="/salut-2026/img/trainer-plank.jpg" alt="Алексей Ларин — тренер">
+      <img src="/salut-2026/img/trainer-plank.jpg" alt="Алексей Ларин – тренер">
     </div>
   </div>
 </section>
@@ -1107,12 +1107,12 @@ a:hover { text-decoration: none; }
     <div class="stat-breakdown">
       <div class="stat-bd-item">
         <div class="stat-bd-num">26<span>/&nbsp;28</span></div>
-        <div class="stat-bd-label">детей поставили курсу высший балл — 10 из 10</div>
+        <div class="stat-bd-label">детей поставили курсу высший балл – 10 из 10</div>
       </div>
       <div class="stat-bd-divider"></div>
       <div class="stat-bd-item">
         <div class="stat-bd-num">22<span>/&nbsp;28</span></div>
-        <div class="stat-bd-label">родителей поставили курсу высший балл — 10 из 10</div>
+        <div class="stat-bd-label">родителей поставили курсу высший балл – 10 из 10</div>
       </div>
     </div>
     <div class="stat-source">Анонимный опрос 28 семей · август 2025</div>
@@ -1120,7 +1120,7 @@ a:hover { text-decoration: none; }
 
   <!-- Стена детских отзывов -->
   <div class="kids-reviews">
-    <div class="kids-reviews-title">Сами дети — после курса</div>
+    <div class="kids-reviews-title">Сами дети – после курса</div>
     <div class="kids-grid">
       <div class="kid-quote--featured kid-quote">
         <div class="kid-quote-text">Каждый раз хотелось приходить снова и снова. В конце курса был виден явный результат</div>
@@ -1131,7 +1131,7 @@ a:hover { text-decoration: none; }
         <div class="kid-quote-author">Маша, 8 лет</div>
       </div>
       <div class="kid-quote">
-        <div class="kid-quote-text">Если будет прямая спина — будет счастливая жизнь</div>
+        <div class="kid-quote-text">Если будет прямая спина – будет счастливая жизнь</div>
         <div class="kid-quote-author">Тимофей, 10 лет</div>
       </div>
       <div class="kid-quote">
@@ -1155,7 +1155,7 @@ a:hover { text-decoration: none; }
         <div class="kid-quote-author">Кирилл, 12 лет</div>
       </div>
       <div class="kid-quote">
-        <div class="kid-quote-text">Не было растяжки, не было больно — всё размеренно и понятно</div>
+        <div class="kid-quote-text">Не было растяжки, не было больно – всё размеренно и понятно</div>
         <div class="kid-quote-author">Полина, 9 лет</div>
       </div>
       <div class="kid-quote">
@@ -1179,11 +1179,11 @@ a:hover { text-decoration: none; }
 
   <!-- Отзывы родителей -->
   <div class="parent-reviews">
-    <div class="parent-reviews-title">Родители — после курса</div>
+    <div class="parent-reviews-title">Родители – после курса</div>
     <div class="parent-grid">
       <div class="parent-card">
         <div class="parent-stars">★★★★★</div>
-        <p class="parent-text">Хочу сказать вам огромное спасибо за Дениса. Результат заметный, он ровнее стал держать спинку, очень понравились ваши занятия, у него появился стимул. <em>Огромная к вам симпатия и доверие, и я знаю, как это важно.</em> Очень надеюсь, что вы будете в лагере и на следующую смену — мы с огромным желанием будем продолжать. Будем рекомендовать всем нашим друзьям, которые едут в лагерь.</p>
+        <p class="parent-text">Хочу сказать вам огромное спасибо за Дениса. Результат заметный, он ровнее стал держать спинку, очень понравились ваши занятия, у него появился стимул. <em>Огромная к вам симпатия и доверие, и я знаю, как это важно.</em> Очень надеюсь, что вы будете в лагере и на следующую смену – мы с огромным желанием будем продолжать. Будем рекомендовать всем нашим друзьям, которые едут в лагерь.</p>
         <div class="parent-meta">
           <div class="parent-av">М</div>
           <div>
@@ -1205,7 +1205,7 @@ a:hover { text-decoration: none; }
       </div>
       <div class="parent-card">
         <div class="parent-stars">★★★★★</div>
-        <p class="parent-text">От меня отдельная благодарность. Олег после ваших занятий приехал из лагеря с энтузиазмом <em>продолжать заниматься самостоятельно</em> — при том, что сначала не хотел ничего. Вы большой молодец!</p>
+        <p class="parent-text">От меня отдельная благодарность. Олег после ваших занятий приехал из лагеря с энтузиазмом <em>продолжать заниматься самостоятельно</em> – при том, что сначала не хотел ничего. Вы большой молодец!</p>
         <div class="parent-meta">
           <div class="parent-av">М</div>
           <div>
@@ -1216,7 +1216,7 @@ a:hover { text-decoration: none; }
       </div>
       <div class="parent-card">
         <div class="parent-stars">★★★★★</div>
-        <p class="parent-text">Алексей, спасибо большое за занятия! Максим <em>реально стал меньше сутулиться, следит за осанкой, я вижу результат!</em> Ему тоже понравились занятия — СПАСИБО!</p>
+        <p class="parent-text">Алексей, спасибо большое за занятия! Максим <em>реально стал меньше сутулиться, следит за осанкой, я вижу результат!</em> Ему тоже понравились занятия – СПАСИБО!</p>
         <div class="parent-meta">
           <div class="parent-av">М</div>
           <div>
@@ -1255,7 +1255,7 @@ a:hover { text-decoration: none; }
     <div class="screens-strip">
       <div class="screen-card">
         <img src="/salut-2026/screenshots/chat-clean-koshka.jpg" alt="Отзыв 1">
-        <div class="screen-card-meta">«Любимое упражнение — кошка»</div>
+        <div class="screen-card-meta">«Любимое упражнение – кошка»</div>
       </div>
       <div class="screen-card">
         <img src="/salut-2026/screenshots/chat-clean-all-shifts.jpg" alt="Отзыв 2">
@@ -1294,22 +1294,22 @@ a:hover { text-decoration: none; }
   <div class="cta-grid">
     <div class="cta-left">
       <div class="section-label">Запись на курс</div>
-      <h2 class="section-title">Напишите&nbsp;—<br><em>забронирую место</em></h2>
+      <h2 class="section-title">Напишите&nbsp;–<br><em>забронирую место</em></h2>
       <p class="section-desc">Сообщите имя ребёнка, возраст и смену, на которую он едет. Я подтвержу место и расскажу детали.</p>
       <div class="cta-howto">
-        <div class="cta-howto-title">Как записаться — 3 шага</div>
+        <div class="cta-howto-title">Как записаться – 3 шага</div>
         <div class="cta-howto-list">
           <div class="cta-howto-item">
             <div class="cta-howto-num">1</div>
-            <div>Напишите мне в Телеграме (или в Max, если Телеграма нет) — укажите имя и возраст ребёнка, выбранную смену</div>
+            <div>Напишите мне в Телеграме (или в Max, если Телеграма нет) – укажите имя и возраст ребёнка, выбранную смену</div>
           </div>
           <div class="cta-howto-item">
             <div class="cta-howto-num">2</div>
-            <div>Пришлю небольшую анкету (5 минут) — заполняют родители. Из неё я узнаю про особенности ребёнка по здоровью</div>
+            <div>Пришлю небольшую анкету (5 минут) – заполняют родители. Из неё я узнаю про особенности ребёнка по здоровью</div>
           </div>
           <div class="cta-howto-item">
             <div class="cta-howto-num">3</div>
-            <div>Подтверждаю место и присылаю реквизиты — оплата в удобный момент после анкеты</div>
+            <div>Подтверждаю место и присылаю реквизиты – оплата в удобный момент после анкеты</div>
           </div>
         </div>
       </div>
@@ -1321,14 +1321,14 @@ a:hover { text-decoration: none; }
         <div class="price-feature"><span class="pf-check">✓</span>5 занятий по 55 минут в течение смены</div>
         <div class="price-feature"><span class="pf-check">✓</span>Группа до 12 детей, индивидуальная обратная связь</div>
         <div class="price-feature"><span class="pf-check">✓</span>Сертификат с фото правильного выполнения упражнений</div>
-        <div class="price-feature"><span class="pf-check">✓</span>Методички с занятий — забрать домой</div>
-        <div class="price-feature"><span class="pf-highlight">★</span><span class="pf-highlight">Онлайн-курс «Здоровая спина» (3 990 ₽) — в подарок для всей семьи</span></div>
+        <div class="price-feature"><span class="pf-check">✓</span>Методички с занятий – забрать домой</div>
+        <div class="price-feature"><span class="pf-highlight">★</span><span class="pf-highlight">Онлайн-курс «Здоровая спина» (3 990 ₽) – в подарок для всей семьи</span></div>
       </div>
       <div class="price-discount">
-        <strong>Скидка 20% для повторников.</strong> Если ваш ребёнок уже проходил курс в «Салюте» — стоимость 5 200 ₽. Программу адаптирую под его уровень.
+        <strong>Скидка 20% для повторников.</strong> Если ваш ребёнок уже проходил курс в «Салюте» – стоимость 5 200 ₽. Программу адаптирую под его уровень.
       </div>
       <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%20%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%B0%20%D0%BD%D0%B0%20%D0%BA%D1%83%D1%80%D1%81%20%C2%AB%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D0%BF%D0%B8%D0%BD%D0%B0%20%D0%B2%20%D0%A1%D0%B0%D0%BB%D1%8E%D1%82%D0%B5%C2%BB.%0A%D0%98%D0%BC%D1%8F%20%D0%B8%20%D1%84%D0%B0%D0%BC%D0%B8%D0%BB%D0%B8%D1%8F%20%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%B0%3A%20%0A%D0%92%D0%BE%D0%B7%D1%80%D0%B0%D1%81%D1%82%3A%20%0A%D0%A1%D0%BC%D0%B5%D0%BD%D0%B0%3A" class="btn-cta" target="_blank">Написать в Телеграме →</a>
-      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%20%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%B0%20%D0%BD%D0%B0%20%D0%BA%D1%83%D1%80%D1%81%20%C2%AB%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D0%BF%D0%B8%D0%BD%D0%B0%20%D0%B2%20%D0%A1%D0%B0%D0%BB%D1%8E%D1%82%D0%B5%C2%BB.%0A%D0%98%D0%BC%D1%8F%20%D0%B8%20%D1%84%D0%B0%D0%BC%D0%B8%D0%BB%D0%B8%D1%8F%20%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%B0%3A%20%0A%D0%92%D0%BE%D0%B7%D1%80%D0%B0%D1%81%D1%82%3A%20%0A%D0%A1%D0%BC%D0%B5%D0%BD%D0%B0%3A" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%20%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%B0%20%D0%BD%D0%B0%20%D0%BA%D1%83%D1%80%D1%81%20%C2%AB%D0%97%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D0%BF%D0%B8%D0%BD%D0%B0%20%D0%B2%20%D0%A1%D0%B0%D0%BB%D1%8E%D1%82%D0%B5%C2%BB.%0A%D0%98%D0%BC%D1%8F%20%D0%B8%20%D1%84%D0%B0%D0%BC%D0%B8%D0%BB%D0%B8%D1%8F%20%D1%80%D0%B5%D0%B1%D1%91%D0%BD%D0%BA%D0%B0%3A%20%0A%D0%92%D0%BE%D0%B7%D1%80%D0%B0%D1%81%D1%82%3A%20%0A%D0%A1%D0%BC%D0%B5%D0%BD%D0%B0%3A" class="btn-cta-alt" target="_blank">Нет Телеграма – написать в Max</a>
       <div class="cta-reply">Обычно отвечаю в течение 1–2 часов</div>
     </div>
   </div>
@@ -1338,7 +1338,7 @@ a:hover { text-decoration: none; }
 <section class="guarantee-faq" id="faq">
   <div class="section-label">Гарантия и вопросы</div>
   <h2 class="section-title">Запишитесь <em>без риска</em></h2>
-  <p class="section-desc">Если ребёнку курс не подойдёт после первого занятия — верну деньги без вопросов. Ниже — ответы на самые частые вопросы родителей.</p>
+  <p class="section-desc">Если ребёнку курс не подойдёт после первого занятия – верну деньги без вопросов. Ниже – ответы на самые частые вопросы родителей.</p>
 
   <div class="gf-grid">
     <div class="guarantee-box">
@@ -1346,31 +1346,31 @@ a:hover { text-decoration: none; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
       </div>
       <h3>Гарантия первого занятия</h3>
-      <p>Если после первого занятия ребёнок скажет, что курс ему не подходит — верну полную стоимость, без анкет и объяснений.</p>
-      <p class="small">Я не хочу, чтобы ребёнок занимался через «не хочу». Курс работает, только когда у него есть собственный интерес — а это становится ясно уже после первого занятия.</p>
+      <p>Если после первого занятия ребёнок скажет, что курс ему не подходит – верну полную стоимость, без анкет и объяснений.</p>
+      <p class="small">Я не хочу, чтобы ребёнок занимался через «не хочу». Курс работает, только когда у него есть собственный интерес – а это становится ясно уже после первого занятия.</p>
     </div>
 
     <div class="faq-list">
       <details class="faq-item">
         <summary>А если у моего ребёнка сколиоз, нарушение осанки или гипермобильность?</summary>
         <div class="faq-content">
-          <p>Курс рассчитан именно на таких детей — это его основная аудитория. Все упражнения мягкие, без рискованных нагрузок на позвоночник.</p>
-          <p>При записи в анкете расскажете про особенности — учту в работе. Если есть серьёзный диагноз и сомнения — сначала покажите врачу и спросите про лёгкую ЛФК. Если врач даёт «зелёный свет» — курс ваш.</p>
+          <p>Курс рассчитан именно на таких детей – это его основная аудитория. Все упражнения мягкие, без рискованных нагрузок на позвоночник.</p>
+          <p>При записи в анкете расскажете про особенности – учту в работе. Если есть серьёзный диагноз и сомнения – сначала покажите врачу и спросите про лёгкую ЛФК. Если врач даёт «зелёный свет» – курс ваш.</p>
         </div>
       </details>
 
       <details class="faq-item">
-        <summary>Сын или дочь не любит спорт и физру — будет ли интересно?</summary>
+        <summary>Сын или дочь не любит спорт и физру – будет ли интересно?</summary>
         <div class="faq-content">
           <p>Большая часть детей в группе именно такие. Здесь нет «нормативов», никто никого не сравнивает и не ставит оценок. Атмосфера спокойная, упражнения посильные.</p>
-          <p>Один из самых частых отзывов от родителей: «Сначала упирался, после первого занятия — втянулся, ждёт следующего». У детей это работает, потому что им объясняют ЗАЧЕМ, а не «давай-давай делай».</p>
+          <p>Один из самых частых отзывов от родителей: «Сначала упирался, после первого занятия – втянулся, ждёт следующего». У детей это работает, потому что им объясняют ЗАЧЕМ, а не «давай-давай делай».</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>Когда занятия и не помешают ли они другим активностям лагеря?</summary>
         <div class="faq-content">
-          <p>Занятия идут в тихий час, в 15:00, по 55 минут. Это время в лагере и так свободное — с другими активностями не пересекается.</p>
+          <p>Занятия идут в тихий час, в 15:00, по 55 минут. Это время в лагере и так свободное – с другими активностями не пересекается.</p>
           <p>Всего 5 занятий за смену. Достаточно, чтобы ребёнок успел освоить базу, и не настолько много, чтобы устать.</p>
         </div>
       </details>
@@ -1378,31 +1378,31 @@ a:hover { text-decoration: none; }
       <details class="faq-item">
         <summary>Какой возраст подходит?</summary>
         <div class="faq-content">
-          <p>От 6 до 16 лет. Все занимаются вместе — это часть формата: старшие подтягивают младших, младшие смотрят на старших и тянутся за ними. Каждый идёт в своём темпе, упражнения я адаптирую под конкретного ребёнка.</p>
+          <p>От 6 до 16 лет. Все занимаются вместе – это часть формата: старшие подтягивают младших, младшие смотрят на старших и тянутся за ними. Каждый идёт в своём темпе, упражнения я адаптирую под конкретного ребёнка.</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>А если ребёнок впервые в лагере и стесняется?</summary>
         <div class="faq-content">
-          <p>Группы маленькие — до 12 человек. Многие дети говорят, что курс был для них «самым спокойным местом в смене». Перед началом я отдельно знакомлюсь с теми, кому это важно.</p>
-          <p>Если ребёнок очень тревожный — напишите заранее, придумаем подход.</p>
+          <p>Группы маленькие – до 12 человек. Многие дети говорят, что курс был для них «самым спокойным местом в смене». Перед началом я отдельно знакомлюсь с теми, кому это важно.</p>
+          <p>Если ребёнок очень тревожный – напишите заранее, придумаем подход.</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>Что входит в подарочный онлайн-курс «Здоровая спина»?</summary>
         <div class="faq-content">
-          <p>Это мой полноценный авторский курс для дома: 3 недели программы, 12 уроков в 5 модулях, бонус-аудио расслабления и PDF-материалы. Обычно его покупают отдельно — для участников курса в «Салюте» он включён.</p>
-          <p>Доступ открывается на 3 человек в семье — ребёнка, родителя и кого-то ещё (бабушка, второй родитель). Доступ — на 1 год.</p>
+          <p>Это мой полноценный авторский курс для дома: 3 недели программы, 12 уроков в 5 модулях, бонус-аудио расслабления и PDF-материалы. Обычно его покупают отдельно – для участников курса в «Салюте» он включён.</p>
+          <p>Доступ открывается на 3 человек в семье – ребёнка, родителя и кого-то ещё (бабушка, второй родитель). Доступ – на 1 год.</p>
         </div>
       </details>
 
       <details class="faq-item">
         <summary>Мой ребёнок уже был у вас в прошлом году. Есть ли смысл идти снова?</summary>
         <div class="faq-content">
-          <p>Да — программа адаптируется под уровень. Повторникам даю более сложные модификации упражнений и углубляю теорию. Для них действует скидка 20% (5 200 ₽ вместо 6 500 ₽).</p>
-          <p>Многие дети ходят 3–4 года подряд — для меня это лучший показатель.</p>
+          <p>Да – программа адаптируется под уровень. Повторникам даю более сложные модификации упражнений и углубляю теорию. Для них действует скидка 20% (5 200 ₽ вместо 6 500 ₽).</p>
+          <p>Многие дети ходят 3–4 года подряд – для меня это лучший показатель.</p>
         </div>
       </details>
     </div>
@@ -1416,7 +1416,7 @@ a:hover { text-decoration: none; }
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
     </div>
     <div class="tg-strip-content">
-      <div class="tg-strip-title">Чтобы не потерять — подпишитесь на канал</div>
+      <div class="tg-strip-title">Чтобы не потерять – подпишитесь на канал</div>
       <div class="tg-strip-text">Полезный контент про развитие здоровья для всей семьи.</div>
     </div>
     <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-strip-link">
@@ -1521,7 +1521,7 @@ a:hover { text-decoration: none; }
   });
 
   // Гарантированно плавный скролл по якорным ссылкам.
-  // Event delegation — работает даже если ссылок ещё нет в DOM при загрузке.
+  // Event delegation – работает даже если ссылок ещё нет в DOM при загрузке.
   document.addEventListener('click', (e) => {
     const link = e.target.closest && e.target.closest('a[href^="#"]');
     if (!link) return;

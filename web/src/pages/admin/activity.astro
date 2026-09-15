@@ -14,9 +14,9 @@ const courses = Array.isArray(coursesData) ? coursesData : [];
 const user = (Astro.locals as any).user;
 
 const time = (iso?: string | null) => {
-  if (!iso) return '—';
+  if (!iso) return '–';
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—';
+  if (isNaN(d.getTime())) return '–';
   return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 };
 const mins = (sec: number) => Math.max(1, Math.round((sec || 0) / 60));
@@ -35,7 +35,7 @@ for (const r of rows) {
   <AdminNav active="activity" />
   <section class="container" style="padding:50px 16px;">
     <h1>Журнал занятий</h1>
-    <p class="muted">Каждая строка — один просмотр урока; повторные просмотры видны отдельными записями (перерыв больше 30 минут = новый просмотр). До 200 записей. Данные собираются с 13 июля 2026 — более ранние просмотры не фиксировались.</p>
+    <p class="muted">Каждая строка – один просмотр урока; повторные просмотры видны отдельными записями (перерыв больше 30 минут = новый просмотр). До 200 записей. Данные собираются с 13 июля 2026 – более ранние просмотры не фиксировались.</p>
     <form method="get" style="display:flex; gap:10px; margin:18px 0; align-items:center;">
       <select class="input" name="course" style="width:auto;">
         <option value="">Курс: любой</option>
@@ -48,7 +48,7 @@ for (const r of rows) {
     </form>
 
     {rows.length === 0
-      ? <p class="muted" style="margin-top:20px;">Записей пока нет — журнал наполняется по мере того, как ученики открывают уроки.</p>
+      ? <p class="muted" style="margin-top:20px;">Записей пока нет – журнал наполняется по мере того, как ученики открывают уроки.</p>
       : groups.map(g => (
           <div class="act-day">
             <h2 class="act-day-title">{g.day}</h2>

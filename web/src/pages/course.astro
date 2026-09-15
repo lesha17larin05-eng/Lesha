@@ -30,7 +30,7 @@ const authedStyles = user ? `
   .lessons-list a.lesson-item:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 ` : '';
 ---
-<SiteLayout title="Бесплатный курс — Алексей Ларин" active="course" pageStyles={styles + authedStyles}>
+<SiteLayout title="Бесплатный курс – Алексей Ларин" active="course" pageStyles={styles + authedStyles}>
   <Fragment set:html={body} />
   <script define:vars={{ isAuthed: !!user }}>
     (() => {
@@ -57,7 +57,7 @@ const authedStyles = user ? `
 
         // Обновляем левый герой-блок
         const promise = document.querySelector('.hero-promise p');
-        if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 8 уроков открыты</strong> — переходите в личный кабинет и начинайте в любом порядке.';
+        if (promise) promise.innerHTML = 'У вас уже есть доступ к курсу. <strong>Все 8 уроков открыты</strong> – переходите в личный кабинет и начинайте в любом порядке.';
 
         const ctaBtn = document.querySelector('.btn-hero');
         if (ctaBtn) {
@@ -104,7 +104,7 @@ const authedStyles = user ? `
         return;
       }
 
-      // Не авторизован — стандартная логика формы регистрации
+      // Не авторизован – стандартная логика формы регистрации
       if (!form) return;
       const note = document.getElementById('quick-signup-note');
       const btn = document.getElementById('quick-signup-submit');
@@ -150,7 +150,7 @@ const authedStyles = user ? `
             return;
           }
           if (res.ok && data.exists) {
-            setNote('Такой email уже есть — войдите в кабинет');
+            setNote('Такой email уже есть – войдите в кабинет');
             window.location.href = '/auth/login?email=' + encodeURIComponent(email) + '&next=/cabinet/myagkiy-start';
             return;
           }

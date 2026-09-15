@@ -2,7 +2,7 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 
 // Служебная страница проверки интеграции с Продамусом.
-// Доступна только админу — обычным пользователям и ботам отдаём 404,
+// Доступна только админу – обычным пользователям и ботам отдаём 404,
 // чтобы никто не оформил курс по тестовому тарифу за 10 ₽.
 const user = (Astro.locals as any).user;
 if (!user || user.role !== 'admin') {
@@ -21,8 +21,8 @@ const styles = `
 ---
 <SiteLayout title="Тестовая оплата 10₽" padTop={true} pageStyles={styles}>
   <section class="tp-wrap">
-    <h1>Тестовая оплата — 10 ₽</h1>
-    <p class="tp-msg">Это страница для проверки интеграции с Продамусом. Жми кнопку — переведёт на оплату, после успешной оплаты ты увидишь курс «Здоровая спина» в кабинете.</p>
+    <h1>Тестовая оплата – 10 ₽</h1>
+    <p class="tp-msg">Это страница для проверки интеграции с Продамусом. Жми кнопку – переведёт на оплату, после успешной оплаты ты увидишь курс «Здоровая спина» в кабинете.</p>
     <button id="tp-btn" class="tp-btn">Перейти к оплате →</button>
     <p id="tp-err" class="tp-err"></p>
   </section>
@@ -51,7 +51,7 @@ const styles = `
         }
         window.location.href = data.payment_url;
       } catch (e) {
-        err.textContent = 'Сеть отвалилась — попробуй ещё раз';
+        err.textContent = 'Сеть отвалилась – попробуй ещё раз';
         btn.disabled = false; btn.textContent = 'Перейти к оплате →';
       }
     });

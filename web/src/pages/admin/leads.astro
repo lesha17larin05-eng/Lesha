@@ -26,7 +26,7 @@ const fmt = (iso: string) => {
   <AdminNav active="leads" />
   <section class="container" style="padding:50px 16px;">
     <h1>Заявки</h1>
-    <p class="muted">С форм «Личное ведение» и «Консультация». Новые — сверху.</p>
+    <p class="muted">С форм «Личное ведение» и «Консультация». Новые – сверху.</p>
     {leads.length === 0
       ? <p class="muted" style="margin-top:20px;">Заявок пока нет.</p>
       : <table style="margin-top:16px;">
@@ -38,7 +38,7 @@ const fmt = (iso: string) => {
                 <td>{l.name}</td>
                 <td>{l.contact}</td>
                 <td>{sourceLabels[l.source] ?? l.source}</td>
-                <td style="max-width:340px; white-space:normal;">{l.message || '—'}</td>
+                <td style="max-width:340px; white-space:normal;">{l.message || '–'}</td>
                 <td>
                   <select class="lead-status input" data-id={l.id} style="width:auto; padding:6px 10px; font-size:13px;">
                     {Object.entries(statusLabels).map(([val, label]) => (

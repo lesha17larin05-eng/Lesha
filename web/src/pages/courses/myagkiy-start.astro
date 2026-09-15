@@ -13,10 +13,10 @@ if (status !== 200) return Astro.redirect('/course', 302);
 const enrolled: boolean = !!data.enrolled;
 const course = data.course;
 const rawLessons: any[] = data.lessons || [];
-// Бесплатный курс — все уроки доступны без enrollment
+// Бесплатный курс – все уроки доступны без enrollment
 const isFreeCourse = course?.kind === 'free';
 
-// UI-only metadata keyed by lesson slug (colours/tags — not content)
+// UI-only metadata keyed by lesson slug (colours/tags – not content)
 const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }> = {
   'vvodnyy':               { tag: 'Введение',  tagBg: '#dbeeff', tagColor: '#1060a0' },
   'sustavnaya-gimnastika': { tag: 'Всё тело',  tagBg: '#d4f0e4', tagColor: '#0a6040' },
@@ -28,7 +28,7 @@ const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }>
   'itogovyy':              { tag: 'Итог',      tagBg: '#f0f0f0', tagColor: '#444'    },
 };
 
-// Ссылки на YouTube и ВК для каждого урока — кнопки под видео.
+// Ссылки на YouTube и ВК для каждого урока – кнопки под видео.
 const videoLinks: Record<string, { youtube: string; vk: string }> = {
   'vvodnyy':               { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },
   'sustavnaya-gimnastika': { youtube: 'https://youtu.be/FmMPe-kj-vc', vk: 'https://vkvideo.ru/video-141544391_456239626?list=ln-0zqbHz4u7E4LIi08BF' },
@@ -58,8 +58,8 @@ const lessons = rawLessons.map((l: any, i: number) => {
   };
 });
 ---
-{/* canonical → /course: две страницы описывают один курс, лендинг /course — основной */}
-<SiteLayout title="Мягкий старт — бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 видеоуроков — суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="course" canonical="/course" padTop={false}>
+{/* canonical → /course: две страницы описывают один курс, лендинг /course – основной */}
+<SiteLayout title="Мягкий старт – бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 видеоуроков – суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="course" canonical="/course" padTop={false}>
   <style>
     /* ───── HERO ───── */
     .ms-hero {
@@ -461,7 +461,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
       <h1>Мягкий <em>старт</em></h1>
       <p class="ms-hero-sub">Восемь практик для тех, кто давно хотел начать</p>
       <div class="ms-hero-promise">
-        <p>Болит спина, нет энергии или просто давно не занимались? <strong>Курс создан для мягкого старта</strong> — в своём темпе, без изнурения и сложных программ.</p>
+        <p>Болит спина, нет энергии или просто давно не занимались? <strong>Курс создан для мягкого старта</strong> – в своём темпе, без изнурения и сложных программ.</p>
       </div>
       <div class="ms-hero-cta">
         {enrolled
@@ -470,7 +470,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
             ? <button id="enroll-btn" class="ms-btn-hero">Получить доступ бесплатно →</button>
             : <a href={`/auth/login?next=/courses/myagkiy-start`} class="ms-btn-hero">Войти и начать →</a>
         }
-        <div class="ms-hero-safety">Бесплатно — навсегда</div>
+        <div class="ms-hero-safety">Бесплатно – навсегда</div>
       </div>
       <div class="ms-hero-stats">
         <div><span class="ms-stat-num">6+2</span><span class="ms-stat-label">урока в курсе</span></div>
@@ -483,12 +483,12 @@ const lessons = rawLessons.map((l: any, i: number) => {
       <div class="ms-hero-right-title">Что внутри курса</div>
       <div class="ms-lesson-list">
         {lessons.map(l => {
-          // Курс бесплатный — клик ведёт на конкретный урок в кабинете всегда.
+          // Курс бесплатный – клик ведёт на конкретный урок в кабинете всегда.
           // Для платного курса клик активен только если есть enrollment.
           const canClick = isFreeCourse || enrolled;
           // Ведём прямо в кабинет, чтобы открывался свой плеер и описание.
-          // Если не авторизован — middleware кабинета вернёт на /auth/login,
-          // что для общего бесплатного курса допустимо (логин — короткий шаг).
+          // Если не авторизован – middleware кабинета вернёт на /auth/login,
+          // что для общего бесплатного курса допустимо (логин – короткий шаг).
           const lessonUrl = `/cabinet/${slug}#${l.slug}`;
           if (canClick) {
             return (
@@ -516,14 +516,14 @@ const lessons = rawLessons.map((l: any, i: number) => {
     </div>
   </section>
 
-  {/* ═══════ VIDEO GRID — превью карточек, без плееров.
-       Сами плееры — в /cabinet/myagkiy-start. По клику на карточку
+  {/* ═══════ VIDEO GRID – превью карточек, без плееров.
+       Сами плееры – в /cabinet/myagkiy-start. По клику на карточку
        пользователь идёт на отдельную страницу урока с YouTube-плеером. ═══════ */}
   <section class="ms-course" id="lessons">
     <div class="container" style="max-width:1180px; margin:0 auto; padding:0;">
       <div class="ms-section-label">Уроки курса</div>
-      <h2 class="ms-section-title">Восемь практик&nbsp;—<br><em>один мягкий старт</em></h2>
-      <p class="ms-section-desc">Каждый урок самостоятельный — можно начать с любого, который сейчас актуален. После регистрации все видео доступны прямо в кабинете, в максимальном качестве — на YouTube и ВКонтакте.</p>
+      <h2 class="ms-section-title">Восемь практик&nbsp;–<br><em>один мягкий старт</em></h2>
+      <p class="ms-section-desc">Каждый урок самостоятельный – можно начать с любого, который сейчас актуален. После регистрации все видео доступны прямо в кабинете, в максимальном качестве – на YouTube и ВКонтакте.</p>
 
       <div class="ms-video-grid">
         {lessons.map(l => {
@@ -558,7 +558,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
   <!-- ═══════ BENEFITS ═══════ -->
   <section class="ms-benefits">
     <div class="ms-section-label">Что вы получите</div>
-    <h2 class="ms-section-title">Простые практики&nbsp;—<br><em>понятный результат</em></h2>
+    <h2 class="ms-section-title">Простые практики&nbsp;–<br><em>понятный результат</em></h2>
     <p class="ms-section-desc">Каждый урок короткий, самостоятельный и работающий. Можно начать с любого, который сейчас актуален.</p>
     <div class="ms-benefits-grid">
       <div class="ms-benefit-card">
@@ -569,7 +569,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
       <div class="ms-benefit-card">
         <div class="ms-benefit-num">02</div>
         <h3>Первый шаг в регулярность</h3>
-        <p>Курс построен так, чтобы тело привыкало постепенно. После него хочется продолжать — не потому что надо, а потому что приятно.</p>
+        <p>Курс построен так, чтобы тело привыкало постепенно. После него хочется продолжать – не потому что надо, а потому что приятно.</p>
       </div>
       <div class="ms-benefit-card">
         <div class="ms-benefit-num">03</div>
@@ -590,9 +590,9 @@ const lessons = rawLessons.map((l: any, i: number) => {
     <div>
       <div class="ms-section-label">Кто ведёт курс</div>
       <h2 class="ms-section-title">Алексей Ларин</h2>
-      <div class="ms-about-pull">В 9 лет — перелом трёх позвонков. Именно через движение восстановился. С тех пор помогаю другим.</div>
-      <p class="ms-about-text">С 2017 года работаю с детьми, взрослыми и людьми старшего возраста. Магистр с отличием — Российский университет спорта. Более 8000 человек через проекты.</p>
-      <p class="ms-about-text">Этот курс — лучшее из того, что я умею, собранное в простой и понятный формат.</p>
+      <div class="ms-about-pull">В 9 лет – перелом трёх позвонков. Именно через движение восстановился. С тех пор помогаю другим.</div>
+      <p class="ms-about-text">С 2017 года работаю с детьми, взрослыми и людьми старшего возраста. Магистр с отличием – Российский университет спорта. Более 8000 человек через проекты.</p>
+      <p class="ms-about-text">Этот курс – лучшее из того, что я умею, собранное в простой и понятный формат.</p>
     </div>
   </section>
 
@@ -601,12 +601,12 @@ const lessons = rawLessons.map((l: any, i: number) => {
     <section class="ms-enroll" id="get-access">
       <div class="ms-enroll-inner">
         <div class="ms-section-label">Получить доступ</div>
-        <h2 class="ms-section-title">Начните сегодня&nbsp;—<br><em>это бесплатно</em></h2>
-        <p class="ms-section-desc">Войдите или зарегистрируйтесь — и сразу получите доступ ко всем 8 урокам.</p>
+        <h2 class="ms-section-title">Начните сегодня&nbsp;–<br><em>это бесплатно</em></h2>
+        <p class="ms-section-desc">Войдите или зарегистрируйтесь – и сразу получите доступ ко всем 8 урокам.</p>
         <div class="ms-enroll-box">
           <div class="ms-enroll-features">
             <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>8 видео-уроков с практиками</div>
-            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Доступ навсегда — в удобное время</div>
+            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Доступ навсегда – в удобное время</div>
             <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Можно начать с любого урока</div>
             <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Без подписок и скрытых платежей</div>
           </div>
@@ -636,7 +636,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
       if (r.ok) location.reload();
       else {
         const j = await r.json().catch(() => ({}));
-        alert(j.error || 'Ошибка — попробуйте ещё раз');
+        alert(j.error || 'Ошибка – попробуйте ещё раз');
       }
     }
     document.getElementById('enroll-btn')?.addEventListener('click', enrollFree);
