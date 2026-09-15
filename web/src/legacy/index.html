@@ -276,7 +276,16 @@ textarea.lead-input { resize: vertical; min-height: 72px; }
 .fw-why p { font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.78); margin-bottom: 14px; }
 .fw-cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; background: var(--orange); color: #fff; text-decoration: none; padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 600; box-shadow: 0 8px 24px rgba(232,101,42,0.30); transition: background 0.2s, transform 0.15s, box-shadow 0.2s; }
 .fw-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-.jw-free { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 99px; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; vertical-align: middle; }
+.journey-trial { display: flex; align-items: center; gap: 22px; background: rgba(232,101,42,0.07); border: 1px solid rgba(232,101,42,0.22); border-radius: 20px; padding: 22px 26px; margin-bottom: 20px; }
+.jt-badge { flex-shrink: 0; background: var(--orange); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 14px; border-radius: 99px; }
+.jt-body { flex: 1; min-width: 0; }
+.jt-label { font-size: 13px; font-weight: 700; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
+.jt-desc { font-size: 15px; color: var(--text-mid); line-height: 1.55; }
+.jt-next { flex-shrink: 0; font-size: 14px; color: var(--text-muted); font-style: italic; line-height: 1.5; text-align: right; }
+@media (max-width: 900px) {
+  .journey-trial { flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px 22px; }
+  .jt-next { text-align: left; }
+}
 .price-free { display: inline-block; margin-bottom: 14px; padding: 7px 16px; border-radius: 99px; background: rgba(74,222,128,0.16); border: 1px solid rgba(74,222,128,0.35); color: #4ade80; font-size: 14px; font-weight: 700; }
 @media (hover: hover) {
   .fw-card:hover { box-shadow: 0 10px 28px rgba(26,39,68,0.07); transform: translateY(-2px); }
@@ -711,14 +720,23 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <!-- JOURNEY -->
   <div class="journey-section">
     <div class="journey-section-title">Как выглядит ваш путь по месяцам</div>
+    <div class="journey-trial">
+      <div class="jt-badge">Бесплатно</div>
+      <div class="jt-body">
+        <div class="jt-label">Пробная неделя · до старта</div>
+        <div class="jt-desc">Знакомимся: анкета, тренировка 55 минут и план на неделю. Нагрузка небольшая – сначала смотрю, как тело отзывается, и подбираю, с чего вам начинать.</div>
+      </div>
+      <div class="jt-next">Понравится –<br>дальше месяц 1 →</div>
+    </div>
+
     <div class="journey-grid">
       <div class="journey-month">
         <div class="jm-num">Месяц 1</div>
         <div class="jm-title">Мягкий старт</div>
         <div class="jm-weeks">
           <div class="jm-week jm-week-active">
-            <div class="jw-label">Неделя 1 <span class="jw-free">бесплатно</span></div>
-            <div class="jw-desc">Тренировка + план. Знакомимся с телом, убираем страх перед нагрузкой</div>
+            <div class="jw-label">Неделя 1</div>
+            <div class="jw-desc">Тренировка + план. Начинаем регулярную работу – нагрузка по вашему уровню</div>
           </div>
           <div class="jm-week jm-week-active">
             <div class="jw-label">Неделя 2</div>
@@ -813,7 +831,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="fw-card">
       <div class="fw-num">2</div>
       <h3>Тренировка 55 минут</h3>
-      <p>Персонально с вами, онлайн или вживую. Смотрю, как вы двигаетесь и как тело отзывается, и подбираю нагрузку по ходу.</p>
+      <p>Персонально с вами, онлайн или вживую. Нагрузка небольшая: сначала смотрю, как вы двигаетесь и как тело отзывается.</p>
     </div>
     <div class="fw-card">
       <div class="fw-num">3</div>
