@@ -27,9 +27,10 @@ const servicesGroup = [
     imageWebp2x: '/img/IMG_4035@2x.webp',
     imgPos: 'center 30%',
     eyebrow: 'Личное ведение',
+    badge: 'Первая неделя бесплатно',
     title: 'Перемены в теле и самочувствии за три месяца',
-    desc: 'Персональный план и тренировки. Постоянная поддержка между ними. Двигаемся в своём ритме, без жёстких нагрузок. Онлайн — 16 000 ₽/мес.',
-    cta: 'Узнать подробнее',
+    desc: 'Персональный план и тренировки. Постоянная поддержка между ними. Двигаемся в своём ритме, без жёстких нагрузок. Первая неделя — бесплатно, дальше 16 000 ₽/мес онлайн.',
+    cta: 'Начать с бесплатной недели',
   },
 ];
 
@@ -217,6 +218,15 @@ const pageStyles = `
   font-size: 12px; font-weight: 700; letter-spacing: 0.10em;
   text-transform: uppercase; color: var(--orange);
 }
+/* Пилюля рядом с надзаголовком карточки — сейчас «первая неделя бесплатно»
+   у личного ведения. Зелёная, чтобы не сливаться с оранжевым надзаголовком. */
+.service-badge {
+  display: inline-block; margin-left: 8px; padding: 2px 9px;
+  border-radius: 99px; background: rgba(74,222,128,0.16);
+  border: 1px solid rgba(74,222,128,0.42); color: #0a6b42;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  vertical-align: middle; white-space: nowrap;
+}
 .service-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 23px; font-weight: 500; color: var(--navy); line-height: 1.25;
@@ -397,7 +407,7 @@ const pageStyles = `
             </picture>
           </div>
           <div class="service-body">
-            <div class="service-eyebrow">{s.eyebrow}</div>
+            <div class="service-eyebrow">{s.eyebrow}{(s as any).badge && <span class="service-badge">{(s as any).badge}</span>}</div>
             <div class="service-title">{s.title}</div>
             <div class="service-desc">{s.desc}</div>
             <div class="service-cta">{s.cta}</div>
