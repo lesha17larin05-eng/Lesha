@@ -72,6 +72,8 @@ func main() {
 	r.Get("/api/courses/{slug}", app.GetCourse)
 	r.Get("/api/courses/{slug}/lessons/{lesson}", app.GetLesson)
 	r.Get("/api/settings", app.PublicSettings)
+	r.Get("/api/unsubscribe", app.Unsubscribe)
+	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 

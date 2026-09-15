@@ -1,0 +1,40 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+// Куда попадает человек после клика по ссылке «отписаться» в письме.
+// ?error=1 — ссылка битая или устарела (подпись не сошлась).
+const failed = Astro.url.searchParams.get('error') === '1';
+---
+<SiteLayout title="Отписка от писем – Алексей Ларин" padTop={true} noindex={true}>
+  <section class="container unsub">
+    {failed ? (
+      <>
+        <h1>Ссылка не сработала</h1>
+        <p>Похоже, ссылка повреждена – такое бывает, если письмо переслали или
+          почтовый клиент обрезал адрес. Напишите мне на
+          <a href="mailto:les-larin@yandex.ru">les-larin@yandex.ru</a>, и я отпишу вас вручную
+          в тот же день.</p>
+      </>
+    ) : (
+      <>
+        <h1>Вы отписаны</h1>
+        <p>Больше писем с новостями и предложениями от меня не будет.</p>
+        <p class="unsub-note">Письма про ваши курсы – доступы, восстановление пароля – остаются:
+          они нужны, чтобы вы могли пользоваться тем, что у вас уже есть.</p>
+      </>
+    )}
+    <div class="unsub-actions">
+      <a class="btn-primary" href="/">На главную</a>
+      <a class="unsub-link" href="/blog">Читать статьи без подписки</a>
+    </div>
+  </section>
+
+  <style>
+    .unsub { max-width: 620px; padding: 80px 20px 100px; }
+    .unsub h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 4vw, 44px); font-weight: 400; color: var(--navy); margin-bottom: 18px; }
+    .unsub p { font-size: 17px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
+    .unsub-note { font-size: 15px; color: var(--text-muted); }
+    .unsub-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 30px; }
+    .unsub-link { font-size: 15px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+    @media (hover: hover) { .unsub-link:hover { color: var(--orange); } }
+  </style>
+</SiteLayout>

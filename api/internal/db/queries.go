@@ -934,3 +934,13 @@ func (r *Repo) SetSetting(ctx context.Context, key, value string) error {
 		key, value)
 	return err
 }
+
+// ClearMarketingConsent снимает согласие на маркетинговые письма
+// (отписка по ссылке из письма). Идемпотентна: повторный вызов — no-op.
+// Согласие на обработку ПД (consent_pd_at) не трогаем — оно про другое.
+func (r *Repo) ClearMarketingConsent(ctx context.Context, userID uuid.UUID) error {
+	_, err := r.Pool.Exec(ctx,
+		`UPDATE users SET consent_marketing_at = NULL, updated_at = now() WHERE id = $1`,
+		userID)
+	return err
+}

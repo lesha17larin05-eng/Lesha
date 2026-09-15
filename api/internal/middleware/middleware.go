@@ -167,7 +167,10 @@ func CSRF(next http.Handler) http.Handler {
 			return
 		}
 		// allow webhook & internal endpoints to bypass
-		if strings.HasPrefix(r.URL.Path, "/api/webhooks/") || strings.HasPrefix(r.URL.Path, "/api/internal/") {
+		// /api/unsubscribe — «отписка в один клик» (RFC 8058): POST шлёт
+		// почтовый клиент, cookie у него нет. Защита — HMAC-подпись в ссылке.
+		if strings.HasPrefix(r.URL.Path, "/api/webhooks/") || strings.HasPrefix(r.URL.Path, "/api/internal/") ||
+			r.URL.Path == "/api/unsubscribe" {
 			next.ServeHTTP(w, r)
 			return
 		}

@@ -10,8 +10,9 @@ const {
   padTop = false,
   ogImage = '/img/IMG_3979.jpg',
   canonical = '',
+  noindex = false,
   user = (Astro.locals as any).user,
-} = Astro.props as { title?: string; description?: string; active?: string; pageStyles?: string; padTop?: boolean; ogImage?: string; canonical?: string; user?: any };
+} = Astro.props as { title?: string; description?: string; active?: string; pageStyles?: string; padTop?: boolean; ogImage?: string; canonical?: string; noindex?: boolean; user?: any };
 const siteUrl = 'https://leshalarin.ru';
 // canonical можно переопределить пропом – для страниц-дублей
 // (например, /courses/myagkiy-start указывает на /course).
@@ -29,6 +30,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex, follow" />}
   <link rel="canonical" href={canonicalUrl} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />

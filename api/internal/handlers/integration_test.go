@@ -75,6 +75,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	r.Get("/api/settings", app.PublicSettings)
+	r.Get("/api/unsubscribe", app.Unsubscribe)
+	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth)
 		r.Get("/api/me", app.Me)
@@ -1338,5 +1340,94 @@ func TestSiteSettings(t *testing.T) {
 	r, body = adm.do("PATCH", "/api/admin/settings", map[string]bool{"salut_visible": false})
 	if r.StatusCode != 200 || !strings.Contains(string(body), `"salut_visible":false`) {
 		t.Fatalf("disable: %d %s", r.StatusCode, body)
+	}
+}
+
+// TestUnsubscribe — отписка по ссылке из письма: подпись обязательна,
+// согласие на маркетинг снимается, согласие на обработку ПД остаётся,
+// one-click POST работает без CSRF-заголовка (его шлёт почтовый клиент).
+func TestUnsubscribe(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+
+	c := newClient(srv)
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "unsub@b.ru", "password": "password123",
+		"consent_pd": true, "consent_marketing": true})
+	u, err := repo.GetUserByEmail(ctx, "unsub@b.ru")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	marketing := func() bool {
+		var ts *time.Time
+		_ = repo.Pool.QueryRow(ctx, `SELECT consent_marketing_at FROM users WHERE id=$1`, u.ID).Scan(&ts)
+		return ts != nil
+	}
+	if !marketing() {
+		t.Fatal("согласие на маркетинг должно стоять после регистрации")
+	}
+
+	// редиректы не проходим — проверяем сам ответ 303
+	noRedirect := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
+	get := func(url string) *http.Response {
+		resp, err := noRedirect.Get(srv.URL + url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		return resp
+	}
+
+	// чужая/подделанная подпись — согласие на месте
+	r := get("/api/unsubscribe?u=" + u.ID.String() + "&t=deadbeef")
+	if r.StatusCode != 303 {
+		t.Fatalf("ожидал редирект, получил %d", r.StatusCode)
+	}
+	if loc := r.Header.Get("Location"); loc != "/unsubscribed?error=1" {
+		t.Fatalf("плохая подпись должна вести на страницу ошибки, а ведёт на %s", loc)
+	}
+	if !marketing() {
+		t.Fatal("подделанная подпись не должна отписывать")
+	}
+
+	// валидная ссылка
+	token := handlers.UnsubscribeToken(cfg.JWTSecret, u.ID.String())
+	r = get("/api/unsubscribe?u=" + u.ID.String() + "&t=" + token)
+	if r.StatusCode != 303 || r.Header.Get("Location") != "/unsubscribed" {
+		t.Fatalf("валидная отписка: %d %s", r.StatusCode, r.Header.Get("Location"))
+	}
+	if marketing() {
+		t.Fatal("согласие на маркетинг должно быть снято")
+	}
+	// согласие на обработку ПД трогать нельзя
+	var pd *time.Time
+	_ = repo.Pool.QueryRow(ctx, `SELECT consent_pd_at FROM users WHERE id=$1`, u.ID).Scan(&pd)
+	if pd == nil {
+		t.Fatal("consent_pd_at не должен сниматься при отписке")
+	}
+
+	// one-click POST из почтового клиента: без X-CSRF-Token
+	req, _ := http.NewRequest("POST", srv.URL+"/api/unsubscribe?u="+u.ID.String()+"&t="+token, nil)
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		t.Fatalf("one-click POST без CSRF должен проходить, получил %d", resp.StatusCode)
+	}
+
+	// one-click с плохой подписью — 400
+	req, _ = http.NewRequest("POST", srv.URL+"/api/unsubscribe?u="+u.ID.String()+"&t=nope", nil)
+	resp2, err := (&http.Client{}).Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp2.Body.Close()
+	if resp2.StatusCode != 400 {
+		t.Fatalf("ожидал 400 на плохую подпись, получил %d", resp2.StatusCode)
 	}
 }
