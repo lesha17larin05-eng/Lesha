@@ -888,3 +888,49 @@ func (r *Repo) LastActivityForUser(ctx context.Context, userID uuid.UUID) (*Acti
 	a.LessonSlug = lessonSlug
 	return &a, nil
 }
+
+// ---- SITE SETTINGS ----
+
+// SettingDefaults — белый список ключей настроек сайта и их значения
+// по умолчанию. Ключа нет в карте → настройка не существует, менять её
+// через API нельзя. Строки БД накладываются поверх дефолтов, поэтому
+// новый ключ достаточно добавить сюда (миграция нужна только для сидов).
+var SettingDefaults = map[string]string{
+	// Показывать страницу «Здоровая спина в Салюте»: кнопка в шапке,
+	// строка в sitemap, индексация. Вне летнего сезона — false.
+	"salut_visible": "false",
+}
+
+// Settings возвращает все известные настройки: дефолты, перекрытые
+// значениями из БД. Неизвестные ключи из БД игнорируются.
+func (r *Repo) Settings(ctx context.Context) (map[string]string, error) {
+	out := make(map[string]string, len(SettingDefaults))
+	for k, v := range SettingDefaults {
+		out[k] = v
+	}
+	rows, err := r.Pool.Query(ctx, `SELECT key, value FROM site_settings`)
+	if err != nil {
+		return out, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var k, v string
+		if err := rows.Scan(&k, &v); err != nil {
+			return out, err
+		}
+		if _, ok := SettingDefaults[k]; ok {
+			out[k] = v
+		}
+	}
+	return out, rows.Err()
+}
+
+// SetSetting сохраняет значение настройки (upsert). Валидация ключа —
+// на стороне хендлера по SettingDefaults.
+func (r *Repo) SetSetting(ctx context.Context, key, value string) error {
+	_, err := r.Pool.Exec(ctx,
+		`INSERT INTO site_settings(key, value) VALUES($1, $2)
+		 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+		key, value)
+	return err
+}

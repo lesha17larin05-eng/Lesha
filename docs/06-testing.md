@@ -76,6 +76,8 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestQuickSignupRequiresConsentPD`     | `POST /auth/quick-signup` без `consent_pd=true` → 400 `consent_pd_required`, в users такой email не появился. |
 | `TestRegisterSavesConsentTimestamps`   | При `consent_pd=true, consent_marketing=true` — `users.consent_pd_at` и `users.consent_marketing_at` не NULL. При `consent_marketing=false` — `consent_marketing_at = NULL`, `consent_pd_at` всё равно проставлен. |
 
+| `TestSiteSettings`                     | Флаги сайта: публичный `GET /api/settings` без auth отдаёт `salut_visible:false` по умолчанию; не-админ на `PATCH /api/admin/settings` не проходит; неизвестный ключ и пустое тело → 400; админ включает → публичный GET отражает, в `audit_log` ровно одна запись `settings_update`; выключение возвращает `false`. |
+
 ## Как добавить тест
 
 1. Unit-тест — в том же пакете, файл `*_test.go`. Не требует БД.

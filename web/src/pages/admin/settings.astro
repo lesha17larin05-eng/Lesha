@@ -1,0 +1,124 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+// Читаем настройки напрямую из API (не через кеш SSR), чтобы админка
+// всегда показывала актуальное состояние тумблеров.
+const { data } = await apiJson<Record<string, boolean>>('/api/settings', { cookie });
+const salutVisible = data?.salut_visible === true;
+const user = (Astro.locals as any).user;
+---
+<Base title="Настройки сайта (админ)" user={user}>
+  <AdminNav active="settings" />
+  <section class="container" style="padding:50px 16px; max-width:760px;">
+    <h1>Настройки сайта</h1>
+    <p class="muted">Переключатели действуют сразу, деплой не нужен. Сайт подхватывает
+      изменение в течение ~10 секунд.</p>
+
+    <div class="setting-card" style="margin-top:28px;">
+      <div class="setting-main">
+        <div class="setting-text">
+          <h2>Страница «Здоровая спина в Салюте»</h2>
+          <p class="muted">
+            Когда включено — в шапке сайта появляется оранжевая кнопка «Здоровая спина
+            в Салюте», страница попадает в карту сайта и индексируется поисковиками.
+            Когда выключено — кнопки нет, поисковикам страница закрыта, но по прямой
+            ссылке <a href="/salut-2026" target="_blank" rel="noopener">/salut-2026</a>
+            она по-прежнему открывается (старые ссылки у родителей не ломаются).
+          </p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="salut-toggle" checked={salutVisible} />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting-state">
+        <span class="state-badge" id="salut-state" data-on={salutVisible ? '1' : '0'}>
+          {salutVisible ? 'Показывается' : 'Скрыта'}
+        </span>
+        <span class="save-hint" id="save-hint" hidden>Сохранено ✓</span>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .setting-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; transition: box-shadow .2s;
+    }
+    @media (hover: hover) { .setting-card:hover { box-shadow: 0 8px 24px rgba(26,39,68,.06); } }
+    .setting-main { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; }
+    .setting-text h2 { font-size: 21px; margin: 0 0 8px; }
+    .setting-text .muted { margin: 0; line-height: 1.6; }
+    .setting-state { margin-top: 16px; display: flex; align-items: center; gap: 12px; }
+    .state-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 99px;
+      font-size: 13px; font-weight: 600;
+      background: #f0ece4; color: var(--text-mid);
+    }
+    .state-badge[data-on="1"] { background: #d4f0e4; color: #0a6040; }
+    .save-hint { font-size: 13px; color: #0a6040; }
+
+    /* Тумблер */
+    .switch { position: relative; display: inline-block; width: 56px; height: 32px; flex-shrink: 0; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .slider {
+      position: absolute; inset: 0; border-radius: 99px;
+      background: #cfc9bd; transition: background .2s;
+      pointer-events: none;
+    }
+    .slider::before {
+      content: ''; position: absolute; top: 4px; left: 4px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.2);
+      transition: transform .2s;
+    }
+    .switch input:checked + .slider { background: var(--orange); }
+    .switch input:checked + .slider::before { transform: translateX(24px); }
+    .switch input:focus-visible + .slider { outline: 2px solid var(--navy); outline-offset: 2px; }
+    @media (hover: hover) { .switch input:hover + .slider { filter: brightness(0.96); } }
+    .switch input:disabled { cursor: progress; }
+    .switch input:disabled + .slider { opacity: .6; }
+
+    @media (max-width: 560px) {
+      .setting-main { flex-direction: column; gap: 16px; }
+    }
+  </style>
+
+  <script>
+    const toggle = document.getElementById('salut-toggle');
+    const badge = document.getElementById('salut-state');
+    const hint = document.getElementById('save-hint');
+
+    toggle?.addEventListener('change', async () => {
+      const want = toggle.checked;
+      toggle.disabled = true;
+      hint.hidden = true;
+      try {
+        const r = await fetch('/api/admin/settings', {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ salut_visible: want }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          alert('Не удалось сохранить: ' + (j.error || r.status));
+          toggle.checked = !want; // откатываем визуально
+          return;
+        }
+        const on = j.salut_visible === true;
+        toggle.checked = on;
+        badge.textContent = on ? 'Показывается' : 'Скрыта';
+        badge.setAttribute('data-on', on ? '1' : '0');
+        hint.hidden = false;
+        setTimeout(() => { hint.hidden = true; }, 2500);
+      } catch (e) {
+        alert('Сеть недоступна, изменение не сохранено');
+        toggle.checked = !want;
+      } finally {
+        toggle.disabled = false;
+      }
+    });
+  </script>
+</Base>

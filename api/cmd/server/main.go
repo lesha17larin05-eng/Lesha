@@ -71,6 +71,7 @@ func main() {
 	r.Get("/api/courses", app.ListCourses)
 	r.Get("/api/courses/{slug}", app.GetCourse)
 	r.Get("/api/courses/{slug}/lessons/{lesson}", app.GetLesson)
+	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 
@@ -101,6 +102,7 @@ func main() {
 		r.Use(middleware.RequireAuth)
 		r.Use(middleware.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
+		r.Patch("/api/admin/settings", app.AdminUpdateSettings)
 		r.Get("/api/admin/users", app.AdminUsers)
 		r.Get("/api/admin/users/export.csv", app.AdminUsersExport)
 		r.Get("/api/admin/users/{id}", app.AdminUser)

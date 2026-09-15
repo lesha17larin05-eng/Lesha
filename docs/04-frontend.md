@@ -38,6 +38,8 @@ web/src/
       leads.astro                 — заявки с сайта: таблица + смена статуса (PATCH /api/admin/leads/{id})
       orders.astro
       online.astro
+      settings.astro              — тумблеры настроек сайта (сейчас: показывать страницу Салюта)
+    sitemap.xml.ts                — SSR-карта сайта (страница Салюта — только при salut_visible)
     auth/
       login.astro
       register.astro
@@ -52,6 +54,7 @@ web/src/
   legacy/                         — оригинальные HTML-исходники маркетинговых страниц, импортируются через ?raw
   lib/
     api.ts                        — server-side fetch к API (apiFetch / apiJson)
+    settings.ts                   — флаги сайта из /api/settings с кешем 10 с (getSiteSettings)
     legacy.ts                     — extractLegacy(raw) — достаёт styles+body из legacy HTML, чистит nav/footer
   middleware.ts                   — защита /cabinet/* и /admin/*
   astro.config.mjs                — output:'server', adapter:node
@@ -68,6 +71,16 @@ web/src/
 Адаптивность: помимо мобильного брейкпоинта 700px, у legacy-страниц (index/consultation/course/results) есть планшетные брейкпоинты 1000–1280px (промежуточные сетки 2–3 колонки, уменьшенные паддинги); у zdorovaya-spina исторически 960/1100. Hero-секции используют `min-height: 100svh` (с fallback `100vh`).
 
 Служебная страница `/test-pay` (проверка интеграции с Продамусом, тариф `test10`) доступна только `role=admin`, остальным — 404.
+
+### Сезонное скрытие страницы Салюта
+
+Флаг `salut_visible` (`GET /api/settings` → `Astro.locals.settings`, тумблер в `/admin/settings`) управляет тремя местами:
+
+- `SiteHeader.astro` — обе кнопки «Здоровая спина в Салюте» (десктопная `.site-nav-salyut` и мобильная `.smm-salyut`) рендерятся только при `salut_visible === true`.
+- `salut-2026.astro` — при выключенном флаге передаёт в `Base.astro` проп `noindex` → `<meta name="robots" content="noindex, follow">`.
+- `sitemap.xml` — теперь **SSR-роут** `web/src/pages/sitemap.xml.ts` (раньше был статикой в `public/sitemap.xml`, файл удалён). `/salut-2026` попадает в карту только при включённом флаге.
+
+Сама страница `/salut-2026` остаётся доступной по прямой ссылке в любом состоянии флага — чтобы не ломать ссылки, разосланные родителям. Дефолт — выключено.
 
 Палитра публичного сайта (CSS-переменные в `SiteLayout.astro`):
 - `--navy: #1a2744`, `--navy-mid: #243058`, `--navy-light: #2e3d6b`
@@ -90,6 +103,7 @@ web/src/
 
 `web/src/middleware.ts`:
 - Каждый запрос → `apiJson('/api/me', { cookie })` → кладёт user в `Astro.locals.user`.
+- Каждый запрос → `getSiteSettings()` (`web/src/lib/settings.ts`, кеш в памяти процесса на 10 с) → кладёт флаги в `Astro.locals.settings`.
 - `/cabinet/*` без auth → редирект на `/auth/login?next=...`.
 - `/admin/*` без `role=admin` → 404 (намеренно, чтобы не палить наличие).
 

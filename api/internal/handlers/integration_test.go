@@ -39,7 +39,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -74,6 +74,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/courses/{slug}/lessons/{lesson}", app.GetLesson)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
+	r.Get("/api/settings", app.PublicSettings)
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth)
 		r.Get("/api/me", app.Me)
@@ -91,6 +92,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth, mw.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
+		r.Patch("/api/admin/settings", app.AdminUpdateSettings)
 		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
@@ -1268,5 +1270,73 @@ func TestResendVerification(t *testing.T) {
 	r, _ = c.do("POST", "/api/auth/resend-verification", map[string]string{"email": "ghost@b.ru"})
 	if r.StatusCode != 200 {
 		t.Fatalf("resend unknown: %d", r.StatusCode)
+	}
+}
+
+// TestSiteSettings — флаги сайта (salut_visible): публичное чтение,
+// изменение только админом, белый список ключей, запись в audit_log.
+func TestSiteSettings(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	// публичное чтение без авторизации, дефолт — выключено
+	c := newClient(srv)
+	r, body := c.do("GET", "/api/settings", nil)
+	if r.StatusCode != 200 {
+		t.Fatalf("public settings: %d %s", r.StatusCode, body)
+	}
+	var got map[string]bool
+	if err := json.Unmarshal(body, &got); err != nil {
+		t.Fatalf("bad json: %s", body)
+	}
+	if v, ok := got["salut_visible"]; !ok || v {
+		t.Fatalf("default salut_visible must be present and false: %s", body)
+	}
+
+	// обычный пользователь менять не может
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "st-u@b.ru", "password": "password123", "consent_pd": true})
+	c.do("POST", "/api/auth/login", map[string]string{"email": "st-u@b.ru", "password": "password123"})
+	if r, _ := c.do("PATCH", "/api/admin/settings", map[string]bool{"salut_visible": true}); r.StatusCode == 200 {
+		t.Fatalf("settings must be admin-only, got 200")
+	}
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "st-adm@b.ru", "password": "password123", "consent_pd": true})
+	uadm, _ := repo.GetUserByEmail(ctx, "st-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, uadm.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "st-adm@b.ru", "password": "password123"})
+
+	// неизвестный ключ отклоняется
+	if r, body := adm.do("PATCH", "/api/admin/settings", map[string]bool{"whatever": true}); r.StatusCode != 400 {
+		t.Fatalf("unknown key must be 400: %d %s", r.StatusCode, body)
+	}
+	// пустое тело отклоняется
+	if r, _ := adm.do("PATCH", "/api/admin/settings", map[string]bool{}); r.StatusCode != 400 {
+		t.Fatalf("empty body must be 400: %d", r.StatusCode)
+	}
+
+	// включаем
+	r, body = adm.do("PATCH", "/api/admin/settings", map[string]bool{"salut_visible": true})
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"salut_visible":true`) {
+		t.Fatalf("enable: %d %s", r.StatusCode, body)
+	}
+	// публичный эндпоинт отражает изменение
+	r, body = c.do("GET", "/api/settings", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"salut_visible":true`) {
+		t.Fatalf("public read after enable: %d %s", r.StatusCode, body)
+	}
+	// действие записано в аудит
+	var n int
+	_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM audit_log WHERE action='settings_update'`).Scan(&n)
+	if n != 1 {
+		t.Fatalf("audit_log entries = %d, want 1", n)
+	}
+
+	// выключаем обратно
+	r, body = adm.do("PATCH", "/api/admin/settings", map[string]bool{"salut_visible": false})
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"salut_visible":false`) {
+		t.Fatalf("disable: %d %s", r.StatusCode, body)
 	}
 }

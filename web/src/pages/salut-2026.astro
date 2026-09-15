@@ -1,7 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
+// Вне летнего сезона страница скрыта (тумблер в админке): ссылок на неё нет,
+// в sitemap не попадает и отдаётся noindex — но по прямой ссылке открывается,
+// чтобы не ломать то, что уже разослано родителям.
+const salutVisible = ((Astro.locals as any).settings?.salut_visible ?? false) === true;
 ---
-<Base title="Здоровая спина в Салюте · Алексей Ларин" active="salyut">
+<Base title="Здоровая спина в Салюте · Алексей Ларин" active="salyut" noindex={!salutVisible}>
 <style>
 
 :root {

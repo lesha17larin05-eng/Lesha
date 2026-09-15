@@ -1,6 +1,6 @@
 # База данных
 
-PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), email — `CITEXT`, таймстемпы — `TIMESTAMPTZ`. Миграции — `golang-migrate`, файлы в `api/migrations/*.up.sql` / `*.down.sql`. Текущие миграции: `001_init`, `002_articles`, `003_users_phone`, `004_users_consent`, `005_user_logs_set_null`, `006_zdorovaya_spina_v2` (чистит старую структуру `zdorovaya-spina` — 11 уроков / 4 модуля — чтобы сидер пересоздал 12 уроков в 5 модулях с новыми slug-ами).
+PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), email — `CITEXT`, таймстемпы — `TIMESTAMPTZ`. Миграции — `golang-migrate`, файлы в `api/migrations/*.up.sql` / `*.down.sql`. Текущие миграции: `001_init`, `002_articles`, `003_users_phone`, `004_users_consent`, `005_user_logs_set_null`, `009_leads`, `010_lesson_activity`, `011_site_settings`, `006_zdorovaya_spina_v2` (чистит старую структуру `zdorovaya-spina` — 11 уроков / 4 модуля — чтобы сидер пересоздал 12 уроков в 5 модулях с новыми slug-ами).
 
 ## Таблицы
 
@@ -21,6 +21,7 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 | `video_access_log`            | Лог доступа к видео (для аналитики).                   |
 | `audit_log`                   | Действия в админке.                                    |
 | `articles`                    | Статьи блога. Поля: `slug` (уникальный), `title`, `tag`, `excerpt`, `cover_image_url`, `content_html`, `reading_minutes`, `is_published`, `published_at`, `sort_order`, `author_id`. |
+| `site_settings`               | Key-value флаги сайта, переключаемые из админки (миграция 011). |
 
 ## Ключевые индексы
 
@@ -76,3 +77,21 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 | started_at / updated_at | TIMESTAMPTZ | начало и последнее касание сессии |
 | max_position_sec | INTEGER | максимум досмотра в сессии |
 | completed | BOOLEAN | урок досмотрен в этой сессии |
+
+## site_settings (миграция 011)
+
+Настройки сайта, которые Алексей переключает из админки (`/admin/settings`) без деплоя.
+
+| Колонка | Тип | Комментарий |
+|---|---|---|
+| key | TEXT PK | ключ настройки |
+| value | TEXT | значение строкой (`'true'` / `'false'` для флагов) |
+| updated_at | TIMESTAMPTZ | время последнего изменения |
+
+**Белый список ключей и дефолты — в коде**, `db.SettingDefaults` (`api/internal/db/queries.go`). Строки БД накладываются поверх дефолтов, неизвестные ключи игнорируются на чтении и отклоняются на записи (400 `unknown_key`). Новый флаг достаточно добавить в `SettingDefaults` — миграция нужна только для сид-значения.
+
+Текущие ключи:
+
+| Ключ | Дефолт | Что делает |
+|---|---|---|
+| `salut_visible` | `false` | Показывать страницу «Здоровая спина в Салюте»: кнопка в шапке, строка в sitemap, индексация. Выключено — страница остаётся доступной по прямой ссылке `/salut-2026`, но с `noindex`. |

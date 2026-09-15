@@ -7,8 +7,9 @@ const {
   description = 'Здоровая спина в Салюте — курс для детей в детском лагере. 5 занятий по 55 минут.',
   ogImage = '/salut-2026/img/trainer-stretch.jpg',
   active = '',
+  noindex = false,
   user = (Astro.locals as any).user,
-} = Astro.props as { title?: string; description?: string; ogImage?: string; active?: string; user?: any };
+} = Astro.props as { title?: string; description?: string; ogImage?: string; active?: string; noindex?: boolean; user?: any };
 const siteUrl = 'https://leshalarin.ru';
 const canonicalUrl = siteUrl + Astro.url.pathname;
 // Яндекс.Метрика: номер счётчика из env; пусто — не подключается.
@@ -22,6 +23,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex, follow" />}
   <link rel="canonical" href={canonicalUrl} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />

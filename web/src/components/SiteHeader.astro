@@ -9,6 +9,9 @@ const links = [
   { href: '/blog', key: 'blog', label: 'Статьи' },
 ];
 const isSalyut = active === 'salyut';
+// Кнопка «Здоровая спина в Салюте» показывается только в сезон —
+// переключатель в админке (/admin/settings → salut_visible).
+const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === true;
 ---
 <style is:global>
   /* ─── Кнопка «Здоровая спина в Салюте» в шапке (десктоп) ─────────── */
@@ -96,7 +99,9 @@ const isSalyut = active === 'salyut';
   <a href="/" class="site-nav-logo" aria-label="Алексей Ларин — на главную">
     <img src="/img/logo.svg" alt="Алексей Ларин" style="height:34px; width:auto; display:block;" />
   </a>
-  <a href="/salut-2026" class={`site-nav-salyut${isSalyut ? ' is-active' : ''}`} aria-current={isSalyut ? 'page' : undefined}>Здоровая спина<br>в Салюте</a>
+  {showSalyut && (
+    <a href="/salut-2026" class={`site-nav-salyut${isSalyut ? ' is-active' : ''}`} aria-current={isSalyut ? 'page' : undefined}>Здоровая спина<br>в Салюте</a>
+  )}
   <div class="site-nav-links">
     {links.map(l => (
       <a href={l.href} class={l.key === active ? 'active' : ''}>{l.label}</a>
@@ -123,7 +128,9 @@ const isSalyut = active === 'salyut';
 
 <div id="site-mobile-menu" class="site-mobile-menu" aria-hidden="true">
   <div class="site-mobile-menu-inner">
-    <a href="/salut-2026" class={`smm-salyut${isSalyut ? ' is-active' : ''}`}>Здоровая спина в Салюте</a>
+    {showSalyut && (
+      <a href="/salut-2026" class={`smm-salyut${isSalyut ? ' is-active' : ''}`}>Здоровая спина в Салюте</a>
+    )}
     {links.map(l => (
       <a href={l.href} class={`smm-link${l.key === active ? ' is-active' : ''}`}>{l.label}</a>
     ))}

@@ -107,6 +107,15 @@ JSON `{"error": "<code>"}`:
 - `rate_limited` — 429.
 - `invalid_credentials`, `email_taken`, `email_not_verified`, `already_enrolled`, `weak_password`, `invalid_token`, `bad_json`, `bad_id`, `not_found`, `db`.
 
+## Настройки сайта (site_settings)
+
+| Эндпоинт | Описание |
+|---|---|
+| `GET /api/settings` | Публичный, без auth. Отдаёт все известные флаги булевыми: `{"salut_visible": false}`. Заголовок `Cache-Control: no-store`. Ошибка БД не роняет ответ — возвращаются дефолты из `db.SettingDefaults`. |
+| `PATCH /api/admin/settings` | Admin + CSRF. Тело — объект `{"<key>": bool}` (можно несколько ключей). Пустое тело → 400 `empty`, ключ вне `db.SettingDefaults` → 400 `unknown_key` (при этом ничего не записывается). Ответ — полное актуальное состояние флагов. Пишет `audit_log` (`settings_update`, meta = изменённые ключи). |
+
+Фронт читает `/api/settings` в SSR-middleware с кешем 10 секунд (`web/src/lib/settings.ts`), поэтому переключение тумблера видно на сайте в течение ~10 с.
+
 ## Заявки (leads)
 
 | Эндпоинт | Описание |
