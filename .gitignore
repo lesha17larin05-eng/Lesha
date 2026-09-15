@@ -16,4 +16,12 @@ coverage.out
 *.mov
 *.MP4
 *.MOV
+
+# Рабочие файлы, которые не должны попадать в публичный репозиторий:
+# секреты, персональные данные, внутренние заметки по слабым местам.
 HANDOFF.md
+rkn-uvedomlenie.md
+rkn-uvedomlenie-podano-*.pdf
+plan-alekseya.md
+audit-*.md
+site-audit.md
