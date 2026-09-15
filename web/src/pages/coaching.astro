@@ -4,7 +4,7 @@ import { extractLegacy } from '../lib/legacy';
 import rawHtml from '../legacy/index.html?raw';
 const { styles, body } = extractLegacy(rawHtml);
 ---
-<SiteLayout title="Личное ведение — Алексей Ларин" active="home" pageStyles={styles}>
+<SiteLayout title="Личное ведение — Алексей Ларин" description="Личное ведение с тренером: персональная тренировка раз в неделю, план под вас и поддержка всю неделю. Первая неделя — бесплатно." active="home" pageStyles={styles}>
   <Fragment set:html={body} />
   <script>
     // Форма заявки → POST /api/leads.
@@ -44,7 +44,7 @@ const { styles, body } = extractLegacy(rawHtml);
             (window as any).reachGoal?.('lead_submit');
             const box = document.createElement('div');
             box.className = 'lead-success';
-            box.innerHTML = '<h3>Заявка отправлена</h3><p>Отвечу в течение 1\u20112 дней. Если вопрос срочный — напишите в Телеграм по кнопке ниже.</p>';
+            box.innerHTML = '<h3>Заявка отправлена</h3><p>Отвечу в течение 1\u20112 дней: пришлю анкету и договоримся о времени первой тренировки. Если вопрос срочный — напишите в Телеграм по кнопке ниже.</p>';
             form.replaceWith(box);
             return;
           }

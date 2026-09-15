@@ -264,6 +264,34 @@ textarea.lead-input { resize: vertical; min-height: 72px; }
 .spots-warning { text-align: center; margin-top: 16px; font-size: 15px; color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; gap: 6px; }
 .spots-warning span { color: #fbbf24; }
 
+/* ─── Первая неделя бесплатно ───────────────────────────────────── */
+.free-week { padding: 100px 80px; background: var(--warm-white); }
+.fw-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 44px; }
+.fw-card { background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; transition: box-shadow 0.2s, transform 0.2s; }
+.fw-num { width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.fw-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 23px; font-weight: 500; color: var(--navy); margin-bottom: 8px; line-height: 1.25; }
+.fw-card p { font-size: 15px; line-height: 1.7; color: var(--text-muted); }
+.fw-why { background: var(--navy); border-radius: 24px; padding: 40px 44px; max-width: 900px; }
+.fw-why h3 { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: #fff; margin-bottom: 14px; }
+.fw-why p { font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.78); margin-bottom: 14px; }
+.fw-cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; background: var(--orange); color: #fff; text-decoration: none; padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 600; box-shadow: 0 8px 24px rgba(232,101,42,0.30); transition: background 0.2s, transform 0.15s, box-shadow 0.2s; }
+.fw-cta:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.jw-free { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 99px; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; vertical-align: middle; }
+.price-free { display: inline-block; margin-bottom: 14px; padding: 7px 16px; border-radius: 99px; background: rgba(74,222,128,0.16); border: 1px solid rgba(74,222,128,0.35); color: #4ade80; font-size: 14px; font-weight: 700; }
+@media (hover: hover) {
+  .fw-card:hover { box-shadow: 0 10px 28px rgba(26,39,68,0.07); transform: translateY(-2px); }
+  .fw-cta:hover { background: var(--orange-warm); transform: translateY(-1px); box-shadow: 0 12px 30px rgba(232,101,42,0.38); }
+}
+@media (max-width: 1280px) { .free-week { padding: 90px 56px; } }
+@media (max-width: 1100px) { .fw-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) {
+  .free-week { padding: 64px 20px; }
+  .fw-grid { grid-template-columns: 1fr; gap: 14px; margin-bottom: 32px; }
+  .fw-why { padding: 28px 22px; border-radius: 18px; }
+  .fw-why h3 { font-size: 24px; }
+  .fw-cta { width: 100%; justify-content: center; }
+}
+
 footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
 .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: white; text-decoration: none; }
 .footer-links { display: flex; gap: 24px; }
@@ -442,15 +470,15 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="hero-notice">
       <div class="hero-notice-icon">🌿</div>
       <div class="hero-notice-content">
-        <p><strong>Запись открыта.</strong> Беру несколько человек — чтобы каждому хватало внимания и времени.</p>
-        <p>Расскажите, что беспокоит и что хочется изменить. Отвечу в течение 1&#8209;2 дней, пришлю короткую анкету и договоримся о созвоне.</p>
+        <p><strong>Первая неделя — бесплатно.</strong> Анкета, персональная тренировка 55 минут, план на неделю и я на связи — всё то же, что получают мои клиенты.</p>
+        <p>В конце недели спишемся и решим, продолжать ли. Понравится — пойдём дальше уже платно. Нет — план всё равно останется у вас.</p>
         <p>Если вопрос срочный — <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A3%20%D0%BC%D0%B5%D0%BD%D1%8F%20%D1%81%D1%80%D0%BE%D1%87%D0%BD%D1%8B%D0%B9%20%D0%B2%D0%BE%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%BC%D1%83%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8E%3A%20" target="_blank" rel="noopener">напишите мне лично</a>.</p>
-        <p>Хочется начать прямо сейчас и самостоятельно — есть <a href="/courses/zdorovaya-spina">онлайн-курсы</a>. Там всё, что нужно для старта.</p>
+        <p>Хочется начать самостоятельно — есть <a href="/courses/zdorovaya-spina">онлайн-курсы</a>.</p>
       </div>
     </div>
     <div class="hero-cta">
-      <a href="#cta" class="btn-hero">Обсудить мой запрос ↓</a>
-      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B2%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-hero-alt" target="_blank">Нет Телеграма — написать в Max</a>
+      <a href="#cta" class="btn-hero">Записаться на бесплатную неделю ↓</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%B1%D0%B5%D1%81%D0%BF%D0%BB%D0%B0%D1%82%D0%BD%D1%83%D1%8E%20%D0%BD%D0%B5%D0%B4%D0%B5%D0%BB%D1%8E%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-hero-alt" target="_blank">Нет Телеграма — написать в Max</a>
       <div class="hero-geo">Онлайн — работаю с людьми из разных стран</div>
     </div>
     <div class="hero-stats">
@@ -466,7 +494,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <img src="/img/IMG_3979.jpg" srcset="/img/IMG_3979.jpg 1x, /img/IMG_3979@2x.jpg 2x" alt="Алексей Ларин" loading="eager" fetchpriority="high" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
       </picture>
     </div>
-    <div class="spots-pill"><div class="spots-dot"></div>Запись открыта</div>
+    <div class="spots-pill"><div class="spots-dot"></div>Первая неделя бесплатно</div>
   </div>
 </section>
 
@@ -474,6 +502,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <a href="#problems" class="active">Ваш запрос</a>
   <a href="#story">Обо мне</a>
   <a href="#format">Как работаем</a>
+  <a href="#free-week">Бесплатная неделя</a>
   <a href="#results">Результаты</a>
   <a href="#reviews">Отзывы</a>
   <a href="#cta">Цена и запись</a>
@@ -688,7 +717,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="jm-title">Мягкий старт</div>
         <div class="jm-weeks">
           <div class="jm-week jm-week-active">
-            <div class="jw-label">Неделя 1</div>
+            <div class="jw-label">Неделя 1 <span class="jw-free">бесплатно</span></div>
             <div class="jw-desc">Тренировка + план. Знакомимся с телом, убираем страх перед нагрузкой</div>
           </div>
           <div class="jm-week jm-week-active">
@@ -767,6 +796,42 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="jm-result">Тело лёгкое, энергия есть, боль ушла. Большинство клиентов продлевают – потому что хочется, а не потому что надо.</div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="free-week" id="free-week">
+  <div class="section-label">Попробовать</div>
+  <h2 class="section-title">Первая неделя&nbsp;—<br><em>бесплатно</em></h2>
+  <p class="section-desc">Не нужно решать заранее, подойдёт вам это или нет. Неделю поработаем вместе — так же, как я работаю с клиентами, — и тогда решите.</p>
+
+  <div class="fw-grid">
+    <div class="fw-card">
+      <div class="fw-num">1</div>
+      <h3>Анкета</h3>
+      <p>Расскажете о запросе, самочувствии и расписании. Я разбираю всё это до тренировки, чтобы не тратить её на вопросы.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-num">2</div>
+      <h3>Тренировка 55 минут</h3>
+      <p>Персонально с вами, онлайн или вживую. Смотрю, как вы двигаетесь и как тело отзывается, и подбираю нагрузку по ходу.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-num">3</div>
+      <h3>План на неделю</h3>
+      <p>Простой план для самостоятельных занятий, собранный под вас. Остаётся у вас в любом случае.</p>
+    </div>
+    <div class="fw-card">
+      <div class="fw-num">4</div>
+      <h3>Я на связи</h3>
+      <p>Непонятное упражнение, странное ощущение, просто хочется поделиться — пишите всю неделю. В конце спишемся и решим, продолжаем ли.</p>
+    </div>
+  </div>
+
+  <div class="fw-why">
+    <h3>Почему бесплатно</h3>
+    <p>Рассказать словами, чем эта работа отличается от видео на Ютубе, у меня получается плохо. За одну тренировку это становится понятно. Поэтому первую неделю я не беру денег: посмотрите изнутри, попробуете план на своём теле и решите сами.</p>
+    <p>За неделю спина не станет здоровой — так не бывает. Но вы поймёте, подходит ли вам формат и подхожу ли вам я как тренер. Этого достаточно, чтобы решать дальше.</p>
+    <a href="#cta" class="fw-cta">Записаться на бесплатную неделю →</a>
   </div>
 </section>
 
@@ -853,12 +918,13 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="cta-left">
       <div class="section-label">Начать</div>
       <h2 class="section-title">Напишите свой запрос&nbsp;—<br><em>разберём вместе</em></h2>
-      <p class="section-desc"><strong style="color:var(--navy)">Запись в личное ведение открыта.</strong> Беру несколько человек — чтобы каждому хватало внимания и времени. Расскажите, что беспокоит и что хочется изменить: отвечу в течение 1&#8209;2 дней, пришлю короткую анкету и договоримся о созвоне.</p>
+      <p class="section-desc"><strong style="color:var(--navy)">Начинаем с бесплатной недели.</strong> Расскажите, что беспокоит и что хочется изменить: отвечу в течение 1&#8209;2 дней, пришлю анкету и договоримся о времени первой тренировки. Платить на этом шаге не нужно и карту привязывать тоже.</p>
       <p class="section-desc">Работаю с детьми, взрослыми и старшим поколением. Онлайн — со мной занимаются люди из разных стран. Если вы в Москве — очные тренировки тоже возможны.</p>
     </div>
     <div class="price-box">
+      <div class="price-free">Первая неделя — 0 ₽</div>
       <div class="price-main">16 000 ₽</div>
-      <div class="price-per">в месяц · онлайн-ведение</div>
+      <div class="price-per">в месяц · дальше, если понравится</div>
       <div class="price-features">
         <div class="price-feature"><span class="pf-check">✓</span>Персональная тренировка раз в неделю — три недели подряд</div>
         <div class="price-feature"><span class="pf-check">✓</span>Тренировочный план на каждую неделю</div>
@@ -866,7 +932,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="price-feature"><span class="pf-check">✓</span>Четвёртая неделя — восстановление и созвон-разбор месяца</div>
         <div class="price-feature"><span class="pf-check">✓</span>Всё подбирается под вас лично</div>
       </div>
-      <div class="price-guarantee"><strong>Гарантия первой недели.</strong> Если в первые 7 дней работы поймёте, что формат вам не подходит — верну всю оплату, без объяснений и анкет.</div>
+      <div class="price-guarantee"><strong>Ничего не теряете.</strong> Первая неделя бесплатная: если формат не подойдёт — просто скажете об этом, и мы разойдёмся. План, который я соберу, останется у вас.</div>
       <div class="price-guarantee" style="margin-top:-18px;">Очные тренировки в Москве тоже возможны — формат и стоимость обсудим лично.</div>
       <form id="lead-form" class="lead-form" data-source="coaching" novalidate>
         <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
@@ -876,14 +942,14 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
           <input type="checkbox" name="consent_pd" checked required>
           <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
         </label>
-        <button type="submit" class="btn-cta lead-submit">Оставить заявку →</button>
+        <button type="submit" class="btn-cta lead-submit">Записаться на бесплатную неделю →</button>
         <p class="lead-note" id="lead-note"></p>
       </form>
       <div class="cta-buttons">
-        <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B2%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta-alt" target="_blank">Удобнее в Телеграме — написать напрямую</a>
-        <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B2%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B5%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
+        <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%B1%D0%B5%D1%81%D0%BF%D0%BB%D0%B0%D1%82%D0%BD%D1%83%D1%8E%20%D0%BD%D0%B5%D0%B4%D0%B5%D0%BB%D1%8E%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta-alt" target="_blank">Удобнее в Телеграме — написать напрямую</a>
+        <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BF%D1%80%D0%BE%D0%B1%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%B1%D0%B5%D1%81%D0%BF%D0%BB%D0%B0%D1%82%D0%BD%D1%83%D1%8E%20%D0%BD%D0%B5%D0%B4%D0%B5%D0%BB%D1%8E%20%D0%BB%D0%B8%D1%87%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D1%91%D0%BC%20%D0%B7%D0%B0%D0%BF%D1%80%D0%BE%D1%81%D0%B5%3A%20" class="btn-cta-alt" target="_blank">Нет Телеграма — написать в Max</a>
       </div>
-      <div class="spots-warning"><span>🌿</span> Запись открыта · отвечаю в течение 1&#8209;2 дней</div>
+      <div class="spots-warning"><span>🌿</span> Первая неделя бесплатно · отвечаю в течение 1&#8209;2 дней</div>
     </div>
   </div>
 </section>
@@ -918,7 +984,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 </footer>
 
 <script>
-const sections = ['problems','story','format','results','reviews','cta'];
+const sections = ['problems','story','format','free-week','results','reviews','cta'];
 const anchorLinks = document.querySelectorAll('.anchor-nav a');
 window.addEventListener('scroll', () => {
   let current = sections[0];
