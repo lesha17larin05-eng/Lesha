@@ -40,6 +40,7 @@ web/src/
       online.astro
       settings.astro              — тумблеры настроек сайта (сейчас: показывать страницу Салюта)
     sitemap.xml.ts                — SSR-карта сайта (страница Салюта — только при salut_visible)
+    unsubscribed.astro            — куда ведёт ссылка «отписаться» из письма (noindex; ?error=1 — битая ссылка)
     auth/
       login.astro
       register.astro
@@ -77,7 +78,7 @@ web/src/
 Флаг `salut_visible` (`GET /api/settings` → `Astro.locals.settings`, тумблер в `/admin/settings`) управляет тремя местами:
 
 - `SiteHeader.astro` — обе кнопки «Здоровая спина в Салюте» (десктопная `.site-nav-salyut` и мобильная `.smm-salyut`) рендерятся только при `salut_visible === true`.
-- `salut-2026.astro` — при выключенном флаге передаёт в `Base.astro` проп `noindex` → `<meta name="robots" content="noindex, follow">`.
+- `salut-2026.astro` — при выключенном флаге передаёт в `Base.astro` проп `noindex` → `<meta name="robots" content="noindex, follow">`. Проп `noindex` есть и у `SiteLayout.astro` (им пользуется `/unsubscribed`).
 - `sitemap.xml` — теперь **SSR-роут** `web/src/pages/sitemap.xml.ts` (раньше был статикой в `public/sitemap.xml`, файл удалён). `/salut-2026` попадает в карту только при включённом флаге.
 
 Сама страница `/salut-2026` остаётся доступной по прямой ссылке в любом состоянии флага — чтобы не ломать ссылки, разосланные родителям. Дефолт — выключено.

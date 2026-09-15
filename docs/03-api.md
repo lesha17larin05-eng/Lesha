@@ -116,6 +116,15 @@ JSON `{"error": "<code>"}`:
 
 Фронт читает `/api/settings` в SSR-middleware с кешем 10 секунд (`web/src/lib/settings.ts`), поэтому переключение тумблера видно на сайте в течение ~10 с.
 
+## Отписка от рассылки
+
+| Эндпоинт | Описание |
+|---|---|
+| `GET /api/unsubscribe?u=<uuid>&t=<hex>` | Публичный, без auth. Ссылка из письма. Валидная подпись → `consent_marketing_at = NULL` + 303 на `/unsubscribed`; невалидная → 303 на `/unsubscribed?error=1` и ничего не меняет. Идемпотентен. `consent_pd_at` не трогается. |
+| `POST /api/unsubscribe?u=&t=` | «Отписка в один клик» (RFC 8058) — дёргает почтовый клиент из заголовка `List-Unsubscribe`. 200 `{"ok":1}` / 400 `invalid_token`. **Исключён из CSRF** в `middleware.CSRF` (у почтового клиента нет cookie; защита — подпись). |
+
+Подпись: `hex(HMAC_SHA256(key = JWT_SECRET, msg = "unsubscribe:" + user_id))`, функция `handlers.UnsubscribeToken`. Отдельного секрета и таблицы токенов нет — доменное разделение через префикс.
+
 ## Заявки (leads)
 
 | Эндпоинт | Описание |

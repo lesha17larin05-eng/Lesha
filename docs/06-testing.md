@@ -78,6 +78,8 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 
 | `TestSiteSettings`                     | Флаги сайта: публичный `GET /api/settings` без auth отдаёт `salut_visible:false` по умолчанию; не-админ на `PATCH /api/admin/settings` не проходит; неизвестный ключ и пустое тело → 400; админ включает → публичный GET отражает, в `audit_log` ровно одна запись `settings_update`; выключение возвращает `false`. |
 
+| `TestUnsubscribe`                      | Отписка из письма: подделанная подпись → 303 на `/unsubscribed?error=1` и согласие на месте; валидная → 303 на `/unsubscribed` и `consent_marketing_at = NULL`, при этом `consent_pd_at` сохраняется; one-click `POST` без `X-CSRF-Token` → 200, с плохой подписью → 400. |
+
 ## Как добавить тест
 
 1. Unit-тест — в том же пакете, файл `*_test.go`. Не требует БД.
