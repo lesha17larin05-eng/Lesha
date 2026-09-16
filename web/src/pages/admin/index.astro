@@ -5,6 +5,8 @@ import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data: stats } = await apiJson<any>('/api/admin/stats', { cookie });
 const { data: orders } = await apiJson<any[]>('/api/admin/orders?status=paid', { cookie });
+const { data: mailings } = await apiJson<any[]>('/api/admin/email-opens', { cookie });
+const campaigns = Array.isArray(mailings) ? mailings : [];
 const user = (Astro.locals as any).user;
 const recent = (orders || []).slice(0, 8);
 const fmt = (n: number) => new Intl.NumberFormat('ru-RU').format(n || 0);
@@ -68,6 +70,25 @@ const fmtDate = (s: any) => {
         <span class="kpi-arrow" aria-hidden="true">→</span>
       </a>
     </div>
+
+    {campaigns.length > 0 && (
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Рассылки</h2>
+          <span class="panel-hint">открытия считаются по картинке в письме – это нижняя граница</span>
+        </div>
+        <div class="mail-rows">
+          {campaigns.map((m: any) => (
+            <div class="mail-row">
+              <div class="mail-name">{m.campaign}</div>
+              <div class="mail-num"><b>{fmt(m.people)}</b> человек открыли</div>
+              <div class="mail-num muted">{fmt(m.opens)} открытий всего</div>
+              <div class="mail-date">последнее: {fmtDate(m.last_open)}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
 
     <section class="panel">
       <div class="panel-head">
@@ -155,6 +176,21 @@ const fmtDate = (s: any) => {
     .panel { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border); }
     .panel-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; gap: 16px; }
     .panel-head h2 { margin: 0; font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: var(--navy); }
+    .panel-hint { font-size: 12px; color: var(--text-light); }
+    .mail-rows { display: flex; flex-direction: column; gap: 10px; }
+    .mail-row {
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 14px; align-items: baseline;
+      padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px;
+      transition: border-color .15s;
+    }
+    @media (hover: hover) { .mail-row:hover { border-color: rgba(232,101,42,0.35); } }
+    .mail-name { font-weight: 600; color: var(--navy); }
+    .mail-num b { font-size: 17px; color: var(--navy); }
+    .mail-date { color: var(--text-light); font-size: 13px; text-align: right; }
+    @media (max-width: 760px) {
+      .mail-row { grid-template-columns: 1fr; gap: 4px; }
+      .mail-date { text-align: left; }
+    }
     .panel-link { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color .15s; }
     .panel-link:hover { color: var(--orange); }
 

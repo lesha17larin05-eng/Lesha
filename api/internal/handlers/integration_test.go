@@ -39,7 +39,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -75,6 +75,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	r.Get("/api/settings", app.PublicSettings)
+	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Group(func(r chi.Router) {
@@ -96,6 +97,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/admin/stats", app.AdminStats)
 		r.Patch("/api/admin/settings", app.AdminUpdateSettings)
 		r.Get("/api/admin/activity", app.AdminActivity)
+		r.Get("/api/admin/email-opens", app.AdminEmailOpens)
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
@@ -1429,5 +1431,69 @@ func TestUnsubscribe(t *testing.T) {
 	defer resp2.Body.Close()
 	if resp2.StatusCode != 400 {
 		t.Fatalf("ожидал 400 на плохую подпись, получил %d", resp2.StatusCode)
+	}
+}
+
+// TestEmailPixel — счётчик открытий писем: картинка отдаётся всегда,
+// но открытие засчитывается только с валидной подписью.
+func TestEmailPixel(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+
+	c := newClient(srv)
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "pix@b.ru", "password": "password123", "consent_pd": true})
+	u, err := repo.GetUserByEmail(ctx, "pix@b.ru")
+	if err != nil {
+		t.Fatal(err)
+	}
+	opens := func() int {
+		var n int
+		_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM email_opens WHERE user_id=$1`, u.ID).Scan(&n)
+		return n
+	}
+
+	// плохая подпись: картинка есть, открытие не засчитано
+	r, body := c.do("GET", "/api/pixel.gif?u="+u.ID.String()+"&c=test&t=bad", nil)
+	if r.StatusCode != 200 {
+		t.Fatalf("пиксель должен отдаваться всегда: %d", r.StatusCode)
+	}
+	if ct := r.Header.Get("Content-Type"); ct != "image/gif" {
+		t.Fatalf("content-type: %s", ct)
+	}
+	if len(body) < 30 || string(body[:3]) != "GIF" {
+		t.Fatalf("это не GIF: %d байт", len(body))
+	}
+	if opens() != 0 {
+		t.Fatal("подделанная подпись не должна засчитываться")
+	}
+
+	// валидная подпись
+	tok := handlers.PixelToken(cfg.JWTSecret, "test", u.ID.String())
+	if r, _ = c.do("GET", "/api/pixel.gif?u="+u.ID.String()+"&c=test&t="+tok, nil); r.StatusCode != 200 {
+		t.Fatalf("валидный пиксель: %d", r.StatusCode)
+	}
+	if opens() != 1 {
+		t.Fatalf("открытие должно быть записано, в базе %d", opens())
+	}
+	// повторное открытие — вторая строка (перечитал письмо)
+	c.do("GET", "/api/pixel.gif?u="+u.ID.String()+"&c=test&t="+tok, nil)
+	if opens() != 2 {
+		t.Fatalf("повторное открытие должно писаться отдельно, в базе %d", opens())
+	}
+
+	// сводка — только админу
+	if r, _ := c.do("GET", "/api/admin/email-opens", nil); r.StatusCode == 200 {
+		t.Fatal("сводка должна быть закрыта от обычного пользователя")
+	}
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "pix-adm@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "pix-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "pix-adm@b.ru", "password": "password123"})
+	r, body = adm.do("GET", "/api/admin/email-opens", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"people":1`) {
+		t.Fatalf("сводка: %d %s", r.StatusCode, body)
 	}
 }

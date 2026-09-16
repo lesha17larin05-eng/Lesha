@@ -944,3 +944,48 @@ func (r *Repo) ClearMarketingConsent(ctx context.Context, userID uuid.UUID) erro
 		userID)
 	return err
 }
+
+// ---- EMAIL OPENS (счётчик открытий писем) ----
+
+// LogEmailOpen фиксирует открытие письма. Best-effort: ошибка записи
+// не должна мешать отдать картинку, поэтому результат игнорируется.
+func (r *Repo) LogEmailOpen(ctx context.Context, userID uuid.UUID, campaign, userAgent string) {
+	if len(userAgent) > 300 {
+		userAgent = userAgent[:300]
+	}
+	_, _ = r.Pool.Exec(ctx,
+		`INSERT INTO email_opens(user_id, campaign, user_agent) VALUES($1,$2,$3)`,
+		userID, campaign, userAgent)
+}
+
+// EmailOpenStats — сводка по каждой рассылке: сколько человек открыло
+// (уникальные) и сколько всего открытий, первое и последнее.
+func (r *Repo) EmailOpenStats(ctx context.Context) ([]map[string]any, error) {
+	rows, err := r.Pool.Query(ctx,
+		`SELECT campaign,
+		        count(DISTINCT user_id) AS people,
+		        count(*)                AS opens,
+		        min(opened_at)          AS first_open,
+		        max(opened_at)          AS last_open
+		   FROM email_opens
+		  GROUP BY campaign
+		  ORDER BY max(opened_at) DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []map[string]any
+	for rows.Next() {
+		var campaign string
+		var people, opens int
+		var first, last time.Time
+		if err := rows.Scan(&campaign, &people, &opens, &first, &last); err != nil {
+			return nil, err
+		}
+		out = append(out, map[string]any{
+			"campaign": campaign, "people": people, "opens": opens,
+			"first_open": first, "last_open": last,
+		})
+	}
+	return out, rows.Err()
+}
