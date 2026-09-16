@@ -116,6 +116,13 @@ JSON `{"error": "<code>"}`:
 
 Фронт читает `/api/settings` в SSR-middleware с кешем 10 секунд (`web/src/lib/settings.ts`), поэтому переключение тумблера видно на сайте в течение ~10 с.
 
+## Счётчик открытий писем
+
+| Эндпоинт | Описание |
+|---|---|
+| `GET /api/pixel.gif?u=<uuid>&c=<кампания>&t=<hex>` | Публичный. Отдаёт прозрачный GIF 1×1 **всегда** (с `Cache-Control: no-store`), но строку в `email_opens` пишет только при валидной подписи. Подпись: `hex(HMAC_SHA256(JWT_SECRET, "pixel:" + campaign + ":" + user_id))`, функция `handlers.PixelToken`. |
+| `GET /api/admin/email-opens` | Admin. Сводка по рассылкам: `campaign`, `people` (уникальные), `opens` (всего), `first_open`, `last_open`. Показывается на дашборде админки. |
+
 ## Отписка от рассылки
 
 | Эндпоинт | Описание |

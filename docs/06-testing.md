@@ -80,6 +80,8 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 
 | `TestUnsubscribe`                      | Отписка из письма: подделанная подпись → 303 на `/unsubscribed?error=1` и согласие на месте; валидная → 303 на `/unsubscribed` и `consent_marketing_at = NULL`, при этом `consent_pd_at` сохраняется; one-click `POST` без `X-CSRF-Token` → 200, с плохой подписью → 400. |
 
+| `TestEmailPixel`                       | Счётчик открытий: с плохой подписью картинка отдаётся (200, `image/gif`, реальный GIF), но открытие не пишется; с валидной — пишется, повторное открытие даёт вторую строку; `GET /api/admin/email-opens` закрыт от обычного пользователя и отдаёт `people:1` админу. |
+
 ## Как добавить тест
 
 1. Unit-тест — в том же пакете, файл `*_test.go`. Не требует БД.
