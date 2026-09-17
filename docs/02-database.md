@@ -23,6 +23,8 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 | `articles`                    | Статьи блога. Поля: `slug` (уникальный), `title`, `tag`, `excerpt`, `cover_image_url`, `content_html`, `reading_minutes`, `is_published`, `published_at`, `sort_order`, `author_id`. |
 | `site_settings`               | Key-value флаги сайта, переключаемые из админки (миграция 011). |
 | `email_opens`                 | Открытия писем рассылки по пикселю (миграция 012). |
+| `campaigns`                   | Рассылки из админки: тема, текст, группа, темп, статус (миграция 013). |
+| `campaign_recipients`         | Очередь отправки: кто получил письмо, когда, с какой ошибкой (миграция 013). |
 
 ## Ключевые индексы
 
@@ -110,3 +112,24 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 | user_agent | TEXT | чтобы отличать человека от прокси почтовика; обрезается до 300 символов |
 
 IP намеренно не храним. Цифра открытий — **нижняя граница**: часть клиентов картинки блокирует, часть почтовиков подгружает их заранее.
+
+`email_opens.campaign` — это `campaigns.id` в виде текста (для рассылок из админки). У сентябрьской рассылки, отправленной ещё скриптом, ключ был строковый и при переносе заменён на id кампании.
+
+## campaigns / campaign_recipients (миграция 013)
+
+Рассылки из админки (`/admin/mailing`).
+
+`campaigns`: `name` (для себя), `subject`, `body` (простой текст, абзацы через пустую строку), `segment` (ключ группы из `db.Segments`), `daily_limit`, `status` — `draft` → `sending` ⇄ `paused` → `done`.
+
+`campaign_recipients`: снимок группы на момент создания рассылки — `user_id`, `email`, `name`, `status` (`pending`/`sent`/`failed`/`skipped`), `sent_at`, `error`. Уникальность по `(campaign_id, user_id)`, поэтому повторный импорт не плодит дублей.
+
+**Группы (`db.Segments`)** — всегда пересечение с `consent_marketing_at IS NOT NULL`:
+
+| Ключ | Кто |
+|---|---|
+| `all` | все с согласием на рассылку |
+| `paid` | + есть доступ к платному курсу |
+| `free` | + платных курсов нет |
+| `sleeping` | + `last_seen_at` пустой или старше 30 дней |
+
+SQL каждой группы — отдельная константа, ввод пользователя в запрос не склеивается (см. CLAUDE.md).
