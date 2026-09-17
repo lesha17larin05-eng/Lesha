@@ -1,0 +1,156 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
+import { apiJson } from '../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data: segData } = await apiJson<any>('/api/admin/segments', { cookie });
+const { data: listData } = await apiJson<any[]>('/api/admin/campaigns', { cookie });
+const segments = segData?.segments || [];
+const campaigns = Array.isArray(listData) ? listData : [];
+const hint = segData?.daily_limit_hint ?? 50;
+const maxLimit = segData?.daily_limit_max ?? 150;
+const cap = segData?.global_daily_cap ?? 200;
+const user = (Astro.locals as any).user;
+const statusLabel: Record<string, string> = {
+  draft: 'Черновик', sending: 'Отправляется', paused: 'На паузе', done: 'Завершена',
+};
+const fmtDate = (s: any) => {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(+d) ? String(s).slice(0, 16)
+    : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ' ' +
+      d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+};
+---
+<Base title="Рассылки (админ)" user={user}>
+  <AdminNav active="mailing" />
+  <section class="container mailing">
+    <h1>Рассылки</h1>
+    <p class="muted">Письма уходят с того же ящика, что и письма о доступах, поэтому по одному
+      раз в 45 секунд и не больше заданного числа в сутки. Получают только те, кто дал согласие
+      на рассылку; у каждого в письме своя ссылка отписки.</p>
+
+    <h2 class="sec-title">Новая рассылка</h2>
+    <form id="new-campaign" class="form-wide">
+      <label class="label">Название <span class="muted">(видите только вы)</span>
+        <input class="input" name="name" required placeholder="Например: Возвращение, сентябрь" />
+      </label>
+
+      <label class="label">Тема письма <span class="muted">(её видит получатель)</span>
+        <input class="input" name="subject" required placeholder="Вернулся из лагеря – три мысли" />
+      </label>
+
+      <label class="label">Кому
+        <select class="input" name="segment">
+          {segments.map((s: any) => (
+            <option value={s.key}>{s.title} — {s.count} чел. ({s.hint})</option>
+          ))}
+        </select>
+      </label>
+
+      <label class="label">Текст письма
+        <textarea class="input" name="body" rows="12" required
+          placeholder="Пишите обычным текстом. Пустая строка — новый абзац. Ссылки вставляйте как есть, они станут кликабельными."></textarea>
+        <span class="muted small">Обращение «Здравствуйте, Имя!» и подпись добавятся сами.
+          Внизу письма автоматически будет ссылка отписки.</span>
+      </label>
+
+      <label class="label">Сколько писем в день
+        <input class="input input-num" type="number" name="daily_limit" value={hint} min="1" max={maxLimit} />
+        <span class="muted small">Рекомендую {hint}. Предел Яндекса — 300 писем в сутки со всего ящика,
+          и часть нужна на письма о доступах и заявках. Больше {maxLimit} поставить нельзя,
+          а суммарно по всем рассылкам сайт не отправит больше {cap} в сутки.</span>
+      </label>
+
+      <button class="btn" type="submit">Создать черновик</button>
+      <p class="note" id="note"></p>
+    </form>
+
+    <h2 class="sec-title">Все рассылки</h2>
+    {campaigns.length === 0 ? (
+      <p class="muted">Пока ни одной. Создайте первую выше — она появится здесь как черновик,
+        и вы сможете отправить пробное письмо себе.</p>
+    ) : (
+      <div class="camp-list">
+        {campaigns.map((c: any) => (
+          <a class="camp" href={`/admin/mailing/${c.id}`}>
+            <div class="camp-main">
+              <div class="camp-name">{c.name}</div>
+              <div class="camp-subject muted">{c.subject}</div>
+            </div>
+            <div class={`camp-status st-${c.status}`}>{statusLabel[c.status] || c.status}</div>
+            <div class="camp-num"><b>{c.sent}</b> из {c.total}</div>
+            <div class="camp-num muted">{c.opened} открыли</div>
+            <div class="camp-date muted">{fmtDate(c.created_at)}</div>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+
+  <style>
+    .mailing { padding: 44px 24px 70px; max-width: 900px; }
+    .sec-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); margin: 38px 0 16px; }
+    .form-wide { display: flex; flex-direction: column; gap: 18px; max-width: 100%; }
+    .label { display: block; font-size: 14px; font-weight: 600; color: var(--navy); }
+    .label .input { margin-top: 6px; font-weight: 400; }
+    .label .muted { font-weight: 400; }
+    .small { display: block; margin-top: 6px; font-size: 13px; line-height: 1.5; }
+    .input-num { max-width: 140px; }
+    textarea.input { font-family: inherit; line-height: 1.6; resize: vertical; }
+    .note { font-size: 14px; min-height: 20px; }
+    .camp-list { display: flex; flex-direction: column; gap: 10px; }
+    .camp {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 14px; align-items: center;
+      padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+      text-decoration: none; color: inherit; background: #fff; transition: border-color .15s, transform .15s;
+    }
+    @media (hover: hover) { .camp:hover { border-color: rgba(232,101,42,.4); transform: translateY(-1px); text-decoration: none; } }
+    .camp-name { font-weight: 600; color: var(--navy); }
+    .camp-subject { font-size: 13px; }
+    .camp-status { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; text-align: center; background: #f0ece4; color: var(--text-mid); }
+    .st-sending { background: #d4f0e4; color: #0a6040; }
+    .st-paused { background: #fff0e6; color: #a23c0d; }
+    .st-done { background: #dbeeff; color: #1060a0; }
+    .camp-num { font-size: 14px; }
+    .camp-date { font-size: 13px; text-align: right; }
+    @media (max-width: 760px) {
+      .camp { grid-template-columns: 1fr; gap: 4px; }
+      .camp-date, .camp-status { text-align: left; justify-self: start; }
+    }
+  </style>
+
+  <script>
+    const form = document.getElementById('new-campaign');
+    const note = document.getElementById('note');
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const btn = form.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Создаю…';
+      note.textContent = '';
+      try {
+        const r = await fetch('/api/admin/campaigns', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name: fd.get('name'),
+            subject: fd.get('subject'),
+            body: fd.get('body'),
+            segment: fd.get('segment'),
+            daily_limit: Number(fd.get('daily_limit')) || 50,
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          note.style.color = '#a23c0d';
+          note.textContent = 'Не получилось: ' + (j.error || r.status);
+          return;
+        }
+        location.href = '/admin/mailing/' + j.id;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Создать черновик';
+      }
+    });
+  </script>
+</Base>

@@ -40,7 +40,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -99,6 +99,11 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Patch("/api/admin/settings", app.AdminUpdateSettings)
 		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/email-opens", app.AdminEmailOpens)
+		r.Get("/api/admin/segments", app.AdminSegments)
+		r.Get("/api/admin/campaigns", app.AdminListCampaigns)
+		r.Post("/api/admin/campaigns", app.AdminCreateCampaign)
+		r.Get("/api/admin/campaigns/{id}", app.AdminGetCampaign)
+		r.Post("/api/admin/campaigns/{id}/{action}", app.AdminCampaignAction)
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
@@ -1607,5 +1612,111 @@ func TestProdamusWebhookNoOrderStaysSafe(t *testing.T) {
 		`SELECT coalesce(processing_error,'') FROM payment_webhooks ORDER BY received_at DESC LIMIT 1`).Scan(&errText)
 	if errText != "no_order" {
 		t.Fatalf("ожидал пометку no_order, получил %q", errText)
+	}
+}
+
+// TestCampaignsFlow — рассылки из админки: группы считаются только по
+// согласившимся, черновик фиксирует получателей, старт/пауза меняют статус,
+// а отписавшийся после старта в очередь не попадает.
+func TestCampaignsFlow(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	// A и B согласны на рассылку, C — нет
+	for _, e := range []string{"c-a@b.ru", "c-b@b.ru"} {
+		c := newClient(srv)
+		c.do("POST", "/api/auth/register", map[string]any{
+			"email": e, "password": "password123", "name": "Аня Тест",
+			"consent_pd": true, "consent_marketing": true})
+	}
+	cc := newClient(srv)
+	cc.do("POST", "/api/auth/register", map[string]any{
+		"email": "c-c@b.ru", "password": "password123", "consent_pd": true})
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "c-adm@b.ru", "password": "password123", "consent_pd": true})
+	uadm, _ := repo.GetUserByEmail(ctx, "c-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, uadm.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "c-adm@b.ru", "password": "password123"})
+
+	// группы: в «все подписанные» ровно двое
+	r, body := adm.do("GET", "/api/admin/segments", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"key":"all"`) {
+		t.Fatalf("segments: %d %s", r.StatusCode, body)
+	}
+	var segResp struct {
+		Segments []struct {
+			Key   string `json:"key"`
+			Count int    `json:"count"`
+		} `json:"segments"`
+	}
+	_ = json.Unmarshal(body, &segResp)
+	for _, s := range segResp.Segments {
+		if s.Key == "all" && s.Count != 2 {
+			t.Fatalf("в группе «все подписанные» должно быть 2, а не %d", s.Count)
+		}
+	}
+
+	// не-админу создавать рассылку нельзя
+	if r, _ := cc.do("POST", "/api/admin/campaigns", map[string]any{
+		"name": "x", "subject": "x", "body": "x", "segment": "all"}); r.StatusCode == 201 {
+		t.Fatal("рассылки должны быть закрыты от обычного пользователя")
+	}
+
+	// плохая группа → 400
+	if r, _ := adm.do("POST", "/api/admin/campaigns", map[string]any{
+		"name": "x", "subject": "x", "body": "x", "segment": "нет-такой"}); r.StatusCode != 400 {
+		t.Fatalf("неизвестная группа должна давать 400, а дала %d", r.StatusCode)
+	}
+	// пустые поля → 400
+	if r, _ := adm.do("POST", "/api/admin/campaigns", map[string]any{
+		"name": "", "subject": "x", "body": "x", "segment": "all"}); r.StatusCode != 400 {
+		t.Fatalf("пустое имя должно давать 400")
+	}
+
+	// создаём
+	r, body = adm.do("POST", "/api/admin/campaigns", map[string]any{
+		"name": "Тестовая", "subject": "Привет", "body": "Первый абзац.\n\nВторой абзац.",
+		"segment": "all", "daily_limit": 10})
+	if r.StatusCode != 201 {
+		t.Fatalf("создание: %d %s", r.StatusCode, body)
+	}
+	var created struct {
+		ID    string `json:"id"`
+		Total int    `json:"total"`
+	}
+	_ = json.Unmarshal(body, &created)
+	if created.Total != 2 {
+		t.Fatalf("в рассылку должно попасть 2 адресата, попало %d", created.Total)
+	}
+
+	// карточка рассылки
+	r, body = adm.do("GET", "/api/admin/campaigns/"+created.ID, nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "c-a@b.ru") {
+		t.Fatalf("карточка: %d %s", r.StatusCode, body)
+	}
+
+	// старт и пауза
+	if r, body := adm.do("POST", "/api/admin/campaigns/"+created.ID+"/start", nil); r.StatusCode != 200 {
+		t.Fatalf("старт: %d %s", r.StatusCode, body)
+	}
+	if r, _ := adm.do("POST", "/api/admin/campaigns/"+created.ID+"/pause", nil); r.StatusCode != 200 {
+		t.Fatal("пауза должна работать")
+	}
+	if r, _ := adm.do("POST", "/api/admin/campaigns/"+created.ID+"/выключить", nil); r.StatusCode != 400 {
+		t.Fatal("неизвестное действие должно давать 400")
+	}
+
+	// отписавшийся после старта пропускается
+	ua, _ := repo.GetUserByEmail(ctx, "c-a@b.ru")
+	_ = repo.ClearMarketingConsent(ctx, ua.ID)
+	cid, _ := uuid.Parse(created.ID)
+	rec, err := repo.NextRecipient(ctx, cid)
+	if err != nil {
+		t.Fatalf("очередь: %v", err)
+	}
+	if rec.Email == "c-a@b.ru" {
+		t.Fatal("отписавшийся не должен попадать в очередь отправки")
 	}
 }

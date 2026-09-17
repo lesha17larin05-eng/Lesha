@@ -24,7 +24,14 @@ func New(host, port, user, pass, from string) *Sender {
 	return &Sender{Host: host, Port: port, User: user, Pass: pass, From: from}
 }
 
+// Send отправляет письмо со стандартными заголовками.
 func (s *Sender) Send(to, subject, body string) error {
+	return s.SendWithHeaders(to, subject, body, nil)
+}
+
+// SendWithHeaders — то же самое, но с дополнительными заголовками
+// (например, List-Unsubscribe для писем рассылки).
+func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]string) error {
 	if s.Host == "" {
 		slog.Info("email skipped (no SMTP configured)", "to", to, "subject", subject)
 		return nil
@@ -100,8 +107,14 @@ func (s *Sender) Send(to, subject, body string) error {
 		"Subject: " + mime.QEncoding.Encode("UTF-8", subject) + "\r\n" +
 		"MIME-Version: 1.0\r\n" +
 		"Content-Type: text/html; charset=UTF-8\r\n" +
-		"Content-Transfer-Encoding: 8bit\r\n" +
-		"\r\n" + body
+		"Content-Transfer-Encoding: 8bit\r\n"
+	for k, v := range extra {
+		if k == "" || v == "" {
+			continue
+		}
+		msg += k + ": " + v + "\r\n"
+	}
+	msg += "\r\n" + body
 
 	if _, err = fmt.Fprint(wc, msg); err != nil {
 		return fmt.Errorf("smtp write body: %w", err)

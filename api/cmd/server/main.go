@@ -128,6 +128,12 @@ func main() {
 		r.Post("/api/admin/videos/upload", app.AdminUploadVideo)
 		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/email-opens", app.AdminEmailOpens)
+		r.Get("/api/admin/segments", app.AdminSegments)
+		r.Get("/api/admin/campaigns", app.AdminListCampaigns)
+		r.Post("/api/admin/campaigns", app.AdminCreateCampaign)
+		r.Get("/api/admin/campaigns/{id}", app.AdminGetCampaign)
+		r.Post("/api/admin/campaigns/{id}/test", app.AdminTestCampaign)
+		r.Post("/api/admin/campaigns/{id}/{action}", app.AdminCampaignAction)
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/orders", app.AdminOrders)
@@ -139,6 +145,12 @@ func main() {
 		r.Patch("/api/admin/articles/{id}", app.AdminUpdateArticle)
 		r.Delete("/api/admin/articles/{id}", app.AdminDeleteArticle)
 	})
+
+	// Фоновая отправка рассылок: одно письмо раз в несколько десятков секунд,
+	// в пределах дневного лимита кампании (см. handlers/campaigns.go).
+	workerCtx, stopWorker := context.WithCancel(ctx)
+	defer stopWorker()
+	go handlers.RunCampaignWorker(workerCtx, app)
 
 	srv := &http.Server{
 		Addr:              ":8080",

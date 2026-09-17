@@ -1,0 +1,74 @@
+---
+import Base from '../../layouts/Base.astro';
+import AdminNav from '../../components/AdminNav.astro';
+const user = (Astro.locals as any).user;
+
+// Справочник: какие письма уходят с сайта, кому и в какой момент.
+// Если добавляете новое письмо в коде — допишите строку сюда.
+const toClients = [
+  { subject: 'Подтверждение email', when: 'Человек зарегистрировался на сайте обычным способом', what: 'Ссылка для подтверждения почты' },
+  { subject: 'Подтвердите почту — доступ к бесплатному курсу', when: 'Записался на «Мягкий старт» с лендинга в одно действие', what: 'Ссылка подтверждения; после неё курс открывается сам' },
+  { subject: 'Подтвердите почту — доступ к курсу', when: 'Нажал «письмо не пришло» и попросил прислать заново', what: 'Новая ссылка подтверждения' },
+  { subject: 'Сброс пароля', when: 'Нажал «забыл пароль»', what: 'Ссылка на установку нового пароля' },
+  { subject: 'Оплата получена — курс открыт', when: 'Оплатил курс через сайт', what: 'Подтверждение и ссылка в кабинет' },
+  { subject: 'Алексей Ларин открыл вам доступ к курсу', when: 'Вы выдали доступ вручную через «Выдать доступ»', what: 'Ссылка в кабинет; если аккаунта не было — ещё и установка пароля' },
+];
+
+const toAdmin = [
+  { subject: 'Новая заявка: Личное ведение / Консультация', when: 'Кто-то заполнил форму на сайте', what: 'Имя, контакт, сообщение и ссылка на раздел «Заявки»' },
+  { subject: 'Оплата без заказа на сайте', when: 'Пришли деньги по ссылке, которую вы выставили вручную в Продамусе', what: 'Кто и за что заплатил. Если это курс в лагере — делать ничего не нужно' },
+  { subject: 'Бэкап базы leshalarin.ru', when: 'Каждую ночь в 4:15', what: 'Зашифрованная копия базы во вложении' },
+];
+---
+<Base title="Письма сайта (админ)" user={user}>
+  <AdminNav active="emails" />
+  <section class="container emails">
+    <h1>Какие письма шлёт сайт</h1>
+    <p class="muted">Все письма уходят с адреса <b>Les-larin@yandex.ru</b> за вашей подписью.
+      Ответы приходят туда же. Ничего, кроме перечисленного ниже, сайт не отправляет.</p>
+
+    <h2 class="sec-title">Клиентам — автоматически</h2>
+    <div class="rows">
+      {toClients.map(e => (
+        <div class="row">
+          <div class="subj">{e.subject}</div>
+          <div class="when">{e.when}</div>
+          <div class="what muted">{e.what}</div>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="sec-title">Вам — автоматически</h2>
+    <div class="rows">
+      {toAdmin.map(e => (
+        <div class="row">
+          <div class="subj">{e.subject}</div>
+          <div class="when">{e.when}</div>
+          <div class="what muted">{e.what}</div>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="sec-title">Рассылки — вручную</h2>
+    <p class="muted">Письма по базе вы отправляете сами в разделе
+      <a href="/admin/mailing">«Рассылки»</a>: выбираете группу, пишете текст, смотрите пробное
+      письмо и запускаете. Получают только те, кто дал согласие на рассылку — у каждого в письме
+      своя ссылка отписки.</p>
+  </section>
+
+  <style>
+    .emails { padding: 44px 24px 70px; max-width: 860px; }
+    .sec-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); margin: 36px 0 16px; }
+    .rows { display: flex; flex-direction: column; gap: 10px; }
+    .row {
+      display: grid; grid-template-columns: 1.1fr 1.2fr 1.3fr; gap: 16px;
+      padding: 14px 16px; background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      font-size: 14px; line-height: 1.55; transition: border-color .15s;
+    }
+    @media (hover: hover) { .row:hover { border-color: rgba(232,101,42,.3); } }
+    .subj { font-weight: 600; color: var(--navy); }
+    @media (max-width: 760px) {
+      .row { grid-template-columns: 1fr; gap: 4px; }
+    }
+  </style>
+</Base>

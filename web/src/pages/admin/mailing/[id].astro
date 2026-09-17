@@ -1,0 +1,144 @@
+---
+import Base from '../../../layouts/Base.astro';
+import AdminNav from '../../../components/AdminNav.astro';
+import { apiJson } from '../../../lib/api';
+const cookie = Astro.request.headers.get('cookie') || '';
+const { id } = Astro.params;
+const { status, data } = await apiJson<any>(`/api/admin/campaigns/${id}`, { cookie });
+if (status === 404) return Astro.redirect('/admin/mailing');
+const c = data?.campaign;
+const recipients = data?.recipients || [];
+const user = (Astro.locals as any).user;
+const statusLabel: Record<string, string> = {
+  draft: 'Черновик', sending: 'Отправляется', paused: 'На паузе', done: 'Завершена',
+};
+const segmentLabel: Record<string, string> = {
+  all: 'Все подписанные',
+  paid: 'Купившие «Здоровую спину»',
+  free: 'Только бесплатный курс',
+  sleeping: 'Не заходили больше месяца',
+};
+const fmtDate = (s: any) => {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(+d) ? String(s).slice(0, 16)
+    : d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ' ' +
+      d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+};
+const pct = c && c.total > 0 ? Math.round((c.sent / c.total) * 100) : 0;
+---
+<Base title={`Рассылка «${c?.name ?? ''}» (админ)`} user={user}>
+  <AdminNav active="mailing" />
+  <section class="container camp-page">
+    <a class="back" href="/admin/mailing">← все рассылки</a>
+    <h1>{c?.name}</h1>
+    <div class="meta">
+      <span class={`badge st-${c?.status}`} id="status-badge">{statusLabel[c?.status] || c?.status}</span>
+      <span class="muted">{segmentLabel[c?.segment] || c?.segment}</span>
+      <span class="muted">до {c?.daily_limit} писем в сутки</span>
+      <span class="muted">создана {fmtDate(c?.created_at)}</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="kpi-num">{c?.total}</div><div class="kpi-label">получателей</div></div>
+      <div class="kpi"><div class="kpi-num">{c?.sent}</div><div class="kpi-label">отправлено</div></div>
+      <div class="kpi"><div class="kpi-num">{c?.opened}</div><div class="kpi-label">открыли</div></div>
+      <div class="kpi"><div class="kpi-num">{c?.sent_today}</div><div class="kpi-label">за сутки</div></div>
+      {c?.failed > 0 && (
+        <div class="kpi kpi-bad"><div class="kpi-num">{c?.failed}</div><div class="kpi-label">с ошибкой</div></div>
+      )}
+    </div>
+
+    <div class="progress"><i style={`width:${pct}%`}></i></div>
+    <p class="muted small">Отправлено {c?.sent} из {c?.total}. Осталось {c?.pending}.</p>
+
+    <div class="actions">
+      <button class="btn secondary" id="btn-test" data-id={c?.id}>Отправить пробное себе</button>
+      {c?.status !== 'sending'
+        ? <button class="btn" id="btn-start" data-id={c?.id} disabled={c?.status === 'done'}>Начать отправку</button>
+        : <button class="btn secondary" id="btn-pause" data-id={c?.id}>Пауза</button>}
+    </div>
+    <p class="note" id="note"></p>
+
+    <h2 class="sec-title">Тема</h2>
+    <p class="subject">{c?.subject}</p>
+
+    <h2 class="sec-title">Текст</h2>
+    <pre class="body-text">{c?.body}</pre>
+
+    <h2 class="sec-title">Получатели</h2>
+    {recipients.length === 0 ? (
+      <p class="muted">Список пуст — в выбранной группе нет людей с согласием на рассылку.</p>
+    ) : (
+      <table>
+        <thead><tr><th>Почта</th><th>Имя</th><th>Статус</th><th>Открыл</th><th>Когда</th></tr></thead>
+        <tbody>
+          {recipients.map((r: any) => (
+            <tr>
+              <td>{r.email}</td>
+              <td>{r.name}</td>
+              <td>{r.status === 'sent' ? 'отправлено'
+                  : r.status === 'pending' ? 'в очереди'
+                  : r.status === 'skipped' ? 'пропущен (отписался)'
+                  : 'ошибка: ' + r.error}</td>
+              <td>{r.opened ? 'да' : '—'}</td>
+              <td class="muted">{fmtDate(r.sent_at)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </section>
+
+  <style>
+    .camp-page { padding: 32px 24px 70px; max-width: 900px; }
+    .back { font-size: 14px; color: var(--text-muted); text-decoration: none; }
+    .back:hover { color: var(--orange); }
+    .camp-page h1 { margin: 12px 0 10px; }
+    .meta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 14px; margin-bottom: 26px; }
+    .badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; background: #f0ece4; color: var(--text-mid); }
+    .st-sending { background: #d4f0e4; color: #0a6040; }
+    .st-paused { background: #fff0e6; color: #a23c0d; }
+    .st-done { background: #dbeeff; color: #1060a0; }
+    .kpis { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .kpi { flex: 1; min-width: 120px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .kpi-bad { border-color: rgba(220,38,38,.3); }
+    .kpi-num { font-family: 'Cormorant Garamond', serif; font-size: 30px; color: var(--navy); line-height: 1; }
+    .kpi-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .small { font-size: 13px; margin-top: 8px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .note { font-size: 14px; min-height: 20px; margin-top: 10px; }
+    .sec-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: var(--navy); margin: 34px 0 12px; }
+    .subject { font-size: 17px; }
+    .body-text { white-space: pre-wrap; font-family: inherit; font-size: 15px; line-height: 1.7;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin: 0; }
+  </style>
+
+  <script>
+    const note = document.getElementById('note');
+    const say = (msg, bad = false) => { note.textContent = msg; note.style.color = bad ? '#a23c0d' : '#0a6040'; };
+
+    async function call(url, okMsg, reload) {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' } });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { say('Не получилось: ' + (j.error || r.status), true); return; }
+      say(okMsg);
+      if (reload) setTimeout(() => location.reload(), 800);
+    }
+
+    document.getElementById('btn-test')?.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      say('Отправляю пробное…');
+      call(`/api/admin/campaigns/${id}/test`, 'Пробное письмо отправлено вам на почту', false);
+    });
+    document.getElementById('btn-start')?.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      if (!confirm('Начать отправку? Письма пойдут людям по одному, с паузами.')) return;
+      call(`/api/admin/campaigns/${id}/start`, 'Отправка началась', true);
+    });
+    document.getElementById('btn-pause')?.addEventListener('click', (e) => {
+      const id = e.currentTarget.dataset.id;
+      call(`/api/admin/campaigns/${id}/pause`, 'Поставила на паузу', true);
+    });
+  </script>
+</Base>
