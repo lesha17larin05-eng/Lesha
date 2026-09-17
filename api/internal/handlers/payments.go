@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"html"
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -265,24 +267,36 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		return
 	}
-	// match order
+	// Ищем наш заказ.
+	//
+	// Продамус кладёт СВОЙ внутренний номер в `order_id`, а наш идентификатор
+	// возвращает в `order_num` — в обратную сторону от того, как мы их
+	// отправляли. Поэтому проверяем оба поля и каждое — и как UUID заказа,
+	// и как человекочитаемый номер. Email для матчинга не используем
+	// (см. CLAUDE.md): по нему нельзя достоверно понять, что именно оплачено.
 	var orderID uuid.UUID
-	if v, ok := parsed["order_id"].(string); ok {
+	for _, key := range []string{"order_num", "order_id"} {
+		v, _ := parsed[key].(string)
+		if v == "" || orderID != uuid.Nil {
+			continue
+		}
 		if id, err := uuid.Parse(v); err == nil {
 			orderID = id
+			continue
 		}
-	}
-	if orderID == uuid.Nil {
-		if v, ok := parsed["order_num"].(string); ok {
-			if n, err := strconv.ParseInt(v, 10, 64); err == nil {
-				if o, err := a.Repo.GetOrderByNum(r.Context(), n); err == nil {
-					orderID = o.ID
-				}
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			if o, err := a.Repo.GetOrderByNum(r.Context(), n); err == nil {
+				orderID = o.ID
 			}
 		}
 	}
 	if orderID == uuid.Nil {
+		// Оплата по ссылке, выставленной вручную в личном кабинете Продамуса:
+		// заказа на сайте нет и быть не может. Автоматически выдавать курс
+		// по названию товара нельзя (легко перепутать курсы), поэтому шлём
+		// Алексею письмо, чтобы он открыл доступ в пару кликов.
 		a.Repo.MarkWebhookProcessed(r.Context(), whID, nil, "no_order")
+		a.notifyUnmatchedPayment(parsed)
 		w.WriteHeader(200)
 		return
 	}
@@ -299,6 +313,10 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 	if status == "success" || status == "paid" {
 		if o.Status == "pending" {
 			pid, _ := parsed["prodamus_order_id"].(string)
+			if pid == "" {
+				// номер на стороне Продамуса — для сверки в их кабинете
+				pid, _ = parsed["order_id"].(string)
+			}
 			_ = a.Repo.MarkOrderPaid(r.Context(), o.ID, pid)
 			_ = a.Repo.Grant(r.Context(), o.UserID, o.CourseID, "purchase", nil)
 			u, _ := a.Repo.GetUser(r.Context(), o.UserID)
@@ -444,4 +462,39 @@ func decodeQuery(s string) (string, error) {
 func verify(secret string, data map[string]any, sig string) bool {
 	// import-free shim, calls into prodamus package
 	return verifySig(secret, data, sig)
+}
+
+// notifyUnmatchedPayment — письмо Алексею об оплате, которой не нашлось пары
+// среди заказов сайта (оплата по ссылке, выставленной вручную).
+func (a *App) notifyUnmatchedPayment(parsed map[string]any) {
+	status, _ := parsed["payment_status"].(string)
+	if status != "success" && status != "paid" {
+		return
+	}
+	str := func(k string) string {
+		v, _ := parsed[k].(string)
+		return html.EscapeString(v)
+	}
+	product := ""
+	if items, ok := parsed["products"].([]any); ok && len(items) > 0 {
+		if first, ok := items[0].(map[string]any); ok {
+			if name, ok := first["name"].(string); ok {
+				product = html.EscapeString(name)
+			}
+		}
+	}
+	email := str("customer_email")
+	grantURL := a.Cfg.AppHost + "/admin/grant"
+	if email != "" {
+		grantURL += "?email=" + url.QueryEscape(email)
+	}
+	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Оплата без заказа на сайте — нужно выдать доступ",
+		"<p>Пришла оплата по ссылке, выставленной вручную. Доступ автоматически не выдан — "+
+			"на сайте нет заказа, с которым её можно связать.</p>"+
+			"<p><b>Почта:</b> "+email+"<br>"+
+			"<b>Сумма:</b> "+str("sum")+" ₽<br>"+
+			"<b>Товар:</b> "+product+"<br>"+
+			"<b>Имя/комментарий:</b> "+str("order_num")+" "+str("customer_extra")+"<br>"+
+			"<b>Телефон:</b> "+str("customer_phone")+"</p>"+
+			"<p><a href=\""+grantURL+"\">Выдать доступ</a></p>")
 }

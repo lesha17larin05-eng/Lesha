@@ -1497,3 +1497,114 @@ func TestEmailPixel(t *testing.T) {
 		t.Fatalf("сводка: %d %s", r.StatusCode, body)
 	}
 }
+
+// TestProdamusWebhookOrderNumCarriesUUID — реальный формат Продамуса:
+// в `order_id` приходит ЕГО внутренний номер, а наш идентификатор заказа
+// возвращается в `order_num`. Из-за этого оплаты не привязывались к заказам
+// и доступ приходилось выдавать вручную (баг найден 17.09.2026).
+func TestProdamusWebhookOrderNumCarriesUUID(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	uid, _ := repo.CreateUser(ctx, "swap@b.ru", "x", "Swap", "user")
+	cid, _ := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "swap-course", Title: "Swap", Kind: "paid", PriceRub: ptrInt(3990), IsPublished: true})
+	o, _ := repo.CreateOrder(ctx, uid, cid, 3990)
+
+	body := map[string]any{
+		"order_id":       "48479470", // внутренний номер Продамуса
+		"order_num":      o.ID.String(),
+		"payment_status": "success",
+		"sum":            "3990.00",
+	}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, body)
+	form := url.Values{}
+	for k, v := range body {
+		form.Set(k, v.(string))
+	}
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+
+	o2, _ := repo.GetOrder(ctx, o.ID)
+	if o2.Status != "paid" {
+		t.Fatalf("заказ должен стать paid, а он %s", o2.Status)
+	}
+	if has, _ := repo.HasEnrollment(ctx, uid, cid); !has {
+		t.Fatal("доступ к курсу должен выдаться автоматически")
+	}
+}
+
+// TestProdamusWebhookHumanOrderNum — второй формат: наш человекочитаемый
+// номер заказа (orders.order_num) в поле order_num.
+func TestProdamusWebhookHumanOrderNum(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	uid, _ := repo.CreateUser(ctx, "num@b.ru", "x", "Num", "user")
+	cid, _ := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "num-course", Title: "Num", Kind: "paid", PriceRub: ptrInt(100), IsPublished: true})
+	o, _ := repo.CreateOrder(ctx, uid, cid, 100)
+
+	body := map[string]any{
+		"order_id":       "99999999",
+		"order_num":      strconv.FormatInt(o.OrderNum, 10),
+		"payment_status": "success",
+	}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, body)
+	form := url.Values{}
+	for k, v := range body {
+		form.Set(k, v.(string))
+	}
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp != nil {
+		resp.Body.Close()
+	}
+	o2, _ := repo.GetOrder(ctx, o.ID)
+	if o2.Status != "paid" {
+		t.Fatalf("заказ по человекочитаемому номеру должен стать paid, а он %s", o2.Status)
+	}
+}
+
+// TestProdamusWebhookNoOrderStaysSafe — оплата по ссылке, выставленной вручную:
+// заказа нет, ничего не выдаём, вебхук помечаем как no_order.
+func TestProdamusWebhookNoOrderStaysSafe(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+
+	body := map[string]any{
+		"order_id":       "48479999",
+		"order_num":      "Светлана Иванова",
+		"customer_email": "manual@b.ru",
+		"payment_status": "success",
+		"sum":            "6500.00",
+	}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, body)
+	form := url.Values{}
+	for k, v := range body {
+		form.Set(k, v.(string))
+	}
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != 200 {
+		t.Fatalf("Продамусу всё равно отвечаем 200, а ответили %d", resp.StatusCode)
+	}
+	var errText string
+	_ = repo.Pool.QueryRow(ctx,
+		`SELECT coalesce(processing_error,'') FROM payment_webhooks ORDER BY received_at DESC LIMIT 1`).Scan(&errText)
+	if errText != "no_order" {
+		t.Fatalf("ожидал пометку no_order, получил %q", errText)
+	}
+}
