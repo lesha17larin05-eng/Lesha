@@ -82,6 +82,10 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 
 | `TestEmailPixel`                       | Счётчик открытий: с плохой подписью картинка отдаётся (200, `image/gif`, реальный GIF), но открытие не пишется; с валидной — пишется, повторное открытие даёт вторую строку; `GET /api/admin/email-opens` закрыт от обычного пользователя и отдаёт `people:1` админу. |
 
+| `TestProdamusWebhookOrderNumCarriesUUID` | Реальный формат Продамуса: наш UUID в `order_num`, их номер в `order_id` → заказ становится `paid`, enrollment выдаётся. |
+| `TestProdamusWebhookHumanOrderNum`     | Наш человекочитаемый `orders.order_num` в поле `order_num` → заказ становится `paid`. |
+| `TestProdamusWebhookNoOrderStaysSafe`  | Оплата по ручной ссылке (в `order_num` имя покупателя): 200 Продамусу, вебхук помечен `no_order`, ничего не выдаётся. |
+
 ## Как добавить тест
 
 1. Unit-тест — в том же пакете, файл `*_test.go`. Не требует БД.
