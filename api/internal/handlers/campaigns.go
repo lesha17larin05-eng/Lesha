@@ -187,7 +187,10 @@ func (a *App) AdminTestCampaign(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
-	body := a.campaignHTML(c, u.Name, u.ID)
+	// Для сервисной группы показываем письмо таким, каким его увидят люди:
+	// с кнопкой подписки вместо ссылки отписки.
+	subscribed := !db.SegmentIsServiceOnly(c.Segment)
+	body := a.campaignHTMLFor(c, u.Name, u.ID, subscribed)
 	if err := a.Mail.Send(u.Email, "[ТЕСТ] "+c.Subject, body); err != nil {
 		writeErr(w, 500, "smtp")
 		return

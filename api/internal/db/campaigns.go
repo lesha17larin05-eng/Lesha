@@ -40,6 +40,17 @@ var Segments = []Segment{
 		Hint: "ТОЛЬКО сервисные письма про их курс: рекламу слать нельзя"},
 }
 
+// SegmentIsServiceOnly — в группе люди без согласия на рассылку
+// (сервисные письма про их курс).
+func SegmentIsServiceOnly(key string) bool {
+	for _, s := range Segments {
+		if s.Key == key {
+			return s.ServiceOnly
+		}
+	}
+	return false
+}
+
 // SegmentExists — проверка ключа группы (валидация входа).
 func SegmentExists(key string) bool {
 	for _, s := range Segments {
