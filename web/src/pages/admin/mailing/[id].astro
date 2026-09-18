@@ -26,6 +26,12 @@ const fmtDate = (s: any) => {
       d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 };
 const pct = c && c.total > 0 ? Math.round((c.sent / c.total) * 100) : 0;
+const fmtPause = (sec: number) => {
+  if (!sec) return '—';
+  if (sec < 60) return `${sec} сек`;
+  const m = Math.round(sec / 60);
+  return m === 1 ? '1 минута' : m < 5 ? `${m} минуты` : `${m} минут`;
+};
 ---
 <Base title={`Рассылка «${c?.name ?? ''}» (админ)`} user={user}>
   <AdminNav active="mailing" />
@@ -36,6 +42,7 @@ const pct = c && c.total > 0 ? Math.round((c.sent / c.total) * 100) : 0;
       <span class={`badge st-${c?.status}`} id="status-badge">{statusLabel[c?.status] || c?.status}</span>
       <span class="muted">{segmentLabel[c?.segment] || c?.segment}</span>
       <span class="muted">до {c?.daily_limit} писем в сутки</span>
+      <span class="muted">интервал {fmtPause(c?.pause_sec)}</span>
       <span class="muted">создана {fmtDate(c?.created_at)}</span>
     </div>
 

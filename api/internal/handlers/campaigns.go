@@ -30,10 +30,16 @@ import (
 // низкий, а общий суточный предохранитель — ниже лимита Яндекса (300).
 
 const (
-	sendTick        = 45 * time.Second // пауза между письмами
-	globalDailyCap  = 200              // максимум писем рассылок в сутки, всего
-	maxDailyLimit   = 150              // максимум, который можно выставить в админке
-	recipientsLimit = 500              // сколько адресатов показываем на странице
+	// Как часто отправщик просыпается. Реальный интервал между письмами
+	// задаётся у каждой рассылки (campaigns.pause_sec) — тик только проверяет,
+	// не пора ли отправить следующее.
+	sendTick        = 10 * time.Second
+	globalDailyCap  = 200 // максимум писем рассылок в сутки, всего
+	maxDailyLimit   = 150 // максимум писем в сутки у одной рассылки
+	minPauseSec     = 30
+	maxPauseSec     = 3600
+	defaultPauseSec = 120 // две минуты — спокойный темп по умолчанию
+	recipientsLimit = 500 // сколько адресатов показываем на странице
 )
 
 type campaignReq struct {
@@ -42,6 +48,7 @@ type campaignReq struct {
 	Body       string `json:"body"`
 	Segment    string `json:"segment"`
 	DailyLimit int    `json:"daily_limit"`
+	PauseSec   int    `json:"pause_sec"`
 }
 
 func (a *App) AdminSegments(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +62,9 @@ func (a *App) AdminSegments(w http.ResponseWriter, r *http.Request) {
 		"daily_limit_max":  maxDailyLimit,
 		"daily_limit_hint": 50,
 		"global_daily_cap": globalDailyCap,
+		"pause_sec_hint":   defaultPauseSec,
+		"pause_sec_min":    minPauseSec,
+		"pause_sec_max":    maxPauseSec,
 	})
 }
 
@@ -81,14 +91,24 @@ func (a *App) AdminCreateCampaign(w http.ResponseWriter, r *http.Request) {
 	if in.DailyLimit > maxDailyLimit {
 		in.DailyLimit = maxDailyLimit
 	}
-	id, total, err := a.Repo.CreateCampaign(r.Context(), in.Name, in.Subject, in.Body, in.Segment, in.DailyLimit)
+	if in.PauseSec == 0 {
+		in.PauseSec = defaultPauseSec
+	}
+	if in.PauseSec < minPauseSec {
+		in.PauseSec = minPauseSec
+	}
+	if in.PauseSec > maxPauseSec {
+		in.PauseSec = maxPauseSec
+	}
+	id, total, err := a.Repo.CreateCampaign(r.Context(), in.Name, in.Subject, in.Body, in.Segment, in.DailyLimit, in.PauseSec)
 	if err != nil {
 		writeErr(w, 500, "db")
 		return
 	}
 	adminID, _ := middleware.UserID(r.Context())
 	a.Repo.Audit(r.Context(), adminID, "campaign_create", "campaign", &id,
-		map[string]any{"segment": in.Segment, "total": total, "daily_limit": in.DailyLimit})
+		map[string]any{"segment": in.Segment, "total": total,
+			"daily_limit": in.DailyLimit, "pause_sec": in.PauseSec})
 	writeJSON(w, 201, map[string]any{"id": id, "total": total})
 }
 

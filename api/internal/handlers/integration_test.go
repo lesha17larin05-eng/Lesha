@@ -1691,6 +1691,25 @@ func TestCampaignsFlow(t *testing.T) {
 		t.Fatalf("в рассылку должно попасть 2 адресата, попало %d", created.Total)
 	}
 
+	// слишком короткий интервал подтягивается к минимуму (30 секунд)
+	r, body = adm.do("POST", "/api/admin/campaigns", map[string]any{
+		"name": "Частая", "subject": "x", "body": "x", "segment": "all", "pause_sec": 1})
+	if r.StatusCode != 201 {
+		t.Fatalf("создание с коротким интервалом: %d %s", r.StatusCode, body)
+	}
+	var fast struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(body, &fast)
+	fastID, _ := uuid.Parse(fast.ID)
+	fc, err := repo.GetCampaign(ctx, fastID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fc.PauseSec != 30 {
+		t.Fatalf("интервал должен подтянуться к 30 секундам, а стал %d", fc.PauseSec)
+	}
+
 	// карточка рассылки
 	r, body = adm.do("GET", "/api/admin/campaigns/"+created.ID, nil)
 	if r.StatusCode != 200 || !strings.Contains(string(body), "c-a@b.ru") {

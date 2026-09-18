@@ -10,6 +10,15 @@ const campaigns = Array.isArray(listData) ? listData : [];
 const hint = segData?.daily_limit_hint ?? 50;
 const maxLimit = segData?.daily_limit_max ?? 150;
 const cap = segData?.global_daily_cap ?? 200;
+const pauseHint = segData?.pause_sec_hint ?? 120;
+// Варианты интервала между письмами. Ключ — секунды.
+const pauseOptions = [
+  { sec: 60, label: '1 минута', note: 'быстро, для маленьких групп' },
+  { sec: 120, label: '2 минуты', note: 'рекомендую' },
+  { sec: 300, label: '5 минут', note: 'спокойно' },
+  { sec: 900, label: '15 минут', note: 'как обычная переписка' },
+  { sec: 1800, label: '30 минут', note: 'максимально осторожно' },
+];
 const user = (Astro.locals as any).user;
 const statusLabel: Record<string, string> = {
   draft: 'Черновик', sending: 'Отправляется', paused: 'На паузе', done: 'Завершена',
@@ -26,9 +35,9 @@ const fmtDate = (s: any) => {
   <AdminNav active="mailing" />
   <section class="container mailing">
     <h1>Рассылки</h1>
-    <p class="muted">Письма уходят с того же ящика, что и письма о доступах, поэтому по одному
-      раз в 45 секунд и не больше заданного числа в сутки. Получают только те, кто дал согласие
-      на рассылку; у каждого в письме своя ссылка отписки.</p>
+    <p class="muted">Письма уходят с того же ящика, что и письма о доступах, поэтому по одному,
+      с выбранным интервалом и не больше заданного числа в сутки. Получают только те, кто дал
+      согласие на рассылку; у каждого в письме своя ссылка отписки.</p>
 
     <h2 class="sec-title">Новая рассылка</h2>
     <form id="new-campaign" class="form-wide">
@@ -60,6 +69,17 @@ const fmtDate = (s: any) => {
         <span class="muted small">Рекомендую {hint}. Предел Яндекса — 300 писем в сутки со всего ящика,
           и часть нужна на письма о доступах и заявках. Больше {maxLimit} поставить нельзя,
           а суммарно по всем рассылкам сайт не отправит больше {cap} в сутки.</span>
+      </label>
+
+      <label class="label">Интервал между письмами
+        <select class="input input-num-wide" name="pause_sec">
+          {pauseOptions.map(o => (
+            <option value={o.sec} selected={o.sec === pauseHint}>{o.label} — {o.note}</option>
+          ))}
+        </select>
+        <span class="muted small">На попадание в спам интервал влияет слабо – куда важнее,
+          чтобы письма открывали и не жаловались. Но чем реже, тем меньше похоже на рассылку.
+          При 2 минутах 50 писем уходят примерно за полтора часа.</span>
       </label>
 
       <button class="btn" type="submit">Создать черновик</button>
@@ -97,6 +117,7 @@ const fmtDate = (s: any) => {
     .label .muted { font-weight: 400; }
     .small { display: block; margin-top: 6px; font-size: 13px; line-height: 1.5; }
     .input-num { max-width: 140px; }
+    .input-num-wide { max-width: 320px; }
     textarea.input { font-family: inherit; line-height: 1.6; resize: vertical; }
     .note { font-size: 14px; min-height: 20px; }
     .camp-list { display: flex; flex-direction: column; gap: 10px; }
@@ -139,6 +160,7 @@ const fmtDate = (s: any) => {
             body: fd.get('body'),
             segment: fd.get('segment'),
             daily_limit: Number(fd.get('daily_limit')) || 50,
+            pause_sec: Number(fd.get('pause_sec')) || 120,
           }),
         });
         const j = await r.json().catch(() => ({}));

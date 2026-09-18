@@ -15,6 +15,7 @@ services:
       - ./api/migrations/011_site_settings.up.sql:/docker-entrypoint-initdb.d/011_site_settings.up.sql:ro
       - ./api/migrations/012_email_opens.up.sql:/docker-entrypoint-initdb.d/012_email_opens.up.sql:ro
       - ./api/migrations/013_campaigns.up.sql:/docker-entrypoint-initdb.d/013_campaigns.up.sql:ro
+      - ./api/migrations/014_campaign_pause.up.sql:/docker-entrypoint-initdb.d/014_campaign_pause.up.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d test"]
       interval: 2s

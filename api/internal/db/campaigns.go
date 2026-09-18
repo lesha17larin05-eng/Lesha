@@ -97,6 +97,7 @@ type Campaign struct {
 	Body       string     `json:"body"`
 	Segment    string     `json:"segment"`
 	DailyLimit int        `json:"daily_limit"`
+	PauseSec   int        `json:"pause_sec"`
 	Status     string     `json:"status"`
 	CreatedAt  time.Time  `json:"created_at"`
 	StartedAt  *time.Time `json:"started_at"`
@@ -111,12 +112,12 @@ type Campaign struct {
 }
 
 // CreateCampaign создаёт рассылку и фиксирует список получателей по группе.
-func (r *Repo) CreateCampaign(ctx context.Context, name, subject, body, segment string, dailyLimit int) (uuid.UUID, int, error) {
+func (r *Repo) CreateCampaign(ctx context.Context, name, subject, body, segment string, dailyLimit, pauseSec int) (uuid.UUID, int, error) {
 	var id uuid.UUID
 	err := r.Pool.QueryRow(ctx,
-		`INSERT INTO campaigns(name, subject, body, segment, daily_limit)
-		 VALUES($1,$2,$3,$4,$5) RETURNING id`,
-		name, subject, body, segment, dailyLimit).Scan(&id)
+		`INSERT INTO campaigns(name, subject, body, segment, daily_limit, pause_sec)
+		 VALUES($1,$2,$3,$4,$5,$6) RETURNING id`,
+		name, subject, body, segment, dailyLimit, pauseSec).Scan(&id)
 	if err != nil {
 		return uuid.Nil, 0, err
 	}
@@ -132,7 +133,7 @@ func (r *Repo) CreateCampaign(ctx context.Context, name, subject, body, segment 
 
 func scanCampaign(row pgx.Row) (*Campaign, error) {
 	c := &Campaign{}
-	err := row.Scan(&c.ID, &c.Name, &c.Subject, &c.Body, &c.Segment, &c.DailyLimit,
+	err := row.Scan(&c.ID, &c.Name, &c.Subject, &c.Body, &c.Segment, &c.DailyLimit, &c.PauseSec,
 		&c.Status, &c.CreatedAt, &c.StartedAt, &c.FinishedAt,
 		&c.Total, &c.Sent, &c.Failed, &c.Pending, &c.SentToday, &c.Opened)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -142,7 +143,7 @@ func scanCampaign(row pgx.Row) (*Campaign, error) {
 }
 
 const campaignSelect = `
-	SELECT c.id, c.name, c.subject, c.body, c.segment, c.daily_limit,
+	SELECT c.id, c.name, c.subject, c.body, c.segment, c.daily_limit, c.pause_sec,
 	       c.status, c.created_at, c.started_at, c.finished_at,
 	       (SELECT count(*) FROM campaign_recipients r WHERE r.campaign_id = c.id),
 	       (SELECT count(*) FROM campaign_recipients r WHERE r.campaign_id = c.id AND r.status = 'sent'),
@@ -165,7 +166,7 @@ func (r *Repo) ListCampaigns(ctx context.Context) ([]Campaign, error) {
 	var out []Campaign
 	for rows.Next() {
 		c := Campaign{}
-		if err := rows.Scan(&c.ID, &c.Name, &c.Subject, &c.Body, &c.Segment, &c.DailyLimit,
+		if err := rows.Scan(&c.ID, &c.Name, &c.Subject, &c.Body, &c.Segment, &c.DailyLimit, &c.PauseSec,
 			&c.Status, &c.CreatedAt, &c.StartedAt, &c.FinishedAt,
 			&c.Total, &c.Sent, &c.Failed, &c.Pending, &c.SentToday, &c.Opened); err != nil {
 			return nil, err
@@ -204,6 +205,10 @@ func (r *Repo) NextCampaignToSend(ctx context.Context) (*Campaign, error) {
 		                WHERE r.campaign_id = c.id AND r.status = 'pending')
 		   AND (SELECT count(*) FROM campaign_recipients r
 		         WHERE r.campaign_id = c.id AND r.sent_at > now() - interval '24 hours') < c.daily_limit
+		   -- интервал между письмами: следующее письмо не раньше, чем через pause_sec
+		   AND NOT EXISTS (SELECT 1 FROM campaign_recipients r
+		                    WHERE r.campaign_id = c.id
+		                      AND r.sent_at > now() - make_interval(secs => c.pause_sec))
 		 ORDER BY c.created_at LIMIT 1`))
 }
 
