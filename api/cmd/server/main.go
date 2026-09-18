@@ -75,6 +75,8 @@ func main() {
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
+	r.Get("/api/subscribe", app.Subscribe)
+	r.Post("/api/subscribe", app.Subscribe)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 

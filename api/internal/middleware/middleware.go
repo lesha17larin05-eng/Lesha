@@ -170,7 +170,7 @@ func CSRF(next http.Handler) http.Handler {
 		// /api/unsubscribe — «отписка в один клик» (RFC 8058): POST шлёт
 		// почтовый клиент, cookie у него нет. Защита — HMAC-подпись в ссылке.
 		if strings.HasPrefix(r.URL.Path, "/api/webhooks/") || strings.HasPrefix(r.URL.Path, "/api/internal/") ||
-			r.URL.Path == "/api/unsubscribe" {
+			r.URL.Path == "/api/unsubscribe" || r.URL.Path == "/api/subscribe" {
 			next.ServeHTTP(w, r)
 			return
 		}

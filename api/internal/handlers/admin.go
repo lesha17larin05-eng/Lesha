@@ -678,6 +678,17 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 				"<p>Курс уже доступен в вашем кабинете: " +
 				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
 		}
+		// Предложение подписаться — для тех, у кого согласия ещё нет.
+		// Само нажатие и будет согласием (см. handlers/subscribe.go).
+		if subscribed, _ := a.Repo.HasMarketingConsent(r.Context(), uid); !subscribed {
+			sub := a.subscribeURL(uid)
+			body += "<hr style=\"border:none;border-top:1px solid #ece8e0;margin:24px 0 14px;\">" +
+				"<p style=\"font-size:14px;color:#555;\">Хотите получать от меня письма с новыми " +
+				"материалами и разборами? Это отдельное решение и на доступ к курсу никак не влияет.</p>" +
+				"<p><a href=\"" + sub + "\" style=\"display:inline-block;background:#e8652a;color:#fff;" +
+				"text-decoration:none;padding:10px 20px;border-radius:100px;font-size:14px;font-weight:600;\">" +
+				"Хочу получать письма</a></p>"
+		}
 		a.Mail.Async(email, subject, body)
 		out = append(out, res)
 	}

@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 const user = (Astro.locals as any).user;
+// consent_marketing приходит из /api/me (см. middleware → Astro.locals.user)
+const subscribed = user?.consent_marketing === true;
 ---
 <Base title="Настройки" user={user}>
   <section class="container" style="padding:60px 16px; max-width:520px;">
@@ -11,10 +13,28 @@ const user = (Astro.locals as any).user;
       <hr/>
       <div><label class="label">Текущий пароль</label><input class="input" type="password" name="old_password" /></div>
       <div><label class="label">Новый пароль</label><input class="input" type="password" name="new_password" /></div>
+      <hr/>
+      <div class="consent">
+        <label class="consent-row">
+          <input type="checkbox" name="consent_marketing" checked={subscribed} />
+          <span>
+            <b>Получать письма о новых материалах</b>
+            <span class="muted consent-hint">Изредка присылаю разборы, упражнения и новости.
+              Письма про ваши курсы – доступы, восстановление пароля – приходят в любом случае,
+              галочка на них не влияет.</span>
+          </span>
+        </label>
+      </div>
       <button class="btn" type="submit">Сохранить</button>
       <div id="msg" hidden></div>
     </form>
   </section>
+  <style>
+    .consent-row { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+    .consent-row input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--orange); }
+    .consent-hint { display: block; margin-top: 4px; line-height: 1.55; }
+  </style>
+
   <script>
     const f = document.getElementById('f'), m = document.getElementById('msg');
     f.addEventListener('submit', async (e) => {
@@ -26,6 +46,7 @@ const user = (Astro.locals as any).user;
           name: fd.get('name'),
           old_password: fd.get('old_password') || undefined,
           new_password: fd.get('new_password') || undefined,
+          consent_marketing: fd.get('consent_marketing') === 'on',
         })
       });
       const j = await r.json();

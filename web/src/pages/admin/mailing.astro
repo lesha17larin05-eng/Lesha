@@ -50,11 +50,19 @@ const fmtDate = (s: any) => {
       </label>
 
       <label class="label">Кому
-        <select class="input" name="segment">
+        <select class="input" name="segment" id="segment-select">
           {segments.map((s: any) => (
-            <option value={s.key}>{s.title} — {s.count} чел. ({s.hint})</option>
+            <option value={s.key} data-service={s.service_only ? '1' : '0'}>
+              {s.title} — {s.count} чел. ({s.hint})
+            </option>
           ))}
         </select>
+        <span class="warn" id="service-warn" hidden>
+          ⚠️ У этих людей <b>нет согласия на рассылку</b>. Им можно написать только про их
+          собственный курс: где кабинет, как начать, что внутри. Предложения, скидки и новости
+          о других продуктах в такое письмо класть нельзя. Внизу письма они увидят кнопку
+          «Хочу получать письма» — кто нажмёт, попадёт в обычную рассылку.
+        </span>
       </label>
 
       <label class="label">Текст письма
@@ -118,6 +126,9 @@ const fmtDate = (s: any) => {
     .small { display: block; margin-top: 6px; font-size: 13px; line-height: 1.5; }
     .input-num { max-width: 140px; }
     .input-num-wide { max-width: 320px; }
+    .warn { display: block; margin-top: 10px; padding: 12px 14px; border-radius: 10px;
+      background: #fff0e6; border: 1px solid rgba(232,101,42,.3); color: #8a3c14;
+      font-size: 13px; line-height: 1.6; font-weight: 400; }
     textarea.input { font-family: inherit; line-height: 1.6; resize: vertical; }
     .note { font-size: 14px; min-height: 20px; }
     .camp-list { display: flex; flex-direction: column; gap: 10px; }
@@ -142,6 +153,16 @@ const fmtDate = (s: any) => {
   </style>
 
   <script>
+    // Предупреждение о сервисной группе показываем только когда она выбрана.
+    const seg = document.getElementById('segment-select');
+    const warn = document.getElementById('service-warn');
+    const syncWarn = () => {
+      const opt = seg?.selectedOptions?.[0];
+      if (warn) warn.hidden = !opt || opt.dataset.service !== '1';
+    };
+    seg?.addEventListener('change', syncWarn);
+    syncWarn();
+
     const form = document.getElementById('new-campaign');
     const note = document.getElementById('note');
     form?.addEventListener('submit', async (e) => {

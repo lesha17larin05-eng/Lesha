@@ -21,6 +21,9 @@ type Segment struct {
 	Title string `json:"title"`
 	Hint  string `json:"hint"`
 	Count int    `json:"count"`
+	// ServiceOnly — в группе люди БЕЗ согласия на рассылку. Им допустимы
+	// только письма об услуге, которой они уже пользуются.
+	ServiceOnly bool `json:"service_only"`
 }
 
 // Segments — белый список групп. Ключи используются в campaigns.segment;
@@ -30,6 +33,11 @@ var Segments = []Segment{
 	{Key: "paid", Title: "Купившие «Здоровую спину»", Hint: "есть доступ к платному курсу"},
 	{Key: "free", Title: "Только бесплатный курс", Hint: "зарегистрировались, но ничего не покупали"},
 	{Key: "sleeping", Title: "Не заходили больше месяца", Hint: "для писем «вернитесь к занятиям»"},
+	// Особая группа: согласия на рассылку у этих людей НЕТ, поэтому им можно
+	// слать только сервисные письма про их собственный курс — без предложений
+	// и рекламы. В интерфейсе рядом с ней стоит предупреждение.
+	{Key: "service_paid", Title: "Купили курс, но не подписаны", ServiceOnly: true,
+		Hint: "ТОЛЬКО сервисные письма про их курс: рекламу слать нельзя"},
 }
 
 // SegmentExists — проверка ключа группы (валидация входа).
@@ -59,6 +67,16 @@ const segmentFree = segmentBase + `
 const segmentSleeping = segmentBase + `
 	  AND (u.last_seen_at IS NULL OR u.last_seen_at < now() - interval '30 days')`
 
+// Единственная группа БЕЗ проверки согласия: у людей открыт платный курс,
+// а подписки нет. Только для сервисных писем про этот курс.
+const segmentServicePaid = `
+	FROM users u
+	WHERE u.consent_marketing_at IS NULL
+	  AND u.email_verified_at IS NOT NULL
+	  AND EXISTS (SELECT 1 FROM enrollments e
+	                JOIN courses c ON c.id = e.course_id
+	               WHERE e.user_id = u.id AND c.kind = 'paid')`
+
 func segmentWhere(key string) string {
 	switch key {
 	case "paid":
@@ -67,6 +85,8 @@ func segmentWhere(key string) string {
 		return segmentFree
 	case "sleeping":
 		return segmentSleeping
+	case "service_paid":
+		return segmentServicePaid
 	default:
 		return segmentBase
 	}
@@ -194,6 +214,9 @@ type CampaignRecipient struct {
 	UserID     uuid.UUID
 	Email      string
 	Name       string
+	// Subscribed — стоит ли у человека согласие на рассылку. От этого
+	// зависит подвал письма: отписка или предложение подписаться.
+	Subscribed bool
 }
 
 // NextCampaignToSend возвращает рассылку в статусе sending, у которой
@@ -214,7 +237,15 @@ func (r *Repo) NextCampaignToSend(ctx context.Context) (*Campaign, error) {
 
 // NextRecipient — следующий адресат рассылки, у которого согласие ещё в силе.
 // Отписавшихся помечает skipped и переходит дальше.
+//
+// Исключение — сервисная группа (service_paid): там согласия нет по условию,
+// письмо касается курса человека, поэтому проверка не применяется.
 func (r *Repo) NextRecipient(ctx context.Context, campaignID uuid.UUID) (*CampaignRecipient, error) {
+	var serviceOnly bool
+	if err := r.Pool.QueryRow(ctx,
+		`SELECT segment = 'service_paid' FROM campaigns WHERE id = $1`, campaignID).Scan(&serviceOnly); err != nil {
+		return nil, err
+	}
 	for i := 0; i < 50; i++ {
 		rec := &CampaignRecipient{}
 		var stillSubscribed bool
@@ -232,7 +263,8 @@ func (r *Repo) NextRecipient(ctx context.Context, campaignID uuid.UUID) (*Campai
 		if err != nil {
 			return nil, err
 		}
-		if stillSubscribed {
+		if stillSubscribed || serviceOnly {
+			rec.Subscribed = stillSubscribed
 			return rec, nil
 		}
 		// отписался после старта рассылки — не шлём

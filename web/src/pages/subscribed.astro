@@ -1,0 +1,40 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+// Куда попадает человек после нажатия «Хочу получать письма» в письме.
+// ?error=1 — ссылка повреждена или устарела.
+const failed = Astro.url.searchParams.get('error') === '1';
+---
+<SiteLayout title="Подписка на письма – Алексей Ларин" padTop={true} noindex={true}>
+  <section class="container subs">
+    {failed ? (
+      <>
+        <h1>Ссылка не сработала</h1>
+        <p>Похоже, ссылка повреждена – такое бывает, если письмо переслали или почтовый
+          клиент обрезал адрес. Напишите мне на
+          <a href="mailto:les-larin@yandex.ru">les-larin@yandex.ru</a> – подпишу вручную.</p>
+      </>
+    ) : (
+      <>
+        <h1>Готово, вы подписаны</h1>
+        <p>Буду присылать письма с материалами о движении, восстановлении и здоровых
+          привычках. Не часто – только когда есть что сказать по делу.</p>
+        <p class="subs-note">Передумаете – в каждом письме внизу есть ссылка «Отписаться»,
+          одно нажатие и всё. Письма про ваши курсы при этом останутся.</p>
+      </>
+    )}
+    <div class="subs-actions">
+      <a class="btn-primary" href="/cabinet">В личный кабинет</a>
+      <a class="subs-link" href="/blog">Читать статьи</a>
+    </div>
+  </section>
+
+  <style>
+    .subs { max-width: 620px; padding: 80px 20px 100px; }
+    .subs h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 4vw, 44px); font-weight: 400; color: var(--navy); margin-bottom: 18px; }
+    .subs p { font-size: 17px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
+    .subs-note { font-size: 15px; color: var(--text-muted); }
+    .subs-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 30px; }
+    .subs-link { font-size: 15px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+    @media (hover: hover) { .subs-link:hover { color: var(--orange); } }
+  </style>
+</SiteLayout>

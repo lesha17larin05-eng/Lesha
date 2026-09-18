@@ -989,3 +989,22 @@ func (r *Repo) EmailOpenStats(ctx context.Context) ([]map[string]any, error) {
 	}
 	return out, rows.Err()
 }
+
+// SetMarketingConsent фиксирует согласие на рассылку (человек нажал
+// «Хочу получать письма» или поставил галочку в кабинете).
+// Идемпотентна: дата первого согласия не перезаписывается.
+func (r *Repo) SetMarketingConsent(ctx context.Context, userID uuid.UUID) error {
+	_, err := r.Pool.Exec(ctx,
+		`UPDATE users SET consent_marketing_at = coalesce(consent_marketing_at, now()),
+		                  updated_at = now()
+		  WHERE id = $1`, userID)
+	return err
+}
+
+// HasMarketingConsent — стоит ли согласие на рассылку.
+func (r *Repo) HasMarketingConsent(ctx context.Context, userID uuid.UUID) (bool, error) {
+	var ok bool
+	err := r.Pool.QueryRow(ctx,
+		`SELECT consent_marketing_at IS NOT NULL FROM users WHERE id = $1`, userID).Scan(&ok)
+	return ok, err
+}

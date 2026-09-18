@@ -202,6 +202,13 @@ var urlRe = regexp.MustCompile(`https?://[^\s<>"]+`)
 // campaignHTML превращает простой текст в письмо: абзацы, ссылки,
 // подпись, ссылка отписки и невидимый счётчик открытий.
 func (a *App) campaignHTML(c *db.Campaign, name string, userID uuid.UUID) string {
+	return a.campaignHTMLFor(c, name, userID, true)
+}
+
+// campaignHTMLFor — письмо для конкретного адресата. subscribed=false значит,
+// что человек на рассылку не подписан (сервисное письмо про его курс):
+// вместо ссылки отписки в подвале — предложение подписаться.
+func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, subscribed bool) string {
 	greeting := "Здравствуйте!"
 	if n := strings.TrimSpace(name); n != "" {
 		greeting = "Здравствуйте, " + html.EscapeString(strings.Fields(n)[0]) + "!"
@@ -230,11 +237,23 @@ func (a *App) campaignHTML(c *db.Campaign, name string, userID uuid.UUID) string
 
 	sb.WriteString(`<p>Алексей Ларин<br><span style="color:#555;">Тренер по развитию здоровья</span></p>`)
 
-	unsub := a.unsubscribeURL(userID)
-	sb.WriteString(`<hr style="border:none;border-top:1px solid #ece8e0;margin:26px 0 14px;">` +
-		`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
-		`Вы получили это письмо, потому что регистрировались на leshalarin.ru и согласились получать новости. ` +
-		`<a href="` + unsub + `" style="color:#777;">Отписаться</a> – письма про ваши курсы при этом останутся.</p>`)
+	sb.WriteString(`<hr style="border:none;border-top:1px solid #ece8e0;margin:26px 0 14px;">`)
+	if subscribed {
+		unsub := a.unsubscribeURL(userID)
+		sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
+			`Вы получили это письмо, потому что регистрировались на leshalarin.ru и согласились получать новости. ` +
+			`<a href="` + unsub + `" style="color:#777;">Отписаться</a> – письма про ваши курсы при этом останутся.</p>`)
+	} else {
+		// Человек на рассылку не подписан — это письмо про его курс.
+		// Предлагаем подписаться, не подписывая за него.
+		sub := a.subscribeURL(userID)
+		sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0 0 12px;">` +
+			`Вы получили это письмо, потому что у вас открыт доступ к курсу на leshalarin.ru. ` +
+			`Писем с новостями и материалами вы не получаете.</p>` +
+			`<p style="margin:0;"><a href="` + sub + `" style="display:inline-block;background:#e8652a;color:#fff;` +
+			`text-decoration:none;padding:10px 20px;border-radius:100px;font-size:14px;font-weight:600;">` +
+			`Хочу получать письма</a></p>`)
+	}
 	sb.WriteString(`<img src="` + a.pixelURL(c.ID.String(), userID) +
 		`" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;">`)
 	sb.WriteString(`</div></body></html>`)
@@ -244,6 +263,11 @@ func (a *App) campaignHTML(c *db.Campaign, name string, userID uuid.UUID) string
 func (a *App) unsubscribeURL(userID uuid.UUID) string {
 	return a.Cfg.AppHost + "/api/unsubscribe?u=" + userID.String() +
 		"&t=" + UnsubscribeToken(a.Cfg.JWTSecret, userID.String())
+}
+
+func (a *App) subscribeURL(userID uuid.UUID) string {
+	return a.Cfg.AppHost + "/api/subscribe?u=" + userID.String() +
+		"&t=" + SubscribeToken(a.Cfg.JWTSecret, userID.String())
 }
 
 func (a *App) pixelURL(campaign string, userID uuid.UUID) string {
@@ -292,10 +316,12 @@ func (a *App) sendOneCampaignEmail(ctx context.Context) error {
 		return err
 	}
 
-	body := a.campaignHTML(c, rec.Name, rec.UserID)
-	headers := map[string]string{
-		"List-Unsubscribe":      "<" + a.unsubscribeURL(rec.UserID) + ">",
-		"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+	body := a.campaignHTMLFor(c, rec.Name, rec.UserID, rec.Subscribed)
+	headers := map[string]string{}
+	if rec.Subscribed {
+		// Заголовок отписки нужен только тем, кто реально подписан.
+		headers["List-Unsubscribe"] = "<" + a.unsubscribeURL(rec.UserID) + ">"
+		headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 	}
 	if err := a.Mail.SendWithHeaders(rec.Email, c.Subject, body, headers); err != nil {
 		slog.Warn("campaign send failed", "email", rec.Email, "err", err)

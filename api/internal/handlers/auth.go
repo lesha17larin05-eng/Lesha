@@ -295,16 +295,20 @@ func (a *App) Me(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "not_found")
 		return
 	}
+	consent, _ := a.Repo.HasMarketingConsent(r.Context(), uid)
 	writeJSON(w, 200, map[string]any{
 		"id": u.ID, "email": u.Email, "name": u.Name, "role": u.Role,
-		"email_verified": u.EmailVerifiedAt != nil,
+		"email_verified":    u.EmailVerifiedAt != nil,
+		"consent_marketing": consent,
 	})
 }
 
 type patchMeReq struct {
-	Name           string `json:"name"`
-	OldPassword    string `json:"old_password"`
-	NewPassword    string `json:"new_password"`
+	Name        string `json:"name"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+	// Указатель, чтобы отличить «не трогать» от «снять согласие».
+	ConsentMarketing *bool `json:"consent_marketing"`
 }
 
 func (a *App) PatchMe(w http.ResponseWriter, r *http.Request) {
@@ -334,6 +338,14 @@ func (a *App) PatchMe(w http.ResponseWriter, r *http.Request) {
 		}
 		hash, _ := auth.HashPassword(in.NewPassword)
 		_ = a.Repo.UpdateUserPassword(r.Context(), uid, hash)
+	}
+	if in.ConsentMarketing != nil {
+		// Согласие на рассылку человек ставит и снимает сам.
+		if *in.ConsentMarketing {
+			_ = a.Repo.SetMarketingConsent(r.Context(), uid)
+		} else {
+			_ = a.Repo.ClearMarketingConsent(r.Context(), uid)
+		}
 	}
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }

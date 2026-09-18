@@ -79,6 +79,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
+	r.Get("/api/subscribe", app.Subscribe)
+	r.Post("/api/subscribe", app.Subscribe)
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth)
 		r.Get("/api/me", app.Me)
@@ -1737,5 +1739,167 @@ func TestCampaignsFlow(t *testing.T) {
 	}
 	if rec.Email == "c-a@b.ru" {
 		t.Fatal("отписавшийся не должен попадать в очередь отправки")
+	}
+}
+
+// TestSubscribeFlow — согласие на рассылку, которого раньше не было:
+// по ссылке из письма и галочкой в кабинете. Проверяем, что чужой адрес
+// подписать нельзя и что дата первого согласия не переписывается.
+func TestSubscribeFlow(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+
+	c := newClient(srv)
+	c.do("POST", "/api/auth/register", map[string]any{
+		"email": "sub@b.ru", "password": "password123", "consent_pd": true})
+	u, err := repo.GetUserByEmail(ctx, "sub@b.ru")
+	if err != nil {
+		t.Fatal(err)
+	}
+	consent := func() bool {
+		ok, _ := repo.HasMarketingConsent(ctx, u.ID)
+		return ok
+	}
+	if consent() {
+		t.Fatal("после регистрации без галочки согласия быть не должно")
+	}
+
+	noRedirect := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
+	get := func(url string) *http.Response {
+		resp, err := noRedirect.Get(srv.URL + url)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		return resp
+	}
+
+	// подделанная подпись не подписывает
+	r := get("/api/subscribe?u=" + u.ID.String() + "&t=deadbeef")
+	if r.StatusCode != 303 || r.Header.Get("Location") != "/subscribed?error=1" {
+		t.Fatalf("плохая подпись: %d %s", r.StatusCode, r.Header.Get("Location"))
+	}
+	if consent() {
+		t.Fatal("подделанная ссылка не должна подписывать")
+	}
+
+	// валидная ссылка из письма
+	tok := handlers.SubscribeToken(cfg.JWTSecret, u.ID.String())
+	r = get("/api/subscribe?u=" + u.ID.String() + "&t=" + tok)
+	if r.StatusCode != 303 || r.Header.Get("Location") != "/subscribed" {
+		t.Fatalf("подписка: %d %s", r.StatusCode, r.Header.Get("Location"))
+	}
+	if !consent() {
+		t.Fatal("согласие должно быть записано")
+	}
+
+	// повторное нажатие не двигает дату первого согласия
+	var first time.Time
+	_ = repo.Pool.QueryRow(ctx, `SELECT consent_marketing_at FROM users WHERE id=$1`, u.ID).Scan(&first)
+	get("/api/subscribe?u=" + u.ID.String() + "&t=" + tok)
+	var second time.Time
+	_ = repo.Pool.QueryRow(ctx, `SELECT consent_marketing_at FROM users WHERE id=$1`, u.ID).Scan(&second)
+	if !first.Equal(second) {
+		t.Fatalf("дата первого согласия не должна меняться: было %v, стало %v", first, second)
+	}
+
+	// галочка в кабинете снимает и возвращает согласие
+	c.do("POST", "/api/auth/login", map[string]string{"email": "sub@b.ru", "password": "password123"})
+	if r, body := c.do("PATCH", "/api/me", map[string]any{"consent_marketing": false}); r.StatusCode != 200 {
+		t.Fatalf("снятие галочки: %d %s", r.StatusCode, body)
+	}
+	if consent() {
+		t.Fatal("галочка должна была снять согласие")
+	}
+	if r, _ := c.do("PATCH", "/api/me", map[string]any{"consent_marketing": true}); r.StatusCode != 200 {
+		t.Fatal("возврат галочки должен работать")
+	}
+	if !consent() {
+		t.Fatal("галочка должна была вернуть согласие")
+	}
+	// /api/me отдаёт текущее состояние
+	if _, body := c.do("GET", "/api/me", nil); !strings.Contains(string(body), `"consent_marketing":true`) {
+		t.Fatalf("/api/me должен отдавать consent_marketing: %s", body)
+	}
+}
+
+// TestServiceSegment — сервисная группа: люди без согласия, но с платным
+// курсом. Их можно поставить в очередь (письмо про их курс), а в обычные
+// группы они не попадают.
+func TestServiceSegment(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	cid, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "srv-course", Title: "Платный", Kind: "paid", PriceRub: ptrInt(100), IsPublished: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// человек с курсом, но без согласия
+	cu := newClient(srv)
+	cu.do("POST", "/api/auth/register", map[string]any{
+		"email": "srv@b.ru", "password": "password123", "consent_pd": true})
+	u, _ := repo.GetUserByEmail(ctx, "srv@b.ru")
+	_ = repo.MarkEmailVerified(ctx, u.ID)
+	_ = repo.Grant(ctx, u.ID, cid, "admin", nil)
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "srv-adm@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "srv-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "srv-adm@b.ru", "password": "password123"})
+
+	// в обычной группе его нет, в сервисной — есть
+	_, body := adm.do("GET", "/api/admin/segments", nil)
+	var resp struct {
+		Segments []struct {
+			Key         string `json:"key"`
+			Count       int    `json:"count"`
+			ServiceOnly bool   `json:"service_only"`
+		} `json:"segments"`
+	}
+	_ = json.Unmarshal(body, &resp)
+	for _, s := range resp.Segments {
+		switch s.Key {
+		case "all":
+			if s.Count != 0 {
+				t.Fatalf("в «все подписанные» не должно быть никого, а там %d", s.Count)
+			}
+		case "service_paid":
+			if s.Count != 1 || !s.ServiceOnly {
+				t.Fatalf("сервисная группа: count=%d service_only=%v", s.Count, s.ServiceOnly)
+			}
+		}
+	}
+
+	// рассылку по сервисной группе создать можно, человек попадает в очередь
+	r, body := adm.do("POST", "/api/admin/campaigns", map[string]any{
+		"name": "Сервисное", "subject": "Ваш курс", "body": "Текст про курс.",
+		"segment": "service_paid"})
+	if r.StatusCode != 201 {
+		t.Fatalf("создание сервисной рассылки: %d %s", r.StatusCode, body)
+	}
+	var created struct {
+		ID    string `json:"id"`
+		Total int    `json:"total"`
+	}
+	_ = json.Unmarshal(body, &created)
+	if created.Total != 1 {
+		t.Fatalf("в сервисной рассылке должен быть 1 адресат, а не %d", created.Total)
+	}
+	cidCamp, _ := uuid.Parse(created.ID)
+	rec, err := repo.NextRecipient(ctx, cidCamp)
+	if err != nil {
+		t.Fatalf("очередь сервисной рассылки пуста: %v", err)
+	}
+	if rec.Email != "srv@b.ru" {
+		t.Fatalf("не тот адресат: %s", rec.Email)
+	}
+	if rec.Subscribed {
+		t.Fatal("человек не подписан — в письме должна быть кнопка подписки, а не отписки")
 	}
 }
