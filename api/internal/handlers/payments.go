@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/leshalarin/api/internal/db"
 	"github.com/leshalarin/api/internal/middleware"
 )
 
@@ -312,6 +313,17 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 	if status == "" {
 		status, _ = parsed["status"].(string)
 	}
+
+	// Возврат денег. Точное значение статуса у Продамуса может отличаться
+	// («refund», «refunded», «возврат»), поэтому смотрим по вхождению.
+	low := strings.ToLower(status)
+	if strings.Contains(low, "refund") || strings.Contains(low, "возврат") {
+		a.handleRefund(r, o, status)
+		a.Repo.MarkWebhookProcessed(r.Context(), whID, &orderID, "")
+		w.WriteHeader(200)
+		return
+	}
+
 	if status == "success" || status == "paid" {
 		if o.Status == "pending" {
 			pid, _ := parsed["prodamus_order_id"].(string)
@@ -501,4 +513,37 @@ func (a *App) notifyUnmatchedPayment(parsed map[string]any) {
 			"<b>Имя/комментарий:</b> "+str("order_num")+" "+str("customer_extra")+"<br>"+
 			"<b>Телефон:</b> "+str("customer_phone")+"</p>"+
 			"<p><a href=\""+grantURL+"\">Выдать доступ</a></p>")
+}
+
+// handleRefund – деньги вернули: заказ помечаем возвращённым, закрываем
+// доступ, выданный за эту покупку, и пишем Алексею.
+func (a *App) handleRefund(r *http.Request, o *db.Order, status string) {
+	ctx := r.Context()
+	if err := a.Repo.MarkOrderRefunded(ctx, o.ID); err != nil {
+		slog.Warn("refund: order not marked", "order", o.ID, "err", err)
+	}
+	revoked, err := a.Repo.RevokePurchasedEnrollment(ctx, o.UserID, o.CourseID)
+	if err != nil {
+		slog.Warn("refund: enrollment not revoked", "order", o.ID, "err", err)
+	}
+	slog.Info("refund processed", "order_num", o.OrderNum, "revoked", revoked, "status", status)
+
+	u, _ := a.Repo.GetUser(ctx, o.UserID)
+	c, _ := a.Repo.GetCourseByID(ctx, o.CourseID)
+	if u == nil || c == nil {
+		return
+	}
+	accessLine := "Доступ к курсу закрыт."
+	if !revoked {
+		accessLine = "Доступ остался: он был выдан не за эту покупку (подарен или бесплатный), " +
+			"поэтому автоматически я его не трогаю."
+	}
+	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Возврат оплаты – заказ №"+strconv.FormatInt(o.OrderNum, 10),
+		"<p>Продамус сообщил о возврате денег.</p>"+
+			"<p><b>Заказ:</b> №"+strconv.FormatInt(o.OrderNum, 10)+"<br>"+
+			"<b>Курс:</b> "+html.EscapeString(c.Title)+"<br>"+
+			"<b>Покупатель:</b> "+html.EscapeString(u.Email)+"<br>"+
+			"<b>Сумма:</b> "+strconv.Itoa(o.AmountRub)+" ₽</p>"+
+			"<p>"+accessLine+"</p>"+
+			"<p><a href=\""+a.Cfg.AppHost+"/admin/users\">Открыть админку</a></p>")
 }

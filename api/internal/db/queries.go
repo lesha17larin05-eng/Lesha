@@ -1008,3 +1008,25 @@ func (r *Repo) HasMarketingConsent(ctx context.Context, userID uuid.UUID) (bool,
 		`SELECT consent_marketing_at IS NOT NULL FROM users WHERE id = $1`, userID).Scan(&ok)
 	return ok, err
 }
+
+// MarkOrderRefunded помечает оплаченный заказ возвращённым.
+// paid_at не стираем – факт оплаты был, он нужен для истории.
+func (r *Repo) MarkOrderRefunded(ctx context.Context, orderID uuid.UUID) error {
+	_, err := r.Pool.Exec(ctx,
+		`UPDATE orders SET status='refunded' WHERE id=$1 AND status='paid'`, orderID)
+	return err
+}
+
+// RevokePurchasedEnrollment закрывает доступ, выданный именно за покупку.
+// Подаренные (granted_by='admin') и бесплатные доступы не трогает –
+// при возврате денег за один курс человек не должен потерять остальное.
+// Возвращает true, если доступ действительно был закрыт.
+func (r *Repo) RevokePurchasedEnrollment(ctx context.Context, userID, courseID uuid.UUID) (bool, error) {
+	tag, err := r.Pool.Exec(ctx,
+		`DELETE FROM enrollments WHERE user_id=$1 AND course_id=$2 AND granted_by='purchase'`,
+		userID, courseID)
+	if err != nil {
+		return false, err
+	}
+	return tag.RowsAffected() > 0, nil
+}

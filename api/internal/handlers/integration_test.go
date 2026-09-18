@@ -1903,3 +1903,52 @@ func TestServiceSegment(t *testing.T) {
 		t.Fatal("человек не подписан – в письме должна быть кнопка подписки, а не отписки")
 	}
 }
+
+// TestProdamusRefundClosesAccess — возврат денег: заказ помечается
+// возвращённым, доступ, выданный за покупку, закрывается, а подаренный
+// доступ к другому курсу остаётся.
+func TestProdamusRefundClosesAccess(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+
+	uid, _ := repo.CreateUser(ctx, "ref@b.ru", "x", "Ref", "user")
+	bought, _ := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "ref-paid", Title: "Куплен", Kind: "paid", PriceRub: ptrInt(50), IsPublished: true})
+	gifted, _ := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "ref-gift", Title: "Подарен", Kind: "paid", PriceRub: ptrInt(50), IsPublished: true})
+	o, _ := repo.CreateOrder(ctx, uid, bought, 50)
+	_ = repo.Grant(ctx, uid, bought, "purchase", nil)
+	_ = repo.Grant(ctx, uid, gifted, "admin", nil)
+	_ = repo.MarkOrderPaid(ctx, o.ID, "48906087")
+
+	body := map[string]any{
+		"order_id":       "48906087",
+		"order_num":      o.ID.String(),
+		"payment_status": "refund",
+		"sum":            "50.00",
+	}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, body)
+	form := url.Values{}
+	for k, v := range body {
+		form.Set(k, v.(string))
+	}
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+
+	o2, _ := repo.GetOrder(ctx, o.ID)
+	if o2.Status != "refunded" {
+		t.Fatalf("заказ должен стать refunded, а он %s", o2.Status)
+	}
+	if has, _ := repo.HasEnrollment(ctx, uid, bought); has {
+		t.Fatal("доступ за покупку должен закрыться")
+	}
+	if has, _ := repo.HasEnrollment(ctx, uid, gifted); !has {
+		t.Fatal("подаренный доступ трогать нельзя")
+	}
+}
