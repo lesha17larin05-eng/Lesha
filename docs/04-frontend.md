@@ -44,6 +44,7 @@ web/src/
       emails.astro                — справочник: какие письма сайт шлёт, кому и когда
     sitemap.xml.ts                — SSR-карта сайта (страница Салюта — только при salut_visible)
     unsubscribed.astro            — куда ведёт ссылка «отписаться» из письма (noindex; ?error=1 — битая ссылка)
+    subscribed.astro              — куда ведёт кнопка «Хочу получать письма» (noindex; ?error=1 — битая ссылка)
     auth/
       login.astro
       register.astro
