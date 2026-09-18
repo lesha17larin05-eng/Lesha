@@ -398,7 +398,7 @@ func TestCheckoutTariffPresets(t *testing.T) {
 		t.Fatalf("test10 as user: %d %s", r.StatusCode, body)
 	}
 
-	// 6) tariff=test10 админу → 200 и сумма 10 ₽
+	// 6) tariff=test10 админу → 200 и сумма 50 ₽ (минимум Продамуса)
 	c6 := makeVerified("t-admin10@b.ru")
 	ua, _ := repo.GetUserByEmail(ctx, "t-admin10@b.ru")
 	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
@@ -409,7 +409,7 @@ func TestCheckoutTariffPresets(t *testing.T) {
 	if r.StatusCode != 200 || !strings.Contains(string(body), "fake-payment") {
 		t.Fatalf("test10 as admin: %d %s", r.StatusCode, body)
 	}
-	checkAmount(t, body, 10)
+	checkAmount(t, body, 50)
 }
 
 func TestAdminEndpointsRequireAdminRole(t *testing.T) {
