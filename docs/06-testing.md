@@ -91,6 +91,8 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestSubscribeFlow`                    | Согласие на рассылку: подделанная подпись не подписывает (303 на `/subscribed?error=1`); валидная ссылка ставит согласие; повторное нажатие не двигает дату первого согласия; `PATCH /api/me {consent_marketing}` снимает и возвращает галочку; `GET /api/me` отдаёт состояние. |
 | `TestServiceSegment`                   | Сервисная группа: человек с платным курсом без согласия не попадает в `all`, попадает в `service_paid` (`service_only: true`); рассылка по этой группе создаётся, адресат выдаётся `NextRecipient` с `Subscribed = false`. |
 
+| `TestProdamusRefundClosesAccess`       | Возврат: заказ становится `refunded`, доступ с `granted_by='purchase'` закрывается, подаренный доступ к другому курсу остаётся. |
+
 ## Как добавить тест
 
 1. Unit-тест — в том же пакете, файл `*_test.go`. Не требует БД.
