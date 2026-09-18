@@ -7,7 +7,7 @@ import (
 	"github.com/leshalarin/api/internal/middleware"
 )
 
-// LessonMp4Auth — auth_request handler for nginx. Called by nginx whenever
+// LessonMp4Auth – auth_request handler for nginx. Called by nginx whenever
 // someone hits `/lesson-videos/<course-slug>/<file>` for a paid course.
 //
 // nginx will:
@@ -21,7 +21,7 @@ import (
 //  2. course exists,
 //  3. user has an active enrollment (or is admin).
 //
-// Free courses do NOT go through this handler — they are served by the
+// Free courses do NOT go through this handler – they are served by the
 // open `/lesson-videos/` alias.
 func (a *App) LessonMp4Auth(w http.ResponseWriter, r *http.Request) {
 	orig := r.Header.Get("X-Original-URI")

@@ -16,28 +16,28 @@ import (
 	"github.com/leshalarin/api/internal/middleware"
 )
 
-// tariffPreset — пресет тарифа для курса с несколькими ценами.
+// tariffPreset – пресет тарифа для курса с несколькими ценами.
 type tariffPreset struct {
 	PriceRub int
 	Title    string
 }
 
-// tariffPresets — мапа курсов с несколькими тарифами.
-// Если у курса есть запись здесь — Checkout требует ?tariff=<key> и берёт
+// tariffPresets – мапа курсов с несколькими тарифами.
+// Если у курса есть запись здесь – Checkout требует ?tariff=<key> и берёт
 // цену и название отсюда вместо courses.price_rub / courses.title.
 // Сделано без отдельной таблицы tariffs пока тарифов мало; легко мигрировать.
 var tariffPresets = map[string]map[string]tariffPreset{
 	"zdorovaya-spina": {
-		"self":    {PriceRub: 3990, Title: "Здоровая спина — Самостоятельный"},
-		"support": {PriceRub: 12990, Title: "Здоровая спина — С поддержкой"},
-		// Временный тариф для проверки интеграции с Продамусом — после успешной
+		"self":    {PriceRub: 3990, Title: "Здоровая спина – Самостоятельный"},
+		"support": {PriceRub: 12990, Title: "Здоровая спина – С поддержкой"},
+		// Временный тариф для проверки интеграции с Продамусом – после успешной
 		// тестовой оплаты + возврата эту строку удалим.
 		// Доступен ТОЛЬКО админам (см. проверку роли в Checkout).
-		"test10": {PriceRub: 10, Title: "ТЕСТ — проверка интеграции"},
+		"test10": {PriceRub: 10, Title: "ТЕСТ – проверка интеграции"},
 	},
 }
 
-// adminOnlyTariffs — тарифы, которые может оформить только admin
+// adminOnlyTariffs – тарифы, которые может оформить только admin
 // (служебные/тестовые, не должны быть доступны обычным пользователям).
 var adminOnlyTariffs = map[string]bool{"test10": true}
 
@@ -82,7 +82,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "email_not_verified")
 		return
 	}
-	// Служебные тарифы (test10) доступны только админам — иначе любой,
+	// Служебные тарифы (test10) доступны только админам – иначе любой,
 	// кто узнал ключ тарифа, купит курс за тестовую цену.
 	if adminOnlyTariffs[tariffKey] && u.Role != "admin" {
 		writeErr(w, 400, "bad_tariff")
@@ -102,7 +102,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	// Структура должна быть ВЛОЖЕННАЯ (products → array of objects),
 	// а не плоская "products[0][name]". flatten() в prodamus.PaymentURL
 	// сама превратит её в правильные query-ключи products%5B0%5D%5Bname%5D=…
-	// Все значения — строки, как они будут в query string (иначе JSON и query
+	// Все значения – строки, как они будут в query string (иначе JSON и query
 	// дадут разный HMAC).
 	params := map[string]any{
 		"do":             "pay",
@@ -120,18 +120,18 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		"urlSuccess":      a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
 		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
 		// ВАЖНО: касса в режиме самозанятого подмешивает npd_income_type в подпись
-		// ДО проверки. Если этого параметра нет в наших params — Продамус считает
+		// ДО проверки. Если этого параметра нет в наших params – Продамус считает
 		// подпись с ним, а наша подпись посчитана без него → «Ошибка подписи».
 		"npd_income_type": "FROM_INDIVIDUAL",
 		// sys согласован с Продамусом ("leshalarin" 15.06.2026). Включаем в HMAC,
-		// Продамус считает подпись с этим параметром — без него форма открывается
+		// Продамус считает подпись с этим параметром – без него форма открывается
 		// с пустым полем суммы.
 		"sys": "leshalarin",
 		// Рекомендация поддержки: callbackType=json упрощает сверку подписи
 		// в webhook'ах (тело придёт в JSON, а не в php-keys formdata).
 		"callbackType": "json",
 	}
-	// Имя и телефон из профиля — чтобы Продамус не подставлял UUID order_id в поле «Имя».
+	// Имя и телефон из профиля – чтобы Продамус не подставлял UUID order_id в поле «Имя».
 	if n := strings.TrimSpace(u.Name); n != "" {
 		params["customer_name"] = n
 	}
@@ -156,10 +156,10 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"payment_url": url, "order_id": o.ID.String()})
 }
 
-// PayShortcut — короткая ссылка /pay/{order_id}. По order_id ищет заказ,
+// PayShortcut – короткая ссылка /pay/{order_id}. По order_id ищет заказ,
 // генерит свежий подписанный payment_url и делает HTTP 302 на Продамус.
 // Нужен потому что полный payment_url длиной 600+ символов плохо переживает
-// копирование через мессенджеры и чаты — обрезается, и подпись ломается.
+// копирование через мессенджеры и чаты – обрезается, и подпись ломается.
 func (a *App) PayShortcut(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "order_id"))
 	if err != nil {
@@ -172,7 +172,7 @@ func (a *App) PayShortcut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if o.Status != "pending" {
-		// уже оплачен или отменён — отправим в кабинет
+		// уже оплачен или отменён – отправим в кабинет
 		http.Redirect(w, r, a.Cfg.AppHost+"/cabinet/courses", http.StatusFound)
 		return
 	}
@@ -219,7 +219,7 @@ func (a *App) PayShortcut(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusFound)
 }
 
-// FakePayment — dev-only endpoint that simulates a successful Prodamus webhook.
+// FakePayment – dev-only endpoint that simulates a successful Prodamus webhook.
 func (a *App) FakePayment(w http.ResponseWriter, r *http.Request) {
 	if a.Cfg.AppEnv == "production" {
 		writeErr(w, 404, "not_found")
@@ -270,8 +270,8 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 	// Ищем наш заказ.
 	//
 	// Продамус кладёт СВОЙ внутренний номер в `order_id`, а наш идентификатор
-	// возвращает в `order_num` — в обратную сторону от того, как мы их
-	// отправляли. Поэтому проверяем оба поля и каждое — и как UUID заказа,
+	// возвращает в `order_num` – в обратную сторону от того, как мы их
+	// отправляли. Поэтому проверяем оба поля и каждое – и как UUID заказа,
 	// и как человекочитаемый номер. Email для матчинга не используем
 	// (см. CLAUDE.md): по нему нельзя достоверно понять, что именно оплачено.
 	var orderID uuid.UUID
@@ -314,7 +314,7 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 		if o.Status == "pending" {
 			pid, _ := parsed["prodamus_order_id"].(string)
 			if pid == "" {
-				// номер на стороне Продамуса — для сверки в их кабинете
+				// номер на стороне Продамуса – для сверки в их кабинете
 				pid, _ = parsed["order_id"].(string)
 			}
 			_ = a.Repo.MarkOrderPaid(r.Context(), o.ID, pid)
@@ -323,11 +323,11 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 			c, _ := a.Repo.GetCourseByID(r.Context(), o.CourseID)
 			if u != nil && c != nil {
 				cabinetURL := a.Cfg.AppHost + "/cabinet/" + c.Slug
-				a.Mail.Async(u.Email, "Оплата получена — курс «"+c.Title+"» открыт",
-					"<p>Здравствуйте! Спасибо за оплату — доступ к курсу «"+c.Title+"» уже открыт.</p>"+
+				a.Mail.Async(u.Email, "Оплата получена – курс «"+c.Title+"» открыт",
+					"<p>Здравствуйте! Спасибо за оплату – доступ к курсу «"+c.Title+"» уже открыт.</p>"+
 						"<p><b>Начать заниматься:</b> <a href=\""+cabinetURL+"\">"+cabinetURL+"</a><br>"+
 						"Уроки открываются в личном кабинете, доступ действует год, темп выбираете сами.</p>"+
-						"<p>Если возникнут вопросы по курсу или оплате — просто ответьте на это письмо "+
+						"<p>Если возникнут вопросы по курсу или оплате – просто ответьте на это письмо "+
 						"или напишите в Телеграм: <a href=\"https://t.me/larin_lesha\">@larin_lesha</a>.</p>"+
 						"<p>Хорошей практики!<br>Алексей Ларин</p>")
 			}
@@ -344,7 +344,7 @@ func parseWebhook(ct string, body []byte) map[string]any {
 		return out
 	}
 	// urlencoded: сначала разбираем плоские ключи foo, foo[0][bar],
-	// затем превращаем PHP-style индексы во вложенный объект — Продамус
+	// затем превращаем PHP-style индексы во вложенный объект – Продамус
 	// подписывает именно вложенную структуру (см. python-prodamus → php2dict).
 	flat := map[string]string{}
 	for _, kv := range strings.Split(string(body), "&") {
@@ -360,8 +360,8 @@ func parseWebhook(ct string, body []byte) map[string]any {
 }
 
 // php2dict превращает плоские ключи вида "foo", "products[0][name]" в
-// вложенный map/slice. Если индексы чисто числовые — собираем slice
-// (как PHP/JSON массив); иначе — map. Сохраняем порядок индексов
+// вложенный map/slice. Если индексы чисто числовые – собираем slice
+// (как PHP/JSON массив); иначе – map. Сохраняем порядок индексов
 // через sort.
 func php2dict(flat map[string]string) map[string]any {
 	root := map[string]any{}
@@ -399,7 +399,7 @@ func php2dict(flat map[string]string) map[string]any {
 		}
 		_ = cur
 	}
-	// Рекурсивно: map, у которого все ключи — целые подряд от 0 → slice
+	// Рекурсивно: map, у которого все ключи – целые подряд от 0 → slice
 	var convert func(v any) any
 	convert = func(v any) any {
 		m, ok := v.(map[string]any)
@@ -464,7 +464,7 @@ func verify(secret string, data map[string]any, sig string) bool {
 	return verifySig(secret, data, sig)
 }
 
-// notifyUnmatchedPayment — письмо Алексею об оплате, которой не нашлось пары
+// notifyUnmatchedPayment – письмо Алексею об оплате, которой не нашлось пары
 // среди заказов сайта (оплата по ссылке, выставленной вручную).
 func (a *App) notifyUnmatchedPayment(parsed map[string]any) {
 	status, _ := parsed["payment_status"].(string)
@@ -488,11 +488,11 @@ func (a *App) notifyUnmatchedPayment(parsed map[string]any) {
 	if email != "" {
 		grantURL += "?email=" + url.QueryEscape(email)
 	}
-	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Оплата без заказа на сайте — нужно выдать доступ",
+	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Оплата без заказа на сайте – нужно выдать доступ",
 		"<p>Пришла оплата по ссылке, выставленной вручную в кабинете Продамуса. "+
 			"На сайте такого заказа нет, поэтому доступ автоматически не выдан.</p>"+
-			"<p>Если это курс в лагере — делать ничего не нужно, он идёт офлайн и доступов "+
-			"на сайте не требует. Если онлайн-курс — откройте доступ по ссылке внизу.</p>"+
+			"<p>Если это курс в лагере – делать ничего не нужно, он идёт офлайн и доступов "+
+			"на сайте не требует. Если онлайн-курс – откройте доступ по ссылке внизу.</p>"+
 			"<p><b>Почта:</b> "+email+"<br>"+
 			"<b>Сумма:</b> "+str("sum")+" ₽<br>"+
 			"<b>Товар:</b> "+product+"<br>"+

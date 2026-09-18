@@ -9,9 +9,9 @@ import (
 	"github.com/leshalarin/api/internal/middleware"
 )
 
-// Настройки сайта — булевы флаги, которые Алексей переключает из админки
+// Настройки сайта – булевы флаги, которые Алексей переключает из админки
 // без деплоя (сейчас: показывать ли страницу Салюта).
-// Публичный GET /api/settings читает SSR-фронт, PATCH /api/admin/settings —
+// Публичный GET /api/settings читает SSR-фронт, PATCH /api/admin/settings –
 // только админ, с CSRF и записью в audit_log.
 
 // settingsPayload переводит строковые значения БД в JSON-булевы.
@@ -26,7 +26,7 @@ func settingsPayload(raw map[string]string) map[string]bool {
 func (a *App) PublicSettings(w http.ResponseWriter, r *http.Request) {
 	raw, err := a.Repo.Settings(r.Context())
 	if err != nil {
-		// Дефолты уже в raw — отдаём их, а не 500: из-за настроек
+		// Дефолты уже в raw – отдаём их, а не 500: из-за настроек
 		// не должна падать вся страница.
 		w.Header().Set("Cache-Control", "no-store")
 		writeJSON(w, 200, settingsPayload(raw))

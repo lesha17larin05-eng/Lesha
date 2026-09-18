@@ -22,7 +22,7 @@ func New(payformURL, secret string) *Client {
 
 // Sign computes Prodamus HMAC-SHA256 over the canonical JSON representation
 // of the payload (recursively ksort'd, no signature key, JSON_UNESCAPED_UNICODE,
-// БЕЗ JSON_UNESCAPED_SLASHES — PHP json_encode по умолчанию экранирует «/» как
+// БЕЗ JSON_UNESCAPED_SLASHES – PHP json_encode по умолчанию экранирует «/» как
 // «\/», и Продамус сверяет подпись именно с таким экранированием. Поддержка
 // прислала свой Python-эквивалент:
 //
@@ -122,7 +122,7 @@ func canonicalJSON(v any) ([]byte, error) {
 }
 
 // PaymentURL builds a signed payment URL for redirecting a user to Prodamus.
-// extraQuery — параметры, которые добавляем в URL ПОСЛЕ расчёта подписи
+// extraQuery – параметры, которые добавляем в URL ПОСЛЕ расчёта подписи
 // (например, sys, который Продамус ожидает в query, но НЕ включает в HMAC).
 func (c *Client) PaymentURL(params map[string]any, extraQuery ...map[string]string) (string, error) {
 	sig, err := Sign(c.Secret, params)

@@ -30,10 +30,10 @@ func writeErr(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
-// IsHTTPSRequest сообщает, пришёл ли запрос по HTTPS — напрямую (r.TLS)
+// IsHTTPSRequest сообщает, пришёл ли запрос по HTTPS – напрямую (r.TLS)
 // или через reverse-proxy (заголовок X-Forwarded-Proto, который выставляет
 // nginx/Cloudflare/Caddy). Используется, чтобы выставлять Secure-флаг
-// только когда соединение реально TLS — иначе браузер отбросит cookie.
+// только когда соединение реально TLS – иначе браузер отбросит cookie.
 func IsHTTPSRequest(r *http.Request) bool {
 	if r == nil {
 		return false
@@ -64,7 +64,7 @@ func setAuthCookies(w http.ResponseWriter, r *http.Request, accessToken, refresh
 		HttpOnly: true, Secure: secure, SameSite: http.SameSiteLaxMode,
 		Expires: time.Now().Add(auth.RefreshTTL),
 	})
-	// expose role hint for the frontend (not httpOnly — UI only)
+	// expose role hint for the frontend (not httpOnly – UI only)
 	http.SetCookie(w, &http.Cookie{
 		Name: "auth", Value: "1", Path: "/",
 		Secure: secure, SameSite: http.SameSiteLaxMode,

@@ -12,35 +12,35 @@ import (
 // Рассылки по базе: группы получателей, кампании и очередь отправки.
 //
 // Главное правило: в любую группу попадают ТОЛЬКО пользователи с
-// `consent_marketing_at` — согласием на рассылку. Без него письмо с
+// `consent_marketing_at` – согласием на рассылку. Без него письмо с
 // предложением отправлять нельзя.
 
-// Segment — группа получателей для рассылки.
+// Segment – группа получателей для рассылки.
 type Segment struct {
 	Key   string `json:"key"`
 	Title string `json:"title"`
 	Hint  string `json:"hint"`
 	Count int    `json:"count"`
-	// ServiceOnly — в группе люди БЕЗ согласия на рассылку. Им допустимы
+	// ServiceOnly – в группе люди БЕЗ согласия на рассылку. Им допустимы
 	// только письма об услуге, которой они уже пользуются.
 	ServiceOnly bool `json:"service_only"`
 }
 
-// Segments — белый список групп. Ключи используются в campaigns.segment;
+// Segments – белый список групп. Ключи используются в campaigns.segment;
 // SQL для каждой группы написан отдельным запросом (без склейки строк).
 var Segments = []Segment{
 	{Key: "all", Title: "Все подписанные", Hint: "все, кто согласился получать письма"},
-	{Key: "paid", Title: "С доступом к «Здоровой спине»", Hint: "платный курс открыт — куплен или подарен"},
+	{Key: "paid", Title: "С доступом к «Здоровой спине»", Hint: "платный курс открыт – куплен или подарен"},
 	{Key: "free", Title: "Только бесплатный курс", Hint: "платного курса нет"},
 	{Key: "sleeping", Title: "Не заходили больше месяца", Hint: "для писем «вернитесь к занятиям»"},
 	// Особая группа: согласия на рассылку у этих людей НЕТ, поэтому им можно
-	// слать только сервисные письма про их собственный курс — без предложений
+	// слать только сервисные письма про их собственный курс – без предложений
 	// и рекламы. В интерфейсе рядом с ней стоит предупреждение.
 	{Key: "service_paid", Title: "Есть платный курс, но не подписаны", ServiceOnly: true,
 		Hint: "ТОЛЬКО сервисные письма про их курс: рекламу слать нельзя"},
 }
 
-// SegmentIsServiceOnly — в группе люди без согласия на рассылку
+// SegmentIsServiceOnly – в группе люди без согласия на рассылку
 // (сервисные письма про их курс).
 func SegmentIsServiceOnly(key string) bool {
 	for _, s := range Segments {
@@ -51,7 +51,7 @@ func SegmentIsServiceOnly(key string) bool {
 	return false
 }
 
-// SegmentExists — проверка ключа группы (валидация входа).
+// SegmentExists – проверка ключа группы (валидация входа).
 func SegmentExists(key string) bool {
 	for _, s := range Segments {
 		if s.Key == key {
@@ -103,7 +103,7 @@ func segmentWhere(key string) string {
 	}
 }
 
-// SegmentsWithCounts — список групп с количеством людей в каждой.
+// SegmentsWithCounts – список групп с количеством людей в каждой.
 func (r *Repo) SegmentsWithCounts(ctx context.Context) ([]Segment, error) {
 	out := make([]Segment, 0, len(Segments))
 	for _, s := range Segments {
@@ -218,14 +218,14 @@ func (r *Repo) SetCampaignStatus(ctx context.Context, id uuid.UUID, status strin
 	return err
 }
 
-// CampaignRecipient — один адресат в очереди.
+// CampaignRecipient – один адресат в очереди.
 type CampaignRecipient struct {
 	ID         uuid.UUID
 	CampaignID uuid.UUID
 	UserID     uuid.UUID
 	Email      string
 	Name       string
-	// Subscribed — стоит ли у человека согласие на рассылку. От этого
+	// Subscribed – стоит ли у человека согласие на рассылку. От этого
 	// зависит подвал письма: отписка или предложение подписаться.
 	Subscribed bool
 }
@@ -246,10 +246,10 @@ func (r *Repo) NextCampaignToSend(ctx context.Context) (*Campaign, error) {
 		 ORDER BY c.created_at LIMIT 1`))
 }
 
-// NextRecipient — следующий адресат рассылки, у которого согласие ещё в силе.
+// NextRecipient – следующий адресат рассылки, у которого согласие ещё в силе.
 // Отписавшихся помечает skipped и переходит дальше.
 //
-// Исключение — сервисная группа (service_paid): там согласия нет по условию,
+// Исключение – сервисная группа (service_paid): там согласия нет по условию,
 // письмо касается курса человека, поэтому проверка не применяется.
 func (r *Repo) NextRecipient(ctx context.Context, campaignID uuid.UUID) (*CampaignRecipient, error) {
 	var serviceOnly bool
@@ -278,7 +278,7 @@ func (r *Repo) NextRecipient(ctx context.Context, campaignID uuid.UUID) (*Campai
 			rec.Subscribed = stillSubscribed
 			return rec, nil
 		}
-		// отписался после старта рассылки — не шлём
+		// отписался после старта рассылки – не шлём
 		if err := r.MarkRecipient(ctx, rec.ID, "skipped", "отписался"); err != nil {
 			return nil, err
 		}
@@ -300,7 +300,7 @@ func (r *Repo) MarkRecipient(ctx context.Context, id uuid.UUID, status, errText 
 	return err
 }
 
-// CampaignRecipientRows — список адресатов для страницы рассылки в админке.
+// CampaignRecipientRows – список адресатов для страницы рассылки в админке.
 func (r *Repo) CampaignRecipientRows(ctx context.Context, campaignID uuid.UUID, limit int) ([]map[string]any, error) {
 	rows, err := r.Pool.Query(ctx,
 		`SELECT r.email, r.name, r.status, r.sent_at, coalesce(r.error,''),
@@ -330,7 +330,7 @@ func (r *Repo) CampaignRecipientRows(ctx context.Context, campaignID uuid.UUID, 
 	return out, rows.Err()
 }
 
-// SentLast24h — сколько писем рассылок ушло за сутки по всем кампаниям.
+// SentLast24h – сколько писем рассылок ушло за сутки по всем кампаниям.
 // Нужно, чтобы не упереться в суточный лимит почтового провайдера.
 func (r *Repo) SentLast24h(ctx context.Context) (int, error) {
 	var n int

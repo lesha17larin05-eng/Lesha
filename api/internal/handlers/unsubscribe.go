@@ -15,17 +15,17 @@ import (
 // (доменное разделение ключа), поэтому чужой адрес отписать нельзя и хранить
 // отдельные токены в базе не нужно.
 //
-// GET  /api/unsubscribe?u=<uuid>&t=<hex> — человек нажал ссылку в письме,
+// GET  /api/unsubscribe?u=<uuid>&t=<hex> – человек нажал ссылку в письме,
 //
 //	отписываем и уводим на страницу /unsubscribed.
 //
-// POST того же URL — «отписка в один клик» по RFC 8058: почтовые клиенты
+// POST того же URL – «отписка в один клик» по RFC 8058: почтовые клиенты
 //
 //	(Gmail, Яндекс) дёргают адрес из заголовка List-Unsubscribe сами.
-//	CSRF для этого пути отключён в middleware — защищает подпись.
+//	CSRF для этого пути отключён в middleware – защищает подпись.
 const unsubscribePrefix = "unsubscribe:"
 
-// UnsubscribeToken — подпись для ссылки отписки конкретного пользователя.
+// UnsubscribeToken – подпись для ссылки отписки конкретного пользователя.
 func UnsubscribeToken(secret, userID string) string {
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(unsubscribePrefix + userID))
@@ -40,7 +40,7 @@ func (a *App) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 	if id, err := uuid.Parse(rawID); err == nil && token != "" {
 		want := UnsubscribeToken(a.Cfg.JWTSecret, id.String())
 		if hmac.Equal([]byte(want), []byte(token)) {
-			// Повторное нажатие — не ошибка: снимаем согласие идемпотентно.
+			// Повторное нажатие – не ошибка: снимаем согласие идемпотентно.
 			if err := a.Repo.ClearMarketingConsent(r.Context(), id); err == nil {
 				ok = true
 			}

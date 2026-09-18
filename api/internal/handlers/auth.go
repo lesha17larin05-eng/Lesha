@@ -46,7 +46,7 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	// Сохраняем факт согласий, чтобы можно было предъявить при жалобе/проверке.
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
-	// Опциональный телефон — пригодится для Продамуса и для связи через админку.
+	// Опциональный телефон – пригодится для Продамуса и для связи через админку.
 	if phone := strings.TrimSpace(in.Phone); phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, phone)
 	}
@@ -64,10 +64,10 @@ type quickSignupReq struct {
 	ConsentMarketing   bool `json:"consent_marketing"`
 }
 
-// QuickSignup — регистрация по email+имя за один шаг (для бесплатного курса).
+// QuickSignup – регистрация по email+имя за один шаг (для бесплатного курса).
 // Создаёт юзера, генерит временный пароль и токен подтверждения email,
 // отправляет письмо с ссылкой подтверждения и паролем. Доступ к курсу НЕ
-// выдаётся до тех пор, пока пользователь не кликнет по ссылке —
+// выдаётся до тех пор, пока пользователь не кликнет по ссылке –
 // enrollment в free курсы делает VerifyEmail handler.
 // Это защита от опечаток в email и фейковых регистраций.
 func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
@@ -106,16 +106,16 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 409, "email_taken")
 		return
 	}
-	// 152-ФЗ: сохраняем факт согласий (consent_pd обязательное, marketing — опциональное).
+	// 152-ФЗ: сохраняем факт согласий (consent_pd обязательное, marketing – опциональное).
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
 	if in.Phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
 	}
-	// Токен подтверждения — после клика VerifyEmail выдаст enrollment в free курсы.
+	// Токен подтверждения – после клика VerifyEmail выдаст enrollment в free курсы.
 	rawTok, hashTok, _ := auth.RandomToken(32)
 	_ = a.Repo.CreateEmailToken(r.Context(), uid, hashTok, 24*time.Hour)
 	link := a.Cfg.AppHost + "/auth/verify?token=" + rawTok
-	a.Mail.Async(in.Email, "Подтвердите почту — доступ к бесплатному курсу",
+	a.Mail.Async(in.Email, "Подтвердите почту – доступ к бесплатному курсу",
 		"<p>Здравствуйте! Спасибо за регистрацию на сайте Алексея Ларина.</p>"+
 			"<p>Чтобы открыть доступ к курсу «Мягкий старт», подтвердите вашу почту: "+
 			"<a href=\""+link+"\">"+link+"</a></p>"+
@@ -124,7 +124,7 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 			"<p><b>Данные для входа в личный кабинет:</b><br>"+
 			"Логин: "+in.Email+"<br>"+
 			"Пароль: "+password+"</p>"+
-			"<p>Сохраните это письмо — пригодится в будущем.</p>")
+			"<p>Сохраните это письмо – пригодится в будущем.</p>")
 	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "verify_required": true}
 	if a.Cfg.AppEnv != "production" {
 		resp["password_dev"] = password
@@ -213,9 +213,9 @@ func (a *App) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
-	// Идемпотентно выдаём enrollment во все free-курсы — для тех, кто пришёл
+	// Идемпотентно выдаём enrollment во все free-курсы – для тех, кто пришёл
 	// через quick-signup на /course (доступ к курсу открывается только после verify).
-	// Repo.Grant — INSERT ... ON CONFLICT DO NOTHING, повторный verify не ломает.
+	// Repo.Grant – INSERT ... ON CONFLICT DO NOTHING, повторный verify не ломает.
 	enrolled := 0
 	if courses, err := a.Repo.ListCourses(r.Context(), true); err == nil {
 		for _, c := range courses {
@@ -227,7 +227,7 @@ func (a *App) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	// Сразу логиним — после клика юзер попадает прямо в кабинет, без отдельной формы.
+	// Сразу логиним – после клика юзер попадает прямо в кабинет, без отдельной формы.
 	access, err := auth.IssueAccessToken(a.Cfg.JWTSecret, uid, "user")
 	if err != nil {
 		writeErr(w, 500, "token_failed")
@@ -356,9 +356,9 @@ var _ = db.ErrNotFound
 
 type resendReq struct{ Email string }
 
-// ResendVerification — повторная отправка письма подтверждения email.
+// ResendVerification – повторная отправка письма подтверждения email.
 // Не раскрывает существование адреса: ответ всегда 200 {ok}.
-// Rate-limit — общий для /api/auth/* (см. main.go).
+// Rate-limit – общий для /api/auth/* (см. main.go).
 func (a *App) ResendVerification(w http.ResponseWriter, r *http.Request) {
 	var in resendReq
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
@@ -376,13 +376,13 @@ func (a *App) ResendVerification(w http.ResponseWriter, r *http.Request) {
 		if tokErr == nil {
 			_ = a.Repo.CreateEmailToken(r.Context(), u.ID, hashTok, 24*time.Hour)
 			link := a.Cfg.AppHost + "/auth/verify?token=" + rawTok
-			a.Mail.Async(email, "Подтвердите почту — доступ к курсу",
+			a.Mail.Async(email, "Подтвердите почту – доступ к курсу",
 				"<p>Здравствуйте! Вы (или кто-то от вашего имени) запросили повторное письмо подтверждения на сайте Алексея Ларина.</p>"+
 					"<p>Чтобы подтвердить почту и открыть доступ, перейдите по ссылке: "+
 					"<a href=\""+link+"\">"+link+"</a></p>"+
-					"<p>Ссылка действительна 24 часа. Если вы не запрашивали письмо — просто проигнорируйте его.</p>")
+					"<p>Ссылка действительна 24 часа. Если вы не запрашивали письмо – просто проигнорируйте его.</p>")
 		}
 	}
-	// Всегда ok — не раскрываем, существует ли адрес и подтверждён ли он.
+	// Всегда ok – не раскрываем, существует ли адрес и подтверждён ли он.
 	writeJSON(w, 200, map[string]any{"ok": 1})
 }

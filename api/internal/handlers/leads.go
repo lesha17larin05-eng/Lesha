@@ -55,7 +55,7 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
-	// Уведомление Алексею. html.EscapeString — пользовательский ввод в письме.
+	// Уведомление Алексею. html.EscapeString – пользовательский ввод в письме.
 	sourceTitle := map[string]string{
 		"coaching":     "Личное ведение",
 		"consultation": "Консультация",

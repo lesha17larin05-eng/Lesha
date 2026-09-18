@@ -311,9 +311,9 @@ func TestPaidCheckoutTestModeReturnsFakeURL(t *testing.T) {
 	}
 }
 
-// TestCheckoutTariffPresets — для курсов с пресетами тарифов (zdorovaya-spina)
+// TestCheckoutTariffPresets – для курсов с пресетами тарифов (zdorovaya-spina)
 // Checkout берёт цену/название из tariffPresets, а не из courses.price_rub.
-// Без ?tariff — 400 tariff_required; неизвестный tariff — 400 bad_tariff.
+// Без ?tariff – 400 tariff_required; неизвестный tariff – 400 bad_tariff.
 func TestCheckoutTariffPresets(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
@@ -527,7 +527,7 @@ func TestQuickSignupRejectsBadEmail(t *testing.T) {
 
 func TestQuickSignupRequiresCSRF(t *testing.T) {
 	srv, _, _ := setup(t)
-	// don't warm up CSRF — bypass by raw request
+	// don't warm up CSRF – bypass by raw request
 	req, _ := http.NewRequest("POST", srv.URL+"/api/auth/quick-signup",
 		bytes.NewReader([]byte(`{"email":"x@y.ru"}`)))
 	req.Header.Set("Content-Type", "application/json")
@@ -713,7 +713,7 @@ func TestAdminCRUDLessonsFlow(t *testing.T) {
 	_ = json.Unmarshal(body, &modResp)
 	modID, _ := uuid.Parse(modResp["id"])
 
-	// PATCH module — rename + reorder
+	// PATCH module – rename + reorder
 	r, body = c.do("PATCH", "/api/admin/modules/"+modID.String(), map[string]any{
 		"title": "M1-renamed", "sort_order": 7,
 	})
@@ -724,7 +724,7 @@ func TestAdminCRUDLessonsFlow(t *testing.T) {
 	if len(mods) != 1 || mods[0].Title != "M1-renamed" || mods[0].SortOrder != 7 {
 		t.Fatalf("module not updated: %+v", mods)
 	}
-	// PATCH module — empty title rejected
+	// PATCH module – empty title rejected
 	r, _ = c.do("PATCH", "/api/admin/modules/"+modID.String(), map[string]any{"title": "", "sort_order": 1})
 	if r.StatusCode != 400 {
 		t.Fatalf("expected 400 for empty title, got %d", r.StatusCode)
@@ -802,7 +802,7 @@ func TestAdminLessonEndpointsForbiddenForUser(t *testing.T) {
 
 // CourseFile отдаёт PDF-материалы курса только пользователям с enrollment.
 // Проверяем: 401 без логина, 403 без enrollment, 200 с enrollment, 404 для
-// неизвестного файла. Закрытие /files/*.pdf — критичная safety-правка.
+// неизвестного файла. Закрытие /files/*.pdf – критичная safety-правка.
 func TestCourseFileRequiresEnrollment(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
@@ -873,7 +873,7 @@ func TestCourseFileRequiresEnrollment(t *testing.T) {
 }
 
 // 152-ФЗ: без согласия на обработку ПД регистрация невозможна.
-// Бэк должен возвращать 400 consent_pd_required, а в БД — никакого user не создавать.
+// Бэк должен возвращать 400 consent_pd_required, а в БД – никакого user не создавать.
 func TestRegisterRequiresConsentPD(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
@@ -912,8 +912,8 @@ func TestQuickSignupRequiresConsentPD(t *testing.T) {
 }
 
 // После успешной регистрации в users.consent_pd_at должна стоять отметка времени.
-// consent_marketing_at — NULL, если маркетинговое согласие не дано.
-// При consent_marketing=true — заполнено.
+// consent_marketing_at – NULL, если маркетинговое согласие не дано.
+// При consent_marketing=true – заполнено.
 func TestRegisterSavesConsentTimestamps(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)
@@ -963,7 +963,7 @@ func TestRegisterSavesConsentTimestamps(t *testing.T) {
 	}
 }
 
-// Helper: открывает второй pgxpool — нужен в тестах, которые делают прямые SELECT'ы
+// Helper: открывает второй pgxpool – нужен в тестах, которые делают прямые SELECT'ы
 // поверх пула из setup(), который не возвращается наружу.
 func pgConnFromEnv(t *testing.T) *pgxpool.Pool {
 	t.Helper()
@@ -981,9 +981,9 @@ func pgConnFromEnv(t *testing.T) *pgxpool.Pool {
 	return pool
 }
 
-// TestLeadsFlow — публичная заявка + админский флоу.
+// TestLeadsFlow – публичная заявка + админский флоу.
 // POST /api/leads: валидация (имя/контакт/согласие), 201 при успехе.
-// GET/PATCH /api/admin/leads — только для admin; смена статуса пишется.
+// GET/PATCH /api/admin/leads – только для admin; смена статуса пишется.
 func TestLeadsFlow(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
@@ -1056,7 +1056,7 @@ func TestLeadsFlow(t *testing.T) {
 	}
 }
 
-// TestAdminUserCard — карточка пользователя в админке: профиль с согласиями,
+// TestAdminUserCard – карточка пользователя в админке: профиль с согласиями,
 // доступы с прогрессом по урокам, заказы. Доступна только админу.
 func TestAdminUserCard(t *testing.T) {
 	srv, repo, _ := setup(t)
@@ -1123,7 +1123,7 @@ func TestAdminUserCard(t *testing.T) {
 	}
 }
 
-// TestAdminUsersFilters — фильтры списка пользователей: по курсу и по
+// TestAdminUsersFilters – фильтры списка пользователей: по курсу и по
 // статусу подтверждения email.
 func TestAdminUsersFilters(t *testing.T) {
 	srv, repo, _ := setup(t)
@@ -1168,13 +1168,13 @@ func TestAdminUsersFilters(t *testing.T) {
 	}
 }
 
-// TestAdminUsersExportCSV — CSV-выгрузка для рассылок: только пользователи
+// TestAdminUsersExportCSV – CSV-выгрузка для рассылок: только пользователи
 // с согласием на маркетинг, admin-only, корректный Content-Type.
 func TestAdminUsersExportCSV(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
 
-	// A согласен на рассылку, B — нет
+	// A согласен на рассылку, B – нет
 	ca := newClient(srv)
 	ca.do("POST", "/api/auth/register", map[string]any{
 		"email": "exp-a@b.ru", "password": "password123", "name": "Экспортов",
@@ -1211,7 +1211,7 @@ func TestAdminUsersExportCSV(t *testing.T) {
 	}
 }
 
-// TestAdminActivity — журнал занятий: admin-only, показывает касание урока
+// TestAdminActivity – журнал занятий: admin-only, показывает касание урока
 // с email/названиями, фильтр по курсу работает.
 func TestAdminActivity(t *testing.T) {
 	srv, repo, _ := setup(t)
@@ -1223,7 +1223,7 @@ func TestAdminActivity(t *testing.T) {
 	uc := newClient(srv)
 	uc.do("POST", "/api/auth/register", map[string]any{"email": "act@b.ru", "password": "password123", "name": "Журналов", "consent_pd": true})
 	uc.do("POST", "/api/auth/login", map[string]string{"email": "act@b.ru", "password": "password123"})
-	// просмотр через реальный эндпоинт — он пишет и прогресс, и журнал сессий
+	// просмотр через реальный эндпоинт – он пишет и прогресс, и журнал сессий
 	r0, body0 := uc.do("POST", "/api/lessons/"+lid.String()+"/progress",
 		map[string]any{"completed": true, "last_position_sec": 300})
 	if r0.StatusCode != 200 {
@@ -1247,14 +1247,14 @@ func TestAdminActivity(t *testing.T) {
 		!strings.Contains(s, "\"completed\":true") || !strings.Contains(s, "started_at") {
 		t.Fatalf("activity: %d %s", r.StatusCode, s)
 	}
-	// фильтр по несуществующему курсу — пусто
+	// фильтр по несуществующему курсу – пусто
 	r, body = adm.do("GET", "/api/admin/activity?course=no-such", nil)
 	if r.StatusCode != 200 || strings.Contains(string(body), "act@b.ru") {
 		t.Fatalf("activity filter: %d %s", r.StatusCode, body)
 	}
 }
 
-// TestResendVerification — повторное письмо подтверждения: 200 и новый токен
+// TestResendVerification – повторное письмо подтверждения: 200 и новый токен
 // для неподтверждённого; для неизвестного email тоже 200 (не раскрываем базу).
 func TestResendVerification(t *testing.T) {
 	srv, repo, _ := setup(t)
@@ -1285,13 +1285,13 @@ func TestResendVerification(t *testing.T) {
 	}
 }
 
-// TestSiteSettings — флаги сайта (salut_visible): публичное чтение,
+// TestSiteSettings – флаги сайта (salut_visible): публичное чтение,
 // изменение только админом, белый список ключей, запись в audit_log.
 func TestSiteSettings(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
 
-	// публичное чтение без авторизации, дефолт — выключено
+	// публичное чтение без авторизации, дефолт – выключено
 	c := newClient(srv)
 	r, body := c.do("GET", "/api/settings", nil)
 	if r.StatusCode != 200 {
@@ -1353,7 +1353,7 @@ func TestSiteSettings(t *testing.T) {
 	}
 }
 
-// TestUnsubscribe — отписка по ссылке из письма: подпись обязательна,
+// TestUnsubscribe – отписка по ссылке из письма: подпись обязательна,
 // согласие на маркетинг снимается, согласие на обработку ПД остаётся,
 // one-click POST работает без CSRF-заголовка (его шлёт почтовый клиент).
 func TestUnsubscribe(t *testing.T) {
@@ -1378,7 +1378,7 @@ func TestUnsubscribe(t *testing.T) {
 		t.Fatal("согласие на маркетинг должно стоять после регистрации")
 	}
 
-	// редиректы не проходим — проверяем сам ответ 303
+	// редиректы не проходим – проверяем сам ответ 303
 	noRedirect := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
 		return http.ErrUseLastResponse
 	}}
@@ -1391,7 +1391,7 @@ func TestUnsubscribe(t *testing.T) {
 		return resp
 	}
 
-	// чужая/подделанная подпись — согласие на месте
+	// чужая/подделанная подпись – согласие на месте
 	r := get("/api/unsubscribe?u=" + u.ID.String() + "&t=deadbeef")
 	if r.StatusCode != 303 {
 		t.Fatalf("ожидал редирект, получил %d", r.StatusCode)
@@ -1430,7 +1430,7 @@ func TestUnsubscribe(t *testing.T) {
 		t.Fatalf("one-click POST без CSRF должен проходить, получил %d", resp.StatusCode)
 	}
 
-	// one-click с плохой подписью — 400
+	// one-click с плохой подписью – 400
 	req, _ = http.NewRequest("POST", srv.URL+"/api/unsubscribe?u="+u.ID.String()+"&t=nope", nil)
 	resp2, err := (&http.Client{}).Do(req)
 	if err != nil {
@@ -1442,7 +1442,7 @@ func TestUnsubscribe(t *testing.T) {
 	}
 }
 
-// TestEmailPixel — счётчик открытий писем: картинка отдаётся всегда,
+// TestEmailPixel – счётчик открытий писем: картинка отдаётся всегда,
 // но открытие засчитывается только с валидной подписью.
 func TestEmailPixel(t *testing.T) {
 	srv, repo, cfg := setup(t)
@@ -1484,13 +1484,13 @@ func TestEmailPixel(t *testing.T) {
 	if opens() != 1 {
 		t.Fatalf("открытие должно быть записано, в базе %d", opens())
 	}
-	// повторное открытие — вторая строка (перечитал письмо)
+	// повторное открытие – вторая строка (перечитал письмо)
 	c.do("GET", "/api/pixel.gif?u="+u.ID.String()+"&c=test&t="+tok, nil)
 	if opens() != 2 {
 		t.Fatalf("повторное открытие должно писаться отдельно, в базе %d", opens())
 	}
 
-	// сводка — только админу
+	// сводка – только админу
 	if r, _ := c.do("GET", "/api/admin/email-opens", nil); r.StatusCode == 200 {
 		t.Fatal("сводка должна быть закрыта от обычного пользователя")
 	}
@@ -1506,7 +1506,7 @@ func TestEmailPixel(t *testing.T) {
 	}
 }
 
-// TestProdamusWebhookOrderNumCarriesUUID — реальный формат Продамуса:
+// TestProdamusWebhookOrderNumCarriesUUID – реальный формат Продамуса:
 // в `order_id` приходит ЕГО внутренний номер, а наш идентификатор заказа
 // возвращается в `order_num`. Из-за этого оплаты не привязывались к заказам
 // и доступ приходилось выдавать вручную (баг найден 17.09.2026).
@@ -1547,7 +1547,7 @@ func TestProdamusWebhookOrderNumCarriesUUID(t *testing.T) {
 	}
 }
 
-// TestProdamusWebhookHumanOrderNum — второй формат: наш человекочитаемый
+// TestProdamusWebhookHumanOrderNum – второй формат: наш человекочитаемый
 // номер заказа (orders.order_num) в поле order_num.
 func TestProdamusWebhookHumanOrderNum(t *testing.T) {
 	srv, repo, cfg := setup(t)
@@ -1580,7 +1580,7 @@ func TestProdamusWebhookHumanOrderNum(t *testing.T) {
 	}
 }
 
-// TestProdamusWebhookNoOrderStaysSafe — оплата по ссылке, выставленной вручную:
+// TestProdamusWebhookNoOrderStaysSafe – оплата по ссылке, выставленной вручную:
 // заказа нет, ничего не выдаём, вебхук помечаем как no_order.
 func TestProdamusWebhookNoOrderStaysSafe(t *testing.T) {
 	srv, repo, cfg := setup(t)
@@ -1617,14 +1617,14 @@ func TestProdamusWebhookNoOrderStaysSafe(t *testing.T) {
 	}
 }
 
-// TestCampaignsFlow — рассылки из админки: группы считаются только по
+// TestCampaignsFlow – рассылки из админки: группы считаются только по
 // согласившимся, черновик фиксирует получателей, старт/пауза меняют статус,
 // а отписавшийся после старта в очередь не попадает.
 func TestCampaignsFlow(t *testing.T) {
 	srv, repo, _ := setup(t)
 	ctx := context.Background()
 
-	// A и B согласны на рассылку, C — нет
+	// A и B согласны на рассылку, C – нет
 	for _, e := range []string{"c-a@b.ru", "c-b@b.ru"} {
 		c := newClient(srv)
 		c.do("POST", "/api/auth/register", map[string]any{
@@ -1742,7 +1742,7 @@ func TestCampaignsFlow(t *testing.T) {
 	}
 }
 
-// TestSubscribeFlow — согласие на рассылку, которого раньше не было:
+// TestSubscribeFlow – согласие на рассылку, которого раньше не было:
 // по ссылке из письма и галочкой в кабинете. Проверяем, что чужой адрес
 // подписать нельзя и что дата первого согласия не переписывается.
 func TestSubscribeFlow(t *testing.T) {
@@ -1825,7 +1825,7 @@ func TestSubscribeFlow(t *testing.T) {
 	}
 }
 
-// TestServiceSegment — сервисная группа: люди без согласия, но с платным
+// TestServiceSegment – сервисная группа: люди без согласия, но с платным
 // курсом. Их можно поставить в очередь (письмо про их курс), а в обычные
 // группы они не попадают.
 func TestServiceSegment(t *testing.T) {
@@ -1853,7 +1853,7 @@ func TestServiceSegment(t *testing.T) {
 	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
 	adm.do("POST", "/api/auth/login", map[string]string{"email": "srv-adm@b.ru", "password": "password123"})
 
-	// в обычной группе его нет, в сервисной — есть
+	// в обычной группе его нет, в сервисной – есть
 	_, body := adm.do("GET", "/api/admin/segments", nil)
 	var resp struct {
 		Segments []struct {
@@ -1900,6 +1900,6 @@ func TestServiceSegment(t *testing.T) {
 		t.Fatalf("не тот адресат: %s", rec.Email)
 	}
 	if rec.Subscribed {
-		t.Fatal("человек не подписан — в письме должна быть кнопка подписки, а не отписки")
+		t.Fatal("человек не подписан – в письме должна быть кнопка подписки, а не отписки")
 	}
 }

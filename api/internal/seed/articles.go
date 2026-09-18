@@ -173,7 +173,7 @@ func SeedArticles(ctx context.Context, repo *db.Repo, authorID uuid.UUID) error 
 
 		existing, err := repo.GetArticleBySlug(ctx, slug)
 		if err != nil {
-			// New article — create it.
+			// New article – create it.
 			now := time.Now().Add(-time.Duration(i) * time.Hour)
 			_, err = repo.CreateArticle(ctx, db.ArticleInput{
 				Slug:           slug,
@@ -193,7 +193,7 @@ func SeedArticles(ctx context.Context, repo *db.Repo, authorID uuid.UUID) error 
 			}
 			created++
 		} else {
-			// Existing article — update content, reading time, sort order.
+			// Existing article – update content, reading time, sort order.
 			// Prefer the mapped cover; fall back to whatever is already stored.
 			if coverURL == "" {
 				coverURL = existing.CoverImageURL

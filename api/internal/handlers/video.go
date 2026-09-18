@@ -17,7 +17,7 @@ import (
 	"github.com/leshalarin/api/internal/video"
 )
 
-// AdminUploadVideo — multipart upload, max 5GB.
+// AdminUploadVideo – multipart upload, max 5GB.
 func (a *App) AdminUploadVideo(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(64 << 20); err != nil {
 		writeErr(w, 400, "bad_form")
@@ -92,7 +92,7 @@ func trimNewline(b []byte) []byte {
 	return b
 }
 
-// VideoPlayback — issues a short-lived signed token bound to the user.
+// VideoPlayback – issues a short-lived signed token bound to the user.
 func (a *App) VideoPlayback(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	vid, err := uuid.Parse(idStr)
@@ -133,7 +133,7 @@ func (a *App) VideoPlayback(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// InternalVideoAuth — called by nginx auth_request.
+// InternalVideoAuth – called by nginx auth_request.
 // Returns 200 with X-Accel-Redirect to /protected-videos/{id}/{file}.
 func (a *App) InternalVideoAuth(w http.ResponseWriter, r *http.Request) {
 	orig := r.Header.Get("X-Original-URI")

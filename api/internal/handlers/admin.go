@@ -43,8 +43,8 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	if page < 1 {
 		page = 1
 	}
-	// Фильтры: ?course=<slug> — только с доступом к курсу;
-	// ?verified=1|0 — по статусу подтверждения email; ?sort=last_seen.
+	// Фильтры: ?course=<slug> – только с доступом к курсу;
+	// ?verified=1|0 – по статусу подтверждения email; ?sort=last_seen.
 	course := r.URL.Query().Get("course")
 	var verified *bool
 	switch r.URL.Query().Get("verified") {
@@ -75,7 +75,7 @@ func (a *App) AdminUsers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// AdminUser — полная карточка пользователя: профиль + согласия (152-ФЗ) +
+// AdminUser – полная карточка пользователя: профиль + согласия (152-ФЗ) +
 // доступы с прогрессом и поурочной детализацией + заказы.
 func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
@@ -95,7 +95,7 @@ func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 	for _, e := range enrolls {
 		total, done, _ := a.Repo.CourseProgress(r.Context(), id, e.CourseID)
 		lessons, _ := a.Repo.UserCourseLessons(r.Context(), id, e.CourseID)
-		// последняя активность по курсу — самый свежий updated_at из уроков
+		// последняя активность по курсу – самый свежий updated_at из уроков
 		var lastActivity *time.Time
 		for _, l := range lessons {
 			if l.UpdatedAt != nil && (lastActivity == nil || l.UpdatedAt.After(*lastActivity)) {
@@ -194,7 +194,7 @@ func (a *App) AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 403, "cannot_delete_admin")
 		return
 	}
-	// Проверка: есть ли оплаченные заказы — таких пользователей не удаляем.
+	// Проверка: есть ли оплаченные заказы – таких пользователей не удаляем.
 	var hasPaid bool
 	if err := a.Repo.Pool.QueryRow(r.Context(),
 		`SELECT EXISTS(SELECT 1 FROM orders WHERE user_id=$1 AND status='paid')`, uid).Scan(&hasPaid); err == nil && hasPaid {
@@ -556,7 +556,7 @@ func (a *App) AdminAuditLog(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
-// grantByEmailReq — тело запроса для массовой выдачи доступа по email.
+// grantByEmailReq – тело запроса для массовой выдачи доступа по email.
 // Поддерживает 1+ email; для каждого создаётся юзер (если его нет),
 // выдаётся enrollment в курс, отправляется письмо с reset-ссылкой
 // (для новых) или с уведомлением о доступе (для существующих).
@@ -568,11 +568,11 @@ type grantByEmailResult struct {
 	Email     string `json:"email"`
 	Status    string `json:"status"`               // ok | already_enrolled | invalid_email | error
 	IsNewUser bool   `json:"is_new_user"`          // создали нового юзера
-	InviteURL string `json:"invite_url,omitempty"` // для новых — ссылка установки пароля
+	InviteURL string `json:"invite_url,omitempty"` // для новых – ссылка установки пароля
 	Error     string `json:"error,omitempty"`
 }
 
-// AdminGrantByEmail — массовая выдача доступа к курсу по списку email.
+// AdminGrantByEmail – массовая выдача доступа к курсу по списку email.
 // Для каждого email: создаёт юзера если не было, выдаёт enrollment в курс,
 // шлёт приветственное письмо. Идемпотентно: повторный вызов не сломает уже
 // выданный доступ. Возвращает per-email статус, чтобы UI показал результат.
@@ -606,12 +606,12 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 		// Найдём юзера или создадим нового
 		u, err := a.Repo.GetUserByEmail(r.Context(), email)
 		var uid uuid.UUID
-		// needsInvite — пароль не установлен, надо прислать reset-ссылку
+		// needsInvite – пароль не установлен, надо прислать reset-ссылку
 		// (актуально и для новых, и для тех, кого создали ранее через SQL).
 		needsInvite := false
 		if errors.Is(err, db.ErrNotFound) {
-			// Создаём с unusable-паролем — реальный пароль юзер установит по reset-ссылке.
-			// Согласие на ПД считаем выставленным админом от имени пользователя — без
+			// Создаём с unusable-паролем – реальный пароль юзер установит по reset-ссылке.
+			// Согласие на ПД считаем выставленным админом от имени пользователя – без
 			// этого по 152-ФЗ хранение PII запрещено. Это решение Алексея как контролёра данных.
 			uid, err = a.Repo.CreateUser(r.Context(), email, "!unusable!"+uuid.New().String(), "", "user")
 			if err != nil {
@@ -620,7 +620,7 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 				out = append(out, res)
 				continue
 			}
-			// email_verified=true, потому что доступ выдаёт админ — email доверенный.
+			// email_verified=true, потому что доступ выдаёт админ – email доверенный.
 			_ = a.Repo.MarkEmailVerified(r.Context(), uid)
 			_ = a.Repo.SaveConsent(r.Context(), uid, true, false)
 			res.IsNewUser = true
@@ -632,7 +632,7 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 			continue
 		} else {
 			uid = u.ID
-			// Если у уже существующего юзера unusable-пароль — он ещё не активировал
+			// Если у уже существующего юзера unusable-пароль – он ещё не активировал
 			// аккаунт, ему тоже нужно прислать reset-ссылку, иначе войти не сможет.
 			if strings.HasPrefix(u.PasswordHash, "!unusable!") {
 				needsInvite = true
@@ -640,7 +640,7 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Выдаём enrollment (идемпотентно, ON CONFLICT DO NOTHING).
-		// Проверим: была ли запись раньше — для статуса в ответе.
+		// Проверим: была ли запись раньше – для статуса в ответе.
 		existed, _ := a.Repo.HasEnrollment(r.Context(), uid, c.ID)
 		if err := a.Repo.Grant(r.Context(), uid, c.ID, "admin", &adminID); err != nil {
 			res.Status = "error"
@@ -657,9 +657,9 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 			res.Status = "ok"
 		}
 
-		// Письмо отправляем ВСЕГДА — пользователь должен узнать о доступе.
+		// Письмо отправляем ВСЕГДА – пользователь должен узнать о доступе.
 		// Если пароль не установлен (новый юзер или ранее созданный через SQL/массовый
-		// импорт) — добавляем reset-ссылку, иначе только уведомление.
+		// импорт) – добавляем reset-ссылку, иначе только уведомление.
 		var body string
 		subject := "Доступ к курсу «" + c.Title + "» открыт"
 		if needsInvite {
@@ -670,7 +670,7 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 			body = "<p>Здравствуйте!</p>" +
 				"<p>Алексей Ларин открыл вам доступ к курсу <b>«" + c.Title + "»</b> на сайте leshalarin.ru.</p>" +
 				"<p>Установите пароль по ссылке (живёт 7 дней):<br><a href=\"" + inviteURL + "\">" + inviteURL + "</a></p>" +
-				"<p>Логин — этот email. После установки пароля курс будет доступен в кабинете: " +
+				"<p>Логин – этот email. После установки пароля курс будет доступен в кабинете: " +
 				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
 		} else {
 			body = "<p>Здравствуйте!</p>" +
@@ -678,7 +678,7 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 				"<p>Курс уже доступен в вашем кабинете: " +
 				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
 		}
-		// Предложение подписаться — для тех, у кого согласия ещё нет.
+		// Предложение подписаться – для тех, у кого согласия ещё нет.
 		// Само нажатие и будет согласием (см. handlers/subscribe.go).
 		if subscribed, _ := a.Repo.HasMarketingConsent(r.Context(), uid); !subscribed {
 			sub := a.subscribeURL(uid)
@@ -697,9 +697,9 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 	}})
 }
 
-// AdminUsersExport — CSV-выгрузка подписчиков для сервиса рассылок.
+// AdminUsersExport – CSV-выгрузка подписчиков для сервиса рассылок.
 // Только пользователи с согласием на рассылку; фильтры как у списка.
-// UTF-8 BOM — чтобы Excel корректно открывал кириллицу.
+// UTF-8 BOM – чтобы Excel корректно открывал кириллицу.
 func (a *App) AdminUsersExport(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("search")
 	course := r.URL.Query().Get("course")
@@ -732,7 +732,7 @@ func (a *App) AdminUsersExport(w http.ResponseWriter, r *http.Request) {
 	cw.Flush()
 }
 
-// AdminActivity — журнал занятий: кто какой урок смотрел/прошёл и когда.
+// AdminActivity – журнал занятий: кто какой урок смотрел/прошёл и когда.
 func (a *App) AdminActivity(w http.ResponseWriter, r *http.Request) {
 	course := r.URL.Query().Get("course")
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))

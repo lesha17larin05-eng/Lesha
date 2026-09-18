@@ -47,7 +47,7 @@ func (a *App) GetCourse(w http.ResponseWriter, r *http.Request) {
 	}
 	modules, _ := a.Repo.ListModules(r.Context(), c.ID)
 	lessons, _ := a.Repo.ListLessons(r.Context(), c.ID)
-	// for paid courses without enrollment — strip content_md
+	// for paid courses without enrollment – strip content_md
 	visible := make([]*db.Lesson, 0, len(lessons))
 	for _, l := range lessons {
 		if c.Kind == "paid" && !enrolled && !l.IsPreview {
@@ -121,7 +121,7 @@ func (a *App) PostProgress(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
-	// Журнал просмотров (сессии) — best-effort, ошибка не ломает прогресс.
+	// Журнал просмотров (сессии) – best-effort, ошибка не ломает прогресс.
 	_ = a.Repo.TouchLessonActivity(r.Context(), uid, lid, in.Completed, in.LastPositionSec)
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
@@ -149,7 +149,7 @@ func (a *App) MyCourses(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
-// EnrollFree — instant enrollment for free courses.
+// EnrollFree – instant enrollment for free courses.
 func (a *App) EnrollFree(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 	c, err := a.Repo.GetCourseBySlug(r.Context(), slug)
@@ -165,8 +165,8 @@ func (a *App) EnrollFree(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
 
-// MeContinue — последняя учебная активность текущего пользователя
-// для блока «Продолжить с того же места» в кабинете. 204 — активности нет.
+// MeContinue – последняя учебная активность текущего пользователя
+// для блока «Продолжить с того же места» в кабинете. 204 – активности нет.
 func (a *App) MeContinue(w http.ResponseWriter, r *http.Request) {
 	uid, _ := middleware.UserID(r.Context())
 	act, err := a.Repo.LastActivityForUser(r.Context(), uid)

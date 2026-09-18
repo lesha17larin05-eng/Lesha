@@ -2,6 +2,7 @@ package email
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 )
 
 // Sender отправляет HTML-письма через SMTP.
-// Порт 465 — implicit TLS (SMTPS); 587/25 — STARTTLS.
+// Порт 465 – implicit TLS (SMTPS); 587/25 – STARTTLS.
 type Sender struct {
 	Host, Port, User, Pass, From string
 }
@@ -29,14 +30,14 @@ func (s *Sender) Send(to, subject, body string) error {
 	return s.SendWithHeaders(to, subject, body, nil)
 }
 
-// SendWithHeaders — то же самое, но с дополнительными заголовками
+// SendWithHeaders – то же самое, но с дополнительными заголовками
 // (например, List-Unsubscribe для писем рассылки).
 func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]string) error {
 	if s.Host == "" {
 		slog.Info("email skipped (no SMTP configured)", "to", to, "subject", subject)
 		return nil
 	}
-	// RFC 2606 reserved domains/TLDs — гарантированно никуда не доставятся,
+	// RFC 2606 reserved domains/TLDs – гарантированно никуда не доставятся,
 	// а попытка обернётся bounce'ом в inbox отправителя. Не шлём.
 	if isReservedTestDomain(to) {
 		slog.Info("email skipped (test domain)", "to", to, "subject", subject)
@@ -48,7 +49,7 @@ func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]stri
 	var c *smtp.Client
 
 	if s.Port == "465" {
-		// Implicit TLS (SMTPS) — соединение уже в TLS с первого байта.
+		// Implicit TLS (SMTPS) – соединение уже в TLS с первого байта.
 		conn, err := tls.Dial("tcp", addr, &tls.Config{ServerName: s.Host})
 		if err != nil {
 			return fmt.Errorf("smtp tls dial %s: %w", addr, err)
@@ -92,10 +93,10 @@ func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]stri
 	}
 
 	// Корректные заголовки RFC 5322 / 2047:
-	// - From: display name в B-encoding если есть не-ASCII; address — RFC 5321
+	// - From: display name в B-encoding если есть не-ASCII; address – RFC 5321
 	// - Subject: тоже Q-encoded если не-ASCII
 	// - Date в формате RFC 1123Z (требуется для проверки спам-фильтров)
-	// - Message-ID — уникальный, иначе антиспам недоволен
+	// - Message-ID – уникальный, иначе антиспам недоволен
 	// - Reply-To = адрес отправителя (по умолчанию)
 	fromHeader := encodeAddress(s.From, s.User)
 	domain := domainFromEmail(s.User)
@@ -107,14 +108,16 @@ func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]stri
 		"Subject: " + mime.QEncoding.Encode("UTF-8", subject) + "\r\n" +
 		"MIME-Version: 1.0\r\n" +
 		"Content-Type: text/html; charset=UTF-8\r\n" +
-		"Content-Transfer-Encoding: 8bit\r\n"
+		// base64 – чтобы длинные строки HTML не резались почтовым сервером
+		// по лимиту в 998 символов (иначе перенос попадает внутрь тега).
+		"Content-Transfer-Encoding: base64\r\n"
 	for k, v := range extra {
 		if k == "" || v == "" {
 			continue
 		}
 		msg += k + ": " + v + "\r\n"
 	}
-	msg += "\r\n" + body
+	msg += "\r\n" + base64Wrap(body)
 
 	if _, err = fmt.Fprint(wc, msg); err != nil {
 		return fmt.Errorf("smtp write body: %w", err)
@@ -126,7 +129,7 @@ func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]stri
 }
 
 // encodeAddress кодирует From-заголовок: "Имя <addr@host>"
-// Если name содержит не-ASCII — кодирует через RFC 2047 B-encoding,
+// Если name содержит не-ASCII – кодирует через RFC 2047 B-encoding,
 // чтобы Gmail/Yandex не ругались на RFC 5322 non-compliant header.
 func encodeAddress(from, fallbackAddr string) string {
 	addr, err := mail.ParseAddress(from)
@@ -137,12 +140,12 @@ func encodeAddress(from, fallbackAddr string) string {
 	if addr.Name == "" {
 		return addr.Address
 	}
-	// (mime.WordEncoder) Encode сам решит — Q или B, и оставит ASCII как есть.
+	// (mime.WordEncoder) Encode сам решит – Q или B, и оставит ASCII как есть.
 	encoded := mime.BEncoding.Encode("UTF-8", addr.Name)
 	return encoded + " <" + addr.Address + ">"
 }
 
-// isReservedTestDomain — true если адрес попадает в зарезервированные RFC 2606
+// isReservedTestDomain – true если адрес попадает в зарезервированные RFC 2606
 // домены/TLD (example.com/.org/.net, .example, .test, .invalid, .localhost)
 // или явные одноразовые алиасы.
 func isReservedTestDomain(addr string) bool {
@@ -185,4 +188,20 @@ func (s *Sender) Async(to, subject, body string) {
 			slog.Error("email send failed", "err", err, "to", to)
 		}
 	}()
+}
+
+// base64Wrap кодирует тело письма в base64 строками по 76 символов,
+// как требует RFC 2045.
+func base64Wrap(body string) string {
+	enc := base64.StdEncoding.EncodeToString([]byte(body))
+	var sb strings.Builder
+	for i := 0; i < len(enc); i += 76 {
+		end := i + 76
+		if end > len(enc) {
+			end = len(enc)
+		}
+		sb.WriteString(enc[i:end])
+		sb.WriteString("\r\n")
+	}
+	return sb.String()
 }

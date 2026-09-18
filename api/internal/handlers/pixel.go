@@ -13,9 +13,9 @@ import (
 // Счётчик открытий писем рассылки.
 //
 // В письмо вшита прозрачная картинка 1×1 с подписанной ссылкой. Почтовый
-// клиент загружает её при открытии письма — так мы понимаем, дошло письмо
+// клиент загружает её при открытии письма – так мы понимаем, дошло письмо
 // до человека или лежит в спаме. Многие клиенты картинки блокируют, поэтому
-// цифра открытий — нижняя граница, а не точное число.
+// цифра открытий – нижняя граница, а не точное число.
 //
 // GET /api/pixel.gif?u=<uuid>&c=<кампания>&t=<подпись>
 //
@@ -27,7 +27,7 @@ const pixelPrefix = "pixel:"
 var pixelGIF, _ = base64.StdEncoding.DecodeString(
 	"R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
 
-// PixelToken — подпись для счётчика открытий конкретного письма.
+// PixelToken – подпись для счётчика открытий конкретного письма.
 func PixelToken(secret, campaign, userID string) string {
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write([]byte(pixelPrefix + campaign + ":" + userID))
@@ -54,7 +54,7 @@ func (a *App) EmailPixel(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(pixelGIF)
 }
 
-// AdminEmailOpens — сводка по рассылкам для админки.
+// AdminEmailOpens – сводка по рассылкам для админки.
 func (a *App) AdminEmailOpens(w http.ResponseWriter, r *http.Request) {
 	rows, err := a.Repo.EmailOpenStats(r.Context())
 	if err != nil {

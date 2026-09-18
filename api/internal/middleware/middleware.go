@@ -142,7 +142,7 @@ func CSRF(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if c, err := r.Cookie("csrf"); err != nil || c.Value == "" {
 			tok := randHex(16)
-			// Secure-флаг ставим, если запрос фактически по HTTPS —
+			// Secure-флаг ставим, если запрос фактически по HTTPS –
 			// напрямую или через nginx/Cloudflare (X-Forwarded-Proto).
 			secure := r.TLS != nil
 			if !secure {
@@ -158,7 +158,7 @@ func CSRF(next http.Handler) http.Handler {
 			http.SetCookie(w, &http.Cookie{
 				Name: "csrf", Value: tok, Path: "/",
 				SameSite: http.SameSiteLaxMode, Secure: secure,
-				MaxAge: 60 * 60 * 24 * 30, // 30 дней — иначе session-cookie умирает между визитами
+				MaxAge: 60 * 60 * 24 * 30, // 30 дней – иначе session-cookie умирает между визитами
 			})
 		}
 		switch r.Method {
@@ -167,8 +167,8 @@ func CSRF(next http.Handler) http.Handler {
 			return
 		}
 		// allow webhook & internal endpoints to bypass
-		// /api/unsubscribe — «отписка в один клик» (RFC 8058): POST шлёт
-		// почтовый клиент, cookie у него нет. Защита — HMAC-подпись в ссылке.
+		// /api/unsubscribe – «отписка в один клик» (RFC 8058): POST шлёт
+		// почтовый клиент, cookie у него нет. Защита – HMAC-подпись в ссылке.
 		if strings.HasPrefix(r.URL.Path, "/api/webhooks/") || strings.HasPrefix(r.URL.Path, "/api/internal/") ||
 			r.URL.Path == "/api/unsubscribe" || r.URL.Path == "/api/subscribe" {
 			next.ServeHTTP(w, r)

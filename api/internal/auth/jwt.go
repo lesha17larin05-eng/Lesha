@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Длинные сессии: access живёт 7 дней, refresh — 60 дней.
+// Длинные сессии: access живёт 7 дней, refresh – 60 дней.
 // Так Алексею не приходится перелогиниваться каждые 15 минут.
 const AccessTTL = 7 * 24 * time.Hour
 const RefreshTTL = 60 * 24 * time.Hour

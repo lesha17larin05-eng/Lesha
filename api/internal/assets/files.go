@@ -2,7 +2,7 @@
 // (course materials, etc.) and are served to authorised users only.
 //
 // PDF-материалы курсов попадают сюда из репо и отдаются через
-// защищённый эндпоинт `/api/courses/:slug/files/:name` — только тем
+// защищённый эндпоинт `/api/courses/:slug/files/:name` – только тем
 // пользователям, у кого есть enrollment на соответствующий курс.
 package assets
 
@@ -19,7 +19,7 @@ var courseFiles embed.FS
 func CourseFS() fs.FS {
 	sub, err := fs.Sub(courseFiles, "courses")
 	if err != nil {
-		// embed paths above are static — невозможен здесь по построению
+		// embed paths above are static – невозможен здесь по построению
 		panic(err)
 	}
 	return sub

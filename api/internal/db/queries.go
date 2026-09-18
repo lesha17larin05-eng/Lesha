@@ -70,7 +70,7 @@ func (r *Repo) MarkEmailVerified(ctx context.Context, userID uuid.UUID) error {
 // SaveConsent сохраняет факт согласий пользователя на момент регистрации.
 // pd=true → consent_pd_at=now() (обязательное по 152-ФЗ).
 // marketing=true → consent_marketing_at=now(); marketing=false → NULL (отзыв или нет согласия).
-// Никогда не «сбрасывает» уже выставленный consent_pd_at в NULL — оно держится для аудита.
+// Никогда не «сбрасывает» уже выставленный consent_pd_at в NULL – оно держится для аудита.
 func (r *Repo) SaveConsent(ctx context.Context, userID uuid.UUID, pd, marketing bool) error {
 	var pdSQL string
 	if pd {
@@ -102,11 +102,11 @@ func (r *Repo) TouchLastSeen(ctx context.Context, userID uuid.UUID) {
 	_, _ = r.Pool.Exec(ctx, `UPDATE users SET last_seen_at=now() WHERE id=$1 AND (last_seen_at IS NULL OR last_seen_at < now() - interval '60 seconds')`, userID)
 }
 
-// ListUsers — список пользователей для админки с фильтрами:
-//   - search — подстрока в email/имени/телефоне;
-//   - courseSlug — только с доступом к курсу (пусто = все);
-//   - verified — nil = все, true/false = по статусу подтверждения email;
-//   - sort — "created" (по умолчанию, новые сверху) или "last_seen".
+// ListUsers – список пользователей для админки с фильтрами:
+//   - search – подстрока в email/имени/телефоне;
+//   - courseSlug – только с доступом к курсу (пусто = все);
+//   - verified – nil = все, true/false = по статусу подтверждения email;
+//   - sort – "created" (по умолчанию, новые сверху) или "last_seen".
 func (r *Repo) ListUsers(ctx context.Context, search, courseSlug string, verified *bool, sort string, limit, offset int) ([]*User, error) {
 	orderBy := `created_at DESC`
 	if sort == "last_seen" {
@@ -631,14 +631,14 @@ func (r *Repo) UpdateLeadStatus(ctx context.Context, id uuid.UUID, status string
 
 // ---- ADMIN: карточка пользователя ----
 
-// UserConsents — даты согласий (152-ФЗ) для карточки пользователя в админке.
+// UserConsents – даты согласий (152-ФЗ) для карточки пользователя в админке.
 func (r *Repo) UserConsents(ctx context.Context, userID uuid.UUID) (pdAt, marketingAt *time.Time, err error) {
 	err = r.Pool.QueryRow(ctx,
 		`SELECT consent_pd_at, consent_marketing_at FROM users WHERE id=$1`, userID).Scan(&pdAt, &marketingAt)
 	return
 }
 
-// UserEnrollmentInfo — доступ пользователя к курсу: кто/когда выдал.
+// UserEnrollmentInfo – доступ пользователя к курсу: кто/когда выдал.
 type UserEnrollmentInfo struct {
 	CourseID  uuid.UUID `json:"course_id"`
 	Slug      string    `json:"slug"`
@@ -668,7 +668,7 @@ func (r *Repo) UserEnrollmentsInfo(ctx context.Context, userID uuid.UUID) ([]Use
 	return out, rows.Err()
 }
 
-// UserLessonState — состояние одного урока у пользователя (для карточки в админке).
+// UserLessonState – состояние одного урока у пользователя (для карточки в админке).
 type UserLessonState struct {
 	LessonID        uuid.UUID  `json:"lesson_id"`
 	Title           string     `json:"title"`
@@ -703,7 +703,7 @@ func (r *Repo) UserCourseLessons(ctx context.Context, userID, courseID uuid.UUID
 	return out, rows.Err()
 }
 
-// UserOrderInfo — заказ пользователя с названием курса (для карточки в админке).
+// UserOrderInfo – заказ пользователя с названием курса (для карточки в админке).
 type UserOrderInfo struct {
 	ID          uuid.UUID  `json:"id"`
 	OrderNum    int64      `json:"order_num"`
@@ -734,7 +734,7 @@ func (r *Repo) OrdersByUser(ctx context.Context, userID uuid.UUID) ([]UserOrderI
 	return out, rows.Err()
 }
 
-// CountUsers — точное количество пользователей под те же фильтры, что ListUsers.
+// CountUsers – точное количество пользователей под те же фильтры, что ListUsers.
 func (r *Repo) CountUsers(ctx context.Context, search, courseSlug string, verified *bool) (int, error) {
 	var n int
 	err := r.Pool.QueryRow(ctx,
@@ -748,7 +748,7 @@ func (r *Repo) CountUsers(ctx context.Context, search, courseSlug string, verifi
 	return n, err
 }
 
-// ExportUserRow — строка CSV-выгрузки для рассылок.
+// ExportUserRow – строка CSV-выгрузки для рассылок.
 type ExportUserRow struct {
 	Email     string
 	Name      string
@@ -757,8 +757,8 @@ type ExportUserRow struct {
 	Courses   string // названия курсов через "; "
 }
 
-// ListUsersForExport — пользователи для выгрузки в сервис рассылок.
-// ТОЛЬКО с действующим согласием на рассылку (consent_marketing_at NOT NULL) —
+// ListUsersForExport – пользователи для выгрузки в сервис рассылок.
+// ТОЛЬКО с действующим согласием на рассылку (consent_marketing_at NOT NULL) –
 // по закону о рекламе промо-письма можно слать только им.
 // Фильтры те же, что в ListUsers.
 func (r *Repo) ListUsersForExport(ctx context.Context, search, courseSlug string, verified *bool) ([]ExportUserRow, error) {
@@ -790,7 +790,7 @@ func (r *Repo) ListUsersForExport(ctx context.Context, search, courseSlug string
 	return out, rows.Err()
 }
 
-// ActivityRow — запись журнала занятий: одна строка = одна сессия просмотра.
+// ActivityRow – запись журнала занятий: одна строка = одна сессия просмотра.
 type ActivityRow struct {
 	StartedAt       time.Time `json:"started_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
@@ -806,7 +806,7 @@ type ActivityRow struct {
 	CourseSlug      string    `json:"course_slug"`
 }
 
-// ListLessonActivity — журнал просмотров (lesson_activity): каждая сессия
+// ListLessonActivity – журнал просмотров (lesson_activity): каждая сессия
 // отдельной строкой, включая повторные просмотры. Новые сверху.
 func (r *Repo) ListLessonActivity(ctx context.Context, courseSlug string, limit int) ([]ActivityRow, error) {
 	rows, err := r.Pool.Query(ctx,
@@ -835,9 +835,9 @@ func (r *Repo) ListLessonActivity(ctx context.Context, courseSlug string, limit 
 	return out, rows.Err()
 }
 
-// TouchLessonActivity — пишет «сессию» просмотра в журнал lesson_activity.
-// Если по паре user+lesson есть запись, обновлённая менее 30 минут назад, —
-// продлеваем её (это тот же просмотр). Иначе создаём новую строку —
+// TouchLessonActivity – пишет «сессию» просмотра в журнал lesson_activity.
+// Если по паре user+lesson есть запись, обновлённая менее 30 минут назад, –
+// продлеваем её (это тот же просмотр). Иначе создаём новую строку –
 // так повторные просмотры видны отдельными записями.
 func (r *Repo) TouchLessonActivity(ctx context.Context, userID, lessonID uuid.UUID, completed bool, pos int) error {
 	ct, err := r.Pool.Exec(ctx,
@@ -862,7 +862,7 @@ func (r *Repo) TouchLessonActivity(ctx context.Context, userID, lessonID uuid.UU
 	return err
 }
 
-// LastActivityForUser — последняя учебная активность пользователя
+// LastActivityForUser – последняя учебная активность пользователя
 // (для блока «Продолжить» в кабинете).
 func (r *Repo) LastActivityForUser(ctx context.Context, userID uuid.UUID) (*ActivityRow, error) {
 	var a ActivityRow
@@ -891,13 +891,13 @@ func (r *Repo) LastActivityForUser(ctx context.Context, userID uuid.UUID) (*Acti
 
 // ---- SITE SETTINGS ----
 
-// SettingDefaults — белый список ключей настроек сайта и их значения
+// SettingDefaults – белый список ключей настроек сайта и их значения
 // по умолчанию. Ключа нет в карте → настройка не существует, менять её
 // через API нельзя. Строки БД накладываются поверх дефолтов, поэтому
 // новый ключ достаточно добавить сюда (миграция нужна только для сидов).
 var SettingDefaults = map[string]string{
 	// Показывать страницу «Здоровая спина в Салюте»: кнопка в шапке,
-	// строка в sitemap, индексация. Вне летнего сезона — false.
+	// строка в sitemap, индексация. Вне летнего сезона – false.
 	"salut_visible": "false",
 }
 
@@ -925,7 +925,7 @@ func (r *Repo) Settings(ctx context.Context) (map[string]string, error) {
 	return out, rows.Err()
 }
 
-// SetSetting сохраняет значение настройки (upsert). Валидация ключа —
+// SetSetting сохраняет значение настройки (upsert). Валидация ключа –
 // на стороне хендлера по SettingDefaults.
 func (r *Repo) SetSetting(ctx context.Context, key, value string) error {
 	_, err := r.Pool.Exec(ctx,
@@ -936,8 +936,8 @@ func (r *Repo) SetSetting(ctx context.Context, key, value string) error {
 }
 
 // ClearMarketingConsent снимает согласие на маркетинговые письма
-// (отписка по ссылке из письма). Идемпотентна: повторный вызов — no-op.
-// Согласие на обработку ПД (consent_pd_at) не трогаем — оно про другое.
+// (отписка по ссылке из письма). Идемпотентна: повторный вызов – no-op.
+// Согласие на обработку ПД (consent_pd_at) не трогаем – оно про другое.
 func (r *Repo) ClearMarketingConsent(ctx context.Context, userID uuid.UUID) error {
 	_, err := r.Pool.Exec(ctx,
 		`UPDATE users SET consent_marketing_at = NULL, updated_at = now() WHERE id = $1`,
@@ -958,7 +958,7 @@ func (r *Repo) LogEmailOpen(ctx context.Context, userID uuid.UUID, campaign, use
 		userID, campaign, userAgent)
 }
 
-// EmailOpenStats — сводка по каждой рассылке: сколько человек открыло
+// EmailOpenStats – сводка по каждой рассылке: сколько человек открыло
 // (уникальные) и сколько всего открытий, первое и последнее.
 func (r *Repo) EmailOpenStats(ctx context.Context) ([]map[string]any, error) {
 	rows, err := r.Pool.Query(ctx,
@@ -1001,7 +1001,7 @@ func (r *Repo) SetMarketingConsent(ctx context.Context, userID uuid.UUID) error 
 	return err
 }
 
-// HasMarketingConsent — стоит ли согласие на рассылку.
+// HasMarketingConsent – стоит ли согласие на рассылку.
 func (r *Repo) HasMarketingConsent(ctx context.Context, userID uuid.UUID) (bool, error) {
 	var ok bool
 	err := r.Pool.QueryRow(ctx,

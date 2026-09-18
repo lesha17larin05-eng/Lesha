@@ -22,23 +22,23 @@ import (
 //  1. Алексей создаёт рассылку: имя, тема, текст, группа получателей, темп.
 //     В этот момент список получателей фиксируется (снимок группы).
 //  2. Отправляет тестовое письмо себе, смотрит.
-//  3. Жмёт «Отправить» — рассылка переходит в статус sending.
+//  3. Жмёт «Отправить» – рассылка переходит в статус sending.
 //  4. Фоновый отправщик раз в sendTick берёт одного адресата и шлёт письмо,
 //     пока не упрётся в дневной лимит рассылки или общий предохранитель.
 //
 // Письма уходят с того же ящика, что и письма о доступах, поэтому темп
-// низкий, а общий суточный предохранитель — ниже лимита Яндекса (300).
+// низкий, а общий суточный предохранитель – ниже лимита Яндекса (300).
 
 const (
 	// Как часто отправщик просыпается. Реальный интервал между письмами
-	// задаётся у каждой рассылки (campaigns.pause_sec) — тик только проверяет,
+	// задаётся у каждой рассылки (campaigns.pause_sec) – тик только проверяет,
 	// не пора ли отправить следующее.
 	sendTick        = 10 * time.Second
 	globalDailyCap  = 200 // максимум писем рассылок в сутки, всего
 	maxDailyLimit   = 150 // максимум писем в сутки у одной рассылки
 	minPauseSec     = 30
 	maxPauseSec     = 3600
-	defaultPauseSec = 120 // две минуты — спокойный темп по умолчанию
+	defaultPauseSec = 120 // две минуты – спокойный темп по умолчанию
 	recipientsLimit = 500 // сколько адресатов показываем на странице
 )
 
@@ -171,10 +171,10 @@ func (a *App) AdminCampaignAction(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{"ok": 1, "status": status})
 }
 
-// AdminTestCampaign шлёт пробное письмо на указанный адрес — посмотреть,
+// AdminTestCampaign шлёт пробное письмо на указанный адрес – посмотреть,
 // как оно выглядит, до отправки людям.
 //
-// Адрес по умолчанию — LEAD_NOTIFY_EMAIL (рабочая почта, которую Алексей
+// Адрес по умолчанию – LEAD_NOTIFY_EMAIL (рабочая почта, которую Алексей
 // читает), а НЕ email админского аккаунта: там служебный admin@leshalarin.ru,
 // почтового ящика с таким адресом не существует и письмо отскакивает.
 func (a *App) AdminTestCampaign(w http.ResponseWriter, r *http.Request) {
@@ -229,9 +229,9 @@ func (a *App) campaignHTML(c *db.Campaign, name string, userID uuid.UUID) string
 	return a.campaignHTMLFor(c, name, userID, true)
 }
 
-// campaignHTMLFor — письмо для конкретного адресата. subscribed=false значит,
+// campaignHTMLFor – письмо для конкретного адресата. subscribed=false значит,
 // что человек на рассылку не подписан (сервисное письмо про его курс):
-// вместо ссылки отписки в подвале — предложение подписаться.
+// вместо ссылки отписки в подвале – предложение подписаться.
 func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, subscribed bool) string {
 	greeting := "Здравствуйте!"
 	if n := strings.TrimSpace(name); n != "" {
@@ -270,7 +270,7 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 			`после перерыва, что делать, когда болит спина, какие привычки правда работают. ` +
 			`Не часто и только по делу.</p>` +
 			`<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#555;">` +
-			`Сейчас вы их не получаете. Если хотите — одно нажатие, и всё; ` +
+			`Сейчас вы их не получаете. Если хотите – одно нажатие, и всё; ` +
 			`отписаться можно в любой момент.</p>` +
 			`<p style="margin:0;"><a href="` + sub + `" style="display:inline-block;background:#e8652a;` +
 			`color:#fff;text-decoration:none;padding:13px 26px;border-radius:100px;font-size:15px;` +
@@ -287,10 +287,10 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 			`Вы получили это письмо, потому что регистрировались на leshalarin.ru и согласились получать новости. ` +
 			`<a href="` + unsub + `" style="color:#777;">Отписаться</a> – письма про ваши курсы при этом останутся.</p>`)
 	} else {
-		// Предложение подписаться стоит выше, в теле письма. Здесь — только
+		// Предложение подписаться стоит выше, в теле письма. Здесь – только
 		// объяснение, почему человек получил это письмо.
 		sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
-			`Это письмо про ваш курс на leshalarin.ru — писем с новостями и материалами ` +
+			`Это письмо про ваш курс на leshalarin.ru – писем с новостями и материалами ` +
 			`вы сейчас не получаете.</p>`)
 	}
 	sb.WriteString(`<img src="` + a.pixelURL(c.ID.String(), userID) +
@@ -348,7 +348,7 @@ func (a *App) sendOneCampaignEmail(ctx context.Context) error {
 	}
 	rec, err := a.Repo.NextRecipient(ctx, c.ID)
 	if err == db.ErrNotFound {
-		// адресаты кончились — рассылка завершена
+		// адресаты кончились – рассылка завершена
 		return a.Repo.SetCampaignStatus(ctx, c.ID, "done")
 	}
 	if err != nil {

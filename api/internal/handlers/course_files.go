@@ -11,7 +11,7 @@ import (
 	"github.com/leshalarin/api/internal/middleware"
 )
 
-// allowedCourseFiles — белый список slug курса → набор разрешённых файлов.
+// allowedCourseFiles – белый список slug курса → набор разрешённых файлов.
 // Защита от path traversal и от случайной публикации лишнего файла из embed.
 var allowedCourseFiles = map[string]map[string]string{
 	"zdorovaya-spina": {
