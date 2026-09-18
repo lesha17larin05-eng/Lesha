@@ -119,7 +119,7 @@ IP намеренно не храним. Цифра открытий — **ни�
 
 Рассылки из админки (`/admin/mailing`).
 
-`campaigns`: `name` (для себя), `subject`, `body` (простой текст, абзацы через пустую строку), `segment` (ключ группы из `db.Segments`), `daily_limit`, `status` — `draft` → `sending` ⇄ `paused` → `done`.
+`campaigns`: `name` (для себя), `subject`, `body` (простой текст, абзацы через пустую строку), `segment` (ключ группы из `db.Segments`), `daily_limit`, `pause_sec` (интервал между письмами, миграция 014, по умолчанию 120), `status` — `draft` → `sending` ⇄ `paused` → `done`.
 
 `campaign_recipients`: снимок группы на момент создания рассылки — `user_id`, `email`, `name`, `status` (`pending`/`sent`/`failed`/`skipped`), `sent_at`, `error`. Уникальность по `(campaign_id, user_id)`, поэтому повторный импорт не плодит дублей.
 
