@@ -12,11 +12,27 @@ const contHref = cont && contStatus === 200
   ? (cabinetPagesSet.has(cont.course_slug) ? `/cabinet/${cont.course_slug}#${cont.lesson_slug}` : `/courses/${cont.course_slug}`)
   : '';
 const contMins = (sec: number) => Math.max(1, Math.round((sec || 0) / 60));
+// Предложение подписаться — только тем, у кого согласия ещё нет.
+const askSubscribe = user?.consent_marketing !== true;
 ---
 <Base title="Личный кабинет" user={user}>
   <section class="container" style="padding:60px 16px;">
     <h1>Здравствуйте, {user?.name || user?.email}</h1>
     {!user?.email_verified && <div class="alert">Подтвердите email – иначе оплата платных курсов недоступна.</div>}
+
+    {askSubscribe && (
+      <div class="sub-invite" id="sub-invite" hidden>
+        <div class="sub-text">
+          <b>Получать письма о новых материалах?</b>
+          <span class="muted">Изредка пишу о движении, восстановлении и привычках – разборы,
+            упражнения, ответы на вопросы. Отписаться можно в любой момент.</span>
+        </div>
+        <div class="sub-actions">
+          <button class="btn" id="sub-yes" type="button">Хочу получать</button>
+          <button class="sub-later" id="sub-later" type="button">Не сейчас</button>
+        </div>
+      </div>
+    )}
 
     {contHref && (
       <a href={contHref} class="continue-card card">
@@ -61,4 +77,57 @@ const contMins = (sec: number) => Math.max(1, Math.round((sec || 0) / 60));
     @media (hover: hover) { .continue-card:hover .continue-arrow { color: var(--orange); transform: translateX(4px); } }
     .continue-card:hover { text-decoration: none; }
   </style>
+  <style>
+    .sub-invite {
+      display: flex; gap: 20px; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; margin-top: 22px; padding: 18px 22px;
+      background: #fdf3e8; border: 1px solid rgba(232,101,42,.25); border-radius: 14px;
+    }
+    .sub-text { flex: 1; min-width: 260px; }
+    .sub-text b { display: block; color: var(--navy); margin-bottom: 4px; }
+    .sub-text .muted { font-size: 14px; line-height: 1.55; }
+    .sub-actions { display: flex; gap: 14px; align-items: center; flex-shrink: 0; }
+    .sub-later {
+      background: none; border: none; cursor: pointer; font-family: inherit;
+      font-size: 14px; color: var(--text-muted); text-decoration: underline;
+      text-underline-offset: 3px; transition: color .15s;
+    }
+    @media (hover: hover) { .sub-later:hover { color: var(--navy); } }
+    .sub-done { color: #0a6040; font-weight: 600; }
+  </style>
+
+  <script>
+    // Полоску показываем, если человек её ещё не закрывал в этом браузере.
+    const box = document.getElementById('sub-invite');
+    if (box) {
+      let hidden = false;
+      try { hidden = localStorage.getItem('sub-invite-hidden') === '1'; } catch {}
+      box.hidden = hidden;
+
+      document.getElementById('sub-later')?.addEventListener('click', () => {
+        try { localStorage.setItem('sub-invite-hidden', '1'); } catch {}
+        box.hidden = true;
+      });
+
+      document.getElementById('sub-yes')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true; btn.textContent = 'Сохраняю…';
+        try {
+          const r = await fetch('/api/me', {
+            method: 'PATCH',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ consent_marketing: true }),
+          });
+          if (!r.ok) throw new Error('fail');
+          box.innerHTML = '<div class="sub-text"><b class="sub-done">Готово, спасибо!</b>' +
+            '<span class="muted">Буду присылать письма по делу. ' +
+            'Передумаете – галочка в настройках профиля.</span></div>';
+          try { localStorage.setItem('sub-invite-hidden', '1'); } catch {}
+        } catch {
+          btn.disabled = false; btn.textContent = 'Хочу получать';
+          alert('Не получилось сохранить, попробуйте ещё раз');
+        }
+      });
+    }
+  </script>
 </Base>

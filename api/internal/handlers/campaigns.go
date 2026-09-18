@@ -259,6 +259,25 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 		sb.WriteString(`<p>` + esc + `</p>`)
 	}
 
+	// Человеку без подписки предлагаем её здесь, в теле письма, а не мелким
+	// шрифтом в подвале: в служебной зоне такую просьбу просто не видят.
+	if !subscribed {
+		sub := a.subscribeURL(userID)
+		sb.WriteString(`<div style="background:#fdf3e8;border:1px solid rgba(232,101,42,0.25);` +
+			`border-radius:14px;padding:20px 22px;margin:24px 0;">` +
+			`<p style="margin:0 0 10px;font-size:16px;line-height:1.6;">` +
+			`Иногда я пишу письма о движении и восстановлении: как вернуться к занятиям ` +
+			`после перерыва, что делать, когда болит спина, какие привычки правда работают. ` +
+			`Не часто и только по делу.</p>` +
+			`<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#555;">` +
+			`Сейчас вы их не получаете. Если хотите — одно нажатие, и всё; ` +
+			`отписаться можно в любой момент.</p>` +
+			`<p style="margin:0;"><a href="` + sub + `" style="display:inline-block;background:#e8652a;` +
+			`color:#fff;text-decoration:none;padding:13px 26px;border-radius:100px;font-size:15px;` +
+			`font-weight:600;">Хочу получать письма</a></p>` +
+			`</div>`)
+	}
+
 	sb.WriteString(`<p>Алексей Ларин<br><span style="color:#555;">Тренер по развитию здоровья</span></p>`)
 
 	sb.WriteString(`<hr style="border:none;border-top:1px solid #ece8e0;margin:26px 0 14px;">`)
@@ -268,15 +287,11 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 			`Вы получили это письмо, потому что регистрировались на leshalarin.ru и согласились получать новости. ` +
 			`<a href="` + unsub + `" style="color:#777;">Отписаться</a> – письма про ваши курсы при этом останутся.</p>`)
 	} else {
-		// Человек на рассылку не подписан — это письмо про его курс.
-		// Предлагаем подписаться, не подписывая за него.
-		sub := a.subscribeURL(userID)
-		sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0 0 12px;">` +
-			`Вы получили это письмо, потому что у вас открыт доступ к курсу на leshalarin.ru. ` +
-			`Писем с новостями и материалами вы не получаете.</p>` +
-			`<p style="margin:0;"><a href="` + sub + `" style="display:inline-block;background:#e8652a;color:#fff;` +
-			`text-decoration:none;padding:10px 20px;border-radius:100px;font-size:14px;font-weight:600;">` +
-			`Хочу получать письма</a></p>`)
+		// Предложение подписаться стоит выше, в теле письма. Здесь — только
+		// объяснение, почему человек получил это письмо.
+		sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
+			`Это письмо про ваш курс на leshalarin.ru — писем с новостями и материалами ` +
+			`вы сейчас не получаете.</p>`)
 	}
 	sb.WriteString(`<img src="` + a.pixelURL(c.ID.String(), userID) +
 		`" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;">`)
