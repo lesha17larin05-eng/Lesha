@@ -136,6 +136,18 @@ JSON `{"error": "<code>"}`:
 | `GET /api/pixel.gif?u=<uuid>&c=<кампания>&t=<hex>` | Публичный. Отдаёт прозрачный GIF 1×1 **всегда** (с `Cache-Control: no-store`), но строку в `email_opens` пишет только при валидной подписи. Подпись: `hex(HMAC_SHA256(JWT_SECRET, "pixel:" + campaign + ":" + user_id))`, функция `handlers.PixelToken`. |
 | `GET /api/admin/email-opens` | Admin. Сводка по рассылкам: `campaign`, `people` (уникальные), `opens` (всего), `first_open`, `last_open`. Показывается на дашборде админки. |
 
+## Подписка на рассылку
+
+| Эндпоинт | Описание |
+|---|---|
+| `GET /api/subscribe?u=<uuid>&t=<hex>` | Публичный. Кнопка «Хочу получать письма» из сервисного письма. Валидная подпись → `consent_marketing_at = coalesce(старое, now())` (дата первого согласия не переписывается) + 303 на `/subscribed`; иначе 303 на `/subscribed?error=1`. |
+| `POST /api/subscribe?u=&t=` | То же для программного вызова, 200 / 400 `invalid_token`. Исключён из CSRF вместе с `/api/unsubscribe`. |
+| `PATCH /api/me` | Поле `consent_marketing: bool` — галочка в настройках кабинета. `true` ставит согласие, `false` снимает. Поле — указатель, отсутствие означает «не трогать». `GET /api/me` отдаёт текущее состояние в `consent_marketing`. |
+
+Подпись: `hex(HMAC_SHA256(JWT_SECRET, "subscribe:" + user_id))`, функция `handlers.SubscribeToken`.
+
+**Зачем:** людям, которым доступ выдали вручную, проставить согласие за них нельзя — это должно быть их действие. Кнопка есть в письме о выдаче доступа и в подвале сервисных писем.
+
 ## Отписка от рассылки
 
 | Эндпоинт | Описание |
