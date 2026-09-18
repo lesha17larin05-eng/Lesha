@@ -8,6 +8,7 @@ const { status, data } = await apiJson<any>(`/api/admin/campaigns/${id}`, { cook
 if (status === 404) return Astro.redirect('/admin/mailing');
 const c = data?.campaign;
 const recipients = data?.recipients || [];
+const testEmailDefault = data?.test_email_default || '';
 const user = (Astro.locals as any).user;
 const statusLabel: Record<string, string> = {
   draft: 'Черновик', sending: 'Отправляется', paused: 'На паузе', done: 'Завершена',
@@ -61,7 +62,9 @@ const fmtPause = (sec: number) => {
     <p class="muted small">Отправлено {c?.sent} из {c?.total}. Осталось {c?.pending}.</p>
 
     <div class="actions">
-      <button class="btn secondary" id="btn-test" data-id={c?.id}>Отправить пробное себе</button>
+      <input class="input test-email" id="test-email" type="email" value={testEmailDefault}
+        placeholder="куда отправить пробное" />
+      <button class="btn secondary" id="btn-test" data-id={c?.id}>Отправить пробное</button>
       {c?.status !== 'sending'
         ? <button class="btn" id="btn-start" data-id={c?.id} disabled={c?.status === 'done'}>Начать отправку</button>
         : <button class="btn secondary" id="btn-pause" data-id={c?.id}>Пауза</button>}
@@ -114,7 +117,8 @@ const fmtPause = (sec: number) => {
     .kpi-num { font-family: 'Cormorant Garamond', serif; font-size: 30px; color: var(--navy); line-height: 1; }
     .kpi-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
     .small { font-size: 13px; margin-top: 8px; }
-    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; align-items: center; }
+    .test-email { max-width: 260px; }
     .note { font-size: 14px; min-height: 20px; margin-top: 10px; }
     .sec-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; color: var(--navy); margin: 34px 0 12px; }
     .subject { font-size: 17px; }
@@ -126,8 +130,12 @@ const fmtPause = (sec: number) => {
     const note = document.getElementById('note');
     const say = (msg, bad = false) => { note.textContent = msg; note.style.color = bad ? '#a23c0d' : '#0a6040'; };
 
-    async function call(url, okMsg, reload) {
-      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    async function call(url, okMsg, reload, payload) {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload || {}),
+      });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { say('Не получилось: ' + (j.error || r.status), true); return; }
       say(okMsg);
@@ -136,8 +144,9 @@ const fmtPause = (sec: number) => {
 
     document.getElementById('btn-test')?.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
+      const to = document.getElementById('test-email')?.value?.trim();
       say('Отправляю пробное…');
-      call(`/api/admin/campaigns/${id}/test`, 'Пробное письмо отправлено вам на почту', false);
+      call(`/api/admin/campaigns/${id}/test`, 'Пробное письмо отправлено на ' + to, false, { email: to });
     });
     document.getElementById('btn-start')?.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;

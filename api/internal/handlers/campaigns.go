@@ -139,7 +139,10 @@ func (a *App) AdminGetCampaign(w http.ResponseWriter, r *http.Request) {
 	if rows == nil {
 		rows = []map[string]any{}
 	}
-	writeJSON(w, 200, map[string]any{"campaign": c, "recipients": rows})
+	writeJSON(w, 200, map[string]any{
+		"campaign": c, "recipients": rows,
+		"test_email_default": a.Cfg.LeadNotifyEmail,
+	})
 }
 
 var campaignActions = map[string]string{"start": "sending", "pause": "paused"}
@@ -168,8 +171,12 @@ func (a *App) AdminCampaignAction(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]any{"ok": 1, "status": status})
 }
 
-// AdminTestCampaign шлёт письмо рассылки самому админу — посмотреть,
+// AdminTestCampaign шлёт пробное письмо на указанный адрес — посмотреть,
 // как оно выглядит, до отправки людям.
+//
+// Адрес по умолчанию — LEAD_NOTIFY_EMAIL (рабочая почта, которую Алексей
+// читает), а НЕ email админского аккаунта: там служебный admin@leshalarin.ru,
+// почтового ящика с таким адресом не существует и письмо отскакивает.
 func (a *App) AdminTestCampaign(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
@@ -181,6 +188,19 @@ func (a *App) AdminTestCampaign(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "not_found")
 		return
 	}
+	var in struct {
+		Email string `json:"email"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&in) // тело необязательно
+	to := strings.TrimSpace(in.Email)
+	if to == "" {
+		to = a.Cfg.LeadNotifyEmail
+	}
+	if !strings.Contains(to, "@") || len(to) < 5 {
+		writeErr(w, 400, "bad_email")
+		return
+	}
+
 	adminID, _ := middleware.UserID(r.Context())
 	u, err := a.Repo.GetUser(r.Context(), adminID)
 	if err != nil {
@@ -191,11 +211,12 @@ func (a *App) AdminTestCampaign(w http.ResponseWriter, r *http.Request) {
 	// с кнопкой подписки вместо ссылки отписки.
 	subscribed := !db.SegmentIsServiceOnly(c.Segment)
 	body := a.campaignHTMLFor(c, u.Name, u.ID, subscribed)
-	if err := a.Mail.Send(u.Email, "[ТЕСТ] "+c.Subject, body); err != nil {
+	if err := a.Mail.Send(to, "[ТЕСТ] "+c.Subject, body); err != nil {
+		slog.Warn("test campaign send failed", "to", to, "err", err)
 		writeErr(w, 500, "smtp")
 		return
 	}
-	writeJSON(w, 200, map[string]any{"ok": 1, "sent_to": u.Email})
+	writeJSON(w, 200, map[string]any{"ok": 1, "sent_to": to})
 }
 
 // ---- Сборка письма ----
