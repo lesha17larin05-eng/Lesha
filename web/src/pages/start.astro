@@ -7,6 +7,20 @@ const { styles, body } = extractLegacy(rawHtml);
 <SiteLayout title="Точка старта – Алексей Ларин" description="Занятие-разбор 55 минут онлайн, план на неделю под вас и связь со мной всю неделю. 2 990 ₽, 5 мест в неделю." active="start" pageStyles={styles}>
   <Fragment set:html={body} />
   <script>
+    // Видеоотзывы: клик по превью запускает ролик, пауза возвращает кнопку.
+    // Видео грузятся только по клику (preload="none") – страница остаётся лёгкой.
+    document.querySelectorAll('.rv-video').forEach((container) => {
+      const video = container.querySelector('video') as HTMLVideoElement | null;
+      const overlay = container.querySelector('.rv-play') as HTMLElement | null;
+      if (!video || !overlay) return;
+      overlay.addEventListener('click', () => { overlay.classList.add('hidden'); video.play(); });
+      video.addEventListener('click', () => {
+        if (video.paused) { overlay.classList.add('hidden'); video.play(); } else { video.pause(); }
+      });
+      video.addEventListener('pause', () => overlay.classList.remove('hidden'));
+    });
+  </script>
+  <script>
     // Форма заявки → POST /api/leads.
     // CSRF подставляет fetch-обёртка из SiteLayout.
     const form = document.getElementById('lead-form') as HTMLFormElement | null;
