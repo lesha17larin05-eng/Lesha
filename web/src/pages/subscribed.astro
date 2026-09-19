@@ -26,6 +26,8 @@ const failed = Astro.url.searchParams.get('error') === '1';
       <a class="btn-primary" href="/cabinet">В личный кабинет</a>
       <a class="subs-link" href="/blog">Читать статьи</a>
     </div>
+    <p class="subs-hint">Кабинет попросит войти – логин это ваша почта. Пароль не помните?
+      <a href="/auth/forgot">Восстановить</a>. На подписку это не влияет: она уже сохранена.</p>
   </section>
 
   <style>
@@ -34,6 +36,7 @@ const failed = Astro.url.searchParams.get('error') === '1';
     .subs p { font-size: 17px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
     .subs-note { font-size: 15px; color: var(--text-muted); }
     .subs-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 30px; }
+    .subs-hint { margin-top: 18px; font-size: 14px; color: var(--text-muted); line-height: 1.6; }
     .subs-link { font-size: 15px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
     @media (hover: hover) { .subs-link:hover { color: var(--orange); } }
   </style>

@@ -342,6 +342,11 @@ func (a *App) sendOneCampaignEmail(ctx context.Context) error {
 		return nil
 	}
 
+	// Рассылки, у которых очередь опустела, помечаем завершёнными.
+	if err := a.Repo.FinishSentOutCampaigns(ctx); err != nil {
+		slog.Warn("campaign finish", "err", err)
+	}
+
 	c, err := a.Repo.NextCampaignToSend(ctx)
 	if err != nil {
 		return err

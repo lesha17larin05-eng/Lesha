@@ -230,6 +230,18 @@ type CampaignRecipient struct {
 	Subscribed bool
 }
 
+// FinishSentOutCampaigns закрывает рассылки, у которых не осталось писем
+// в очереди. Без этого они навсегда висят в статусе «Отправляется»:
+// NextCampaignToSend их не берёт, а значит и завершить некому.
+func (r *Repo) FinishSentOutCampaigns(ctx context.Context) error {
+	_, err := r.Pool.Exec(ctx,
+		`UPDATE campaigns SET status = 'done', finished_at = now()
+		  WHERE status = 'sending'
+		    AND NOT EXISTS (SELECT 1 FROM campaign_recipients r
+		                     WHERE r.campaign_id = campaigns.id AND r.status = 'pending')`)
+	return err
+}
+
 // NextCampaignToSend возвращает рассылку в статусе sending, у которой
 // сегодня ещё не исчерпан дневной лимит и остались неотправленные письма.
 func (r *Repo) NextCampaignToSend(ctx context.Context) (*Campaign, error) {
