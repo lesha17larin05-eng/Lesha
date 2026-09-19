@@ -4,7 +4,7 @@ import { extractLegacy } from '../lib/legacy';
 import rawHtml from '../legacy/index.html?raw';
 const { styles, body } = extractLegacy(rawHtml);
 ---
-<SiteLayout title="Личное ведение – Алексей Ларин" description="Личное ведение с тренером: персональная тренировка раз в неделю, план под вас и поддержка всю неделю. Первая неделя – бесплатно." active="home" pageStyles={styles}>
+<SiteLayout title="Личное ведение – Алексей Ларин" description="Личное ведение с тренером: персональная тренировка раз в неделю, план под вас и поддержка всю неделю. 16 000 ₽ в месяц, онлайн." active="home" pageStyles={styles}>
   <Fragment set:html={body} />
   <script>
     // Форма заявки → POST /api/leads.
