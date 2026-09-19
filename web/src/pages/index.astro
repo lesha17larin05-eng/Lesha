@@ -8,15 +8,16 @@ const articles = Array.isArray(articlesData) ? articlesData : [];
 
 const servicesGroup = [
   {
-    href: '/consultation',
+    href: '/start',
     image: '/img/IMG_3906.jpg',
     image2x: '/img/IMG_3906@2x.jpg',
     imageWebp: '/img/IMG_3906.webp',
     imageWebp2x: '/img/IMG_3906@2x.webp',
     imgPos: 'center 33%',
-    eyebrow: 'Консультация',
-    title: 'Ясность: что мешает и куда двигаться дальше',
-    desc: 'Час один на один. Разберём сон, питание, движение, привычки. Уйдёте с планом на ближайший месяц – под вашу ситуацию.',
+    eyebrow: 'Точка старта',
+    badge: '5 мест в неделю',
+    title: 'Три тренировки за неделю – и вы наконец начали',
+    desc: 'Занятие 55 минут один на один: посмотрю, что можно именно вам, и соберу неделю под вашу жизнь. Неделю я на связи. 2 990 ₽.',
     cta: 'Записаться',
   },
   {
@@ -27,10 +28,9 @@ const servicesGroup = [
     imageWebp2x: '/img/IMG_4035@2x.webp',
     imgPos: 'center 30%',
     eyebrow: 'Личное ведение',
-    badge: 'Первая неделя бесплатно',
     title: 'Перемены в теле и самочувствии за три месяца',
-    desc: 'Персональный план и тренировки. Постоянная поддержка между ними. Двигаемся в своём ритме, без жёстких нагрузок. Первая неделя – пробная, дальше 16 000 ₽/мес онлайн.',
-    cta: 'Попробовать неделю',
+    desc: 'Персональный план и тренировки. Постоянная поддержка между ними. Двигаемся в своём ритме, без жёстких нагрузок. 16 000 ₽/мес онлайн.',
+    cta: 'Узнать подробнее',
   },
 ];
 
@@ -324,9 +324,9 @@ const pageStyles = `
   /* на мобиле – одна колонка, разделитель убираем */
   .services-grid-2x2 { grid-template-columns: 1fr; row-gap: 14px; column-gap: 0; }
   .services-grid-2x2::before { display: none; }
-  /* порядок: Услуги, Консультация, ЛВ, Курсы, Мягкий старт, ЗС */
+  /* порядок: Услуги, Точка старта, ЛВ, Курсы, Мягкий старт, ЗС */
   .services-grid-2x2 > :nth-child(1) { order: 1; } /* Услуги head */
-  .services-grid-2x2 > :nth-child(3) { order: 2; } /* Консультация */
+  .services-grid-2x2 > :nth-child(3) { order: 2; } /* Точка старта */
   .services-grid-2x2 > :nth-child(5) { order: 3; } /* ЛВ */
   .services-grid-2x2 > :nth-child(2) { order: 4; margin-top: 18px; } /* Курсы head */
   .services-grid-2x2 > :nth-child(4) { order: 5; } /* МС */

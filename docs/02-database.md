@@ -54,7 +54,7 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 
 ## leads (миграция 009)
 
-Заявки с маркетинговых страниц (`/coaching`, `/consultation`).
+Заявки с маркетинговых страниц (`/coaching`, `/start`).
 
 | Колонка | Тип | Комментарий |
 |---|---|---|
@@ -62,7 +62,7 @@ PostgreSQL 16. UUID везде (`gen_random_uuid()` через `pgcrypto`), emai
 | name | TEXT | имя |
 | contact | TEXT | email / телефон / @telegram — одно поле, как удобно человеку |
 | message | TEXT | необязательное сообщение |
-| source | TEXT | `coaching` / `consultation` / `other` (неизвестные значения нормализуются) |
+| source | TEXT | `coaching` / `start` / `consultation` (архив) / `other` (неизвестные значения нормализуются) |
 | status | TEXT | `new` / `in_progress` / `done` (CHECK) |
 | consent_pd | BOOLEAN | факт согласия на обработку ПД (152-ФЗ) |
 | created_at | TIMESTAMPTZ | индекс по убыванию |

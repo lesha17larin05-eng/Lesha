@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Консультация – Алексей Ларин</title>
+<title>Точка старта – Алексей Ларин</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -294,6 +294,30 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 .lead-success { text-align: center; padding: 28px 20px; background: var(--cream); border: 1px solid var(--border); border-radius: 16px; max-width: 520px; margin: 0 auto 18px; }
 .lead-success h3 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
 .lead-success p { font-size: 15px; color: var(--text-muted); }
+
+/* ─── Отзывы на странице «Точка старта» ──────────────────────────── */
+.rev-section { padding: 80px 80px 90px; background: white; }
+.rev-head { max-width: 1100px; margin: 0 auto 40px; text-align: center; }
+.rev-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.rev-card {
+  background: var(--cream); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px 22px; display: flex; flex-direction: column; gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+@media (hover: hover) { .rev-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(26,39,68,0.08); border-color: rgba(232,101,42,0.35); } }
+.rev-stars { color: var(--orange); font-size: 14px; letter-spacing: 2px; }
+.rev-text { font-size: 15px; line-height: 1.6; color: var(--text-mid); flex: 1; }
+.rev-name { font-size: 13px; color: var(--text-light); }
+.rev-more { text-align: center; margin-top: 36px; }
+.rev-more a {
+  display: inline-block; font-size: 15px; font-weight: 600; color: var(--navy);
+  text-decoration: none; border: 1.5px solid var(--navy); border-radius: 12px;
+  padding: 13px 28px; transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.rev-more a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+@media (hover: hover) { .rev-more a:hover { background: var(--navy); color: white; transform: translateY(-2px); } }
+@media (max-width: 980px) { .rev-section { padding: 60px 24px 70px; } .rev-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .rev-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -318,31 +342,30 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="hero-left">
     <div class="hero-eyebrow">
       <div class="eyebrow-dot"></div>
-      <span class="eyebrow-text">Стратегическая консультация · 55 минут</span>
+      <span class="eyebrow-text">Точка старта · занятие 55 минут и неделя рядом</span>
     </div>
-    <h1>Разберём вашу ситуацию&nbsp;–<br>вы уйдёте с <em>чётким планом</em></h1>
-    <p class="hero-sub">Говорим про тело, сон, стресс – находим с чего начать</p>
+    <h1>Три тренировки за неделю&nbsp;–<br>и вы наконец <em>начали</em></h1>
+    <p class="hero-sub">Занятие со мной, план под вас и неделя, когда я на связи</p>
     <div class="hero-promise">
-      <p>Не знаете с чего начать, всё пробовали и бросали, болит и непонятно почему? <strong>За 55 минут разберём ситуацию</strong> – сон, стресс, тело, желания. Уйдёте с конкретными первыми шагами.</p>
+      <p>Начинали много раз и бросали? Спина уже подводила и страшно навредить? <strong>За 55 минут посмотрю, что можно именно вам</strong>, соберу неделю под вашу жизнь – и всю неделю буду рядом, пока вы её проходите.</p>
     </div>
     <div class="hero-notice">
       <div class="hero-notice-icon">🌿</div>
       <div class="hero-notice-content">
-        <p><strong>Запись на консультации открыта.</strong> Провожу 4&#8209;5 в месяц – к каждой готовлюсь заранее.</p>
+        <p><strong>Беру 5 человек в неделю.</strong> К каждому готовлюсь заранее, поэтому больше не получается.</p>
         <p>Оставьте заявку: отвечу в течение 1&#8209;2 дней и предложу удобное время.</p>
-        <p>Срочный вопрос? <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A1%D1%80%D0%BE%D1%87%D0%BD%D1%8B%D0%B9%20%D0%B2%D0%BE%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%D0%BA%D0%BE%D0%BD%D1%81%D1%83%D0%BB%D1%8C%D1%82%D0%B0%D1%86%D0%B8%D0%B8%3A%20" target="_blank" rel="noopener">Напишите в личные сообщения</a>.</p>
-        <p>Хочется начать раньше – посмотрите мои <a href="/courses/zdorovaya-spina">онлайн-курсы</a>. Многие вопросы решаются уже там.</p>
+        <p>Есть вопрос до записи? <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D0%B5%20%D1%81%D1%82%D0%B0%D1%80%D1%82%D0%B0%C2%BB%3A%20" target="_blank" rel="noopener">Напишите мне в личные сообщения</a>.</p>
       </div>
     </div>
     <div class="hero-cta">
-      <a href="#zayavka" class="btn-hero">Записаться на консультацию ↓</a>
-      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%D0%BA%D0%BE%D0%BD%D1%81%D1%83%D0%BB%D1%8C%D1%82%D0%B0%D1%86%D0%B8%D1%8E%20%285%20000%20%E2%82%BD%2C%2055%20%D0%BC%D0%B8%D0%BD%D1%83%D1%82%29.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-hero-alt" target="_blank">Нет Телеграма – написать в Max</a>
-      <div class="hero-safety">Приходите как есть – разберёмся с чего начать</div>
+      <a href="#zayavka" class="btn-hero">Записаться – 2 990 ₽ ↓</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D1%81%D1%82%D0%B0%D1%80%D1%82%D0%B0%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-hero-alt" target="_blank" rel="noopener">Нет Телеграма – написать в Max</a>
+      <div class="hero-safety">Не подойдёт – верну деньги без объяснений</div>
     </div>
     <div class="hero-params">
-      <div class="param"><span class="param-val">55</span><span class="param-label">минут созвон</span></div>
-      <div class="param"><span class="param-val">5 000</span><span class="param-label">рублей</span></div>
-      <div class="param"><span class="param-val">4–5</span><span class="param-label">в месяц – столько провожу</span></div>
+      <div class="param"><span class="param-val">55</span><span class="param-label">минут занятие</span></div>
+      <div class="param"><span class="param-val">2 990</span><span class="param-label">рублей</span></div>
+      <div class="param"><span class="param-val">5</span><span class="param-label">мест в неделю</span></div>
     </div>
   </div>
   <div class="hero-right">
@@ -360,69 +383,73 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="for-whom-inner">
     <div class="for-whom-header">
       <div class="section-label">Для кого</div>
-      <h2 class="section-title">Кому подойдёт<br><em>эта консультация</em></h2>
+      <h2 class="section-title">Если вы <em>давно собираетесь</em></h2>
     </div>
     <div class="for-whom-cards">
       <div class="fwl-card">
-        <div class="fwl-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="11" x2="23" y2="13"/><line x1="5" y1="10" x2="5" y2="14"/></svg>
-        </div>
-        <h3>Сейчас не в лучшей форме</h3>
-        <p>Физически или ментально – или и то, и другое. Понимаете, что можно лучше</p>
+        <div class="fwl-icon-box">🔁</div>
+        <h3>Начинали сто раз</h3>
+        <p>Абонемент не использован, коврик лежит за диваном. Приложения, марафоны, ролики – каждый раз срывались на третий день. Дело не в силе воли: рядом просто никого не было.</p>
       </div>
       <div class="fwl-card">
-        <div class="fwl-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 8 3 16 6 23 3 23 18 16 21 8 18 1 21"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/></svg>
-        </div>
-        <h3>Нужен план</h3>
-        <p>Хочется понять с чего начать, что делать и в каком порядке – под вашу жизнь</p>
+        <div class="fwl-icon-box">🛡️</div>
+        <h3>Боитесь навредить</h3>
+        <p>Спина уже подводила, есть заключение или старая травма. Вам сказали «занимайтесь» – а чем именно, не сказали. И вы не делаете ничего, потому что страшно сделать хуже.</p>
       </div>
       <div class="fwl-card">
-        <div class="fwl-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-        </div>
-        <h3>Нужна поддержка</h3>
-        <p>Сами не стартуете или быстро бросаете. Важно, чтобы кто-то был рядом</p>
+        <div class="fwl-icon-box">🌙</div>
+        <h3>Нет времени и сил</h3>
+        <p>Работа, недосып, вечером не хочется вообще ничего. Нужен не идеальный режим, а минимум, который реально влезет в ваш день и не отнимет последнее.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- WHAT HAPPENS ON THE CALL -->
+<!-- HOW IT GOES -->
 <section class="what-happens" id="what-happens">
-  <div class="section-label">Что происходит на созвоне</div>
-  <h2 class="section-title">Как проходит <em>созвон</em></h2>
-  <p class="section-desc">55 минут – говорим про тело, жизнь, ритм. К концу понятно что делать.</p>
+  <div class="section-label">Как устроена неделя</div>
+  <h2 class="section-title">Что <em>происходит</em></h2>
+  <p class="section-desc">Одно занятие со мной, две тренировки самостоятельно и неделя, когда есть к кому обратиться.</p>
 
   <div class="stages">
     <div class="stage-card">
       <div class="stage-num">01</div>
-      <h3>Ваш запрос и контекст</h3>
-      <p>Рассказываете что беспокоит и чего хочется. Слушаю внимательно.</p>
+      <h3>Анкета до занятия</h3>
+      <p>Присылаю несколько вопросов заранее – чтобы не тратить занятие на расспросы и прийти уже подготовленным.</p>
       <div class="stage-topics">
-        <div class="stage-topic"><div class="st-dot"></div>Что болит или мешает</div>
-        <div class="stage-topic"><div class="st-dot"></div>Что хочется изменить</div>
-        <div class="stage-topic"><div class="st-dot"></div>Что пробовали раньше</div>
+        <div class="stage-topic"><div class="st-dot"></div>Что беспокоит и как давно</div>
+        <div class="stage-topic"><div class="st-dot"></div>Что уже пробовали</div>
+        <div class="stage-topic"><div class="st-dot"></div>Сколько времени реально есть</div>
       </div>
     </div>
     <div class="stage-card">
       <div class="stage-num">02</div>
-      <h3>Ваша жизнь как она есть</h3>
-      <p>Тело реагирует на всё сразу – сон, работу, стресс, привычки. Смотрим на картину целиком.</p>
+      <h3>Занятие 55 минут, онлайн</h3>
+      <p>Смотрю, как вы двигаетесь, разбираем упражнения вместе и ставим технику. Здесь и решается, что вам можно, а что пока рано.</p>
       <div class="stage-topics">
-        <div class="stage-topic"><div class="st-dot"></div>Сон и восстановление</div>
-        <div class="stage-topic"><div class="st-dot"></div>Уровень стресса</div>
-        <div class="stage-topic"><div class="st-dot"></div>Работа, ритм дня, расписание</div>
+        <div class="stage-topic"><div class="st-dot"></div>Разбираем вашу ситуацию</div>
+        <div class="stage-topic"><div class="st-dot"></div>Проходим упражнения, поправляю</div>
+        <div class="stage-topic"><div class="st-dot"></div>Подбираю нагрузку под вас</div>
       </div>
     </div>
     <div class="stage-card">
       <div class="stage-num">03</div>
-      <h3>Конкретный план первых шагов</h3>
-      <p>В конце созвона вы понимаете – что делать, в каком порядке, с чего начать прямо сейчас.</p>
+      <h3>Ваша неделя</h3>
+      <p>Простой план: две самостоятельные тренировки, понятно в какие дни и сколько. Всю неделю я на связи – не получается или появился вопрос, пишете.</p>
       <div class="stage-topics">
-        <div class="stage-topic"><div class="st-dot"></div>Что реально поможет именно вам</div>
-        <div class="stage-topic"><div class="st-dot"></div>С чего начать в ближайшие недели</div>
-        <div class="stage-topic"><div class="st-dot"></div>Что делать дальше</div>
+        <div class="stage-topic"><div class="st-dot"></div>Что делать и в какие дни</div>
+        <div class="stage-topic"><div class="st-dot"></div>Сколько – чтобы не перегрузиться</div>
+        <div class="stage-topic"><div class="st-dot"></div>Я рядом всю неделю</div>
+      </div>
+    </div>
+    <div class="stage-card">
+      <div class="stage-num">04</div>
+      <h3>Разбор в конце</h3>
+      <p>Списываемся и смотрим, что получилось, а что нет. Вы уходите с пониманием, как продолжать дальше – самостоятельно.</p>
+      <div class="stage-topics">
+        <div class="stage-topic"><div class="st-dot"></div>Что сработало именно у вас</div>
+        <div class="stage-topic"><div class="st-dot"></div>Где было тяжело и почему</div>
+        <div class="stage-topic"><div class="st-dot"></div>Как двигаться дальше</div>
       </div>
     </div>
   </div>
@@ -430,34 +457,44 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="result-banner">
     <div class="rb-left">
       <div class="rb-label">Что вы получаете</div>
-      <div class="rb-title">После созвона понятно&nbsp;–<br><em>что делать и с чего начать</em></div>
+      <div class="rb-title">Через неделю у вас есть&nbsp;–<br><em>начало, а не намерение</em></div>
       <div class="rb-items">
-        <div class="rb-item"><span class="rb-check">✓</span>Понимание своей ситуации</div>
-        <div class="rb-item"><span class="rb-check">✓</span>Первые шаги под вашу ситуацию</div>
-        <div class="rb-item"><span class="rb-check">✓</span>Понимание что делать в ближайшее время</div>
-        <div class="rb-item"><span class="rb-check">✓</span>Ответы на вопросы, которые давно крутятся в голове</div>
+        <div class="rb-item"><span class="rb-check">✓</span>Понимание, что вам можно, а что пока рано</div>
+        <div class="rb-item"><span class="rb-check">✓</span>Три тренировки, которые вы реально сделали</div>
+        <div class="rb-item"><span class="rb-check">✓</span>Неделя, расписанная по дням – без лишнего</div>
+        <div class="rb-item"><span class="rb-check">✓</span>План, по которому можно продолжать самому</div>
       </div>
     </div>
     <div class="rb-right">
-      <div class="rb-price">5 000 ₽</div>
-      <div class="rb-per">один созвон</div>
+      <div class="rb-price">2 990 ₽</div>
+      <div class="rb-per">занятие и неделя</div>
       <div class="rb-dur">55 минут · онлайн</div>
     </div>
   </div>
 </section>
 
-<!-- FUTURE SELF -->
+<!-- HONEST LIMITS -->
 <section class="reassurance">
   <div class="reassurance-grid" style="grid-template-columns: 1fr 1fr;">
     <div class="reas-card">
-      <div class="reas-icon">🎯</div>
-      <h3>Ваш план – под вашу жизнь</h3>
-      <p>Разбираем ваш ритм, нагрузку, расписание. Первые шаги будут реальными – те, что встроятся в вашу жизнь.</p>
+      <div class="reas-icon">⏳</div>
+      <h3>За неделю тело не изменится</h3>
+      <p>И я не буду обещать обратного. Изменится другое: вы перестанете решать, с чего начать, и начнёте. Тело меняется месяцами – но только у того, кто начал.</p>
+    </div>
+    <div class="reas-card">
+      <div class="reas-icon">🩺</div>
+      <h3>Я не врач и не лечу</h3>
+      <p>Работаю с движением, нагрузкой и режимом. Если ситуация требует врача – скажу прямо и не возьму деньги.</p>
     </div>
     <div class="reas-card">
       <div class="reas-icon">🌍</div>
-      <h3>Онлайн – из любой точки мира</h3>
-      <p>Работаю с людьми из разных стран. Договоримся о формате когда будем на связи.</p>
+      <h3>Онлайн, из любой точки</h3>
+      <p>Нужны только связь, пара метров свободного места и удобная одежда. Работаю с людьми из разных стран, о времени договоримся.</p>
+    </div>
+    <div class="reas-card">
+      <div class="reas-icon">↩️</div>
+      <h3>Не подойдёт – верну деньги</h3>
+      <p>Если после занятия поймёте, что это не ваше – просто напишите. Верну полностью и без расспросов.</p>
     </div>
   </div>
 </section>
@@ -473,71 +510,94 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="author-content">
     <div class="section-label">Кто проводит</div>
     <h2 class="section-title" style="color:white;">Алексей Ларин&nbsp;–<br>тренер который <em>слушает</em></h2>
-    <div class="author-pull">У каждого своя ситуация. Задача – найти то, что подойдёт именно вам.</div>
+    <div class="author-pull">Моя задача – не привязать вас к себе, а научить заниматься самостоятельно.</div>
     <p class="author-text">8 лет практики, более 8 000 человек через проекты. Работаю с детьми, взрослыми и старшим поколением. Сам прошёл через серьёзную травму позвоночника в детстве – поэтому знаю, что значит начинать осторожно.</p>
-    <p class="author-text">На консультации разговариваем живо – про ваше тело, ваши привычки, вашу жизнь. Уходите с ясностью куда двигаться.</p>
+    <p class="author-text">На занятии разговариваем живо – про ваше тело, ваш сон, вашу нагрузку и вашу жизнь. Неделю иду рядом, а дальше вы справляетесь сами.</p>
   </div>
 </section>
 
 <!-- SOCIAL PROOF -->
-<section style="padding: 60px 80px 80px; background: white;">
-  <div style="max-width:640px; margin:0 auto; text-align:center;">
-    <div style="font-size:22px; color:var(--orange); margin-bottom:16px;">★★★★★</div>
-    <p style="font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:300; font-style:italic; color:var(--navy); line-height:1.6; margin-bottom:20px;">«Консультация прошла в доверительной форме. Рассказала о своей ситуации, показала упражнения – подкорректировал. Разработали тактику под мой график. Всё было понятно и позитивно.»</p>
-    <div style="font-size:14px; color:var(--text-light);">Елена · индивидуальная консультация</div>
+<section class="rev-section">
+  <div class="rev-head">
+    <div class="section-label">Отзывы</div>
+    <h2 class="section-title">Люди, которые <em>начали</em></h2>
+    <p class="section-desc">Больше 65 видеоотзывов с 2017 года – с личного ведения, курсов и ретритов.</p>
   </div>
+  <div class="rev-grid">
+    <div class="rev-card">
+      <div class="rev-stars">★★★★★</div>
+      <div class="rev-text">Встроила спорт в жизнь, ушли зажимы в плечах и спине.</div>
+      <div class="rev-name">Анна · видеоотзыв</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stars">★★★★★</div>
+      <div class="rev-text">Страх после переломов прошёл, начала доверять своему телу.</div>
+      <div class="rev-name">Рузана · видеоотзыв</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stars">★★★★★</div>
+      <div class="rev-text">Боль в пояснице ушла, теперь вся семья тренируется вместе.</div>
+      <div class="rev-name">Яна · видеоотзыв</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-stars">★★★★★</div>
+      <div class="rev-text">Стало легче уже после первой тренировки – появилось ощущение лёгкости.</div>
+      <div class="rev-name">Алёна · видеоотзыв</div>
+    </div>
+  </div>
+  <div class="rev-more"><a href="/results">Смотреть все отзывы →</a></div>
 </section>
 
 <!-- CTA BOTTOM -->
 <section class="cta-bottom" id="zayavka">
   <div class="cta-inner">
     <div class="section-label">Как записаться</div>
-    <h2 class="section-title">Записаться на консультацию</h2>
-    <p class="section-desc">Провожу 4&#8209;5 консультаций в месяц – к каждой готовлюсь заранее, поэтому больше не беру. Оставьте заявку: отвечу в течение 1&#8209;2 дней и предложу удобное время.</p>
+    <h2 class="section-title">Записаться на «Точку старта»</h2>
+    <p class="section-desc">Беру 5 человек в неделю. Оставьте заявку: отвечу в течение 1&#8209;2 дней, предложу время и пришлю анкету.</p>
 
     <div class="cta-steps">
       <div class="cta-step">
         <div class="cta-step-num">1</div>
         <div class="cta-step-text">
-          <h4>Оставьте заявку</h4>
-          <p>Заполните форму ниже – отвечу в течение 1&#8209;2 дней и предложу удобное время. Удобнее в мессенджере – напишите напрямую.</p>
+          <strong>Оставляете заявку</strong>
+          Пара слов о том, что беспокоит – этого достаточно.
         </div>
       </div>
       <div class="cta-step">
         <div class="cta-step-num">2</div>
         <div class="cta-step-text">
-          <h4>Короткая анкета заранее</h4>
-          <p>Пришлю несколько вопросов, чтобы прийти на созвон подготовленным. Займёт 5–7 минут.</p>
+          <strong>Договариваемся о времени</strong>
+          Отвечу в течение 1&#8209;2 дней, пришлю анкету и ссылку на оплату – 2 990 ₽.
         </div>
       </div>
       <div class="cta-step">
         <div class="cta-step-num">3</div>
         <div class="cta-step-text">
-          <h4>Созвон 55 минут</h4>
-          <p>В удобное для вас время. Уходите с конкретными шагами.</p>
+          <strong>Занимаемся и проходим неделю</strong>
+          Занятие 55 минут, ваш план и я на связи. В конце недели разбираем результат.
         </div>
       </div>
     </div>
 
-    <form id="lead-form" class="lead-form" data-source="consultation" novalidate>
+    <form id="lead-form" class="lead-form" data-source="start" novalidate>
       <div class="lead-row">
         <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
         <input class="lead-input" name="contact" placeholder="Email, телефон или @телеграм *" required>
       </div>
       <textarea class="lead-input" name="message" rows="3" placeholder="Коротко о вашей ситуации (по желанию)"></textarea>
       <label class="lead-consent">
-        <input type="checkbox" name="consent_pd" checked required>
-        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
+        <input type="checkbox" name="consent_pd" value="1" required>
+        <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
       </label>
       <button type="submit" class="btn-cta-center lead-submit">Оставить заявку →</button>
       <p class="lead-note" id="lead-note"></p>
     </form>
 
     <div class="cta-buttons">
-      <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%D0%BA%D0%BE%D0%BD%D1%81%D1%83%D0%BB%D1%8C%D1%82%D0%B0%D1%86%D0%B8%D1%8E%20%285%20000%20%E2%82%BD%2C%2055%20%D0%BC%D0%B8%D0%BD%D1%83%D1%82%29.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank">Удобнее в Телеграме – написать напрямую</a>
-      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%D0%BA%D0%BE%D0%BD%D1%81%D1%83%D0%BB%D1%8C%D1%82%D0%B0%D1%86%D0%B8%D1%8E%20%285%20000%20%E2%82%BD%2C%2055%20%D0%BC%D0%B8%D0%BD%D1%83%D1%82%29.%20%D0%9A%D1%80%D0%B0%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank">Нет Телеграма – написать в Max</a>
+      <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D1%81%D1%82%D0%B0%D1%80%D1%82%D0%B0%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Телеграм</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D1%81%D1%82%D0%B0%D1%80%D1%82%D0%B0%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Max</a>
     </div>
-    <p class="cta-note">Отвечаю в течение 1&#8209;2 дней · провожу 4&#8209;5 консультаций в месяц</p>
+    <p class="cta-note">2 990 ₽ · 5 мест в неделю · не подойдёт – верну деньги</p>
   </div>
 </section>
 
@@ -552,6 +612,5 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   </div>
   <div class="footer-copy">© 2026 Алексей Ларин</div>
 </footer>
-
 </body>
 </html>

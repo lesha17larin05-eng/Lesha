@@ -1019,6 +1019,20 @@ func TestLeadsFlow(t *testing.T) {
 		t.Fatalf("lead fields: %+v", leads[0])
 	}
 
+	// заявка со страницы «Точка старта» сохраняет свой источник
+	r, body = anon.do("POST", "/api/leads", map[string]any{
+		"name": "Пётр", "contact": "petr@x.ru", "source": "start", "consent_pd": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("create start lead: %d %s", r.StatusCode, body)
+	}
+	leads, err = repo.ListLeads(ctx, 10)
+	if err != nil || len(leads) != 2 {
+		t.Fatalf("list leads after start: %v %d", err, len(leads))
+	}
+	if leads[0].Source != "start" {
+		t.Fatalf("start lead source: %+v", leads[0])
+	}
+
 	// обычному юзеру админский список недоступен
 	user := newClient(srv)
 	user.do("POST", "/api/auth/register", map[string]any{

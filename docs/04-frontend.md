@@ -9,7 +9,8 @@ web/src/
   pages/
     index.astro                   — главная (новый дизайн: hero, услуги/курсы 2×2, обо мне, статьи)
     coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
-    consultation.astro            — страница консультации (legacy import) + форма заявки в лист ожидания (#lead-form → POST /api/leads, source=consultation)
+    start.astro                   — «Точка старта» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
+    consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
     course.astro                  — лендинг бесплатного курса (legacy import). Форма «Начните сегодня» (`#quick-signup-form`) шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе создаём аккаунт, генерим пароль (на email), ставим cookies и ведём в `/cabinet`.
     results.astro                 — кейсы/результаты учеников (legacy import)
     blog/
@@ -71,9 +72,9 @@ web/src/
 **Общий CSS:** дизайн-токены (`:root`), шапка `.site-nav`, футер `.site-footer`, `.container`, базовая типографика и универсальные responsive-правила вынесены в `web/src/styles/site.css` — его импортируют оба layout'а. В `SiteLayout.astro` и `Base.astro` остаётся только специфика (утилиты кабинета, `.btn-primary` публичного сайта и т.п.). Legacy-страницы несут свои копии `:root` — значения должны совпадать с site.css (сейчас `--text-light: #6e6e6e`).
 
 
-Публичные страницы (главная, блог, consultation, course, results) используют **`SiteLayout.astro`** + общие `SiteHeader`/`SiteFooter`. Внутренний кабинет/админка — **`Base.astro`** (минималистичная палитра, таблицы, формы).
+Публичные страницы (главная, блог, start, course, results) используют **`SiteLayout.astro`** + общие `SiteHeader`/`SiteFooter`. Внутренний кабинет/админка — **`Base.astro`** (минималистичная палитра, таблицы, формы).
 
-Адаптивность: помимо мобильного брейкпоинта 700px, у legacy-страниц (index/consultation/course/results) есть планшетные брейкпоинты 1000–1280px (промежуточные сетки 2–3 колонки, уменьшенные паддинги); у zdorovaya-spina исторически 960/1100. Hero-секции используют `min-height: 100svh` (с fallback `100vh`).
+Адаптивность: помимо мобильного брейкпоинта 700px, у legacy-страниц (index/start/course/results) есть планшетные брейкпоинты 1000–1280px (промежуточные сетки 2–3 колонки, уменьшенные паддинги); у zdorovaya-spina исторически 960/1100. Hero-секции используют `min-height: 100svh` (с fallback `100vh`).
 
 Служебная страница `/test-pay` (проверка интеграции с Продамусом, тариф `test10`) доступна только `role=admin`, остальным — 404.
 
@@ -135,7 +136,7 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 ## Аналитика (Яндекс.Метрика)
 
-Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/consultation), `quick_signup` (форма /course), `checkout_start` (переход к оплате «Здоровой спины»).
+Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/start), `quick_signup` (форма /course), `checkout_start` (переход к оплате «Здоровой спины»).
 
 ## Блог: даты, похожие статьи, JSON-LD
 

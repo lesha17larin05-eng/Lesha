@@ -12,7 +12,7 @@ import (
 	"github.com/leshalarin/api/internal/middleware"
 )
 
-// Заявки с маркетинговых страниц (/coaching, /consultation).
+// Заявки с маркетинговых страниц (/coaching, /start).
 // Публичный POST /api/leads (CSRF обязателен, rate-limit в роутере) +
 // админские GET /api/admin/leads и PATCH /api/admin/leads/{id}.
 
@@ -24,7 +24,9 @@ type leadReq struct {
 	ConsentPD bool   `json:"consent_pd"`
 }
 
-var leadSources = map[string]bool{"coaching": true, "consultation": true}
+// consultation остаётся в списке: страница закрыта и редиректит на /start,
+// но старые ссылки и закладки могут прислать этот источник.
+var leadSources = map[string]bool{"coaching": true, "start": true, "consultation": true}
 
 func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 	var in leadReq
@@ -58,7 +60,8 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 	// Уведомление Алексею. html.EscapeString – пользовательский ввод в письме.
 	sourceTitle := map[string]string{
 		"coaching":     "Личное ведение",
-		"consultation": "Консультация",
+		"start":        "Точка старта",
+		"consultation": "Консультация (старая страница)",
 		"other":        "Сайт",
 	}[in.Source]
 	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Новая заявка: "+sourceTitle,

@@ -94,7 +94,7 @@ make test
 │   ├── Dockerfile                runtime образ (alpine + ffmpeg)
 │   └── Dockerfile.test           для прогона go test в контейнере
 ├── web/                          Astro SSR
-│   ├── src/pages/                index, consultation, course, results, blog/, courses, cabinet, admin, auth
+│   ├── src/pages/                index, start, course, results, blog/, courses, cabinet, admin, auth
 │   ├── src/components/           SiteHeader, SiteFooter (общая шапка/футер для публичных страниц)
 │   ├── src/layouts/              Base.astro (кабинет/админ), SiteLayout.astro (публичный сайт)
 │   ├── src/legacy/               оригинальные HTML маркетинговых страниц, импортируются ?raw
@@ -181,8 +181,8 @@ curl http://localhost/api/articles/akrojoga-chto-eto | jq '{slug,title,reading_m
 
 - Публичный сайт: <http://localhost/>
 - Бесплатный курс: <http://localhost/course>
-- Консультация: <http://localhost/consultation>
-- Результаты: <http://localhost/results>
+- Точка старта: <http://localhost/start>
+- Отзывы: <http://localhost/results>
 - Блог: <http://localhost/blog>
 - Кабинет: <http://localhost/cabinet>
 - Админка: <http://localhost/admin> → раздел **Блог** (<http://localhost/admin/blog>) для управления статьями.
