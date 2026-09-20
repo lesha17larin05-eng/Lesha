@@ -10,7 +10,7 @@ const user = (Astro.locals as any).user;
 const sourceLabels: Record<string, string> = {
   coaching: 'Личное ведение',
   consultation: 'Консультация (архив)',
-  start: 'Точка старта',
+  start: 'Точка перемен',
   other: 'Другое',
 };
 const statusLabels: Record<string, string> = {
@@ -27,7 +27,7 @@ const fmt = (iso: string) => {
   <AdminNav active="leads" />
   <section class="container" style="padding:50px 16px;">
     <h1>Заявки</h1>
-    <p class="muted">С форм «Личное ведение» и «Точка старта». Новые – сверху.</p>
+    <p class="muted">С форм «Личное ведение» и «Точка перемен». Новые – сверху.</p>
     {leads.length === 0
       ? <p class="muted" style="margin-top:20px;">Заявок пока нет.</p>
       : <table style="margin-top:16px;">

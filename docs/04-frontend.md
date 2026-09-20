@@ -9,7 +9,7 @@ web/src/
   pages/
     index.astro                   — главная (новый дизайн: hero, услуги/курсы 2×2, обо мне, статьи)
     coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
-    start.astro                   — «Точка старта» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
+    start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
     consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
     course.astro                  — лендинг бесплатного курса (legacy import). Форма «Начните сегодня» (`#quick-signup-form`) шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе создаём аккаунт, генерим пароль (на email), ставим cookies и ведём в `/cabinet`.
     results.astro                 — кейсы/результаты учеников (legacy import)

@@ -14,7 +14,7 @@ const servicesGroup = [
     imageWebp: '/img/IMG_3906.webp',
     imageWebp2x: '/img/IMG_3906@2x.webp',
     imgPos: 'center 33%',
-    eyebrow: 'Точка старта',
+    eyebrow: 'Точка перемен',
     badge: '5 мест в неделю',
     title: 'Поймёте, что вам можно – и начнёте на этой неделе',
     desc: 'Занятие-разбор 55 минут один на один: погружаемся в вашу ситуацию, смотрю, как вы двигаетесь, и собираю неделю под вас. Неделю я на связи. 2 990 ₽.',
@@ -324,9 +324,9 @@ const pageStyles = `
   /* на мобиле – одна колонка, разделитель убираем */
   .services-grid-2x2 { grid-template-columns: 1fr; row-gap: 14px; column-gap: 0; }
   .services-grid-2x2::before { display: none; }
-  /* порядок: Услуги, Точка старта, ЛВ, Курсы, Мягкий старт, ЗС */
+  /* порядок: Услуги, Точка перемен, ЛВ, Курсы, Мягкий старт, ЗС */
   .services-grid-2x2 > :nth-child(1) { order: 1; } /* Услуги head */
-  .services-grid-2x2 > :nth-child(3) { order: 2; } /* Точка старта */
+  .services-grid-2x2 > :nth-child(3) { order: 2; } /* Точка перемен */
   .services-grid-2x2 > :nth-child(5) { order: 3; } /* ЛВ */
   .services-grid-2x2 > :nth-child(2) { order: 4; margin-top: 18px; } /* Курсы head */
   .services-grid-2x2 > :nth-child(4) { order: 5; } /* МС */
@@ -345,7 +345,7 @@ const pageStyles = `
 ---
 <SiteLayout
   title="Алексей Ларин – тренер по здоровью"
-  description="Помогаю мягко вернуться к движению и здоровью. Занятие-разбор «Точка старта», личное ведение, бесплатный курс и программа для спины."
+  description="Помогаю мягко вернуться к движению и здоровью. Занятие-разбор «Точка перемен», личное ведение, бесплатный курс и программа для спины."
   active=""
   pageStyles={pageStyles}
 >
