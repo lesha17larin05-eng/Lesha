@@ -77,6 +77,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	r.Post("/api/articles/{slug}/view", app.TrackArticleView)
 	r.Post("/api/newsletter", app.NewsletterSignup)
+	r.Post("/api/checkout/service", app.ServiceCheckout)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
@@ -2115,5 +2116,93 @@ func TestNewsletterSignup(t *testing.T) {
 	var n int
 	if err := repo.Pool.QueryRow(ctx, `SELECT count(*) FROM users WHERE email='nl@b.ru'`).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("дубль пользователя: %v %d", err, n)
+	}
+}
+
+
+// TestServiceCheckout — оплата «Точки перемен» без регистрации: заказ
+// создаётся без курса, после оплаты доступ к курсам не выдаётся.
+func TestServiceCheckout(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+
+	// Проверки формы
+	for _, bad := range []map[string]any{
+		{"service": "start", "email": "a@b.ru", "name": "Иван"},                    // нет согласия
+		{"service": "start", "email": "кривая", "name": "Иван", "consent_pd": true}, // адрес
+		{"service": "start", "email": "a@b.ru", "name": "", "consent_pd": true},     // имя
+		{"service": "чужая", "email": "a@b.ru", "name": "Иван", "consent_pd": true}, // услуга
+	} {
+		r, _ := c.do("POST", "/api/checkout/service", bad)
+		if r.StatusCode != 400 {
+			t.Fatalf("ждём 400 на %v, получили %d", bad, r.StatusCode)
+		}
+	}
+
+	// Валидная оплата: пользователь заводится, заказ без курса на 2990
+	r, body := c.do("POST", "/api/checkout/service", map[string]any{
+		"service": "start", "email": "Buyer@B.ru", "name": "Иван", "consent_pd": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("checkout: %d %s", r.StatusCode, body)
+	}
+	var out struct {
+		URL string `json:"url"`
+	}
+	_ = json.Unmarshal(body, &out)
+	if out.URL == "" {
+		t.Fatalf("нет ссылки на оплату: %s", body)
+	}
+
+	u, err := repo.GetUserByEmail(ctx, "buyer@b.ru")
+	if err != nil {
+		t.Fatalf("покупатель не заведён: %v", err)
+	}
+	if u.Name != "Иван" {
+		t.Fatalf("имя не сохранилось: %q", u.Name)
+	}
+	orders, err := repo.ListOrders(ctx, "", nil, nil, 10, 0)
+	if err != nil || len(orders) != 1 {
+		t.Fatalf("заказы: %v %d", err, len(orders))
+	}
+	o := orders[0]
+	if o.CourseID != uuid.Nil {
+		t.Fatalf("заказ на услугу не должен ссылаться на курс: %v", o.CourseID)
+	}
+	if o.Service != "start" || o.AmountRub != 2990 || o.Status != "pending" {
+		t.Fatalf("заказ: service=%q amount=%d status=%q", o.Service, o.AmountRub, o.Status)
+	}
+
+	// Оплата через вебхук: заказ становится paid, доступов к курсам не появляется
+	pay := map[string]any{
+		"order_id":       "48479471", // внутренний номер Продамуса
+		"order_num":      o.ID.String(),
+		"payment_status": "success",
+		"sum":            "2990.00",
+	}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, pay)
+	form := url.Values{}
+	for k, v := range pay {
+		form.Set(k, v.(string))
+	}
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+
+	o2, err := repo.GetOrder(ctx, o.ID)
+	if err != nil || o2.Status != "paid" {
+		t.Fatalf("после вебхука заказ должен быть paid: %v %+v", err, o2)
+	}
+	var enrollments int
+	if err := repo.Pool.QueryRow(ctx, `SELECT count(*) FROM enrollments WHERE user_id=$1`, u.ID).Scan(&enrollments); err != nil {
+		t.Fatal(err)
+	}
+	if enrollments != 0 {
+		t.Fatalf("оплата услуги не должна открывать курсы, а открыла %d", enrollments)
 	}
 }

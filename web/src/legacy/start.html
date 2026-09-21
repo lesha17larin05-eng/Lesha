@@ -370,6 +370,35 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   .faq-item summary { padding: 18px 20px; font-size: 16px; }
   .faq-answer { padding: 0 20px 20px; font-size: 15px; }
 }
+
+/* ─── Оплата: основное действие ──────────────────────────────────── */
+.pay-box { max-width: 560px; margin: 0 auto; text-align: left; }
+.pay-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.pay-input {
+  flex: 1 1 200px; min-width: 0; font-family: inherit; font-size: 16px;
+  padding: 15px 18px; border-radius: 12px; background: white;
+  border: 1px solid rgba(255,255,255,0.25); color: var(--text);
+}
+.pay-input:focus { outline: none; border-color: var(--orange); }
+.pay-input:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.pay-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.75); }
+.pay-consent input { margin-top: 3px; flex-shrink: 0; }
+.pay-consent a { color: rgba(255,255,255,0.92); text-decoration: underline; text-underline-offset: 3px; }
+.pay-btn {
+  width: 100%; margin-top: 18px; font-family: inherit; font-size: 18px; font-weight: 600;
+  padding: 18px 28px; border: none; border-radius: 100px; cursor: pointer;
+  background: var(--orange); color: white;
+  transition: background 0.2s, transform 0.15s;
+}
+.pay-btn[disabled] { opacity: 0.65; cursor: default; }
+.pay-btn:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+@media (hover: hover) { .pay-btn:not([disabled]):hover { background: var(--orange-warm); transform: translateY(-2px); } }
+.pay-note { margin-top: 14px; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.7); text-align: center; }
+.pay-note.is-error { color: #ffb4a0; }
+.pay-ask { margin-top: 22px; text-align: center; font-size: 15px; color: rgba(255,255,255,0.72); }
+.pay-ask a { color: white; text-decoration: underline; text-underline-offset: 3px; }
+.pay-safe { margin-top: 10px; text-align: center; font-size: 14px; color: rgba(255,255,255,0.6); }
+@media (max-width: 700px) { .pay-input { flex: 1 1 100%; } }
 </style>
 </head>
 <body>
@@ -409,7 +438,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       </div>
     </div>
     <div class="hero-cta">
-      <a href="#zayavka" class="btn-hero">Записаться – 2 990 ₽ ↓</a>
+      <a href="#zayavka" class="btn-hero">Оплатить – 2 990 ₽ ↓</a>
       <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-hero-alt" target="_blank" rel="noopener">Нет Телеграма – написать в Max</a>
       <div class="hero-safety">Не подойдёт – верну деньги без объяснений</div>
     </div>
@@ -652,7 +681,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="cta-inner">
     <div class="section-label">Как записаться</div>
     <h2 class="section-title">Записаться на «Точку перемен»</h2>
-    <p class="section-desc">Пять человек в неделю. Оставьте заявку: отвечу в течение 1&#8209;2 дней, предложу время и пришлю анкету.</p>
+    <p class="section-desc">Пять человек в неделю. Оплатите – и я напишу вам в течение 1&#8209;2 дней: пришлю анкету и предложу время.</p>
 
     <div class="cta-steps">
       <div class="cta-step">
@@ -678,7 +707,25 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       </div>
     </div>
 
-    <form id="lead-form" class="lead-form" data-source="start" novalidate>
+    <div class="pay-box">
+      <form id="pay-form" novalidate>
+        <div class="pay-row">
+          <input class="pay-input" name="name" placeholder="Ваше имя" autocomplete="name" required>
+          <input class="pay-input" name="email" type="email" placeholder="Почта" autocomplete="email" required>
+        </div>
+        <label class="pay-consent">
+          <input type="checkbox" name="consent_pd" required>
+          <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a> и <a href="/legal/offer" target="_blank" rel="noopener">офертой</a></span>
+        </label>
+        <button type="submit" class="pay-btn">Оплатить 2 990 ₽</button>
+        <p class="pay-note" id="pay-note"></p>
+      </form>
+      <p class="pay-safe">После оплаты напишу вам: пришлю анкету и предложу время занятия.</p>
+      <p class="pay-ask">Хотите сначала задать вопрос? <a href="#zayavka-form">Напишите мне</a> – отвечу и ничего не буду навязывать.</p>
+    </div>
+
+    <div id="zayavka-form" style="margin-top:48px;">
+      <form id="lead-form" class="lead-form" data-source="start" novalidate>
       <div class="lead-row">
         <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
         <input class="lead-input" name="contact" placeholder="Email, телефон или @телеграм *" required>
@@ -691,6 +738,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       <button type="submit" class="btn-cta-center lead-submit">Оставить заявку →</button>
       <p class="lead-note" id="lead-note"></p>
     </form>
+    </div>
 
     <div class="cta-buttons">
       <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Телеграм</a>

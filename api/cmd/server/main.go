@@ -79,6 +79,8 @@ func main() {
 	r.Post("/api/subscribe", app.Subscribe)
 	// Форма «получать письма» в блоге и под отзывами.
 	r.Post("/api/newsletter", app.NewsletterSignup)
+	// Оплата услуги без регистрации: «Точка перемен».
+	r.Post("/api/checkout/service", app.ServiceCheckout)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	// Маяк счётчика чтения: публичный, без CSRF (см. TrackArticleView).

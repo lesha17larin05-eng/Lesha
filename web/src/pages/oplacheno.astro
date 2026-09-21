@@ -1,0 +1,29 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+// Куда человек попадает после успешной оплаты «Точки перемен».
+// Страница служебная – в поиске ей делать нечего.
+---
+<SiteLayout title="Оплата получена – Алексей Ларин" padTop={true} noindex={true}>
+  <section class="container paid">
+    <h1>Оплата получена</h1>
+    <p>Спасибо. Я напишу вам на указанную почту в течение 1‑2 дней: пришлю короткую
+      анкету и предложу время для занятия.</p>
+    <p class="paid-note">Анкета нужна, чтобы не тратить занятие на расспросы – несколько
+      вопросов о том, что беспокоит и как устроен ваш день.</p>
+    <div class="paid-actions">
+      <a class="btn-primary" href="https://t.me/larin_lesha" target="_blank" rel="noopener">Написать мне в Телеграм</a>
+      <a class="paid-link" href="/blog">Читать статьи</a>
+    </div>
+    <p class="paid-note">Если письмо не придёт – загляните в папку «Спам» или просто напишите мне.</p>
+  </section>
+
+  <style>
+    .paid { max-width: 620px; padding: 80px 20px 100px; }
+    .paid h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 4vw, 44px); font-weight: 400; color: var(--navy); margin-bottom: 18px; }
+    .paid p { font-size: 17px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
+    .paid-note { font-size: 15px; color: var(--text-muted); }
+    .paid-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin: 30px 0 24px; }
+    .paid-link { font-size: 15px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+    @media (hover: hover) { .paid-link:hover { color: var(--orange); } }
+  </style>
+</SiteLayout>

@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"html"
 	"io"
 	"log/slog"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/leshalarin/api/internal/auth"
 	"github.com/leshalarin/api/internal/db"
 	"github.com/leshalarin/api/internal/middleware"
 )
@@ -241,6 +244,11 @@ func (a *App) FakePayment(w http.ResponseWriter, r *http.Request) {
 	}
 	if o.Status == "pending" {
 		_ = a.Repo.MarkOrderPaid(r.Context(), o.ID, "DEV-"+o.ID.String())
+		if o.CourseID == uuid.Nil {
+			a.serviceOrderPaid(r.Context(), o)
+			http.Redirect(w, r, a.Cfg.AppHost+"/oplacheno", http.StatusFound)
+			return
+		}
 		_ = a.Repo.Grant(r.Context(), o.UserID, o.CourseID, "purchase", nil)
 	}
 	http.Redirect(w, r, a.Cfg.AppHost+"/cabinet/courses?paid=1", http.StatusFound)
@@ -332,6 +340,13 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 				pid, _ = parsed["order_id"].(string)
 			}
 			_ = a.Repo.MarkOrderPaid(r.Context(), o.ID, pid)
+			// Заказ на услугу («Точка перемен») курса не открывает:
+			// человек получает письмо с анкетой, дальше работаем лично.
+			if o.CourseID == uuid.Nil {
+				a.serviceOrderPaid(r.Context(), o)
+				w.WriteHeader(200)
+				return
+			}
 			_ = a.Repo.Grant(r.Context(), o.UserID, o.CourseID, "purchase", nil)
 			u, _ := a.Repo.GetUser(r.Context(), o.UserID)
 			c, _ := a.Repo.GetCourseByID(r.Context(), o.CourseID)
@@ -546,4 +561,155 @@ func (a *App) handleRefund(r *http.Request, o *db.Order, status string) {
 			"<b>Сумма:</b> "+strconv.Itoa(o.AmountRub)+" ₽</p>"+
 			"<p>"+accessLine+"</p>"+
 			"<p><a href=\""+a.Cfg.AppHost+"/admin/users\">Открыть админку</a></p>")
+}
+
+// ─── Оплата услуг ───────────────────────────────────────────────────────
+//
+// «Точка перемен» – не курс, доступа к урокам она не даёт. Поэтому заказ
+// создаётся без course_id (см. миграцию 016), а после оплаты человек
+// получает письмо с анкетой, а не запись на курс.
+//
+// Регистрации не требуем: человек оставляет почту и имя, аккаунт заводится
+// сам. Для покупки за 2 990 ₽ заставлять придумывать пароль – значит терять
+// половину тех, кто уже решился.
+var services = map[string]struct {
+	Title    string
+	PriceRub int
+}{
+	"start": {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990},
+}
+
+func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Service   string `json:"service"`
+		Email     string `json:"email"`
+		Name      string `json:"name"`
+		ConsentPD bool   `json:"consent_pd"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2048)).Decode(&in); err != nil {
+		writeErr(w, 400, "bad_json")
+		return
+	}
+	svc, ok := services[in.Service]
+	if !ok {
+		writeErr(w, 400, "unknown_service")
+		return
+	}
+	email := strings.ToLower(strings.TrimSpace(in.Email))
+	if !strings.Contains(email, "@") || !strings.Contains(email, ".") || len(email) < 6 {
+		writeErr(w, 400, "bad_email")
+		return
+	}
+	name := strings.TrimSpace(in.Name)
+	if name == "" {
+		writeErr(w, 400, "name_required")
+		return
+	}
+	if !in.ConsentPD {
+		writeErr(w, 400, "consent_pd_required")
+		return
+	}
+
+	// Находим или заводим человека – тем же способом, что и подписка на письма.
+	uid, err := a.findOrCreateUser(r.Context(), email, name)
+	if err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	if err := a.Repo.SaveConsentPD(r.Context(), uid); err != nil {
+		slog.Warn("service consent", "err", err)
+	}
+
+	o, err := a.Repo.CreateServiceOrder(r.Context(), uid, in.Service, svc.PriceRub)
+	if err != nil {
+		writeErr(w, 500, "order_failed")
+		return
+	}
+
+	// В тестовом режиме Продамуса платёжной ссылки нет – отдаём локальную
+	// заглушку, как и для курсов.
+	if a.Cfg.ProdamusTestMode && a.Prodamus.PayformURL == "" {
+		writeJSON(w, 200, map[string]any{"url": a.Cfg.AppHost + "/fake-payment?order=" + o.ID.String()})
+		return
+	}
+
+	params := map[string]any{
+		"do":             "pay",
+		"order_id":       o.ID.String(),
+		"order_num":      strconv.FormatInt(o.OrderNum, 10),
+		"customer_email": email,
+		"customer_name":  name,
+		"products": []any{
+			map[string]any{
+				"name":     svc.Title,
+				"price":    strconv.Itoa(svc.PriceRub),
+				"quantity": "1",
+			},
+		},
+		"urlReturn":       a.Cfg.AppHost + "/start",
+		"urlSuccess":      a.Cfg.AppHost + "/oplacheno",
+		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
+		"npd_income_type": "FROM_INDIVIDUAL",
+		"sys":             "leshalarin",
+		"callbackType":    "json",
+	}
+	url, err := a.Prodamus.PaymentURL(params)
+	if err != nil {
+		writeErr(w, 500, "payment_url")
+		return
+	}
+	writeJSON(w, 200, map[string]any{"url": url})
+}
+
+// findOrCreateUser – общий помощник для гостевых сценариев (оплата услуги,
+// подписка на письма). Пароль случайный: войти по нему нельзя, человек
+// восстановит его обычным способом, если захочет в кабинет.
+func (a *App) findOrCreateUser(ctx context.Context, email, name string) (uuid.UUID, error) {
+	u, err := a.Repo.GetUserByEmail(ctx, email)
+	if err == nil {
+		if name != "" && strings.TrimSpace(u.Name) == "" {
+			_ = a.Repo.UpdateUserName(ctx, u.ID, name)
+		}
+		return u.ID, nil
+	}
+	if !errors.Is(err, db.ErrNotFound) {
+		return uuid.Nil, err
+	}
+	raw, _, err := auth.RandomToken(32)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	hash, err := auth.HashPassword(raw)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return a.Repo.CreateUser(ctx, email, hash, name, "user")
+}
+
+// serviceOrderPaid — что происходит после оплаты услуги: письмо покупателю
+// с анкетой и уведомление Алексею. Доступа к курсам здесь не выдаётся.
+func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
+	svc, ok := services[o.Service]
+	if !ok {
+		return
+	}
+	u, _ := a.Repo.GetUser(ctx, o.UserID)
+	if u == nil {
+		return
+	}
+	a.Mail.Async(u.Email, "Оплата получена – «Точка перемен»",
+		"<p>Здравствуйте! Оплата получена, спасибо.</p>"+
+			"<p>Что дальше: я напишу вам в течение 1&#8209;2 дней, пришлю короткую анкету "+
+			"и предложу время для занятия. Анкета нужна, чтобы не тратить занятие на расспросы.</p>"+
+			"<p>Если удобнее сразу написать мне самому – "+
+			"<a href=\"https://t.me/larin_lesha\">@larin_lesha</a> в Телеграме.</p>"+
+			"<p>Если после занятия решите, что это не ваше – верну деньги полностью.</p>"+
+			"<p>Алексей Ларин</p>")
+
+	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Оплачена «Точка перемен»",
+		"<p><b>Кто:</b> "+html.EscapeString(u.Name)+" &lt;"+html.EscapeString(u.Email)+"&gt;</p>"+
+			"<p><b>Что:</b> "+html.EscapeString(svc.Title)+"</p>"+
+			"<p><b>Сумма:</b> "+strconv.Itoa(o.AmountRub)+" ₽</p>"+
+			"<p><b>Заказ:</b> №"+strconv.FormatInt(o.OrderNum, 10)+"</p>"+
+			"<p>Напишите человеку: анкета и время занятия.</p>")
 }

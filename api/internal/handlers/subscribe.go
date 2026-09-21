@@ -5,14 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/leshalarin/api/internal/auth"
-	"github.com/leshalarin/api/internal/db"
 )
 
 // Подписка на письма по ссылке – зеркало отписки.
@@ -97,30 +94,10 @@ func (a *App) NewsletterSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := a.Repo.GetUserByEmail(r.Context(), email)
-	var uid uuid.UUID
-	switch {
-	case err == nil:
-		uid = u.ID
-	case errors.Is(err, db.ErrNotFound):
-		// Заводим «пустой» аккаунт: пароль случайный, войти по нему нельзя –
-		// человек в любой момент восстановит его обычным способом.
-		raw, _, tErr := auth.RandomToken(32)
-		if tErr != nil {
-			writeErr(w, 500, "internal")
-			return
-		}
-		hash, hErr := auth.HashPassword(raw)
-		if hErr != nil {
-			writeErr(w, 500, "internal")
-			return
-		}
-		uid, err = a.Repo.CreateUser(r.Context(), email, hash, "", "user")
-		if err != nil {
-			writeErr(w, 500, "db")
-			return
-		}
-	default:
+	// Заводим «пустой» аккаунт, если его ещё нет: пароль случайный, войти по
+	// нему нельзя – человек восстановит его обычным способом, если захочет.
+	uid, err := a.findOrCreateUser(r.Context(), email, "")
+	if err != nil {
 		writeErr(w, 500, "db")
 		return
 	}

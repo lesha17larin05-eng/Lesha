@@ -53,14 +53,17 @@ type Lesson struct {
 }
 
 type Order struct {
-	ID         uuid.UUID
-	OrderNum   int64
-	UserID     uuid.UUID
-	CourseID   uuid.UUID
-	AmountRub  int
-	Status     string
-	PaidAt     *time.Time
-	CreatedAt  time.Time
+	ID       uuid.UUID
+	OrderNum int64
+	UserID   uuid.UUID
+	// CourseID = uuid.Nil означает, что куплен не курс, а услуга –
+	// тогда заполнено Service (см. миграцию 016).
+	CourseID  uuid.UUID
+	Service   string
+	AmountRub int
+	Status    string
+	PaidAt    *time.Time
+	CreatedAt time.Time
 }
 
 type Enrollment struct {

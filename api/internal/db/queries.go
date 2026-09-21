@@ -473,29 +473,49 @@ func (r *Repo) CreateOrder(ctx context.Context, userID, courseID uuid.UUID, amou
 	o := &Order{}
 	err := r.Pool.QueryRow(ctx,
 		`INSERT INTO orders(user_id,course_id,amount_rub,status) VALUES($1,$2,$3,'pending')
-		 RETURNING id,order_num,user_id,course_id,amount_rub,status,paid_at,created_at`,
-		userID, courseID, amount).Scan(&o.ID, &o.OrderNum, &o.UserID, &o.CourseID, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
+		 RETURNING id,order_num,user_id,course_id,COALESCE(service,''),amount_rub,status,paid_at,created_at`,
+		userID, courseID, amount).Scan(&o.ID, &o.OrderNum, &o.UserID, &o.CourseID, &o.Service, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
+	return o, err
+}
+
+// CreateServiceOrder – заказ на услугу (без курса). Используется для
+// «Точки перемен»: оплачивается занятие и неделя работы, а не доступ к урокам.
+func (r *Repo) CreateServiceOrder(ctx context.Context, userID uuid.UUID, service string, amount int) (*Order, error) {
+	o := &Order{}
+	var courseID *uuid.UUID
+	err := r.Pool.QueryRow(ctx,
+		`INSERT INTO orders(user_id,course_id,service,amount_rub,status) VALUES($1,NULL,$2,$3,'pending')
+		 RETURNING id,order_num,user_id,course_id,COALESCE(service,''),amount_rub,status,paid_at,created_at`,
+		userID, service, amount).Scan(&o.ID, &o.OrderNum, &o.UserID, &courseID, &o.Service, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
 	return o, err
 }
 
 func (r *Repo) GetOrder(ctx context.Context, id uuid.UUID) (*Order, error) {
 	o := &Order{}
+	var courseID *uuid.UUID
 	err := r.Pool.QueryRow(ctx,
-		`SELECT id,order_num,user_id,course_id,amount_rub,status,paid_at,created_at FROM orders WHERE id=$1`, id).
-		Scan(&o.ID, &o.OrderNum, &o.UserID, &o.CourseID, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
+		`SELECT id,order_num,user_id,course_id,COALESCE(service,''),amount_rub,status,paid_at,created_at FROM orders WHERE id=$1`, id).
+		Scan(&o.ID, &o.OrderNum, &o.UserID, &courseID, &o.Service, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
+	}
+	if courseID != nil {
+		o.CourseID = *courseID
 	}
 	return o, err
 }
 
 func (r *Repo) GetOrderByNum(ctx context.Context, num int64) (*Order, error) {
 	o := &Order{}
+	var courseID *uuid.UUID
 	err := r.Pool.QueryRow(ctx,
-		`SELECT id,order_num,user_id,course_id,amount_rub,status,paid_at,created_at FROM orders WHERE order_num=$1`, num).
-		Scan(&o.ID, &o.OrderNum, &o.UserID, &o.CourseID, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
+		`SELECT id,order_num,user_id,course_id,COALESCE(service,''),amount_rub,status,paid_at,created_at FROM orders WHERE order_num=$1`, num).
+		Scan(&o.ID, &o.OrderNum, &o.UserID, &courseID, &o.Service, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
+	}
+	if courseID != nil {
+		o.CourseID = *courseID
 	}
 	return o, err
 }
@@ -509,7 +529,7 @@ func (r *Repo) MarkOrderPaid(ctx context.Context, orderID uuid.UUID, prodamusOrd
 
 func (r *Repo) ListOrders(ctx context.Context, status string, from, to *time.Time, limit, offset int) ([]*Order, error) {
 	rows, err := r.Pool.Query(ctx,
-		`SELECT id,order_num,user_id,course_id,amount_rub,status,paid_at,created_at FROM orders
+		`SELECT id,order_num,user_id,course_id,COALESCE(service,''),amount_rub,status,paid_at,created_at FROM orders
 		 WHERE ($1='' OR status=$1) AND ($2::timestamptz IS NULL OR created_at>=$2) AND ($3::timestamptz IS NULL OR created_at<=$3)
 		 ORDER BY created_at DESC LIMIT $4 OFFSET $5`, status, from, to, limit, offset)
 	if err != nil {
@@ -519,8 +539,12 @@ func (r *Repo) ListOrders(ctx context.Context, status string, from, to *time.Tim
 	var out []*Order
 	for rows.Next() {
 		o := &Order{}
-		if err := rows.Scan(&o.ID, &o.OrderNum, &o.UserID, &o.CourseID, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt); err != nil {
+		var courseID *uuid.UUID
+		if err := rows.Scan(&o.ID, &o.OrderNum, &o.UserID, &courseID, &o.Service, &o.AmountRub, &o.Status, &o.PaidAt, &o.CreatedAt); err != nil {
 			return nil, err
+		}
+		if courseID != nil {
+			o.CourseID = *courseID
 		}
 		out = append(out, o)
 	}
@@ -727,8 +751,10 @@ type UserOrderInfo struct {
 
 func (r *Repo) OrdersByUser(ctx context.Context, userID uuid.UUID) ([]UserOrderInfo, error) {
 	rows, err := r.Pool.Query(ctx,
-		`SELECT o.id, o.order_num, c.title, o.amount_rub, o.status, o.created_at, o.paid_at
-		   FROM orders o JOIN courses c ON c.id = o.course_id
+		`SELECT o.id, o.order_num,
+		        COALESCE(c.title, CASE o.service WHEN 'start' THEN 'Точка перемен' ELSE o.service END, '–'),
+		        o.amount_rub, o.status, o.created_at, o.paid_at
+		   FROM orders o LEFT JOIN courses c ON c.id = o.course_id
 		  WHERE o.user_id = $1 ORDER BY o.created_at DESC`, userID)
 	if err != nil {
 		return nil, err

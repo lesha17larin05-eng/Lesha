@@ -21,6 +21,51 @@ const { styles, body } = extractLegacy(rawHtml);
     });
   </script>
   <script>
+    // Оплата «Точки перемен» → POST /api/checkout/service → Продамус.
+    // Регистрации нет: достаточно имени и почты, аккаунт заведётся сам.
+    const payForm = document.getElementById('pay-form') as HTMLFormElement | null;
+    if (payForm) {
+      const note = document.getElementById('pay-note');
+      const btn = payForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      const say = (msg: string, isErr = false) => {
+        if (!note) return;
+        note.textContent = msg;
+        note.classList.toggle('is-error', isErr);
+      };
+      payForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(payForm);
+        const name = String(fd.get('name') || '').trim();
+        const email = String(fd.get('email') || '').trim();
+        if (!name) { say('Укажите имя', true); return; }
+        if (!email.includes('@') || !email.includes('.')) { say('Проверьте адрес почты', true); return; }
+        if (!fd.get('consent_pd')) { say('Чтобы продолжить, отметьте согласие', true); return; }
+
+        const orig = btn?.textContent || '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Готовим оплату…'; }
+        try {
+          const r = await fetch('/api/checkout/service', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ service: 'start', name, email, consent_pd: true }),
+          });
+          const data = await r.json().catch(() => ({}));
+          if (r.ok && data.url) {
+            (window as any).reachGoal?.('checkout_start');
+            location.href = data.url;
+            return;
+          }
+          say('Не получилось открыть оплату. Напишите мне – разберёмся', true);
+        } catch {
+          say('Ошибка сети – попробуйте ещё раз', true);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = orig; }
+        }
+      });
+    }
+  </script>
+  <script>
     // Форма заявки → POST /api/leads.
     // CSRF подставляет fetch-обёртка из SiteLayout.
     const form = document.getElementById('lead-form') as HTMLFormElement | null;
