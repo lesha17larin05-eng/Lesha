@@ -89,7 +89,7 @@ const pageStyles = `
               <div class="cc-body">
                 <div class="cc-badges">
                   <span class={`cc-badge ${c.kind === 'free' ? 'cc-badge--free' : 'cc-badge--paid'}`}>
-                    {c.kind === 'free' ? 'Бесплатно' : `${c.price_rub ?? ''} ₽`}
+                    {c.kind === 'free' ? 'Бесплатно' : `${String(c.price_rub ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`}
                   </span>
                   {c.enrolled && <span class="cc-badge cc-badge--owned">Доступ открыт</span>}
                 </div>
