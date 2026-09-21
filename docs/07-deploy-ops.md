@@ -185,3 +185,25 @@ python3 /root/mailing/send.py --only a@b.ru --force  # тестовое пись
 | остальное (HTML) | без кэша, как отдаёт Astro |
 
 `favicon.ico` пересобран из `fav-256.png` в три размера (16/32/48): 5 КБ вместо 117.
+
+### Осторожно: `docker compose` на сервере — только с `-f docker-compose.yml`
+
+В корне лежит `docker-compose.override.yml` — он для локальной разработки и
+подменяет `api`/`web` на `golang:1.22-alpine` и `node:20-alpine` с dev-сервером.
+Docker Compose подхватывает override **автоматически**, поэтому голая команда
+`docker compose up -d` на проде поднимет Vite вместо сборки, и сайт начнёт
+отвечать `403 Blocked request. This host is not allowed`.
+
+Правильно — как в `scripts/deploy.sh`:
+
+```bash
+docker compose -f docker-compose.yml --env-file .env up -d
+```
+
+Если нужно перечитать конфиг nginx после `git pull`, недостаточно `nginx -s reload`:
+`git reset --hard` заменяет файл целиком (новый inode), а bind-mount продолжает
+показывать старый. Контейнер надо пересоздать:
+
+```bash
+docker compose -f docker-compose.yml --env-file .env up -d --force-recreate nginx
+```

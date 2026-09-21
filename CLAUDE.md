@@ -188,6 +188,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 - Не использовать `customer_email` из webhook для матчинга заказа — только `order_id`/`order_num`, которые мы сами выдали.
 - Не удалять записи из `users`/`orders`/`payment_webhooks`.
 - Не запускать destructive команды (`make fresh`, `docker compose down -v`, `rm -rf data/`) без явного запроса от пользователя.
+- Не запускать на сервере голый `docker compose ...` — только с `-f docker-compose.yml`. Иначе подхватится `docker-compose.override.yml` (dev) и прод переедет на Vite: сайт отдаст `403 Blocked request`. Детали — `docs/07-deploy-ops.md`.
 
 ---
 
