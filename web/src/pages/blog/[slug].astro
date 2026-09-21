@@ -194,8 +194,10 @@ const articleStyles = `
       }
     }
 
-    // Переход на платную страницу из статьи.
-    document.querySelectorAll('a[href^="/start"], a[href^="/coaching"], a[href^="/courses/zdorovaya-spina"]')
+    // Переход из статьи к любому продукту: «Точка перемен», личное ведение,
+    // бесплатный курс, страницы курсов. Именно это показывает, работает ли
+    // статья как вход в воронку, а не просто как чтение.
+    document.querySelectorAll('a[href^="/start"], a[href^="/coaching"], a[href^="/course"]')
       .forEach(a => a.addEventListener('click', () => track('cta'), { once: true }));
   </script>
 </SiteLayout>
