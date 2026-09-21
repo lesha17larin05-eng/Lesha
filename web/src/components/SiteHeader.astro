@@ -13,6 +13,20 @@ const isSalyut = active === 'salyut';
 const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === true;
 ---
 <style is:global>
+  /* ─── Видимый фокус с клавиатуры ──────────────────────────────────
+     Без него человек, идущий по сайту табом, не видит, где находится. */
+  .site-nav a:focus-visible,
+  .site-nav button:focus-visible,
+  .site-mobile-menu a:focus-visible,
+  .site-nav-burger:focus-visible,
+  .site-nav-salyut:focus-visible,
+  .smm-link:focus-visible,
+  .smm-salyut:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
   /* ─── Кнопка «Здоровая спина в Салюте» в шапке (десктоп) ─────────── */
   .site-nav-salyut {
     font-size: 14px; line-height: 1.3; font-weight: 600;

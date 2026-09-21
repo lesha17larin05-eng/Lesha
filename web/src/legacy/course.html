@@ -210,6 +210,13 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .footer-social { display: flex; flex-direction: row; gap: 8px; align-items: center; }
 .social-btn { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.82); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
 .social-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+/* ─── Видимый фокус с клавиатуры ─────────────────────────────────── */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
 </style>
 </head>
 <body>

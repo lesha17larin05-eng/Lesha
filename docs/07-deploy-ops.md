@@ -169,3 +169,19 @@ python3 /root/mailing/send.py --only a@b.ru --force  # тестовое пись
 Письма уходят через тот же SMTP Яндекса, что и транзакционные (`SMTP_USER` из `.env`). **Лимит Яндекса — 300 писем в сутки через SMTP**, поэтому партиями по 25 и с паузами. При ответе сервера с `550`/`blocked`/`limit` скрипт останавливается сам, чтобы не спалить ящик, которым выдаются доступы к курсам.
 
 Каждое письмо несёт заголовки `List-Unsubscribe` и `List-Unsubscribe-Post: List-Unsubscribe=One-Click` — отписка обрабатывается эндпоинтом `/api/unsubscribe` (см. `docs/03-api.md`). Ссылка подписана HMAC на `JWT_SECRET`, скрипт считает её той же формулой, что и Go.
+
+## Сжатие и кэш статики (nginx)
+
+`gzip on` в блоке `http` — уровень 6, от 1 КБ, для text/css/js/json/xml/svg. Видео, растровые картинки и woff2 уже сжаты, их не трогаем. До включения страницы отдавались сырыми: `/results` — 186 КБ вместо 16.
+
+Кэш задаётся в nginx, а не Astro (тот отдаёт `max-age=0`), поэтому в каждом location стоит `proxy_hide_header Cache-Control` перед своим `add_header`:
+
+| Путь | Cache-Control |
+|------|---------------|
+| `/_astro/` | `public, max-age=31536000, immutable` (имена с хешем) |
+| `/fonts/` | `public, max-age=31536000, immutable` |
+| `/img/`, `/videos/` | `public, max-age=2592000` |
+| favicon, apple-touch-icon, robots.txt | `public, max-age=604800` |
+| остальное (HTML) | без кэша, как отдаёт Astro |
+
+`favicon.ico` пересобран из `fav-256.png` в три размера (16/32/48): 5 КБ вместо 117.

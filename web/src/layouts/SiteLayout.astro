@@ -71,6 +71,7 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
       display: inline-flex; align-items: center; gap: 10px;
       background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
       padding: 16px 32px; border-radius: 100px; font-size: 17px; font-weight: 600; font-family: 'Manrope',sans-serif;
+      /* фокус с клавиатуры – вместе с hover, по правилам проекта */
       transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
     }
     .btn-primary:hover { background: var(--orange-warm); transform: translateY(-2px); }
@@ -81,7 +82,13 @@ const absoluteOgImage = ogImage.startsWith('http') ? ogImage : siteUrl + ogImage
       text-decoration: none; transition: all 0.2s;
     }
     .btn-secondary:hover { background: var(--navy); color: white; }
-  </style>
+  
+  a:focus-visible, button:focus-visible,
+  input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+  }
+</style>
   {pageStyles && <style is:global set:html={pageStyles} />}
 
   <script is:inline define:vars={{ metrikaId }}>
