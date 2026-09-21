@@ -299,6 +299,15 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 .rev-section { padding: 80px 80px 90px; background: white; }
 .rev-head { max-width: 1100px; margin: 0 auto 40px; text-align: center; }
 .rev-head .section-desc { margin: 0 auto; }
+
+/* ─── Телефон: сетка ограничений в одну колонку, заголовки без жёстких переносов ─── */
+.reassurance-grid.reas-2col { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 700px) {
+  .reassurance-grid.reas-2col { grid-template-columns: 1fr; }
+  .hero h1 br, .rb-title br { display: none; }
+  .hero h1 { font-size: 34px; }
+  .rb-title { font-size: 27px; }
+}
 .rev-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .rev-card {
   background: var(--cream); border: 1px solid var(--border); border-radius: 16px;
@@ -465,7 +474,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="result-banner">
     <div class="rb-left">
       <div class="rb-label">Что вы получаете</div>
-      <div class="rb-title">Через неделю у вас есть&nbsp;–<br><em>начало, а не намерение</em></div>
+      <div class="rb-title">Через семь дней у вас <em>уже есть начало</em></div>
       <div class="rb-items">
         <div class="rb-item"><span class="rb-check">✓</span>Понимание, что вам можно, а что пока рано</div>
         <div class="rb-item"><span class="rb-check">✓</span>Две тренировки, которые вы сделали сами</div>
@@ -483,7 +492,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 
 <!-- HONEST LIMITS -->
 <section class="reassurance">
-  <div class="reassurance-grid" style="grid-template-columns: 1fr 1fr;">
+  <div class="reassurance-grid reas-2col">
     <div class="reas-card">
       <div class="reas-icon">⏳</div>
       <h3>За неделю тело не изменится</h3>
@@ -491,7 +500,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </div>
     <div class="reas-card">
       <div class="reas-icon">🩺</div>
-      <h3>Это тренерская работа, а не медицина</h3>
+      <h3>Работаю как тренер</h3>
       <p>Диагнозов не ставлю и лечения не назначаю. Но движение действительно меняет самочувствие – у многих уходит боль и возвращаются силы. Моё дело – подобрать нагрузку так, чтобы это сработало у вас.</p>
     </div>
     <div class="reas-card">
@@ -518,9 +527,9 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="author-content">
     <div class="section-label">Кто проводит</div>
     <h2 class="section-title" style="color:white;">Алексей Ларин&nbsp;–<br>тренер который <em>слушает</em></h2>
-    <div class="author-pull">Моя задача – не привязать вас к себе, а научить заниматься самостоятельно.</div>
+    <div class="author-pull">У каждого своя ситуация. Задача – найти то, что подойдёт именно вам.</div>
     <p class="author-text">8 лет практики, более 8 000 человек через проекты. Работаю с детьми, взрослыми и старшим поколением. Сам прошёл через серьёзную травму позвоночника в детстве – поэтому знаю, что значит начинать осторожно.</p>
-    <p class="author-text">На занятии разговариваем живо – про ваше тело, ваш сон, вашу нагрузку и вашу жизнь. Неделю иду рядом, а дальше вы справляетесь сами.</p>
+    <p class="author-text">На занятии разговариваем живо – про ваше тело, ваш сон, вашу нагрузку и вашу жизнь. Неделю иду рядом, и к концу у вас есть с чем продолжать.</p>
   </div>
 </section>
 
