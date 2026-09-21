@@ -169,6 +169,9 @@ const articleStyles = `
     if (article && 'IntersectionObserver' in window) {
       const end = document.createElement('div');
       end.setAttribute('aria-hidden', 'true');
+      // Высота обязательна: элемент нулевой высоты IntersectionObserver
+      // не отслеживает — его прямоугольник пустой и событие не приходит.
+      end.style.cssText = 'height:1px;width:100%;pointer-events:none';
       article.appendChild(end);
       const io = new IntersectionObserver((entries) => {
         if (entries.some(e => e.isIntersecting)) { track('read'); io.disconnect(); }

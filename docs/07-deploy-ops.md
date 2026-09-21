@@ -207,3 +207,7 @@ docker compose -f docker-compose.yml --env-file .env up -d
 ```bash
 docker compose -f docker-compose.yml --env-file .env up -d --force-recreate nginx
 ```
+
+### CSP и Яндекс.Метрика
+
+В `connect-src`, `script-src` и `frame-src` должны быть **оба** домена Метрики: `https://mc.yandex.ru` и `https://mc.yandex.com`. Скрипт счётчика грузится с `.ru`, но хиты часть браузеров отправляет на `.com` — если его нет в политике, счётчик работает, а данные молча не доходят (в консоли видны `Refused to connect ... violates Content Security Policy`).
