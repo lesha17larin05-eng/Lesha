@@ -305,6 +305,8 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 @media (max-width: 700px) {
   .reassurance-grid.reas-2col { grid-template-columns: 1fr; }
   .hero h1 { font-size: 30px; }
+  /* «2 990» не должно разрываться между строками */
+  .param-val { white-space: nowrap; font-size: 26px; }
   .rb-title { font-size: 26px; }
 }
 .rev-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
