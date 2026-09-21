@@ -65,7 +65,13 @@ const articleStyles = `
 .article-cta-final { background: var(--navy); border-radius: 24px; padding: 40px 48px; margin: 60px 0 0; text-align: center; }
 .article-cta-final p { font-size: 17px; color: rgba(255,255,255,0.88); line-height: 1.7; margin-bottom: 24px; }
 .article-cta-final strong { color: white; }
-.article-cta-final a { display: inline-flex; align-items: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; padding: 16px 32px; border-radius: 100px; font-weight: 600; }
+.article-cta-final a { display: inline-flex; align-items: center; gap: 10px; background: var(--orange); color: white; text-decoration: none; padding: 16px 32px; border-radius: 100px; font-weight: 600; transition: background 0.2s, transform 0.15s; }
+@media (hover: hover) { .article-cta-final a:hover { background: var(--orange-warm, #f07530); transform: translateY(-2px); } }
+.article-cta-final a:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+/* Запасной, тихий вариант – для тех, кто ещё не готов платить. */
+.article-cta-final .cta-soft { margin: 18px 0 0; font-size: 15px; color: rgba(255,255,255,0.72); }
+.article-cta-final .cta-soft a { display: inline; background: none; padding: 0; border-radius: 0; font-weight: 500; color: rgba(255,255,255,0.9); text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .article-cta-final .cta-soft a:hover { background: none; transform: none; color: white; } }
 .tg-inline { display: flex; align-items: center; gap: 20px; background: #eef6ff; border: 1px solid #c5dcf7; border-radius: 16px; padding: 22px 28px; margin: 48px 0 0; }
 .tg-inline-icon { flex-shrink: 0; width: 44px; height: 44px; background: #2aabee; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
 .tg-inline-text { flex: 1; }
@@ -123,8 +129,9 @@ const articleStyles = `
     )}
 
     <div class="article-cta-final">
-      <p><strong>Хотите начать мягко – с поддержкой и конкретным планом?</strong><br/>Пройдите бесплатный курс – несколько уроков, которые помогут начать и не бросить.</p>
-      <a href="/course">Получить курс бесплатно →</a>
+      <p><strong>Хотите начать на этой неделе?</strong><br/>«Точка перемен» – занятие-разбор на 55 минут, план под вас и я на связи всю неделю. Беру пять человек.</p>
+      <a href="/start">Записаться – 2 990 ₽ →</a>
+      <p class="cta-soft">Пока присматриваетесь – <a href="/course">начните с бесплатного курса</a></p>
     </div>
     <div class="tg-inline">
       <div class="tg-inline-icon">
