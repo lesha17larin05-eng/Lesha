@@ -35,7 +35,7 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
         {u.email_verified_at ? 'email подтверждён' : 'email не подтверждён'}
       </span>
       {!u.email_verified_at && (
-        <button type="button" id="uc-resend" class="btn secondary" style="padding:5px 14px; font-size:13px;" data-email={u.email}>Отправить подтверждение повторно</button>
+        <button type="button" id="uc-resend" class="btn secondary" style="padding:5px 14px; font-size: 14px;" data-email={u.email}>Отправить подтверждение повторно</button>
       )}
     </div>
     <script>
@@ -132,7 +132,7 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
     .uc-profile th { width: 240px; background: var(--cream); color: var(--navy); font-weight: 600; text-align: left; }
     .uc-course-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
     .uc-progress-row { display: flex; align-items: center; gap: 14px; }
-    .uc-lessons-toggle { cursor: pointer; font-size: 14px; color: var(--orange); font-weight: 600; }
+    .uc-lessons-toggle { cursor: pointer; font-size: 15px; color: var(--orange); font-weight: 600; }
     .uc-lessons-toggle:hover { text-decoration: underline; }
   </style>
 </Base>

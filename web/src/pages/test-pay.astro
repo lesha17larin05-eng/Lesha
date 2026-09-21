@@ -12,11 +12,11 @@ if (!user || user.role !== 'admin') {
 const styles = `
 .tp-wrap { max-width: 540px; margin: 0 auto; padding: 80px 24px 100px; text-align: center; }
 .tp-wrap h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; color: var(--navy); margin-bottom: 14px; }
-.tp-msg { font-size: 16px; color: var(--text-mid); margin-bottom: 22px; line-height: 1.6; }
-.tp-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: white; text-decoration: none; padding: 14px 28px; border: none; border-radius: 100px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+.tp-msg { font-size: 17px; color: var(--text-mid); margin-bottom: 22px; line-height: 1.6; }
+.tp-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: white; text-decoration: none; padding: 14px 28px; border: none; border-radius: 100px; font-size: 17px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: inherit; }
 .tp-btn:hover { background: var(--orange-warm); }
 .tp-btn:disabled { opacity: 0.5; cursor: wait; }
-.tp-err { color: #c53030; font-size: 15px; margin-top: 14px; }
+.tp-err { color: #c53030; font-size: 16px; margin-top: 14px; }
 `;
 ---
 <SiteLayout title="Тестовая оплата 10₽" padTop={true} pageStyles={styles}>

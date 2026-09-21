@@ -41,7 +41,7 @@ const fmt = (iso: string) => {
                 <td>{sourceLabels[l.source] ?? l.source}</td>
                 <td style="max-width:340px; white-space:normal;">{l.message || '–'}</td>
                 <td>
-                  <select class="lead-status input" data-id={l.id} style="width:auto; padding:6px 10px; font-size:13px;">
+                  <select class="lead-status input" data-id={l.id} style="width:auto; padding:6px 10px; font-size: 14px;">
                     {Object.entries(statusLabels).map(([val, label]) => (
                       <option value={val} selected={l.status === val}>{label}</option>
                     ))}

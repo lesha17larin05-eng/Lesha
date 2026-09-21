@@ -32,7 +32,7 @@ const loginHref = next ? '/auth/login?next=' + encodeURIComponent(next) : '/auth
     .auth-page { width: 100%; box-sizing: border-box; }
     .auth-switch {
       margin: -8px 0 22px;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--text-mid);
     }
     .auth-switch a {
@@ -46,15 +46,15 @@ const loginHref = next ? '/auth/login?next=' + encodeURIComponent(next) : '/auth
       .auth-switch a:hover { border-bottom-color: var(--orange); }
     }
     .auth-switch a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; border-radius: 2px; }
-    .consent { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--text-mid); cursor: pointer; }
+    .consent { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; line-height: 1.5; color: var(--text-mid); cursor: pointer; }
     .consent input { margin-top: 3px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
     .consent a { color: var(--orange); text-decoration: underline; }
-    .req { display: inline-block; margin-left: 2px; font-size: 14px; font-weight: 700; font-style: normal; color: var(--orange); }
-    .opt { display: inline-block; margin-left: 6px; font-size: 12px; font-style: normal; color: var(--text-muted); font-weight: 400; }
+    .req { display: inline-block; margin-left: 2px; font-size: 15px; font-weight: 700; font-style: normal; color: var(--orange); }
+    .opt { display: inline-block; margin-left: 6px; font-size: 13px; font-style: normal; color: var(--text-muted); font-weight: 400; }
     @media (max-width: 480px) {
       .auth-page { padding: 40px 16px !important; }
       .form { max-width: 100%; }
-      .input { font-size: 16px; /* iOS не зумит при 16px+ */ }
+      .input { font-size: 17px; /* iOS не зумит при 16px+ */ }
     }
   </style>
   <script>

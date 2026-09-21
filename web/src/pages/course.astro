@@ -15,7 +15,7 @@ const authedStyles = user ? `
     position: relative;
   }
   .lessons-list a.lesson-item .lesson-arrow {
-    margin-left: auto; align-self: center; font-size: 18px; color: var(--text-light);
+    margin-left: auto; align-self: center; font-size: 19px; color: var(--text-light);
     transition: color .2s, transform .2s; flex-shrink: 0; padding-left: 8px;
   }
   @media (hover: hover) {
@@ -30,7 +30,7 @@ const authedStyles = user ? `
   .lessons-list a.lesson-item:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 ` : '';
 ---
-<SiteLayout title="Бесплатный курс – Алексей Ларин" active="course" pageStyles={styles + authedStyles}>
+<SiteLayout title="Бесплатный курс – Алексей Ларин" active="courses" pageStyles={styles + authedStyles}>
   <Fragment set:html={body} />
   <script define:vars={{ isAuthed: !!user }}>
     (() => {

@@ -15,10 +15,10 @@ const pageStyles = `
 .courses-header { padding: 120px 80px 60px; background: var(--navy); position: relative; overflow: hidden; }
 .courses-header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 480px; height: 480px; background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%); pointer-events: none; }
 .courses-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--orange) 0%, transparent 60%); }
-.courses-header .header-label { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 16px; position: relative; }
+.courses-header .header-label { font-size: 14px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 16px; position: relative; }
 .courses-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; color: white; line-height: 1.1; margin-bottom: 12px; position: relative; }
 .courses-header h1 em { font-style: italic; color: #8bb8f0; }
-.courses-header p { font-size: 17px; color: rgba(255,255,255,0.82); max-width: 540px; line-height: 1.75; position: relative; }
+.courses-header p { font-size: 18px; color: rgba(255,255,255,0.82); max-width: 540px; line-height: 1.75; position: relative; }
 
 .courses-grid { padding: 60px 80px 100px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; max-width: 1240px; margin: 0 auto; }
 .course-card {
@@ -37,13 +37,13 @@ const pageStyles = `
 .cc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
 .cc-body { padding: 26px 28px 28px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
 .cc-badges { display: flex; gap: 8px; align-items: center; }
-.cc-badge { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; }
+.cc-badge { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; }
 .cc-badge--free { background: #d4f0e4; color: #0a6040; }
 .cc-badge--paid { background: #fff0e6; color: var(--orange); }
 .cc-badge--owned { background: #dbeeff; color: #1060a0; }
 .cc-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; color: var(--navy); line-height: 1.2; }
-.cc-sub { font-size: 15px; color: var(--text-muted); line-height: 1.7; flex: 1; }
-.cc-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--orange); margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
+.cc-sub { font-size: 16px; color: var(--text-muted); line-height: 1.7; flex: 1; }
+.cc-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--orange); margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
 .cc-cta::after { content: '→'; transition: transform 0.2s; }
 
 .courses-empty { padding: 100px 24px; text-align: center; color: var(--text-muted); }
@@ -62,7 +62,7 @@ const pageStyles = `
 <SiteLayout
   title="Курсы – Алексей Ларин"
   description="Онлайн-курсы Алексея Ларина: бесплатный «Мягкий старт» и «Здоровая спина». Видеоуроки, доступ в личном кабинете."
-  active=""
+  active="courses"
   pageStyles={pageStyles}
 >
   <div class="courses-header">
@@ -77,7 +77,7 @@ const pageStyles = `
         {courses.map((c: any) => {
           const cover = covers[c.slug];
           return (
-            <a href={`/courses/${c.slug}`} class="course-card">
+            <a href={c.kind === 'free' && !c.enrolled ? '/course' : `/courses/${c.slug}`} class="course-card">
               <div class="cc-img">
                 {cover && (
                   <picture>

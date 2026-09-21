@@ -33,7 +33,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
   })),
 }) : '';
 ---
-<SiteLayout title="Здоровая спина – курс Алексея Ларина" active="spina" pageStyles={styles}>
+<SiteLayout title="Здоровая спина – курс Алексея Ларина" active="courses" pageStyles={styles}>
   {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
   <Fragment set:html={body} />
   <script define:vars={{ enrolled, isLoggedIn: !!user }}>
@@ -387,7 +387,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       position: absolute; top: 14px; right: 14px;
       width: 32px; height: 32px; border: none; border-radius: 50%;
       background: transparent; color: var(--text-muted, #777);
-      font-size: 22px; line-height: 1; cursor: pointer;
+      font-size: 23px; line-height: 1; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: background .15s, color .15s;
     }
@@ -400,7 +400,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       letter-spacing: -0.01em;
     }
     .zs-modal-switch {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--text-mid, #444);
       margin: 0 0 18px;
     }
@@ -419,17 +419,17 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
     }
     .zs-form label {
       display: flex; flex-direction: column; gap: 6px;
-      font-size: 13px; color: var(--text-mid, #444);
+      font-size: 14px; color: var(--text-mid, #444);
       font-weight: 500;
     }
     .zs-lbl { display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
     .zs-req {
       display: inline-block; color: var(--orange, #e8652a);
-      font-style: normal; font-weight: 700; font-size: 13px; line-height: 1;
+      font-style: normal; font-weight: 700; font-size: 14px; line-height: 1;
     }
     .zs-opt {
       display: inline-block; color: var(--text-muted, #777);
-      font-style: normal; font-weight: 400; font-size: 12px; line-height: 1;
+      font-style: normal; font-weight: 400; font-size: 13px; line-height: 1;
     }
     .zs-form input[type="email"],
     .zs-form input[type="password"],
@@ -439,7 +439,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       padding: 12px 14px;
       border: 1.5px solid var(--border, #ece8e0);
       border-radius: 10px;
-      font-size: 15px;
+      font-size: 16px;
       font-family: inherit;
       background: white;
       color: var(--text, #1a1a1a);
@@ -455,7 +455,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       flex-direction: row !important;
       align-items: flex-start;
       gap: 10px;
-      font-size: 13px; line-height: 1.5;
+      font-size: 14px; line-height: 1.5;
       cursor: pointer;
       font-weight: 400 !important;
       margin-top: 4px;
@@ -478,7 +478,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       border: none;
       background: var(--orange, #e8652a);
       color: white;
-      font-size: 15px; font-weight: 600;
+      font-size: 16px; font-weight: 600;
       font-family: inherit;
       cursor: pointer;
       box-shadow: 0 6px 20px rgba(232, 101, 42, 0.32);
@@ -492,20 +492,20 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       }
     }
     .zs-submit:disabled { opacity: 0.7; cursor: progress; }
-    .zs-forgot { font-size: 13px; text-align: center; margin: 0; }
+    .zs-forgot { font-size: 14px; text-align: center; margin: 0; }
     .zs-forgot a { color: var(--text-muted, #777); text-decoration: none; border-bottom: 1px dashed currentColor; }
     .zs-forgot a:hover { color: var(--navy, #1a2744); }
     .zs-msg {
       padding: 12px 14px;
       border-radius: 10px;
-      font-size: 14px; line-height: 1.45;
+      font-size: 15px; line-height: 1.45;
     }
     .zs-msg.is-err { background: rgba(220, 38, 38, 0.08); color: #b91c1c; border: 1px solid rgba(220,38,38,0.18); }
     .zs-msg.is-ok  { background: rgba(34, 139, 84, 0.08); color: #1b6e3e; border: 1px solid rgba(34,139,84,0.18); }
     @media (max-width: 480px) {
       .zs-modal-card { padding: 28px 22px 22px; border-radius: 16px; }
       .zs-modal-card h3 { font-size: 24px; }
-      .zs-form input { font-size: 16px; /* iOS не зумит при 16px+ */ }
+      .zs-form input { font-size: 17px; /* iOS не зумит при 16px+ */ }
     }
   </style>
 </SiteLayout>

@@ -25,7 +25,7 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
     <p class="muted"><code>{course.slug}</code> · {course.kind} · {course.is_published ? 'опубликован' : 'черновик'}</p>
 
     <details class="card" style="margin-top:20px;" open>
-      <summary style="cursor:pointer; font-size:18px; font-weight:600;">Метаданные курса</summary>
+      <summary style="cursor:pointer; font-size: 19px; font-weight:600;">Метаданные курса</summary>
       <form id="course-form" class="form" data-id={course.id} style="margin-top:14px;">
         <div style="display:grid; grid-template-columns:1fr 2fr; gap:14px;">
           <div><label class="label">Slug</label><input class="input" name="slug" value={course.slug} required pattern="[a-z0-9-]+" /></div>
@@ -93,7 +93,7 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
 
       {grouped.map((g: any) => (
         <div style="margin-top:18px;">
-          <h3 style="margin:0 0 8px; font-size:16px;">{g.module.title} <span class="muted" style="font-weight:normal;">(модуль · порядок {g.module.sort_order})</span></h3>
+          <h3 style="margin:0 0 8px; font-size: 17px;">{g.module.title} <span class="muted" style="font-weight:normal;">(модуль · порядок {g.module.sort_order})</span></h3>
           {g.items.length === 0 ? (
             <p class="muted" style="margin:6px 0 0;">– уроков нет –</p>
           ) : (
@@ -125,7 +125,7 @@ noModule.sort((a: any, b: any) => a.sort_order - b.sort_order);
 
       {noModule.length > 0 && (
         <div style="margin-top:18px;">
-          <h3 style="margin:0 0 8px; font-size:16px;">Без модуля</h3>
+          <h3 style="margin:0 0 8px; font-size: 17px;">Без модуля</h3>
           <table>
             <thead><tr><th style="width:60px;">#</th><th>Название</th><th>Slug</th><th>Превью</th><th>Видео</th><th style="width:160px;">Порядок</th><th style="width:200px;"></th></tr></thead>
             <tbody>

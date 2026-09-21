@@ -35,7 +35,7 @@ const prefillEmail = Astro.url.searchParams.get('email') || '';
         <label class="label">Email (по одному в строке, можно через запятую)</label>
         <textarea class="input" name="emails" rows="4" required
           placeholder="ivan@example.com&#10;maria@example.com&#10;peter@example.com">{prefillEmail}</textarea>
-        <p class="muted" style="font-size:13px; margin-top:6px;">
+        <p class="muted" style="font-size: 14px; margin-top:6px;">
           Поддерживается до нескольких email сразу. Лишние пробелы и пустые
           строки игнорируются. Регистр не важен.
         </p>
@@ -44,7 +44,7 @@ const prefillEmail = Astro.url.searchParams.get('email') || '';
     </form>
 
     <div id="results" style="margin-top:30px;" hidden>
-      <h2 style="font-size:20px; margin-bottom:14px;">Результат</h2>
+      <h2 style="font-size: 21px; margin-bottom:14px;">Результат</h2>
       <div id="results-list"></div>
     </div>
   </section>
@@ -60,10 +60,10 @@ const prefillEmail = Astro.url.searchParams.get('email') || '';
     .res-row.is-warn { background: rgba(245,197,84,0.10); border-color: rgba(245,197,84,0.35); }
     .res-row.is-err { background: rgba(220,38,38,0.06); border-color: rgba(220,38,38,0.25); }
     .res-email { font-weight: 600; }
-    .res-status { font-size: 13px; color: var(--text-mid); }
-    .res-invite { width: 100%; margin-top: 8px; font-size: 13px; }
+    .res-status { font-size: 14px; color: var(--text-mid); }
+    .res-invite { width: 100%; margin-top: 8px; font-size: 14px; }
     .res-invite code { display:block; padding:8px 10px; background:#f6f3ec; border-radius:6px; word-break:break-all; }
-    .res-invite-btn { font-size:12px; padding:3px 10px; margin-left:6px; cursor:pointer;
+    .res-invite-btn { font-size: 13px; padding:3px 10px; margin-left:6px; cursor:pointer;
       background:transparent; border:1px solid var(--border); border-radius:6px; }
   </style>
 
