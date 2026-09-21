@@ -107,3 +107,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 - E2E через Playwright не настроен — добавить при необходимости.
 
 | `TestArticleViewCounter`               | Счётчик чтения статей: маяк принимается без `X-CSRF-Token` и отвечает 204 на `open`/`read`/`cta`; неизвестное событие и несуществующий slug тоже 204, но не считаются; `/api/admin/article-stats` закрыт для обычного пользователя; `ArticleStats` возвращает opens=2, reads=1, cta=1 и непустой `last_open`. |
+
+## Осторожно: роутер в тестах — копия main.go
+
+`setup(t)` в `integration_test.go` собирает **свой** `chi.Router`, повторяя маршруты из `api/cmd/server/main.go`. Добавили эндпоинт в main.go — продублируйте его и в `setup`, иначе тест получит 404 на живом коде. Там же список таблиц для `TRUNCATE` — новую таблицу надо дописать и туда.
