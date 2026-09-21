@@ -111,3 +111,5 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 ## Осторожно: роутер в тестах — копия main.go
 
 `setup(t)` в `integration_test.go` собирает **свой** `chi.Router`, повторяя маршруты из `api/cmd/server/main.go`. Добавили эндпоинт в main.go — продублируйте его и в `setup`, иначе тест получит 404 на живом коде. Там же список таблиц для `TRUNCATE` — новую таблицу надо дописать и туда.
+
+| `TestNewsletterSignup`                 | Подписка с сайта: без галочки ПД и с кривым адресом — 400; валидная заявка заводит пользователя и ставит `consent_pd_at`, но **не** `consent_marketing_at`; ссылка из письма (`GET /api/subscribe`) включает рассылку; повторная отправка на тот же адрес не создаёт второго пользователя. |

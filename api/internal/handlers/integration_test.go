@@ -76,6 +76,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	r.Post("/api/articles/{slug}/view", app.TrackArticleView)
+	r.Post("/api/newsletter", app.NewsletterSignup)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
@@ -2044,5 +2045,67 @@ func TestArticleViewCounter(t *testing.T) {
 	}
 	if s.Opens30 != 2 || s.LastOpen == nil {
 		t.Fatalf("30d window: %d, last=%v", s.Opens30, s.LastOpen)
+	}
+}
+
+
+// TestNewsletterSignup — подписка с сайта: форма только заводит адрес и
+// шлёт письмо, само согласие ставится по ссылке из письма.
+func TestNewsletterSignup(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+
+	// Без галочки про персональные данные — отказ
+	r, _ := c.do("POST", "/api/newsletter", map[string]any{"email": "nl@b.ru"})
+	if r.StatusCode != 400 {
+		t.Fatalf("без согласия ПД ждём 400, получили %d", r.StatusCode)
+	}
+	// Кривой адрес — отказ
+	r, _ = c.do("POST", "/api/newsletter", map[string]any{"email": "не-почта", "consent_pd": true})
+	if r.StatusCode != 400 {
+		t.Fatalf("кривой адрес: %d", r.StatusCode)
+	}
+
+	// Валидная заявка: пользователь заводится, ПД зафиксировано,
+	// а на рассылку согласия ещё НЕТ — только после ссылки из письма.
+	r, body := c.do("POST", "/api/newsletter", map[string]any{"email": "NL@B.ru", "consent_pd": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("подписка: %d %s", r.StatusCode, body)
+	}
+	u, err := repo.GetUserByEmail(ctx, "nl@b.ru")
+	if err != nil {
+		t.Fatalf("пользователь не заведён: %v", err)
+	}
+	pd, marketing, err := repo.UserConsents(ctx, u.ID)
+	if err != nil {
+		t.Fatalf("consents: %v", err)
+	}
+	if pd == nil {
+		t.Fatalf("согласие на ПД должно быть зафиксировано сразу")
+	}
+	if marketing != nil {
+		t.Fatalf("согласие на рассылку не должно ставиться до подтверждения")
+	}
+
+	// Ссылка из письма включает рассылку
+	tok := handlers.SubscribeToken(cfg.JWTSecret, u.ID.String())
+	r, _ = c.do("GET", "/api/subscribe?u="+u.ID.String()+"&t="+tok, nil)
+	if r.StatusCode != 303 {
+		t.Fatalf("подтверждение: %d", r.StatusCode)
+	}
+	_, marketing, _ = repo.UserConsents(ctx, u.ID)
+	if marketing == nil {
+		t.Fatalf("после подтверждения согласие на рассылку должно стоять")
+	}
+
+	// Повторная отправка на тот же адрес не плодит пользователей
+	r, _ = c.do("POST", "/api/newsletter", map[string]any{"email": "nl@b.ru", "consent_pd": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("повтор: %d", r.StatusCode)
+	}
+	var n int
+	if err := repo.Pool.QueryRow(ctx, `SELECT count(*) FROM users WHERE email='nl@b.ru'`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("дубль пользователя: %v %d", err, n)
 	}
 }

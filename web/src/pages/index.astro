@@ -6,6 +6,15 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data: articlesData } = await apiJson<any[]>('/api/articles?limit=3', { cookie });
 const articles = Array.isArray(articlesData) ? articlesData : [];
 
+// Четыре видеоотзыва на главную – те же ролики, что на /results.
+// Подобраны под обещание «начал и продолжаю», а не под лечение.
+const homeReviews = [
+  { video: '/videos/64.mp4', poster: '/videos/thumbs/64.jpg', name: 'Анна',   text: 'Встроила спорт в жизнь, ушли зажимы в плечах и спине.' },
+  { video: '/videos/43.mp4', poster: '/videos/thumbs/43.jpg', name: 'Рузана', text: 'Страх после переломов прошёл, начала доверять своему телу.' },
+  { video: '/videos/34.mp4', poster: '/videos/thumbs/34.jpg', name: 'Яна',    text: 'Боль в пояснице ушла, теперь вся семья тренируется вместе.' },
+  { video: '/videos/36.mp4', poster: '/videos/thumbs/36.jpg', name: 'Алёна',  text: 'Позвоночник «кайфанул» уже после первой тренировки.' },
+];
+
 const servicesGroup = [
   {
     href: '/start',
@@ -115,6 +124,38 @@ const pageStyles = `
   content: '·'; color: var(--orange); font-size: 24px; line-height: 1.2; flex-shrink: 0;
 }
 .home-hero-cta { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .home-hero-offer { margin-top: 16px; font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.7); }
+
+  /* ─── Видеоотзывы на главной ─────────────────────────────────────── */
+  .home-reviews { padding: 90px 80px; background: white; text-align: center; }
+  .home-reviews .home-section-desc { margin-left: auto; margin-right: auto; }
+  .hr-grid { max-width: 1100px; margin: 36px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .hr-card {
+    background: var(--cream); border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden; display: flex; flex-direction: column; text-align: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  @media (hover: hover) { .hr-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(26,39,68,0.08); border-color: rgba(232,101,42,0.35); } }
+  .hr-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .hr-text { font-size: 15px; line-height: 1.6; color: var(--text-mid); flex: 1; }
+  .hr-name { font-size: 13px; color: var(--text-light); }
+  .rv-video { width: 100%; aspect-ratio: 3/4; overflow: hidden; position: relative; background: #000; }
+  .rv-video video { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; }
+  .rv-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.2s; }
+  .rv-play-btn { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.2); backdrop-filter: blur(6px); border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  .rv-play-btn svg { margin-left: 4px; }
+  @media (hover: hover) { .rv-play:hover .rv-play-btn { transform: scale(1.1); } }
+  .rv-play.hidden { opacity: 0; pointer-events: none; }
+  .hr-more { margin-top: 32px; }
+  .hr-more a {
+    display: inline-block; font-size: 16px; font-weight: 600; color: var(--navy);
+    text-decoration: none; border: 1.5px solid var(--navy); border-radius: 12px;
+    padding: 13px 28px; transition: background 0.2s, color 0.2s, transform 0.2s;
+  }
+  .hr-more a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+  @media (hover: hover) { .hr-more a:hover { background: var(--navy); color: white; transform: translateY(-2px); } }
+  @media (max-width: 1000px) { .home-reviews { padding: 70px 48px; } .hr-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .home-reviews { padding: 56px 24px; } .hr-grid { grid-template-columns: 1fr; } }
 .btn-hero-primary {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--orange); color: white; text-decoration: none;
@@ -362,9 +403,10 @@ const pageStyles = `
           <div class="home-hero-point">Подход – внимательный к телу, без насилия над собой.</div>
         </div>
         <div class="home-hero-cta">
-          <a href="#services" class="btn-hero-primary">Подобрать формат →</a>
+          <a href="/start" class="btn-hero-primary">Начать с «Точки перемен» →</a>
           <a href="/course" class="btn-hero-ghost">Бесплатный курс →</a>
         </div>
+        <div class="home-hero-offer">Занятие-разбор 55 минут, план на неделю и я на связи · 2 990 ₽ · пять человек в неделю</div>
       </div>
       <div class="home-hero-photo">
         <picture>
@@ -385,8 +427,8 @@ const pageStyles = `
   <!-- SERVICES – 2 колонки: слева Услуги, справа Курсы -->
   <section class="home-section" id="services">
     <div class="home-section-label">Что предлагаю</div>
-    <h2 class="home-section-title">Четыре формата – <em>под разный запрос</em></h2>
-    <p class="home-section-desc">От одного занятия до трёхмесячного ведения. Выберите то, что подходит сейчас – по глубине и темпу.</p>
+    <h2 class="home-section-title">С чего можно <em>начать</em></h2>
+    <p class="home-section-desc">От одного занятия до трёхмесячного ведения. Если не знаете, с чего – берите «Точку перемен»: на ней и разберёмся, что вам подходит.</p>
 
     <div class="services-grid-2x2">
       <div class="services-col-head">
@@ -415,6 +457,25 @@ const pageStyles = `
         </a>
       ))}
     </div>
+  </section>
+
+  <!-- ОТЗЫВЫ -->
+  <section class="home-reviews">
+    <div class="home-section-label">Отзывы</div>
+    <h2 class="home-section-title">Люди, которые <em>начали</em></h2>
+    <p class="home-section-desc">Больше 65 видеоотзывов с 2017 года – с личного ведения, курсов и ретритов.</p>
+    <div class="hr-grid">
+      {homeReviews.map(r => (
+        <div class="hr-card">
+          <div class="rv-video"><video src={r.video} poster={r.poster} playsinline preload="none"></video><div class="rv-play"><div class="rv-play-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg></div></div></div>
+          <div class="hr-body">
+            <div class="hr-text">{r.text}</div>
+            <div class="hr-name">{r.name} · видеоотзыв</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div class="hr-more"><a href="/results">Смотреть все отзывы →</a></div>
   </section>
 
   <!-- ABOUT -->
@@ -475,4 +536,17 @@ const pageStyles = `
       <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-strip-btn">Подписаться</a>
     </div>
   </section>
+  <script>
+    // Видеоотзывы: ролик стартует по клику, пауза возвращает кнопку.
+    document.querySelectorAll('.rv-video').forEach((container) => {
+      const video = container.querySelector('video') as HTMLVideoElement | null;
+      const overlay = container.querySelector('.rv-play') as HTMLElement | null;
+      if (!video || !overlay) return;
+      overlay.addEventListener('click', () => { overlay.classList.add('hidden'); video.play(); });
+      video.addEventListener('click', () => {
+        if (video.paused) { overlay.classList.add('hidden'); video.play(); } else { video.pause(); }
+      });
+      video.addEventListener('pause', () => overlay.classList.remove('hidden'));
+    });
+  </script>
 </SiteLayout>

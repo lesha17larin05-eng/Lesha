@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import NewsletterForm from '../../components/NewsletterForm.astro';
 import { apiJson } from '../../lib/api';
 import { coverPositionsArticle, coverPositionsCard } from '../../lib/covers';
 
@@ -143,6 +144,11 @@ const articleStyles = `
       </div>
       <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-inline-btn">Подписаться →</a>
     </div>
+
+    <NewsletterForm
+      title="Не готовы начать – останьтесь на связи"
+      text="Раз в пару недель присылаю письма о движении, восстановлении и здоровых привычках. Отписаться можно одним нажатием в любом письме."
+    />
   </div>
 
   <script>

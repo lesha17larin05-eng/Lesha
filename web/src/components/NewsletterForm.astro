@@ -1,0 +1,119 @@
+---
+// Форма «получать письма». Стоит там, где человек уже прогрет, но платить
+// не готов: в конце статьи и под отзывами. Почта – единственный способ
+// не потерять его совсем.
+//
+// Подписка в два шага: форма отправляет адрес, согласие фиксируется только
+// после нажатия ссылки в письме (см. NewsletterSignup в api).
+const {
+  title = 'Письма о движении и восстановлении',
+  text = 'Пишу не часто – только когда есть что сказать по делу. Отписаться можно одним нажатием в любом письме.',
+  tone = 'light',
+} = Astro.props as { title?: string; text?: string; tone?: 'light' | 'dark' };
+---
+<section class={`nl nl--${tone}`}>
+  <div class="nl-inner">
+    <h3 class="nl-title">{title}</h3>
+    <p class="nl-text">{text}</p>
+    <form class="nl-form" novalidate>
+      <div class="nl-row">
+        <input class="nl-input" type="email" name="email" placeholder="Ваша почта" autocomplete="email" required />
+        <button class="nl-btn" type="submit">Подписаться</button>
+      </div>
+      <label class="nl-consent">
+        <input type="checkbox" name="consent_pd" required />
+        <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
+      </label>
+      <p class="nl-note"></p>
+    </form>
+  </div>
+</section>
+
+<style is:global>
+  .nl { margin: 48px 0 0; }
+  .nl-inner { border-radius: 20px; padding: 32px 36px; }
+  .nl--light .nl-inner { background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); }
+  .nl--dark .nl-inner { background: var(--navy, #1a2744); }
+  .nl-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; line-height: 1.25; margin: 0 0 8px; }
+  .nl--light .nl-title { color: var(--navy, #1a2744); }
+  .nl--dark .nl-title { color: #fff; }
+  .nl-text { font-size: 16px; line-height: 1.7; margin: 0 0 20px; }
+  .nl--light .nl-text { color: var(--text-muted, #555); }
+  .nl--dark .nl-text { color: rgba(255,255,255,0.82); }
+  .nl-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .nl-input {
+    flex: 1 1 240px; min-width: 0; font-family: inherit; font-size: 16px;
+    padding: 14px 18px; border-radius: 12px; background: #fff;
+    border: 1px solid var(--border, #ece8e0); color: var(--text, #1a1a1a);
+    transition: border-color 0.2s;
+  }
+  .nl-input:focus { outline: none; border-color: var(--orange, #e8652a); }
+  .nl-input:focus-visible { outline: 2px solid var(--orange, #e8652a); outline-offset: 2px; }
+  .nl-btn {
+    flex: 0 0 auto; font-family: inherit; font-size: 16px; font-weight: 600;
+    padding: 14px 28px; border: none; border-radius: 12px; cursor: pointer;
+    background: var(--orange, #e8652a); color: #fff;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .nl-btn[disabled] { opacity: 0.6; cursor: default; }
+  .nl-btn:focus-visible { outline: 2px solid var(--navy, #1a2744); outline-offset: 3px; }
+  @media (hover: hover) { .nl-btn:not([disabled]):hover { background: #f07530; transform: translateY(-2px); } }
+  .nl-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 1.5; }
+  .nl--light .nl-consent { color: var(--text-muted, #555); }
+  .nl--dark .nl-consent { color: rgba(255,255,255,0.72); }
+  .nl-consent input { margin-top: 3px; flex-shrink: 0; }
+  .nl-consent a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .nl-note { margin: 12px 0 0; font-size: 14px; min-height: 1px; }
+  .nl--light .nl-note { color: var(--text-muted, #555); }
+  .nl--dark .nl-note { color: rgba(255,255,255,0.82); }
+  .nl-note.is-error { color: #ff8a6a; }
+  .nl--light .nl-note.is-error { color: #c53030; }
+  @media (max-width: 700px) {
+    .nl-inner { padding: 26px 22px; }
+    .nl-btn { width: 100%; }
+  }
+</style>
+
+<script>
+  // Одна и та же логика для всех форм подписки на странице.
+  // CSRF подставляет обёртка fetch из SiteLayout.
+  document.querySelectorAll('.nl-form').forEach((node) => {
+    const form = node as HTMLFormElement;
+    const note = form.querySelector('.nl-note') as HTMLElement | null;
+    const btn = form.querySelector('.nl-btn') as HTMLButtonElement | null;
+    const say = (msg: string, isErr = false) => {
+      if (!note) return;
+      note.textContent = msg;
+      note.classList.toggle('is-error', isErr);
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const email = String(fd.get('email') || '').trim();
+      if (!email.includes('@') || !email.includes('.')) { say('Проверьте адрес почты', true); return; }
+      if (!fd.get('consent_pd')) { say('Чтобы продолжить, нужно согласиться с обработкой персональных данных', true); return; }
+
+      const orig = btn?.textContent || '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
+      try {
+        const r = await fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, consent_pd: true }),
+        });
+        if (r.ok) {
+          (window as any).reachGoal?.('newsletter_signup');
+          form.innerHTML = '<p class="nl-note">Проверьте почту – там письмо со ссылкой. Пока вы её не нажмёте, подписка не оформится.</p>';
+          return;
+        }
+        say('Не получилось отправить. Попробуйте ещё раз', true);
+      } catch {
+        say('Ошибка сети – попробуйте ещё раз', true);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = orig; }
+      }
+    });
+  });
+</script>

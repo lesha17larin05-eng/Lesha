@@ -77,6 +77,8 @@ func main() {
 	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Get("/api/subscribe", app.Subscribe)
 	r.Post("/api/subscribe", app.Subscribe)
+	// Форма «получать письма» в блоге и под отзывами.
+	r.Post("/api/newsletter", app.NewsletterSignup)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	// Маяк счётчика чтения: публичный, без CSRF (см. TrackArticleView).

@@ -88,6 +88,17 @@ func (r *Repo) SaveConsent(ctx context.Context, userID uuid.UUID, pd, marketing 
 	return err
 }
 
+// SaveConsentPD фиксирует согласие на обработку персональных данных,
+// не трогая согласие на рассылку. Нужно там, где человек оставляет почту
+// в форме подписки: галочку про ПД он ставит сразу, а рассылку
+// подтверждает отдельно, по ссылке из письма.
+func (r *Repo) SaveConsentPD(ctx context.Context, userID uuid.UUID) error {
+	_, err := r.Pool.Exec(ctx,
+		`UPDATE users SET consent_pd_at=COALESCE(consent_pd_at, now()), updated_at=now() WHERE id=$1`,
+		userID)
+	return err
+}
+
 func (r *Repo) UpdateUserName(ctx context.Context, userID uuid.UUID, name string) error {
 	_, err := r.Pool.Exec(ctx, `UPDATE users SET name=$1, updated_at=now() WHERE id=$2`, name, userID)
 	return err

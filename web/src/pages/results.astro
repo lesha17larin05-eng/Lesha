@@ -1,9 +1,16 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import NewsletterForm from '../components/NewsletterForm.astro';
 import { extractLegacy } from '../lib/legacy';
 import rawHtml from '../legacy/results.html?raw';
 const { styles, body } = extractLegacy(rawHtml);
 ---
 <SiteLayout title="Результаты учеников – Алексей Ларин" active="results" pageStyles={styles}>
   <Fragment set:html={body} />
+  <div style="max-width:1100px;margin:0 auto;padding:0 24px 80px;">
+    <NewsletterForm
+      title="Хотите так же – но пока не решились?"
+      text="Оставьте почту: буду присылать письма о движении и восстановлении. Не часто и без обязательств – отписаться можно одним нажатием."
+    />
+  </div>
 </SiteLayout>
