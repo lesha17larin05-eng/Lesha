@@ -137,4 +137,47 @@ const articleStyles = `
       <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="tg-inline-btn">Подписаться →</a>
     </div>
   </div>
+
+  <script>
+    // Счётчик чтения статьи. Три события: открыл, дочитал, перешёл на платную
+    // страницу. Ничего о посетителе не отправляем – только slug и название
+    // события; сервер пишет анонимную строку в article_views.
+    //
+    // sendBeacon не блокирует страницу и переживает её закрытие; если браузер
+    // его не умеет, тихо отправляем fetch с keepalive.
+    const slug = location.pathname.split('/').filter(Boolean).pop();
+    const sent = new Set<string>();
+    const track = (event: string) => {
+      if (!slug || sent.has(event)) return;
+      sent.add(event);
+      const url = `/api/articles/${slug}/view`;
+      const body = JSON.stringify({ event });
+      try {
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
+          return;
+        }
+      } catch {}
+      fetch(url, { method: 'POST', body, keepalive: true,
+        headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+    };
+
+    track('open');
+
+    // «Дочитал» – конец текста статьи показался на экране.
+    const article = document.querySelector('.article-body') || document.querySelector('article');
+    if (article && 'IntersectionObserver' in window) {
+      const end = document.createElement('div');
+      end.setAttribute('aria-hidden', 'true');
+      article.appendChild(end);
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) { track('read'); io.disconnect(); }
+      }, { rootMargin: '0px 0px -10% 0px' });
+      io.observe(end);
+    }
+
+    // Переход на платную страницу из статьи.
+    document.querySelectorAll('a[href^="/start"], a[href^="/coaching"], a[href^="/courses/zdorovaya-spina"]')
+      .forEach(a => a.addEventListener('click', () => track('cta'), { once: true }));
+  </script>
 </SiteLayout>

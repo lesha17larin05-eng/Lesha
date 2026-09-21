@@ -140,6 +140,25 @@ func mustExec(t *testing.T, pool *pgxpool.Pool, q string) {
 	}
 }
 
+// doNoCSRF — POST без заголовка X-CSRF-Token: так ходит sendBeacon,
+// у которого нет доступа к cookie-заголовкам страницы.
+func (c *client) doNoCSRF(method, path string, body any) (*http.Response, []byte) {
+	var rdr io.Reader
+	if body != nil {
+		b, _ := json.Marshal(body)
+		rdr = bytes.NewReader(b)
+	}
+	req, _ := http.NewRequest(method, c.srv.URL+path, rdr)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.http().Do(req)
+	if err != nil {
+		return nil, nil
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(resp.Body)
+	return resp, b
+}
+
 type client struct {
 	srv *httptest.Server
 	jar *cookiejar.Jar
@@ -1964,5 +1983,64 @@ func TestProdamusRefundClosesAccess(t *testing.T) {
 	}
 	if has, _ := repo.HasEnrollment(ctx, uid, gifted); !has {
 		t.Fatal("подаренный доступ трогать нельзя")
+	}
+}
+
+
+// TestArticleViewCounter — счётчик чтения статей: публичный маяк пишет
+// события без CSRF, мусор игнорируется, сводка закрыта от обычного юзера.
+func TestArticleViewCounter(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	admin := adminClient(t, srv, repo)
+
+	// Статья, которую будем «читать»
+	r, body := admin.do("POST", "/api/admin/articles", map[string]any{
+		"slug": "kak-nachat", "title": "Как начать", "content_html": "<p>Текст</p>",
+		"is_published": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("create article: %d %s", r.StatusCode, body)
+	}
+
+	anon := newClient(srv)
+	// Маяк работает без X-CSRF-Token — его шлёт sendBeacon, cookie там нет.
+	for _, ev := range []string{"open", "read", "open", "cta"} {
+		r, _ = anon.doNoCSRF("POST", "/api/articles/kak-nachat/view", map[string]any{"event": ev})
+		if r.StatusCode != 204 {
+			t.Fatalf("track %s: %d", ev, r.StatusCode)
+		}
+	}
+	// Мусор не должен ломать эндпоинт и не должен считаться.
+	r, _ = anon.doNoCSRF("POST", "/api/articles/kak-nachat/view", map[string]any{"event": "drop table"})
+	if r.StatusCode != 204 {
+		t.Fatalf("bad event: %d", r.StatusCode)
+	}
+	// Несуществующая статья — тоже 204 и ноль записей.
+	r, _ = anon.doNoCSRF("POST", "/api/articles/net-takoy/view", map[string]any{"event": "open"})
+	if r.StatusCode != 204 {
+		t.Fatalf("unknown slug: %d", r.StatusCode)
+	}
+
+	// Сводка закрыта для не-админа
+	user := newClient(srv)
+	user.do("POST", "/api/auth/register", map[string]any{
+		"email": "views-user@b.ru", "password": "password123", "consent_pd": true})
+	user.do("POST", "/api/auth/login", map[string]string{
+		"email": "views-user@b.ru", "password": "password123"})
+	if r, _ = user.do("GET", "/api/admin/article-stats", nil); r.StatusCode == 200 {
+		t.Fatalf("article stats must be admin-only, got 200")
+	}
+
+	// Админ видит цифры
+	stats, err := repo.ArticleStats(ctx)
+	if err != nil || len(stats) != 1 {
+		t.Fatalf("stats: %v %d", err, len(stats))
+	}
+	s := stats[0]
+	if s.Opens != 2 || s.Reads != 1 || s.CTA != 1 {
+		t.Fatalf("counts: opens=%d reads=%d cta=%d", s.Opens, s.Reads, s.CTA)
+	}
+	if s.Opens30 != 2 || s.LastOpen == nil {
+		t.Fatalf("30d window: %d, last=%v", s.Opens30, s.LastOpen)
 	}
 }

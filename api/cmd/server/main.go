@@ -79,6 +79,8 @@ func main() {
 	r.Post("/api/subscribe", app.Subscribe)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
+	// Маяк счётчика чтения: публичный, без CSRF (см. TrackArticleView).
+	r.Post("/api/articles/{slug}/view", app.TrackArticleView)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.RequireAuth)
@@ -146,6 +148,7 @@ func main() {
 		r.Get("/api/admin/articles/{id}", app.AdminGetArticle)
 		r.Patch("/api/admin/articles/{id}", app.AdminUpdateArticle)
 		r.Delete("/api/admin/articles/{id}", app.AdminDeleteArticle)
+		r.Get("/api/admin/article-stats", app.AdminArticleStats)
 	})
 
 	// Фоновая отправка рассылок: одно письмо раз в несколько десятков секунд,

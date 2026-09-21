@@ -4,8 +4,15 @@ import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/admin/articles', { cookie });
+const { data: statsData } = await apiJson<any[]>('/api/admin/article-stats', { cookie });
 const user = (Astro.locals as any).user;
 const articles = Array.isArray(data) ? data : [];
+
+// Счётчик чтения: открыли / дочитали / перешли на платную страницу.
+// Считается анонимно, без IP и идентификаторов посетителей.
+const stats = new Map<string, any>((Array.isArray(statsData) ? statsData : []).map((s: any) => [s.id, s]));
+const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 100) + '%' : '–');
+const dim = 'color:#999;';
 ---
 <Base title="Блог (админ)" user={user}>
   <AdminNav active="blog" />
@@ -15,6 +22,12 @@ const articles = Array.isArray(data) ? data : [];
       <a class="btn" href="/admin/blog/new">+ Новая статья</a>
     </div>
     <p class="muted">Управление статьями. Контент – HTML с предпросмотром. Админка ставит CSRF автоматически.</p>
+    <p class="muted" style="margin-top:-6px;">
+      <strong>Открыли</strong> – сколько раз открывали страницу (роботы не считаются).
+      <strong>Дочитали</strong> – долистали до конца текста.
+      <strong>На «Точку перемен»</strong> – нажали ссылку на платную страницу из статьи.
+      Считается с момента, как вы это включили; за 30 дней – в скобках.
+    </p>
     <table style="margin-top:20px;">
       <thead>
         <tr>
@@ -22,18 +35,33 @@ const articles = Array.isArray(data) ? data : [];
           <th>Заголовок</th>
           <th>Тег</th>
           <th>Опубликован</th>
+          <th>Открыли</th>
+          <th>Дочитали</th>
+          <th>На «Точку перемен»</th>
           <th>Обновлено</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        {articles.length === 0 && <tr><td colspan="6" class="muted">Статей пока нет.</td></tr>}
+        {articles.length === 0 && <tr><td colspan="9" class="muted">Статей пока нет.</td></tr>}
         {articles.map((a: any) => (
           <tr>
             <td><code>{a.slug}</code></td>
             <td>{a.title}</td>
             <td>{a.tag || '–'}</td>
             <td>{a.is_published ? '✅' : '–'}</td>
+            <td>
+              {stats.get(a.id)?.opens || 0}
+              {stats.get(a.id)?.opens_30d ? <span style={dim}> ({stats.get(a.id).opens_30d})</span> : null}
+            </td>
+            <td>
+              {stats.get(a.id)?.reads || 0}
+              <span style={dim}> {pct(stats.get(a.id)?.reads || 0, stats.get(a.id)?.opens || 0)}</span>
+            </td>
+            <td>
+              {stats.get(a.id)?.cta || 0}
+              <span style={dim}> {pct(stats.get(a.id)?.cta || 0, stats.get(a.id)?.opens || 0)}</span>
+            </td>
             <td>{(a.updated_at || '').toString().slice(0, 16).replace('T', ' ')}</td>
             <td>
               <a href={`/admin/blog/${a.id}`}>Редактировать →</a>

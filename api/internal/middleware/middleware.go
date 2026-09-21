@@ -169,8 +169,11 @@ func CSRF(next http.Handler) http.Handler {
 		// allow webhook & internal endpoints to bypass
 		// /api/unsubscribe – «отписка в один клик» (RFC 8058): POST шлёт
 		// почтовый клиент, cookie у него нет. Защита – HMAC-подпись в ссылке.
+		// /api/articles/{slug}/view – анонимный маяк счётчика чтения статей,
+		// уходит через sendBeacon при закрытии страницы, cookie там не гарантированы.
 		if strings.HasPrefix(r.URL.Path, "/api/webhooks/") || strings.HasPrefix(r.URL.Path, "/api/internal/") ||
-			r.URL.Path == "/api/unsubscribe" || r.URL.Path == "/api/subscribe" {
+			r.URL.Path == "/api/unsubscribe" || r.URL.Path == "/api/subscribe" ||
+			(strings.HasPrefix(r.URL.Path, "/api/articles/") && strings.HasSuffix(r.URL.Path, "/view")) {
 			next.ServeHTTP(w, r)
 			return
 		}

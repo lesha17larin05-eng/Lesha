@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -202,4 +204,57 @@ func (a *App) AdminDeleteArticle(w http.ResponseWriter, r *http.Request) {
 	adminID, _ := middleware.UserID(r.Context())
 	a.Repo.Audit(r.Context(), adminID, "delete", "article", &id, nil)
 	writeJSON(w, 200, map[string]string{"ok": "1"})
+}
+
+// ─── Счётчик чтения статей ──────────────────────────────────────────────
+//
+// POST /api/articles/{slug}/view  {"event":"open"|"read"|"cta"}
+//
+// Публичный, без auth и без CSRF: браузер шлёт его через sendBeacon, когда
+// страница уже закрывается, и cookie-заголовки там не гарантированы. Записи
+// анонимны (см. миграцию 015), подделка счётчика ничего не даёт, кроме
+// испорченной статистики у самого Алексея.
+//
+// Отвечаем 204 всегда, даже на мусор: это маяк, а не форма — браузеру
+// незачем разбирать ошибку, а ботам незачем понимать, сработало ли.
+func (a *App) TrackArticleView(w http.ResponseWriter, r *http.Request) {
+	defer func() { w.WriteHeader(http.StatusNoContent) }()
+
+	// Роботов не считаем: иначе половина «прочтений» окажется краулерами.
+	// User-agent используем только для этой проверки и нигде не сохраняем.
+	ua := strings.ToLower(r.UserAgent())
+	for _, marker := range []string{"bot", "crawler", "spider", "yandex", "google", "bing", "curl", "wget", "python"} {
+		if strings.Contains(ua, marker) {
+			return
+		}
+	}
+
+	var in struct {
+		Event string `json:"event"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 512)).Decode(&in); err != nil {
+		return
+	}
+	if !db.ArticleEvents[in.Event] {
+		return
+	}
+
+	art, err := a.Repo.GetArticleBySlug(r.Context(), chi.URLParam(r, "slug"))
+	if err != nil || art == nil || !art.IsPublished {
+		return
+	}
+	if err := a.Repo.LogArticleView(r.Context(), art.ID, in.Event); err != nil {
+		slog.Warn("article view", "slug", art.Slug, "err", err)
+	}
+}
+
+// AdminArticleStats — сводка для админки: сколько открыли, дочитали и
+// сколько перешли со статьи на платную страницу.
+func (a *App) AdminArticleStats(w http.ResponseWriter, r *http.Request) {
+	rows, err := a.Repo.ArticleStats(r.Context())
+	if err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	writeJSON(w, 200, rows)
 }
