@@ -165,18 +165,33 @@ const articleStyles = `
     track('open');
 
     // «Дочитал» – конец текста статьи показался на экране.
+    // Маркер в конце статьи + два независимых способа его заметить:
+    // IntersectionObserver (точный) и проверка на скролле (работает даже там,
+    // где наблюдатель не срабатывает – например, во вкладке без отрисовки).
     const article = document.querySelector('.article-body') || document.querySelector('article');
-    if (article && 'IntersectionObserver' in window) {
+    if (article) {
       const end = document.createElement('div');
       end.setAttribute('aria-hidden', 'true');
       // Высота обязательна: элемент нулевой высоты IntersectionObserver
       // не отслеживает — его прямоугольник пустой и событие не приходит.
       end.style.cssText = 'height:1px;width:100%;pointer-events:none';
       article.appendChild(end);
-      const io = new IntersectionObserver((entries) => {
-        if (entries.some(e => e.isIntersecting)) { track('read'); io.disconnect(); }
-      }, { rootMargin: '0px 0px -10% 0px' });
-      io.observe(end);
+
+      const onScroll = () => {
+        if (end.getBoundingClientRect().top <= window.innerHeight) {
+          track('read');
+          window.removeEventListener('scroll', onScroll);
+        }
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll(); // короткая статья могла целиком поместиться на экран
+
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          if (entries.some(e => e.isIntersecting)) { track('read'); io.disconnect(); }
+        }, { rootMargin: '0px 0px -10% 0px' });
+        io.observe(end);
+      }
     }
 
     // Переход на платную страницу из статьи.
