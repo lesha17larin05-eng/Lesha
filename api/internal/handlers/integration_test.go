@@ -2088,11 +2088,19 @@ func TestNewsletterSignup(t *testing.T) {
 		t.Fatalf("согласие на рассылку не должно ставиться до подтверждения")
 	}
 
-	// Ссылка из письма включает рассылку
+	// Ссылка из письма включает рассылку. Редиректы не следуем: /subscribed –
+	// страница Astro, на тестовом сервере её нет.
+	noRedirect := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}}
 	tok := handlers.SubscribeToken(cfg.JWTSecret, u.ID.String())
-	r, _ = c.do("GET", "/api/subscribe?u="+u.ID.String()+"&t="+tok, nil)
-	if r.StatusCode != 303 {
-		t.Fatalf("подтверждение: %d", r.StatusCode)
+	resp, err := noRedirect.Get(srv.URL + "/api/subscribe?u=" + u.ID.String() + "&t=" + tok)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != 303 || resp.Header.Get("Location") != "/subscribed" {
+		t.Fatalf("подтверждение: %d %s", resp.StatusCode, resp.Header.Get("Location"))
 	}
 	_, marketing, _ = repo.UserConsents(ctx, u.ID)
 	if marketing == nil {
