@@ -281,7 +281,14 @@ textarea.lead-input { resize: vertical; min-height: 72px; }
 .jt-body { flex: 1; min-width: 0; }
 .jt-label { font-size: 14px; font-weight: 700; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
 .jt-desc { font-size: 16px; color: var(--text-mid); line-height: 1.55; }
-.jt-next { flex-shrink: 0; font-size: 15px; color: var(--text-muted); font-style: italic; line-height: 1.5; text-align: right; }
+.jt-next { flex-shrink: 0; font-size: 16px; font-weight: 600; color: var(--orange); line-height: 1.5; text-align: right; white-space: nowrap; }
+.jt-arrow { display: inline-block; transition: transform 0.2s; }
+a.journey-trial { text-decoration: none; color: inherit; transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
+a.journey-trial:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+@media (hover: hover) {
+  a.journey-trial:hover { background: rgba(232,101,42,0.12); border-color: rgba(232,101,42,0.45); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(232,101,42,0.16); }
+  a.journey-trial:hover .jt-arrow { transform: translateX(4px); }
+}
 @media (max-width: 900px) {
   .journey-trial { flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px 22px; }
   .jt-next { text-align: left; }
@@ -719,14 +726,14 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <!-- JOURNEY -->
   <div class="journey-section">
     <div class="journey-section-title">Как выглядит ваш путь по месяцам</div>
-    <div class="journey-trial">
+    <a class="journey-trial" href="/start">
       <div class="jt-badge">2 990 ₽</div>
       <div class="jt-body">
         <div class="jt-label">«Точка перемен» · до начала</div>
         <div class="jt-desc">Знакомимся: анкета, занятие 55 минут и план на неделю. Нагрузка небольшая – сначала смотрю, как тело отзывается, и подбираю, с чего вам начинать.</div>
       </div>
-      <div class="jt-next">Захотите дальше –<br>месяц 1 →</div>
-    </div>
+      <div class="jt-next">Посмотреть <span class="jt-arrow">→</span></div>
+    </a>
 
     <div class="journey-grid">
       <div class="journey-month">
