@@ -55,7 +55,11 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	link := a.Cfg.AppHost + "/auth/verify?token=" + raw
 	a.Mail.Async(in.Email, "Подтверждение email",
 		"<p>Здравствуйте! Подтвердите email: <a href=\""+link+"\">"+link+"</a></p>")
-	writeJSON(w, 201, map[string]any{"id": uid, "verify_link_dev": link})
+	respReg := map[string]any{"id": uid}
+	if a.Cfg.AppEnv != "production" {
+		respReg["verify_link_dev"] = link
+	}
+	writeJSON(w, 201, respReg)
 }
 
 type quickSignupReq struct {
@@ -260,7 +264,13 @@ func (a *App) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	_ = a.Repo.CreatePasswordResetToken(r.Context(), u.ID, hash, 1*time.Hour)
 	link := a.Cfg.AppHost + "/auth/reset?token=" + raw
 	a.Mail.Async(u.Email, "Сброс пароля", "<p>Сбросьте пароль: <a href=\""+link+"\">"+link+"</a></p>")
-	writeJSON(w, 200, map[string]string{"ok": "1", "reset_link_dev": link})
+	// Ссылку отдаём в ответе ТОЛЬКО вне продакшена – иначе любой, кто знает
+	// чужой email, получал бы готовую ссылку сброса и забирал аккаунт.
+	resp := map[string]string{"ok": "1"}
+	if a.Cfg.AppEnv != "production" {
+		resp["reset_link_dev"] = link
+	}
+	writeJSON(w, 200, resp)
 }
 
 type resetReq struct{ Token, Password string }

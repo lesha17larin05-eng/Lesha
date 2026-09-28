@@ -2273,3 +2273,42 @@ func TestZhonglirovanieTariffsAndDraft(t *testing.T) {
 		t.Fatalf("no tariff: %d %s", r.StatusCode, body)
 	}
 }
+
+
+// TestNoSecretLinksInProduction — ответы API не должны содержать ссылок
+// восстановления и подтверждения. Раньше /auth/forgot-password отдавал
+// готовую ссылку сброса всем подряд: зная чужой email, можно было забрать
+// аккаунт, не имея доступа к почте.
+func TestNoSecretLinksInProduction(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	_, _ = repo.CreateUser(ctx, "prod-leak@b.ru", "x", "Leak", "user")
+
+	cfg.AppEnv = "production" // App держит тот же указатель на конфиг
+	c := newClient(srv)
+
+	r, body := c.do("POST", "/api/auth/forgot-password", map[string]string{"email": "prod-leak@b.ru"})
+	if r.StatusCode != 200 {
+		t.Fatalf("forgot: %d %s", r.StatusCode, body)
+	}
+	if strings.Contains(string(body), "reset_link_dev") || strings.Contains(string(body), "/auth/reset?token=") {
+		t.Fatalf("ссылка сброса утекла в ответ: %s", body)
+	}
+
+	r, body = c.do("POST", "/api/auth/register", map[string]any{
+		"email": "prod-reg@b.ru", "password": "password123", "consent_pd": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("register: %d %s", r.StatusCode, body)
+	}
+	if strings.Contains(string(body), "verify_link_dev") || strings.Contains(string(body), "/auth/verify?token=") {
+		t.Fatalf("ссылка подтверждения утекла в ответ: %s", body)
+	}
+
+	// Токен сброса при этом создаётся – письмо человек получит.
+	var n int
+	if err := repo.Pool.QueryRow(ctx,
+		`SELECT count(*) FROM password_reset_tokens t JOIN users u ON u.id=t.user_id
+		  WHERE u.email='prod-leak@b.ru'`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("токен сброса должен быть создан: %v %d", err, n)
+	}
+}
