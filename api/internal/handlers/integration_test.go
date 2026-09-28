@@ -69,6 +69,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/refresh", app.Refresh)
 		r.Post("/verify-email", app.VerifyEmail)
 		r.Post("/resend-verification", app.ResendVerification)
+		r.Post("/forgot-password", app.ForgotPassword)
+		r.Post("/reset-password", app.ResetPassword)
 	})
 	r.Get("/api/courses", app.ListCourses)
 	r.Get("/api/courses/{slug}", app.GetCourse)
