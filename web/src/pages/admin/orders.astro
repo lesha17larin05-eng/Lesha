@@ -6,30 +6,104 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const status = Astro.url.searchParams.get('status') || '';
 const { data } = await apiJson<any[]>(`/api/admin/orders?status=${status}`, { cookie });
 const user = (Astro.locals as any).user;
+const orders = Array.isArray(data) ? data : [];
+
+const statusRu: Record<string, string> = {
+  pending: 'ждёт оплаты', paid: 'оплачен', failed: 'не состоялся', refunded: 'возврат',
+};
+const fmtDate = (v: any) => (v ? String(v).slice(0, 16).replace('T', ' ') : '–');
+const fmtRub = (n: number) => String(n ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+const filters = [
+  ['', 'Все'], ['paid', 'Оплачены'], ['pending', 'Ждут оплаты'], ['refunded', 'Возвраты'], ['failed', 'Не состоялись'],
+];
 ---
 <Base title="Оплаты" user={user}>
   <AdminNav active="orders" />
   <section class="container" style="padding:50px 16px;">
     <h1>Оплаты</h1>
-    <p>
-      <a href="?status=">Все</a> · <a href="?status=pending">Pending</a> ·
-      <a href="?status=paid">Paid</a> · <a href="?status=failed">Failed</a>
+    <p class="muted">
+      Возврат оформляется в кабинете Продамуса. Уведомление оттуда приходит не всегда – поэтому после
+      возврата нажмите здесь «Оформить возврат»: заказ пометится, а купленный доступ к курсу закроется.
+      Подаренные и бесплатные доступы не трогаются.
+    </p>
+    <p class="order-filters">
+      {filters.map(([k, label]) => (
+        <a href={`?status=${k}`} class={status === k ? 'is-active' : ''}>{label}</a>
+      ))}
     </p>
     <table>
-      <thead><tr><th>№</th><th>User</th><th>Course</th><th>Сумма</th><th>Статус</th><th>Создан</th><th>Оплачен</th></tr></thead>
+      <thead>
+        <tr><th>№</th><th>Кто</th><th>Что</th><th>Сумма</th><th>Статус</th><th>Создан</th><th>Оплачен</th><th></th></tr>
+      </thead>
       <tbody>
-        {(data || []).map((o: any) => (
+        {orders.length === 0 && <tr><td colspan="8" class="muted">Заказов нет.</td></tr>}
+        {orders.map((o: any) => (
           <tr>
-            <td>{o.OrderNum ?? o.order_num}</td>
-            <td>{o.UserID ?? o.user_id}</td>
-            <td>{o.CourseID ?? o.course_id}</td>
-            <td>{o.AmountRub ?? o.amount_rub}</td>
-            <td>{o.Status ?? o.status}</td>
-            <td>{(o.CreatedAt ?? o.created_at)?.toString?.().slice(0,16)}</td>
-            <td>{(o.PaidAt ?? o.paid_at)?.toString?.().slice(0,16) || '–'}</td>
+            <td>{o.order_num}</td>
+            <td>
+              {o.user_name && <div>{o.user_name}</div>}
+              <div class="muted small">{o.user_email}</div>
+            </td>
+            <td>{o.product || '–'}</td>
+            <td>{fmtRub(o.amount_rub)}</td>
+            <td><span class={`st st--${o.status}`}>{statusRu[o.status] || o.status}</span></td>
+            <td>{fmtDate(o.created_at)}</td>
+            <td>{fmtDate(o.paid_at)}</td>
+            <td>
+              {o.status === 'paid' && (
+                <button class="refund-btn" type="button" data-id={o.id} data-num={o.order_num}>Оформить возврат</button>
+              )}
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
   </section>
+
+  <style>
+    .order-filters { display: flex; gap: 14px; flex-wrap: wrap; }
+    .order-filters a { text-decoration: none; transition: color 0.15s; }
+    .order-filters a.is-active { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+    .order-filters a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    .st { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 13px; white-space: nowrap; }
+    .st--paid { background: #d4f0e4; color: #0a6040; }
+    .st--pending { background: #fdefd4; color: #8a5010; }
+    .st--refunded { background: #ffe1d6; color: #9a3412; }
+    .st--failed { background: #eee; color: #666; }
+    .refund-btn {
+      font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+      background: white; color: #9a3412; border: 1px solid #f3b8a0;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .refund-btn[disabled] { opacity: 0.6; cursor: default; }
+    .refund-btn:focus-visible { outline: 2px solid #9a3412; outline-offset: 2px; }
+    @media (hover: hover) { .refund-btn:not([disabled]):hover { background: #fff4ef; border-color: #9a3412; } }
+  </style>
+
+  <script>
+    document.querySelectorAll('.refund-btn').forEach((node) => {
+      const btn = node as HTMLButtonElement;
+      btn.addEventListener('click', async () => {
+        const num = btn.dataset.num;
+        if (!confirm(`Оформить возврат по заказу №${num}?\n\nСделайте это ПОСЛЕ того, как вернули деньги в Продамусе. Купленный доступ к курсу закроется.`)) return;
+        btn.disabled = true;
+        const orig = btn.textContent;
+        btn.textContent = 'Оформляем…';
+        try {
+          const r = await fetch(`/api/admin/orders/${btn.dataset.id}/refund`, { method: 'POST' });
+          const j = await r.json().catch(() => ({}));
+          if (r.ok) {
+            alert(j.access_revoked ? 'Готово: заказ помечен возвратом, доступ к курсу закрыт.' : 'Готово: заказ помечен возвратом.');
+            location.reload();
+            return;
+          }
+          alert('Не получилось: ' + (j.error || r.status));
+        } catch {
+          alert('Ошибка сети – попробуйте ещё раз');
+        }
+        btn.disabled = false;
+        btn.textContent = orig;
+      });
+    });
+  </script>
 </Base>

@@ -116,3 +116,5 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestNewsletterSignup`                 | Подписка с сайта: без галочки ПД и с кривым адресом — 400; валидная заявка заводит пользователя и ставит `consent_pd_at`, но **не** `consent_marketing_at`; ссылка из письма (`GET /api/subscribe`) включает рассылку; повторная отправка на тот же адрес не создаёт второго пользователя. |
 
 | `TestServiceCheckout`                  | Оплата «Точки перемен»: без согласия, с кривым адресом, без имени и с неизвестной услугой — 400; валидная заявка заводит покупателя с именем и создаёт заказ `service='start'`, `course_id IS NULL`, 2 990 ₽, `pending`; вебхук переводит заказ в `paid` и при этом **не** создаёт ни одного enrollment. |
+
+| `TestAdminRefundOrder`                 | Ручной возврат: не-админу закрыт; админ переводит `paid` → `refunded`, купленный доступ закрывается (`access_revoked:true`), в `audit_log` одна запись `refund`; повторный возврат — 400. Заказ на услугу (`course_id IS NULL`) виден в `GET /api/admin/orders`. |

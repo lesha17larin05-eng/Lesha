@@ -145,6 +145,7 @@ func main() {
 		r.Get("/api/admin/leads", app.AdminLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/orders", app.AdminOrders)
+		r.Post("/api/admin/orders/{id}/refund", app.AdminRefundOrder)
 		r.Get("/api/admin/online-users", app.AdminOnline)
 		r.Get("/api/admin/audit-log", app.AdminAuditLog)
 		r.Get("/api/admin/articles", app.AdminListArticles)

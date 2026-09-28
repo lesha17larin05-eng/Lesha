@@ -132,6 +132,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Patch("/api/admin/articles/{id}", app.AdminUpdateArticle)
 		r.Delete("/api/admin/articles/{id}", app.AdminDeleteArticle)
 		r.Get("/api/admin/article-stats", app.AdminArticleStats)
+		r.Get("/api/admin/orders", app.AdminOrders)
+		r.Post("/api/admin/orders/{id}/refund", app.AdminRefundOrder)
 	})
 	srv := httptest.NewServer(r)
 	t.Cleanup(srv.Close)
@@ -2312,5 +2314,58 @@ func TestNoSecretLinksInProduction(t *testing.T) {
 		`SELECT count(*) FROM password_reset_tokens t JOIN users u ON u.id=t.user_id
 		  WHERE u.email='prod-leak@b.ru'`).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("токен сброса должен быть создан: %v %d", err, n)
+	}
+}
+
+
+// TestAdminRefundOrder — ручной возврат: Продамус присылает уведомление о
+// возврате не всегда, поэтому админ закрывает доступ сам.
+func TestAdminRefundOrder(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	uid, _ := repo.CreateUser(ctx, "refund-me@b.ru", "x", "Возврат", "user")
+	cid, _ := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "refund-course", Title: "Курс", Kind: "paid", PriceRub: ptrInt(3990), IsPublished: true})
+	o, _ := repo.CreateOrder(ctx, uid, cid, 3990)
+	_ = repo.MarkOrderPaid(ctx, o.ID, "P-1")
+	_ = repo.Grant(ctx, uid, cid, "purchase", nil)
+
+	// Обычному пользователю – нельзя
+	user := newClient(srv)
+	user.do("POST", "/api/auth/register", map[string]any{
+		"email": "not-admin@b.ru", "password": "password123", "consent_pd": true})
+	user.do("POST", "/api/auth/login", map[string]string{"email": "not-admin@b.ru", "password": "password123"})
+	if r, _ := user.do("POST", "/api/admin/orders/"+o.ID.String()+"/refund", nil); r.StatusCode == 200 {
+		t.Fatal("возврат должен быть доступен только админу")
+	}
+
+	admin := adminClient(t, srv, repo)
+	r, body := admin.do("POST", "/api/admin/orders/"+o.ID.String()+"/refund", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"access_revoked":true`) {
+		t.Fatalf("возврат: %d %s", r.StatusCode, body)
+	}
+	o2, _ := repo.GetOrder(ctx, o.ID)
+	if o2.Status != "refunded" {
+		t.Fatalf("заказ должен стать refunded, а он %s", o2.Status)
+	}
+	if has, _ := repo.HasEnrollment(ctx, uid, cid); has {
+		t.Fatal("купленный доступ должен закрыться")
+	}
+	// Повторно – нельзя: заказ уже не оплачен
+	if r, _ = admin.do("POST", "/api/admin/orders/"+o.ID.String()+"/refund", nil); r.StatusCode != 400 {
+		t.Fatalf("повторный возврат: ждём 400, получили %d", r.StatusCode)
+	}
+	// В журнале есть запись
+	var n int
+	_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM audit_log WHERE action='refund' AND target_id=$1`, o.ID).Scan(&n)
+	if n != 1 {
+		t.Fatalf("запись в журнале: %d", n)
+	}
+
+	// Заказы на услуги видны в списке оплат (раньше выпадали из-за пустого course_id)
+	so, _ := repo.CreateServiceOrder(ctx, uid, "start", 2990)
+	r, body = admin.do("GET", "/api/admin/orders", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), so.ID.String()) {
+		t.Fatalf("заказ на услугу не попал в список: %d %s", r.StatusCode, body)
 	}
 }

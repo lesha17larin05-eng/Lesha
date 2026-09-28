@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -465,8 +466,8 @@ func (a *App) AdminOrders(w http.ResponseWriter, r *http.Request) {
 	// Берём оплаты с JOIN на курсы и пользователей, чтобы в админке сразу
 	// были видны человекочитаемые названия (а не UUID).
 	q := `
-SELECT o.id, o.order_num, o.amount_rub, o.status, o.created_at,
-       o.course_id, COALESCE(c.title,''), COALESCE(c.slug,''),
+SELECT o.id, o.order_num, o.amount_rub, o.status, o.created_at, o.paid_at,
+       o.course_id, COALESCE(c.title,''), COALESCE(c.slug,''), COALESCE(o.service,''),
        o.user_id, COALESCE(u.email,''), COALESCE(u.name,'')
 FROM orders o
 LEFT JOIN courses c ON c.id = o.course_id
@@ -486,15 +487,28 @@ LEFT JOIN users u ON u.id = o.user_id
 	defer rows.Close()
 	out := []map[string]any{}
 	for rows.Next() {
-		var id, courseID, userID uuid.UUID
+		var id, userID uuid.UUID
+		// course_id пустой у заказов на услуги («Точка перемен») – раньше
+		// такие строки не сканировались в uuid.UUID и молча выпадали из списка.
+		var courseID *uuid.UUID
 		var orderNum int64
 		var amount int
-		var status, courseTitle, courseSlug, userEmail, userName string
+		var status, courseTitle, courseSlug, service, userEmail, userName string
 		var createdAt time.Time
-		if err := rows.Scan(&id, &orderNum, &amount, &status, &createdAt,
-			&courseID, &courseTitle, &courseSlug,
+		var paidAt *time.Time
+		if err := rows.Scan(&id, &orderNum, &amount, &status, &createdAt, &paidAt,
+			&courseID, &courseTitle, &courseSlug, &service,
 			&userID, &userEmail, &userName); err != nil {
+			slog.Warn("admin orders scan", "err", err)
 			continue
+		}
+		product := courseTitle
+		if product == "" {
+			if svc, ok := services[service]; ok {
+				product = svc.Title
+			} else {
+				product = service
+			}
 		}
 		out = append(out, map[string]any{
 			"id":           id,
@@ -502,9 +516,12 @@ LEFT JOIN users u ON u.id = o.user_id
 			"amount_rub":   amount,
 			"status":       status,
 			"created_at":   createdAt,
+			"paid_at":      paidAt,
 			"course_id":    courseID,
 			"course_title": courseTitle,
 			"course_slug":  courseSlug,
+			"service":      service,
+			"product":      product,
 			"user_id":      userID,
 			"user_email":   userEmail,
 			"user_name":    userName,
@@ -748,4 +765,44 @@ func (a *App) AdminActivity(w http.ResponseWriter, r *http.Request) {
 		rows = []db.ActivityRow{}
 	}
 	writeJSON(w, 200, rows)
+}
+
+
+// AdminRefundOrder — возврат, оформленный вручную.
+//
+// POST /api/admin/orders/{id}/refund
+//
+// Возврат делается в кабинете Продамуса, но уведомление оттуда приходит
+// не всегда (28.09.2026 не пришло вовсе). Без него заказ оставался «оплачен»,
+// а доступ к курсу – открыт. Эта кнопка делает то же, что сделал бы вебхук:
+// заказ → refunded, купленный доступ закрывается. Подаренные и бесплатные
+// доступы не трогаем.
+func (a *App) AdminRefundOrder(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		writeErr(w, 400, "bad_id")
+		return
+	}
+	o, err := a.Repo.GetOrder(r.Context(), id)
+	if err != nil {
+		writeErr(w, 404, "not_found")
+		return
+	}
+	if o.Status != "paid" {
+		writeErr(w, 400, "not_paid")
+		return
+	}
+	if err := a.Repo.MarkOrderRefunded(r.Context(), o.ID); err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	revoked := false
+	if o.CourseID != uuid.Nil {
+		revoked, _ = a.Repo.RevokePurchasedEnrollment(r.Context(), o.UserID, o.CourseID)
+	}
+	adminID, _ := middleware.UserID(r.Context())
+	a.Repo.Audit(r.Context(), adminID, "refund", "order", &o.ID, map[string]any{
+		"order_num": o.OrderNum, "amount_rub": o.AmountRub, "access_revoked": revoked,
+	})
+	writeJSON(w, 200, map[string]any{"ok": 1, "access_revoked": revoked})
 }
