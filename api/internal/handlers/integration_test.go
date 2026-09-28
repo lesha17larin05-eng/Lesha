@@ -2206,3 +2206,70 @@ func TestServiceCheckout(t *testing.T) {
 		t.Fatalf("оплата услуги не должна открывать курсы, а открыла %d", enrollments)
 	}
 }
+
+// Курс жонглирования: тарифы 1490/3990, черновик курса не продаётся
+// обычным пользователям.
+func TestZhonglirovanieTariffsAndDraft(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	price := 1490
+	cid, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zhonglirovanie", Title: "Жонглирование", Kind: "paid",
+		PriceRub: &price, IsPublished: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	makeVerified := func(email string) *client {
+		c := newClient(srv)
+		c.do("POST", "/api/auth/register", map[string]any{
+			"email": email, "password": "password123", "consent_pd": true,
+		})
+		u, _ := repo.GetUserByEmail(ctx, email)
+		_ = repo.MarkEmailVerified(ctx, u.ID)
+		c.do("POST", "/api/auth/login", map[string]string{"email": email, "password": "password123"})
+		return c
+	}
+	amount := func(t *testing.T, body []byte) int {
+		t.Helper()
+		var resp struct {
+			OrderID string `json:"order_id"`
+		}
+		_ = json.Unmarshal(body, &resp)
+		oid, err := uuid.Parse(resp.OrderID)
+		if err != nil {
+			t.Fatalf("bad order_id: %s", body)
+		}
+		o, err := repo.GetOrder(ctx, oid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return o.AmountRub
+	}
+
+	// 1) черновик: обычному пользователю – 404, курс в API не виден
+	c1 := makeVerified("tm-draft@b.ru")
+	r, body := c1.do("POST", "/api/courses/zhonglirovanie/checkout?tariff=self", nil)
+	if r.StatusCode != 404 {
+		t.Fatalf("draft checkout: want 404, got %d %s", r.StatusCode, body)
+	}
+	if r, _ := c1.do("GET", "/api/courses/zhonglirovanie", nil); r.StatusCode != 404 {
+		t.Fatalf("draft course visible: %d", r.StatusCode)
+	}
+
+	// 2) после публикации – оба тарифа с правильной суммой
+	_, _ = repo.Pool.Exec(ctx, `UPDATE courses SET is_published=true WHERE id=$1`, cid)
+	r, body = c1.do("POST", "/api/courses/zhonglirovanie/checkout?tariff=self", nil)
+	if r.StatusCode != 200 || amount(t, body) != 1490 {
+		t.Fatalf("self: %d %s", r.StatusCode, body)
+	}
+	c2 := makeVerified("tm-sup@b.ru")
+	r, body = c2.do("POST", "/api/courses/zhonglirovanie/checkout?tariff=support", nil)
+	if r.StatusCode != 200 || amount(t, body) != 3990 {
+		t.Fatalf("support: %d %s", r.StatusCode, body)
+	}
+	if r, body := c2.do("POST", "/api/courses/zhonglirovanie/checkout", nil); r.StatusCode != 400 || !strings.Contains(string(body), "tariff_required") {
+		t.Fatalf("no tariff: %d %s", r.StatusCode, body)
+	}
+}

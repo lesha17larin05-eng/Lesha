@@ -34,7 +34,7 @@ In-memory token bucket (`api/internal/middleware/middleware.go`): 20 запро�
 | `POST /api/auth/forgot-password`       | `{email}` → создаёт reset-токен, шлёт письмо.  |
 | `POST /api/auth/reset-password`        | `{token, password}`.                           |
 | `GET  /api/courses`                    | Список **опубликованных** курсов. Если есть auth — добавляет `enrolled` для каждого. |
-| `GET  /api/courses/{slug}`             | Курс + модули + уроки. У платного без enrollment контент уроков (`content_md`, `video_id`) вычищен (кроме `is_preview`). |
+| `GET  /api/courses/{slug}`             | Курс + модули + уроки. У платного без enrollment контент уроков (`content_md`, `video_id`) вычищен (кроме `is_preview`). Черновик (`is_published=false`) → 404. |
 | `GET  /api/courses/{slug}/lessons/{lesson_slug}` | Урок. Для платного без enrollment и не-preview → 403. |
 
 ## Authenticated user

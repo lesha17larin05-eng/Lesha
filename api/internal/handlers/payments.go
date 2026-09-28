@@ -41,6 +41,12 @@ var tariffPresets = map[string]map[string]tariffPreset{
 		// (на 10 ₽ форма отвечает «сумма не может быть меньше 50»).
 		"test10": {PriceRub: 50, Title: "ТЕСТ – проверка интеграции"},
 	},
+	// «Жонглирование: у вас получится». Оба тарифа открывают один и тот же курс;
+	// «С разбором» – 3 разбора видео ученика в Телеграме, вне кода.
+	"zhonglirovanie": {
+		"self":    {PriceRub: 1490, Title: "Жонглирование – Самостоятельный"},
+		"support": {PriceRub: 3990, Title: "Жонглирование – С разбором"},
+	},
 }
 
 // adminOnlyTariffs – тарифы, которые может оформить только admin
@@ -90,6 +96,12 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	}
 	// Служебные тарифы (test10) доступны только админам – иначе любой,
 	// кто узнал ключ тарифа, купит курс за тестовую цену.
+	// Черновик курса (is_published=false) купить нельзя – видео может ещё
+	// не быть на сервере. Админ может, чтобы проверить оплату до запуска.
+	if !c.IsPublished && u.Role != "admin" {
+		writeErr(w, 404, "not_found")
+		return
+	}
 	if adminOnlyTariffs[tariffKey] && u.Role != "admin" {
 		writeErr(w, 400, "bad_tariff")
 		return

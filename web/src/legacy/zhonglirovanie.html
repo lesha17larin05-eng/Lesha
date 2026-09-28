@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Жонглирование: у вас получится – курс Алексея Ларина</title>
+<!-- Исходник лендинга /courses/zhonglirovanie. Рендерится через extractLegacy
+     в web/src/pages/courses/zhonglirovanie.astro (берутся первый блок стилей и тело страницы).
+     База стилей – копия legacy/zdorovaya-spina.html, ниже – блоки курса. -->
+<style>
+
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243058;
+  --navy-light: #2e3d6b;
+  --orange: #e8652a;
+  --orange-warm: #f07530;
+  --cream: #f8f5ef;
+  --warm-white: #fdfaf5;
+  --text: #1a1a1a;
+  --text-mid: #3a3a3a;
+  --text-muted: #555;
+  --text-light: #6e6e6e;
+  --border: #ece8e0;
+  --border-light: #f2ede5;
+  --green: #4ade80;
+  --green-deep: #16a34a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 18px; line-height: 1.65; font-weight: 400; background: var(--warm-white); color: var(--text); overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; font-feature-settings: 'kern','liga','calt'; }
+
+/* ===== NAV ===== */
+nav.top-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(253,250,245,0.94); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  height: 64px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+.nav-logo span { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 400; color: var(--navy); letter-spacing: 0.03em; }
+.nav-links { display: flex; gap: 32px; margin-left: auto; margin-right: 40px; }
+.nav-links a { font-size: 14px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; padding-bottom: 3px; }
+.nav-links a:hover { color: var(--navy); }
+.nav-links a.active { color: var(--navy); font-weight: 600; border-bottom: 2px solid var(--orange); }
+.nav-login { font-size: 14px; color: var(--text-muted); text-decoration: none; }
+
+.anchor-nav {
+  position: sticky; top: 64px; z-index: 90;
+  background: rgba(253,250,245,0.94); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  height: 44px; padding: 0 80px;
+  display: flex; align-items: center; gap: 32px;
+}
+.anchor-nav a { font-size: 13px; font-weight: 500; color: var(--text-light); text-decoration: none; transition: color 0.2s; white-space: nowrap; }
+.anchor-nav a:hover { color: var(--navy); }
+.anchor-nav a.active { color: var(--orange); font-weight: 600; border-bottom: 2px solid var(--orange); padding-bottom: 2px; }
+
+/* ===== HERO ===== */
+.hero { min-height: 100vh; min-height: 100svh; display: grid; grid-template-columns: 55% 45%; padding-top: 64px; }
+.hero-left {
+  background: var(--navy); padding: 80px 72px 80px 80px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.hero-left::before {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-left::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+}
+.hero-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+.eyebrow-text { font-size: 14px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.82); }
+.hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; line-height: 1.08; color: white; margin-bottom: 14px; letter-spacing: -0.01em; }
+.hero h1 em { font-style: italic; color: #8bb8f0; }
+.hero-sub { font-family: 'Cormorant Garamond', serif; font-size: 23px; font-weight: 400; font-style: italic; color: rgba(255,255,255,0.92); margin-bottom: 32px; line-height: 1.5; }
+.hero-sub a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.45); text-underline-offset: 4px; transition: text-decoration-color 0.2s; }
+.hero-sub a:hover, .hero-sub a:focus-visible { text-decoration-color: white; outline: none; }
+.hero-promise { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px 24px; margin-bottom: 36px; }
+.hero-promise p { font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.92); }
+.hero-promise strong { color: white; font-weight: 600; }
+.hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.btn-hero {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
+  padding: 18px 36px; border-radius: 100px; font-size: 18px; font-weight: 600; font-family: 'Manrope', sans-serif;
+  transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
+}
+.btn-hero:hover { background: var(--orange-warm); transform: translateY(-2px); }
+.hero-safety { font-size: 16px; color: rgba(255,255,255,0.82); display: flex; align-items: center; gap: 6px; }
+.hero-safety::before { content: '✓'; color: rgba(255,255,255,0.9); }
+.hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
+.stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
+.stat-label { font-size: 15px; color: rgba(255,255,255,0.75); margin-top: 4px; display: block; }
+
+.hero-right { background: var(--cream); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; overflow: hidden; }
+.hero-photo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; min-height: 500px; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+
+.course-badge { position: absolute; bottom: 32px; left: 32px; background: white; border-radius: 16px; padding: 16px 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 14px; max-width: 300px; }
+.badge-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 21px; flex-shrink: 0; color: white; }
+.badge-title { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.badge-sub { font-size: 14px; color: var(--text-muted); }
+
+.start-pill { position: absolute; top: 32px; right: 32px; background: var(--navy); color: white; padding: 8px 16px; border-radius: 100px; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.start-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+/* ===== COMMON SECTIONS ===== */
+.section-label { font-size: 14px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(36px,3.5vw,52px); font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 16px; }
+.section-title em { font-style: italic; }
+.section-desc { font-size: 18px; color: var(--text-muted); line-height: 1.85; max-width: 620px; margin-bottom: 56px; }
+
+/* ===== PROBLEMS ===== */
+.problems { padding: 100px 80px; background: white; }
+.problems-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.problem-card { background: var(--cream); border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+.problem-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.2s; }
+.problem-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.07); }
+.problem-card:hover::before { background: var(--orange); }
+.problem-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--navy); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.problem-icon svg { width: 24px; height: 24px; }
+.problem-card h3 { font-size: 19px; font-weight: 600; margin-bottom: 10px; color: var(--navy); }
+.problem-card p { font-size: 16px; color: var(--text-muted); line-height: 1.75; }
+
+/* ===== STORY ===== */
+.story { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; overflow: hidden; }
+.story::before { content: '"'; position: absolute; top: -20px; left: 60px; font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+.story-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; }
+.story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.story-content .section-label { color: #7ab0f0; }
+.story-content .section-title { color: white; }
+.story-pull { background: rgba(255,255,255,0.08); border-left: 3px solid var(--orange); padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0; font-family: 'Cormorant Garamond', serif; font-size: 23px; font-style: italic; font-weight: 400; color: white; line-height: 1.6; }
+.story-text { font-size: 17px; color: rgba(255,255,255,0.92); line-height: 1.85; margin-bottom: 16px; }
+.creds { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+.cred { display: flex; align-items: center; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.88); }
+.cred-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+
+/* ===== PROGRAM ===== */
+.program { padding: 100px 80px; background: var(--cream); }
+.program-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* Широкие карточки (вводный и бонус) – полоса на всю ширину, контент в две колонки */
+.program-card--wide { grid-column: 1 / -1; display: grid; grid-template-columns: 260px 1fr; gap: 8px 36px; align-items: start; }
+.program-card--wide .pm-title { min-height: auto; margin-bottom: 0; }
+.program-card--wide .pm-lessons { margin-bottom: 10px; }
+@media(max-width:960px){ .program-card--wide { grid-template-columns: 1fr; gap: 12px; } .program-card--wide .pm-title { margin-bottom: 4px; } }
+.program-card { background: white; border-radius: 20px; padding: 28px 24px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: transform 0.2s; }
+.program-card:hover { transform: translateY(-3px); }
+.program-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--navy); }
+.program-card.intro-card::before { background: var(--text-light); }
+.program-card.final-card::before { background: var(--green); }
+.pm-num { font-size: 13px; font-weight: 700; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+.pm-title { font-size: 19px; font-weight: 700; color: var(--navy); margin-bottom: 16px; line-height: 1.25; min-height: 44px; }
+.pm-lessons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.pm-lesson { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-mid); line-height: 1.5; }
+.pm-lesson-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); flex-shrink: 0; margin-top: 7px; }
+.pm-focus { font-size: 14px; color: var(--text-muted); line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--border); font-style: italic; }
+
+.rhythm { margin-top: 64px; background: white; border-radius: 24px; padding: 40px 48px; border: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 36px; }
+.rhythm-item h4 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.rhythm-item h4::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.rhythm-item p { font-size: 16px; color: var(--text-muted); line-height: 1.7; }
+
+/* ===== INCLUDED ===== */
+.included { padding: 100px 80px; background: white; }
+.included-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 40px; }
+.inc-card { background: var(--cream); border-radius: 18px; padding: 28px 24px; border: 1px solid var(--border); }
+.inc-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.inc-icon svg { width: 22px; height: 22px; }
+.inc-card h3 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.inc-card p { font-size: 15px; color: var(--text-muted); line-height: 1.65; }
+
+/* ===== RESULTS / REVIEWS ===== */
+.results { padding: 100px 80px; background: var(--cream); }
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.result-card { background: white; border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); transition: transform 0.2s; }
+.result-card:hover { transform: translateY(-3px); }
+.result-tag { display: inline-block; font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 100px; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.08em; background: #d4f0e4; color: #0a6040; }
+.result-headline { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 14px; line-height: 1.35; }
+.result-quote { font-size: 16px; color: var(--text-muted); line-height: 1.75; font-style: italic; margin-bottom: 16px; }
+.result-author { display: flex; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border); }
+.result-av { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: white; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; flex-shrink: 0; }
+.result-name { font-size: 15px; font-weight: 600; color: var(--navy); }
+.result-meta { font-size: 13px; color: var(--text-light); }
+.results-more { text-align: center; margin-top: 40px; }
+.btn-outline { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--navy); color: var(--navy); padding: 15px 32px; border-radius: 100px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all 0.2s; background: transparent; cursor: pointer; font-family: 'Manrope', sans-serif; }
+.btn-outline:hover { background: var(--navy); color: white; }
+
+/* Видеоотзывы – горизонтальный слайдер */
+.zs-vres-wrap { position: relative; margin-bottom: 40px; }
+.zs-vres-track {
+  display: flex; gap: 20px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 4px 80px 16px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.zs-vres-track::-webkit-scrollbar { display: none; }
+.zs-vres-card {
+  flex: 0 0 280px; scroll-snap-align: start;
+  display: flex; flex-direction: column;
+  background: white; border-radius: 20px; border: 1px solid var(--border);
+  overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+}
+.zs-vres-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+.zs-vres-video { position: relative; aspect-ratio: 9/16; background: #000; overflow: hidden; }
+.zs-vres-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.zs-vres-play {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.18);
+  transition: background 0.2s, opacity 0.2s;
+  border: none; padding: 0; cursor: pointer;
+}
+.zs-vres-play svg { width: 56px; height: 56px; filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)); transition: transform 0.2s; }
+@media (hover: hover) {
+  .zs-vres-play:hover { background: rgba(0,0,0,0.08); }
+  .zs-vres-play:hover svg { transform: scale(1.08); }
+}
+.zs-vres-card.is-playing .zs-vres-play { opacity: 0; pointer-events: none; }
+.zs-vres-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.zs-vres-name { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
+.zs-vres-result { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; flex: 1; }
+.zs-vres-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.zs-vres-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; color: white;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.zs-vres-link--vk { background: #0077ff; }
+.zs-vres-link--yt { background: #ff0000; }
+@media (hover: hover) {
+  .zs-vres-link:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+}
+.zs-vres-link svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* Кнопки */
+.zs-vres-arrow {
+  position: absolute; top: calc(50% - 28px); transform: translateY(-50%);
+  width: 48px; height: 48px; border-radius: 50%;
+  background: white; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 2;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  transition: background 0.2s, transform 0.15s, opacity 0.2s;
+}
+.zs-vres-arrow:hover { background: var(--navy); }
+.zs-vres-arrow:hover svg { stroke: white; }
+.zs-vres-arrow svg { width: 20px; height: 20px; stroke: var(--navy); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+.zs-vres-arrow--prev { left: 20px; }
+.zs-vres-arrow--next { right: 20px; }
+.zs-vres-arrow[disabled] { opacity: 0.35; cursor: default; pointer-events: none; }
+
+@media (max-width: 720px) {
+  .zs-vres-track { padding: 4px 16px 16px; }
+  .zs-vres-card { flex-basis: 240px; }
+  .zs-vres-arrow { display: none; }
+}
+.zs-vres-body { padding: 20px 22px; }
+.zs-vres-name { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.zs-vres-result { font-size: 15px; color: var(--text-muted); line-height: 1.5; }
+
+/* ===== TARIFFS ===== */
+.tariffs { padding: 100px 80px; background: var(--navy); position: relative; }
+.tariffs .section-label { color: #7ab0f0; }
+.tariffs .section-title { color: white; }
+.tariffs .section-desc { color: rgba(255,255,255,0.85); }
+.tariff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+.tariff-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; position: relative; transition: transform 0.2s, border-color 0.2s; }
+.tariff-card:hover { transform: translateY(-3px); }
+.tariff-card.featured { background: rgba(255,255,255,0.07); border: 1.5px solid var(--orange); }
+.tariff-badge { position: absolute; top: -14px; left: 40px; background: var(--orange); color: white; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; }
+.tariff-name { font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.82); margin-bottom: 14px; }
+.tariff-price { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 400; color: white; line-height: 1; margin-bottom: 6px; }
+.tariff-price small { font-size: 19px; color: rgba(255,255,255,0.7); margin-left: 4px; font-family: 'Manrope', sans-serif; }
+.tariff-desc { font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 28px; line-height: 1.65; }
+.tariff-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.tariff-feature { display: flex; align-items: flex-start; gap: 12px; font-size: 16px; color: rgba(255,255,255,0.9); line-height: 1.55; }
+.tf-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+.tariff-feature.bonus { color: rgba(255,255,255,0.95); font-weight: 500; }
+.tariff-feature.bonus .tf-check { color: var(--orange); }
+.tariff-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0 16px; }
+.tariff-divider-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.7); padding: 4px 0 8px; }
+.btn-tariff { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; padding: 16px 24px; border-radius: 100px; font-size: 16px; font-weight: 600; transition: all 0.2s; cursor: pointer; font-family: 'Manrope', sans-serif; width: 100%; }
+.btn-tariff:hover { background: rgba(255,255,255,0.18); }
+.btn-tariff.primary { background: var(--orange); border-color: var(--orange); box-shadow: 0 8px 32px rgba(232,101,42,0.3); }
+.btn-tariff.primary:hover { background: var(--orange-warm); transform: translateY(-1px); }
+
+/* ===== GUARANTEE + FAQ ===== */
+.guarantee-faq { padding: 100px 80px; background: white; }
+.gf-grid { display: grid; grid-template-columns: 360px 1fr; gap: 64px; align-items: start; }
+.guarantee-box { background: var(--cream); border-radius: 20px; padding: 32px; border: 1px solid var(--border); position: sticky; top: 130px; }
+.guarantee-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+.guarantee-icon svg { width: 28px; height: 28px; }
+.guarantee-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); margin-bottom: 10px; line-height: 1.2; }
+.guarantee-box p { font-size: 16px; color: var(--text-muted); line-height: 1.7; }
+.guarantee-box .small { font-size: 14px; color: var(--text-light); margin-top: 12px; }
+
+.faq-list { display: flex; flex-direction: column; gap: 10px; }
+.faq-item { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
+.faq-item:hover { border-color: var(--text-light); }
+.faq-item[open] { border-color: var(--orange); background: var(--cream); }
+.faq-item summary { padding: 22px 26px; font-size: 17px; font-weight: 600; color: var(--navy); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 20px; transition: color 0.2s; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: '+'; font-size: 24px; font-weight: 300; color: var(--text-light); flex-shrink: 0; transition: transform 0.3s, color 0.2s; }
+.faq-item[open] summary::after { content: '–'; color: var(--orange); }
+.faq-item summary:hover { color: var(--orange); }
+.faq-content { padding: 0 26px 26px; font-size: 16px; color: var(--text-mid); line-height: 1.85; }
+.faq-content p { margin-bottom: 10px; }
+.faq-content p:last-child { margin-bottom: 0; }
+/* Текстовые ссылки на Телеграм внутри абзацев */
+.tg-text-link { color: var(--orange); text-decoration: underline; text-decoration-color: rgba(232,101,42,0.4); text-underline-offset: 3px; transition: text-decoration-color 0.2s; }
+.tg-text-link:hover, .tg-text-link:focus-visible { text-decoration-color: var(--orange); outline: none; }
+
+/* ===== FINAL CTA ===== */
+.final-cta { padding: 100px 80px; background: var(--cream); text-align: center; }
+.final-cta .section-title { max-width: 720px; margin-left: auto; margin-right: auto; }
+.final-cta .section-desc { margin-left: auto; margin-right: auto; text-align: center; }
+.final-actions { display: flex; gap: 14px; justify-content: center; align-items: flex-start; flex-wrap: wrap; margin-top: 32px; }
+.final-tg-col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.btn-outline-alt { display: inline-flex; align-items: center; font-size: 14px; color: var(--text-muted); text-decoration: none; padding: 6px 12px; border-radius: 100px; transition: color 0.2s, background 0.2s; }
+.btn-outline-alt:hover { color: var(--navy); background: rgba(0,0,0,0.04); }
+
+/* ===== TG CHANNEL STRIP ===== */
+.tg-alt-strip { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 28px 80px; background: var(--cream); border-top: 1px solid var(--border); flex-wrap: wrap; }
+.tg-alt-text { font-size: 16px; color: var(--text-muted); }
+.tg-alt-link { display: inline-flex; align-items: center; gap: 7px; color: #2aabee; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.15s; }
+.tg-alt-link:hover { color: #229ed9; }
+@media (max-width: 700px) { .tg-alt-strip { flex-direction: column; gap: 12px; padding: 24px; text-align: center; } }
+
+/* ===== FOOTER ===== */
+footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: center; justify-content: space-between; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 19px; color: white; text-decoration: none; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 16px; color: rgba(255,255,255,0.82); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: white; }
+.footer-copy { font-size: 14px; color: rgba(255,255,255,0.6); }
+
+/* ===== EDIT BAR ===== */
+#edit-bar { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; gap: 10px; }
+#edit-btn { background: var(--navy); color: white; border: none; border-radius: 100px; padding: 12px 22px; font-size: 14px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+#save-btn { background: var(--orange); color: white; border: none; border-radius: 100px; padding: 12px 22px; font-size: 14px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; display: none; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
+.hero-eyebrow{animation:fadeUp 0.6s 0.1s both;}
+.hero h1{animation:fadeUp 0.6s 0.2s both;}
+.hero-sub{animation:fadeUp 0.6s 0.3s both;}
+.hero-promise{animation:fadeUp 0.6s 0.4s both;}
+.hero-cta{animation:fadeUp 0.6s 0.5s both;}
+.hero-stats{animation:fadeUp 0.6s 0.6s both;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1100px){
+  .program-grid{grid-template-columns:repeat(3,1fr);}
+  .included-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:960px){
+  nav.top-nav{padding:0 20px;} .nav-links{display:none;}
+  .hero{grid-template-columns:1fr;} .hero-left{padding:60px 24px;} .hero-right{min-height:360px;}
+  .hero-sub{font-weight:400;}
+  .problems,.results,.program,.included,.tariffs,.story,.guarantee-faq,.final-cta{padding:60px 24px;}
+  .problems-grid,.results-grid{grid-template-columns:1fr;}
+  .program-grid{grid-template-columns:1fr;}
+  .included-grid{grid-template-columns:1fr;}
+  .rhythm{grid-template-columns:1fr; gap:24px; padding:28px;}
+  .tariff-grid{grid-template-columns:1fr;}
+  .story{grid-template-columns:1fr; gap:40px;}
+  .gf-grid{grid-template-columns:1fr; gap:32px;}
+  .guarantee-box{position:static;}
+  .anchor-nav{padding:0 24px; gap:20px; overflow-x:auto;}
+  footer{flex-direction:column; gap:20px; padding:32px 24px; text-align:center;}
+}
+
+
+/* ===== ТРИ МЯЧА – дополнения к стилям курсовой страницы ===== */
+.hero-right.tm-hero-right { justify-content: center; }
+.tm-hero-art { position: absolute; inset: 0; }
+.tm-hero-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
+.method-head { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 48px; }
+.method-head .section-desc { margin-bottom: 0; }
+.fontan { background: white; border: 1px solid var(--border); border-radius: 24px; padding: 20px 20px 12px; }
+.fontan img { width: 100%; height: auto; display: block; }
+.fontan figcaption { font-size: 15px; color: var(--text-muted); line-height: 1.6; padding: 8px 8px 6px; }
+
+/* Лесенка шагов */
+.method { padding: 100px 80px; background: var(--cream); }
+.ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
+.step-card { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 26px 24px 22px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+.step-top { display: flex; align-items: center; gap: 12px; }
+.step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: white; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-balls { display: flex; gap: 4px; margin-left: auto; }
+.step-balls i { width: 12px; height: 12px; border-radius: 50%; background: var(--border); display: block; }
+.step-balls i.on { background: var(--orange); }
+.step-card h3 { font-size: 19px; font-weight: 700; color: var(--navy); line-height: 1.3; }
+.step-card p { font-size: 15.5px; color: var(--text-muted); line-height: 1.65; flex: 1; }
+.step-crit { font-size: 14.5px; color: var(--navy); background: #fff0e6; border-radius: 12px; padding: 10px 14px; line-height: 1.5; }
+.step-crit b { color: var(--orange); font-weight: 700; }
+.step-card.final { border-color: var(--orange); }
+.step-card.final .step-num { background: var(--orange); }
+.method-note { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.method-note div { background: transparent; border-left: 3px solid var(--orange); padding: 4px 0 4px 18px; font-size: 16px; color: var(--text-mid); line-height: 1.65; }
+.method-note b { color: var(--navy); }
+
+/* Лагерь / Катя */
+.camp { padding: 100px 80px; background: white; }
+.camp-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: stretch; }
+.camp-quote { background: var(--cream); border: 1px solid var(--border); border-radius: 24px; padding: 40px; display: flex; flex-direction: column; gap: 18px; }
+.camp-quote blockquote { font-family: 'Cormorant Garamond', serif; font-size: 25px; font-style: italic; line-height: 1.5; color: var(--navy); }
+.camp-facts { display: flex; flex-direction: column; gap: 16px; }
+.camp-fact { border: 1px solid var(--border); border-radius: 20px; padding: 24px 26px; }
+.camp-fact .num { font-family: 'Cormorant Garamond', serif; font-size: 44px; color: var(--orange); line-height: 1; margin-bottom: 8px; }
+.camp-fact p { font-size: 16px; color: var(--text-muted); line-height: 1.65; }
+.camp-fact p b { color: var(--navy); }
+
+/* Мячи */
+.balls { padding: 100px 80px; background: var(--cream); }
+.balls-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; }
+.ball-card { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 28px 26px; }
+.ball-card.main { border-color: var(--orange); }
+.ball-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; border-radius: 100px; margin-bottom: 14px; background: #d4f0e4; color: #0a6040; }
+.ball-tag.alt { background: #eef1f7; color: var(--navy); }
+.ball-card h3 { font-size: 19px; font-weight: 700; color: var(--navy); margin-bottom: 10px; line-height: 1.3; }
+.ball-card p { font-size: 15.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+.ball-card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 6px 0 4px; }
+.ball-card li { font-size: 15.5px; color: var(--text-mid); line-height: 1.55; padding-left: 22px; position: relative; }
+.ball-card li::before { content: '•'; position: absolute; left: 6px; color: var(--orange); font-weight: 700; }
+.ball-card li.no::before { content: '×'; color: var(--text-light); }
+.ball-search { display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; color: var(--navy); }
+.balls-tip { margin-top: 24px; background: var(--navy); color: rgba(255,255,255,0.92); border-radius: 20px; padding: 24px 28px; display: flex; gap: 16px; align-items: flex-start; font-size: 16px; line-height: 1.7; }
+.balls-tip b { color: white; }
+.balls-tip-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--orange); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+
+/* Польза */
+.why { padding: 100px 80px; background: white; }
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+@media (max-width: 1100px) {
+  .ladder { grid-template-columns: repeat(2, 1fr); }
+  .balls-grid { grid-template-columns: 1fr 1fr; }
+  .ball-card.main { grid-column: 1 / -1; }
+}
+@media (max-width: 960px) {
+  .method, .camp, .balls, .why { padding: 60px 24px; }
+  .method-head { grid-template-columns: 1fr; gap: 28px; }
+  .ladder, .method-note, .camp-grid, .balls-grid, .why-grid { grid-template-columns: 1fr; }
+  .camp-quote { padding: 28px; }
+  .camp-quote blockquote { font-size: 22px; }
+  .hero-right.tm-hero-right { min-height: 440px; }
+  .hero-stats { gap: 24px; flex-wrap: wrap; }
+}
+
+</style>
+</head>
+<body>
+
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow"><span class="eyebrow-dot"></span><span class="eyebrow-text">Онлайн-курс · 8 видеоуроков · в своём темпе</span></div>
+    <h1>Жонглирование: <em>у вас получится</em></h1>
+    <p class="hero-sub">Научитесь жонглировать тремя мячами с нуля – шаг за шагом</p>
+    <div class="hero-promise">
+      <p>Пошаговая методика, по которой я научил жонглировать <strong>больше 50 детей и взрослых</strong>. От одного мяча – к фонтану из трёх. В каждом упражнении понятный критерий: <strong>8 точных бросков из 10</strong> – и можно дальше.</p>
+    </div>
+    <div class="hero-cta">
+      <a href="#tariffs" class="btn-hero">Смотреть тарифы →</a>
+      <span class="hero-safety">Гарантия 7 дней – не подойдёт, верну деньги</span>
+    </div>
+    <div class="hero-stats">
+      <div><span class="stat-num">50+</span><span class="stat-label">научились в лагере</span></div>
+      <div><span class="stat-num">6</span><span class="stat-label">шагов до трёх мячей</span></div>
+      <div><span class="stat-num">30 сек</span><span class="stat-label">цель курса</span></div>
+    </div>
+  </div>
+  <div class="hero-right tm-hero-right">
+    <div class="tm-hero-art"><picture><source srcset="/img/IMG_4035.webp 1x, /img/IMG_4035@2x.webp 2x" type="image/webp"><img src="/img/IMG_4035.jpg" srcset="/img/IMG_4035.jpg 1x, /img/IMG_4035@2x.jpg 2x" alt="Алексей Ларин" width="1200" height="800" fetchpriority="high"></picture></div>
+    <div class="start-pill"><span class="start-dot"></span>Доступ сразу после оплаты</div>
+    <div class="course-badge">
+      <div class="badge-icon">●</div>
+      <div>
+        <div class="badge-title">Первые броски – сегодня</div>
+        <div class="badge-sub">Нужны 3 мяча и немного места</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ДЛЯ КОГО ===== -->
+<section class="problems" id="problems">
+  <div class="section-label">Для кого курс</div>
+  <h2 class="section-title">Если вы хоть раз подумали <em>«я бы тоже так хотел»</em></h2>
+  <p class="section-desc">Я предлагаю этот курс в первую очередь тем, кто заранее решил, что у него не получится. Именно у таких людей самые яркие истории.</p>
+  <div class="problems-grid">
+    <div class="problem-card">
+      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01M8.5 15.5c1-1 2.2-1.5 3.5-1.5s2.5.5 3.5 1.5"/></svg></div>
+      <h3>«У меня плохая координация»</h3>
+      <p>Особый талант не нужен. Мы начинаем с одного мяча и идём маленькими шагами – каждый следующий опирается на предыдущий.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-3 3 2 5-6"/></svg></div>
+      <h3>Давно не учились чему-то новому</h3>
+      <p>Кажется, что про себя уже всё понятно. Жонглирование – быстрый и честный способ снова почувствовать: «я могу больше, чем думал».</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/></svg></div>
+      <h3>Голова перегружена мыслями</h3>
+      <p>3–5 минут с мячами – и вы переключились: внимание на броске, тело включилось, кровь разогналась. Такая активная медитация.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.2-5.5 5-5.5s5 2.5 5 5.5M13.5 20c.2-2.4 1.6-4.2 3.5-4.2s3.3 1.8 3.5 4.2"/></svg></div>
+      <h3>Хотите заниматься с ребёнком</h3>
+      <p>Методика выросла в детском лагере. Учиться вместе и видеть глаза ребёнка, когда у него получилось, – отдельное удовольствие.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4-2.5z"/></svg></div>
+      <h3>Пробовали по роликам – и бросили</h3>
+      <p>В роликах обычно показывают результат, а не путь к нему. Здесь – последовательные упражнения, разбор частых ошибок и понятно, когда идти дальше.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></div>
+      <h3>Хочется удивлять близких</h3>
+      <p>Небольшой навык, который всегда впечатляет. А потом вы сможете сами научить друга – шаги уже знаете.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== МЕТОДИКА ===== -->
+<section class="method" id="method">
+  <div class="method-head">
+    <div>
+      <div class="section-label">Методика</div>
+      <h2 class="section-title">Шесть шагов <em>от одного мяча к трём</em></h2>
+      <p class="section-desc">Вы не прыгаете сразу к трём мячам. У каждого шага – свой критерий. Выполнили – переходите дальше. Не выходит – делаете шаг назад, это тоже часть пути.</p>
+    </div>
+    <figure class="fontan">
+      <img src="/img/zhonglirovanie/fontan.svg" alt="Схема жонглирования: первый мяч летит вправо, второй влево, третий снова вправо" width="580" height="390" loading="lazy">
+      <figcaption>Так выглядит фонтан из трёх мячей: каждый бросок – из центра в сторону, по очереди вправо и влево. К этой картинке вы придёте за 6 шагов.</figcaption>
+    </figure>
+  </div>
+  <div class="ladder">
+    <div class="step-card">
+      <div class="step-top"><span class="step-num">1</span><span class="step-balls"><i class="on"></i><i></i><i></i></span></div>
+      <h3>Фундамент – один мяч</h3>
+      <p>Бросок из боковой точки через центр по небольшой дуге – чуть выше лба – в другую руку. На этом броске строится всё жонглирование.</p>
+      <div class="step-crit">Дальше, когда <b>8 из 10</b> бросков точные</div>
+    </div>
+    <div class="step-card">
+      <div class="step-top"><span class="step-num">2</span><span class="step-balls"><i class="on"></i><i class="on"></i><i></i></span></div>
+      <h3>Два мяча</h3>
+      <p>Бросок, следом второй – тоже вверх, а не передачей внизу. Отрабатываем в обе стороны: правая-левая и левая-правая.</p>
+      <div class="step-crit">Дальше, когда <b>8 из 10</b> пар точные – с обеих рук</div>
+    </div>
+    <div class="step-card">
+      <div class="step-top"><span class="step-num">3</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      <h3>Два мяча в одной руке</h3>
+      <p>Учимся держать третий мяч мизинцем и безымянным и бросать тремя пальцами. Рука привыкает, что в ней что-то есть.</p>
+      <div class="step-crit">Дальше, когда лишний мяч <b>не мешает</b> точным броскам</div>
+    </div>
+    <div class="step-card">
+      <div class="step-top"><span class="step-num">4</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      <h3>Три броска</h3>
+      <p>Раз, два, три – поймали. Главная задача – выпустить третий мяч. Если ступор – сначала просто бросьте его куда-нибудь.</p>
+      <div class="step-crit">Дальше, когда третий бросок <b>уверенно выходит</b></div>
+    </div>
+    <div class="step-card">
+      <div class="step-top"><span class="step-num">5</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      <h3>Без остановки</h3>
+      <p>Четвёртый, пятый бросок… Подход теперь заканчивается не ловлей, а упавшим мячом. Однажды случится магия – как первый шаг ребёнка.</p>
+      <div class="step-crit">Дальше, когда получается <b>7 бросков</b> подряд</div>
+    </div>
+    <div class="step-card final">
+      <div class="step-top"><span class="step-num">6</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      <h3>Цель – 30 секунд</h3>
+      <p>Тренируемся подходами с отдыхом и засекаем время. Заранее придумываете себе подарок – за первые 30 секунд.</p>
+      <div class="step-crit">Финиш: <b>30 секунд</b> жонглирования и подарок себе</div>
+    </div>
+  </div>
+  <div class="method-note">
+    <div><b>Разбор ошибок в каждом уроке.</b> Те, что встречались почти у всех – у детей, вожатых и взрослых.</div>
+    <div><b>Свой темп.</b> Кому-то на первый шаг хватает 15 минут, кому-то нужно несколько дней. Это нормально.</div>
+    <div><b>Взгляд со стороны.</b> Покажу, как снимать себя на телефон и находить ошибки самостоятельно.</div>
+  </div>
+</section>
+
+<!-- ===== ОБ АВТОРЕ ===== -->
+<section class="story" id="story">
+  <div class="story-photo">
+    <picture>
+      <source srcset="/img/IMG_4023.webp 1x, /img/IMG_4023@2x.webp 2x" type="image/webp">
+      <img src="/img/IMG_4023.jpg" srcset="/img/IMG_4023.jpg 1x, /img/IMG_4023@2x.jpg 2x" alt="Алексей Ларин" loading="lazy" style="object-position:50% 20%">
+    </picture>
+  </div>
+  <div class="story-content">
+    <div class="section-label">Почему именно я</div>
+    <h2 class="section-title" style="color:white;">Методика родилась <em>в детском лагере</em></h2>
+    <div class="story-pull">Я научился жонглировать сам – примерно за три недели. А потом зимой купил пианино и уже трижды выступал перед большой аудиторией.</div>
+    <p class="story-text">Работая тренером в лагере, я предлагал научиться жонглировать всем желающим. Я уже сбился со счёта – больше 50 детей, вожатых и взрослых. Так сложилась методика: последовательные шаги, понятные критерии и разбор ошибок, которые встречаются почти у всех.</p>
+    <p class="story-text">Меня больше всего вдохновляют люди, которые заранее решили, что у них не получится. Они доверяются, делают первый шаг, практикуют – и у них получается. Этот опыт потом помогает пробовать новое и в других сферах жизни.</p>
+    <div class="creds">
+      <div class="cred"><div class="cred-icon">🎓</div>Магистр – Российский университет спорта «ГЦОЛИФК»</div>
+      <div class="cred"><div class="cred-icon">🧒</div>10+ лет работы с детьми, около 10 лет – со взрослыми</div>
+      <div class="cred"><div class="cred-icon">🤹</div>50+ человек научил жонглировать в лагере</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ЛАГЕРЬ ===== -->
+<section class="camp" id="results">
+  <div class="section-label">Как это было в лагере</div>
+  <h2 class="section-title">Учились <em>между делом</em> – и получалось</h2>
+  <p class="section-desc">Вожатая Катя забегала на жонглирование в перерывах – свободного времени у вожатых немного. Её интервью есть в третьем уроке.</p>
+  <div class="camp-grid">
+    <div class="camp-quote">
+      <blockquote>«Меня очень веселит сам процесс. Первые 2–3 минутки ещё никакие, а потом входишь в кураж – и какое-то веселье, и даже физическая активность, хотя, казалось бы, только мячи. А потом можно хвастаться: смотрите, что умею!»</blockquote>
+      <div class="result-author"><div class="result-av">К</div><div><div class="result-name">Катя</div><div class="result-meta">вожатая, училась между делом</div></div></div>
+    </div>
+    <div class="camp-facts">
+      <div class="camp-fact"><div class="num">3 мяча</div><p>дарили в лагере тем, кто продержался <b>30 секунд</b>. Чтобы дома оставалось напоминание: «я не умел, продолжал – и у меня получилось».</p></div>
+      <div class="camp-fact"><div class="num">15 мин – 5 дней</div><p>столько в лагере уходило на первый шаг – а кому-то и больше. <b>Сравнивать себя не нужно</b>: у каждого свой темп, критерий один для всех.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ПРОГРАММА ===== -->
+<section class="program" id="program">
+  <div class="section-label">Программа</div>
+  <h2 class="section-title">8 видеоуроков – <em>и никакой воды</em></h2>
+  <p class="section-desc">Каждый урок – одно упражнение: как делать, частые ошибки и когда переходить дальше.</p>
+  <div class="program-grid">
+    <div class="program-card intro-card program-card--wide">
+      <div><div class="pm-num">Урок 0</div><div class="pm-title">Знакомство с курсом</div></div>
+      <div>
+        <div class="pm-lessons"><div class="pm-lesson"><span class="pm-lesson-dot"></span>Как устроена методика и почему она подходит тем, кто сомневается</div></div>
+        <div class="pm-focus">Практика – единственный путь</div>
+      </div>
+    </div>
+    <div class="program-card">
+      <div class="pm-num">Урок 1</div><div class="pm-title">Фундамент – один мяч</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Исходное положение, боковые точки и центр</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Бросок «ковшом» через центр по дуге</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>4 частые ошибки и главная – мяч уходит вперёд</div>
+      </div>
+      <div class="pm-focus">Критерий: 8 точных из 10</div>
+    </div>
+    <div class="program-card">
+      <div class="pm-num">Урок 2</div><div class="pm-title">Два мяча</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Разминка и работа в одной плоскости</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Серии по 10–15 бросков в обе стороны</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Почему нельзя передавать мяч внизу</div>
+      </div>
+      <div class="pm-focus">Критерий: 8 точных пар из 10 с обеих рук</div>
+    </div>
+    <div class="program-card">
+      <div class="pm-num">Урок 3</div><div class="pm-title">Два мяча в одной руке</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Хват: мизинец и безымянный + три пальца</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Как чувствовать руки и направлять мяч</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Интервью с Катей, которая уже жонглирует</div>
+      </div>
+      <div class="pm-focus">Готовим руку к третьему мячу</div>
+    </div>
+    <div class="program-card">
+      <div class="pm-num">Урок 4</div><div class="pm-title">Три броска</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Раз, два, три – поймали</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Что делать, если третий мяч «не отпускается»</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Чек-лист техники перед следующим шагом</div>
+      </div>
+      <div class="pm-focus">Вершина уже рядом</div>
+    </div>
+    <div class="program-card">
+      <div class="pm-num">Урок 5</div><div class="pm-title">Жонглируем без остановки</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Четвёртый бросок и дальше – запускаем фонтан</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Почему подход должен заканчиваться падением</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Жонглируем вместе – «зеркальные нейроны»</div>
+      </div>
+      <div class="pm-focus">Критерий: 7 бросков подряд</div>
+    </div>
+    <div class="program-card final-card">
+      <div class="pm-num">Урок 6</div><div class="pm-title">Цель – 30 секунд</div>
+      <div class="pm-lessons">
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Подарок себе за результат</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Подходы, отдых и как засекать время</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Как убрать лишнее напряжение</div>
+      </div>
+      <div class="pm-focus">Финиш – 30 секунд</div>
+    </div>
+    <div class="program-card intro-card program-card--wide">
+      <div><div class="pm-num">Урок 7</div><div class="pm-title">Что дальше</div></div>
+      <div>
+        <div class="pm-lessons">
+          <div class="pm-lesson"><span class="pm-lesson-dot"></span>Жонглирование как медитация на 3–5 минут</div>
+          <div class="pm-lesson"><span class="pm-lesson-dot"></span>Следующий трюк – два мяча в одной руке</div>
+          <div class="pm-lesson"><span class="pm-lesson-dot"></span>Как научить жонглировать близкого человека</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== МЯЧИ ===== -->
+<section class="balls" id="balls">
+  <div class="section-label">Что понадобится</div>
+  <h2 class="section-title">Три мяча – <em>и можно начинать</em></h2>
+  <p class="section-desc">Специального инвентаря, кроме мячей, не нужно. Главное – чтобы все три были одинаковыми и не отскакивали от пола.</p>
+  <div class="balls-grid">
+    <div class="ball-card main">
+      <span class="ball-tag">Лучший вариант</span>
+      <h3>Мячи для жонглирования с наполнителем</h3>
+      <p>Мягкие мячи, внутри мелкий песок или гранулы. Продаются на любом маркетплейсе – ищите <span class="ball-search">мячи для жонглирования</span>.</p>
+      <ul>
+        <li>Диаметр 6–7 см – удобно лежат в ладони, два помещаются в одной руке</li>
+        <li>Вес 100–130 г – чувствуется в руке, не сдувает при броске</li>
+        <li>Мягкие, не отскакивают – упавший мяч остаётся на месте</li>
+        <li>Набор из 3 одинаковых – разные мячи летят по-разному</li>
+        <li>Разных цветов – проще следить за каждым</li>
+      </ul>
+    </div>
+    <div class="ball-card">
+      <span class="ball-tag alt">Сделать самому</span>
+      <h3>Из шариков и крупы – за 10 минут</h3>
+      <ul>
+        <li>Насыпьте в маленький пакет с застёжкой 100–120 г пшена или риса, выпустите воздух</li>
+        <li>У воздушного шарика отрежьте горлышко и натяните его на пакет</li>
+        <li>Второй шарик без горлышка натяните сверху, закрыв отверстие</li>
+        <li>Повторите ещё 2 раза – одинаково по весу</li>
+      </ul>
+    </div>
+    <div class="ball-card">
+      <span class="ball-tag alt">На первое время</span>
+      <h3>Что есть дома</h3>
+      <ul>
+        <li>Мячи для тенниса – годятся для первых уроков, но легче и отскакивают</li>
+        <li>Три одинаковых мандарина или небольших яблока – для первых бросков</li>
+        <li class="no">Не подойдут: надувные, прыгучие и мячи разного размера</li>
+      </ul>
+    </div>
+  </div>
+  <div class="balls-tip">
+    <div class="balls-tip-icon">💡</div>
+    <div><b>Лайфхак для первых недель:</b> практикуйтесь, стоя перед кроватью или диваном. Мячи будут падать – это часть пути, – и поднимать их с кровати гораздо проще, чем с пола.</div>
+  </div>
+</section>
+
+<!-- ===== ЧТО ДАЁТ ===== -->
+<section class="why">
+  <div class="section-label">Больше, чем три мяча</div>
+  <h2 class="section-title">Что останется с вами <em>после курса</em></h2>
+  <p class="section-desc">Сам по себе навык в жизни пригождается не так часто. Самое ценное – то, что вы заберёте вместе с ним.</p>
+  <div class="why-grid">
+    <div class="inc-card"><h3>Опыт «я могу больше»</h3><p>Вы берётесь за то, что казалось «для циркачей», идёте по шагам – и получается. Этот опыт переносится на музыку, спорт, работу – куда угодно.</p></div>
+    <div class="inc-card"><h3>Перезагрузка за 5 минут</h3><p>Взяли мячи – и мысли отпустили. Внимание на броске, тело включилось. А если добавить внимание к дыханию, получается настоящая медитация.</p></div>
+    <div class="inc-card"><h3>Навык, который впечатляет</h3><p>«Ого, ты умеешь жонглировать!» – и, возможно, вы вдохновите кого-то пройти этот путь. А научить его сможете уже сами.</p></div>
+  </div>
+</section>
+
+<!-- ===== ТАРИФЫ ===== -->
+<section class="tariffs" id="tariffs">
+  <div class="section-label">Тарифы</div>
+  <h2 class="section-title">Выберите, <em>как пройти курс</em></h2>
+  <p class="section-desc">Доступ открывается в личном кабинете сразу после оплаты. Можно начать сегодня.</p>
+  <div class="tariff-grid">
+    <div class="tariff-card">
+      <div class="tariff-name">Самостоятельный</div>
+      <div class="tariff-price">1 490<small>₽</small></div>
+      <p class="tariff-desc">Всё, чтобы научиться жонглировать тремя мячами в своём темпе.</p>
+      <div class="tariff-features">
+        <div class="tariff-feature"><span class="tf-check">✓</span>8 видеоуроков</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>6 шагов с понятным критерием перехода</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Разбор частых ошибок в каждом уроке</div>
+        <div class="tariff-feature"><span class="tf-check">✓</span>Доступ в личном кабинете на 1 год</div>
+      </div>
+      <a href="#" data-tariff="self" class="btn-tariff">Купить за 1 490 ₽</a>
+    </div>
+    <div class="tariff-card featured">
+      <div class="tariff-badge">Быстрее к результату</div>
+      <div class="tariff-name">С разбором</div>
+      <div class="tariff-price">3 990<small>₽</small></div>
+      <p class="tariff-desc">Я посмотрю, как вы бросаете, и подскажу, что поправить – там, где чаще всего застревают.</p>
+      <div class="tariff-features">
+        <div class="tariff-feature"><span class="tf-check">✓</span>Всё из тарифа «Самостоятельный»</div>
+        <div class="tariff-divider"></div>
+        <div class="tariff-divider-label">Дополнительно</div>
+        <div class="tariff-feature bonus"><span class="tf-check">★</span>3 разбора ваших видео в Телеграме: один мяч, три броска, фонтан</div>
+        <div class="tariff-feature bonus"><span class="tf-check">★</span>Ответ голосовым: что уже хорошо и 1–2 точные поправки</div>
+        <div class="tariff-feature bonus"><span class="tf-check">★</span>Вопросы по технике в личных сообщениях 30 дней</div>
+      </div>
+      <a href="#" data-tariff="support" class="btn-tariff primary">Купить за 3 990 ₽</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ГАРАНТИЯ + FAQ ===== -->
+<section class="guarantee-faq" id="faq">
+  <div class="gf-grid">
+    <div class="guarantee-box">
+      <div class="guarantee-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <h3>Гарантия 7 дней</h3>
+      <p>Если курс по любой причине не подойдёт в первые 7 дней – верну деньги без вопросов.</p>
+      <p class="small">Напишите мне в Телеграм <a class="tg-text-link" href="https://t.me/larin_lesha" target="_blank" rel="noopener">@larin_lesha</a> – оформлю возврат.</p>
+    </div>
+    <div>
+      <div class="section-label">Вопросы</div>
+      <h2 class="section-title" style="margin-bottom:28px;">Частые <em>вопросы</em></h2>
+      <div class="faq-list">
+        <details class="faq-item"><summary>Мне кажется, у меня совсем нет координации. Получится?</summary><div class="faq-content"><p>Курс сделан в первую очередь для вас. Мы начинаем с одного мяча, и на каждом шаге есть понятный критерий. Вам не нужно «уметь» – нужно пройти шаги по порядку и практиковать.</p></div></details>
+        <details class="faq-item"><summary>Сколько времени нужно, чтобы научиться?</summary><div class="faq-content"><p>Индивидуально. В лагере кому-то на первый шаг хватало 15 минут, кому-то – нескольких дней. Я сам без методики учился около трёх недель – по шагам обычно выходит быстрее.</p><p>Хватит коротких подходов с отдыхом, например по 10–15 минут в день. Отдых тоже важен: в это время нервная система усваивает навык.</p></div></details>
+        <details class="faq-item"><summary>С какого возраста можно?</summary><div class="faq-content"><p>Методику проходили дети, подростки, вожатые и взрослые. Если ребёнок может удержать внимание на объяснении и повторить за видео – ему подойдёт. Верхнего предела по возрасту нет.</p></div></details>
+        <details class="faq-item"><summary>Какие мячи нужны и где их взять?</summary><div class="faq-content"><p>Три одинаковых мяча диаметром 6–7 см, которые не отскакивают. Удобнее всего мячи для жонглирования с наполнителем – они есть на любом маркетплейсе. Можно сделать самому из шариков и крупы. <a class="tg-text-link" href="#balls">Подробно – в блоке про мячи</a>.</p></div></details>
+        <details class="faq-item"><summary>Сколько нужно места?</summary><div class="faq-content"><p>Немного свободного пространства перед собой и над головой. Удобнее всего стоять перед кроватью или диваном – упавшие мячи будет проще поднимать.</p></div></details>
+        <details class="faq-item"><summary>Что делать, если застрял на каком-то шаге?</summary><div class="faq-content"><p>Вернуться на шаг назад – это нормально и работает. Пересмотреть урок и сверить технику. Снять себя на телефон – со стороны ошибки видно сразу. А в тарифе «С разбором» я посмотрю ваши видео и подскажу сам.</p></div></details>
+        <details class="faq-item"><summary>Можно заниматься вместе с ребёнком по одной покупке?</summary><div class="faq-content"><p>Да, смотрите уроки вместе. Разборы видео в тарифе «С разбором» – для одного человека.</p></div></details>
+        <details class="faq-item"><summary>Как я получу доступ?</summary><div class="faq-content"><p>Сразу после оплаты уроки откроются в личном кабинете на сайте. Доступ – на 1 год, смотреть можно с телефона и компьютера.</p></div></details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="final-cta">
+  <div class="section-label">Первый шаг</div>
+  <h2 class="section-title">Пусть этот курс будет <em>не только про жонглирование</em></h2>
+  <p class="section-desc">А про то, что новому можно учиться в любом возрасте. Возьмите мяч – и сделайте первый бросок уже сегодня.</p>
+  <div class="final-actions">
+    <a href="#tariffs" class="btn-hero">Выбрать тариф →</a>
+    <div class="final-tg-col">
+      <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%95%D1%81%D1%82%D1%8C%20%D0%B2%D0%BE%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%D0%BA%D1%83%D1%80%D1%81%D1%83%20%C2%AB%D0%A2%D1%80%D0%B8%20%D0%BC%D1%8F%D1%87%D0%B0%C2%BB%3A%20" class="btn-outline" target="_blank" rel="noopener">Задать вопрос в Телеграме</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc" class="btn-outline-alt" target="_blank" rel="noopener">Нет Телеграма – написать в Max</a>
+    </div>
+  </div>
+</section>
+
+
+</body>
+</html>

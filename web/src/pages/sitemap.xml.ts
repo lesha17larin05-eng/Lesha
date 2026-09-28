@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getSiteSettings } from '../lib/settings';
+import { apiJson } from '../lib/api';
 
 // Динамический sitemap: страница Салюта попадает в него только когда
 // включён флаг salut_visible (тумблер в админке). Раньше файл лежал
@@ -26,11 +27,25 @@ const BASE: Entry[] = [
 
 const SALUT: Entry = { path: '/salut-2026', changefreq: 'weekly', priority: '0.9' };
 
+// Курсы, которые засеяны черновиком: попадают в карту только после
+// публикации в /admin/courses (иначе поисковик получит 404).
+const DRAFTABLE: Entry[] = [
+  { path: '/courses/zhonglirovanie', changefreq: 'weekly', priority: '0.8' },
+];
+
 export const GET: APIRoute = async () => {
   const { salut_visible } = await getSiteSettings();
-  const entries = salut_visible
+  const base = salut_visible
     ? [...BASE.slice(0, 6), SALUT, ...BASE.slice(6)]
     : BASE;
+  let published = new Set<string>();
+  try {
+    const { data } = await apiJson<any[]>('/api/courses');
+    published = new Set((data || []).map((c: any) => `/courses/${c.slug}`));
+  } catch {}
+  const extra = DRAFTABLE.filter((e) => published.has(e.path));
+  const i = base.findIndex((e) => e.path === '/courses/zdorovaya-spina') + 1;
+  const entries = [...base.slice(0, i), ...extra, ...base.slice(i)];
   const body =
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +

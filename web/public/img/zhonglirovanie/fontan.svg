@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="120 150 580 390" role="img" aria-label="Схема жонглирования тремя мячами: первый мяч летит вправо, второй влево, третий снова вправо">
+  <defs>
+    <radialGradient id="bo" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#f59a63"/><stop offset="1" stop-color="#e8652a"/></radialGradient>
+    <radialGradient id="bn" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#3c4f86"/><stop offset="1" stop-color="#1a2744"/></radialGradient>
+    <radialGradient id="bb" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#8fbef5"/><stop offset="1" stop-color="#4a8fe0"/></radialGradient>
+    <marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1a2744" fill-opacity=".45"/>
+    </marker>
+  </defs>
+  <!-- траектории: из центра – в сторону -->
+  <path d="M340 450 C 370 170, 520 120, 592 426" fill="none" stroke="#1a2744" stroke-opacity=".32" stroke-width="3" stroke-dasharray="2 11" stroke-linecap="round" marker-end="url(#ar)"/>
+  <path d="M460 450 C 430 170, 280 120, 208 426" fill="none" stroke="#1a2744" stroke-opacity=".32" stroke-width="3" stroke-dasharray="2 11" stroke-linecap="round" marker-end="url(#ar)"/>
+  <!-- боковые точки и центр -->
+  <circle cx="200" cy="470" r="7" fill="#e8652a" fill-opacity=".35"/>
+  <circle cx="600" cy="470" r="7" fill="#e8652a" fill-opacity=".35"/>
+  <!-- ладони -->
+  <path d="M150 478 q 50 42 105 0" fill="none" stroke="#1a2744" stroke-width="9" stroke-linecap="round"/>
+  <path d="M545 478 q 50 42 105 0" fill="none" stroke="#1a2744" stroke-width="9" stroke-linecap="round"/>
+  <!-- мячи: 1 – вправо, 2 – влево, 3 – снова вправо -->
+  <g font-family="Manrope, system-ui, sans-serif" font-weight="800" font-size="26" fill="#fff" text-anchor="middle" dominant-baseline="central">
+    <circle cx="545" cy="299" r="32" fill="url(#bo)"/><text x="545" y="300">1</text>
+    <circle cx="364" cy="226" r="32" fill="url(#bn)"/><text x="364" y="227">2</text>
+    <circle cx="359" cy="346" r="32" fill="url(#bb)"/><text x="359" y="347">3</text>
+  </g>
+  <g font-family="Manrope, system-ui, sans-serif" font-weight="600" font-size="17" fill="#1a2744" fill-opacity=".6">
+    <text x="588" y="296">1 – вправо</text>
+    <text x="216" y="206">2 – влево</text>
+    <text x="400" y="512" text-anchor="middle">3 – снова вправо</text>
+  </g>
+</svg>

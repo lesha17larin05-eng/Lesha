@@ -1,0 +1,358 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { apiJson } from '../../lib/api';
+
+// Кабинет курса «Жонглирование: у вас получится» – по образцу кабинета
+// «Здоровой спины»: карточка урока = номер, метка, название, описание
+// (lessons.content_md из сидера) и плеер mp4.
+// Видео – /lesson-videos/zhonglirovanie/<slug>.mp4 (nginx проверяет enrollment).
+// Пока файла на сервере нет, на месте плеера заглушка «Видео скоро появится».
+
+const user = (Astro.locals as any).user;
+if (!user) {
+  return Astro.redirect('/courses/zhonglirovanie', 302);
+}
+
+const cookie = Astro.request.headers.get('cookie') || '';
+const { data, status } = await apiJson<any>('/api/courses/zhonglirovanie', { cookie });
+if (status !== 200 || !data.enrolled) return Astro.redirect('/courses/zhonglirovanie', 302);
+
+const lessons: any[] = (data.lessons || []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order);
+
+function lessonTag(slug: string, n: number): { label: string; color: string; bg: string } {
+  if (slug === 'znakomstvo')    return { label: 'Введение', color: '#555',    bg: 'rgba(0,0,0,0.06)' };
+  if (slug === 'cel-30-sekund') return { label: 'Цель',     color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+  if (slug === 'chto-dalshe')   return { label: 'Итог',     color: '#c45c1a', bg: 'rgba(232,101,42,0.12)' };
+  return { label: `Шаг ${n}`, color: '#1A2744', bg: 'rgba(26,39,68,0.08)' };
+}
+
+const tgHref = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Прохожу курс по жонглированию. ');
+---
+<SiteLayout title="Жонглирование: у вас получится – уроки курса" active="courses" padTop={true} noindex={true}>
+  <style>
+    /* ─── PAGE ─── */
+    .zs-cab-page {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 56px 24px 100px;
+    }
+
+    /* ─── HEADER ─── */
+    .zs-cab-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; font-weight: 500; color: var(--text-muted);
+      text-decoration: none; margin-bottom: 40px;
+      transition: color 0.2s;
+    }
+    .zs-cab-back:hover, .zs-cab-back:focus-visible { color: var(--navy); outline: none; }
+
+    .zs-cab-eyebrow {
+      font-size: 14px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--orange); margin-bottom: 12px;
+    }
+    .zs-cab-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4vw, 52px);
+      font-weight: 400; line-height: 1.1; color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .zs-cab-title em { font-style: italic; }
+    .zs-cab-subtitle {
+      font-size: 18px; color: var(--text-muted); margin-bottom: 48px;
+    }
+
+    /* ─── MODULE SECTION ─── */
+    .zs-cab-module {
+      margin-bottom: 48px;
+      background: white;
+      border-radius: 24px;
+      padding: 36px 40px;
+      border: 1px solid var(--border);
+    }
+    .zs-cab-module-title {
+      font-size: 15px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--orange);
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .zs-cab-module-title::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--orange);
+    }
+
+    /* ─── LESSONS ─── */
+    .zs-cab-lessons { display: flex; flex-direction: column; gap: 24px; }
+
+    .zs-cab-lesson {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    @media (hover: hover) {
+      .zs-cab-lesson:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+      }
+    }
+
+    .zs-cab-lesson-head {
+      padding: 24px 28px 20px;
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+    .zs-cab-lesson-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--navy); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+    .zs-cab-lesson-num.preview { background: var(--orange); }
+    .zs-cab-lesson-meta { flex: 1; min-width: 0; }
+
+    .zs-cab-lesson-tag {
+      display: inline-block; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px; margin-bottom: 8px;
+    }
+    .zs-cab-lesson-title {
+      font-size: 21px; font-weight: 700; color: var(--navy); line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .zs-cab-lesson-desc {
+      font-size: 16px; color: var(--text-muted); line-height: 1.75;
+    }
+
+    /* Inline mp4 player */
+    .zs-cab-video-wrap {
+      margin: 0 28px 28px;
+      aspect-ratio: 16 / 9;
+      border-radius: 14px;
+      background: #000;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .zs-cab-video-wrap video {
+      width: 100%; height: 100%;
+      display: block;
+      background: #000;
+      object-fit: contain;
+    }
+    .zs-cab-bigplay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.25);
+      border: none; padding: 0; margin: 0; cursor: pointer;
+      transition: opacity .2s, background .2s;
+    }
+    .zs-cab-bigplay svg {
+      width: 72px; height: 72px;
+      fill: white;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+      transition: transform .2s;
+    }
+    @media (hover: hover) {
+      .zs-cab-bigplay:hover { background: rgba(0,0,0,0.15); }
+      .zs-cab-bigplay:hover svg { transform: scale(1.08); }
+    }
+    .zs-cab-video-wrap.is-playing .zs-cab-bigplay { opacity: 0; pointer-events: none; }
+    /* Заглушка, пока видео не загружено на сервер */
+    .zs-cab-video-soon {
+      position: absolute; inset: 0; display: none;
+      flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: rgba(255,255,255,0.88); font-size: 16px; text-align: center; padding: 24px;
+    }
+    .zs-cab-video-soon svg { width: 44px; height: 44px; stroke: rgba(255,255,255,0.6); }
+    .zs-cab-video-wrap.is-missing .zs-cab-video-soon { display: flex; }
+    .zs-cab-video-wrap.is-missing .zs-cab-bigplay,
+    .zs-cab-video-wrap.is-missing video { visibility: hidden; }
+    .zs-cab-intro {
+      margin-bottom: 40px; background: linear-gradient(135deg, var(--cream) 0%, #f3ede0 100%);
+      border: 1px solid var(--border); border-radius: 24px; padding: 28px 32px;
+      font-size: 16px; color: var(--text-mid); line-height: 1.75;
+    }
+    .zs-cab-intro strong { color: var(--navy); }
+    .zs-cab-intro a { color: var(--orange); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(232,101,42,0.3); transition: border-color .2s; }
+    .zs-cab-intro a:hover, .zs-cab-intro a:focus-visible { border-bottom-color: var(--orange); outline: none; }
+
+    /* ─── FEEDBACK ─── */
+    .zs-cab-feedback {
+      margin-top: 56px;
+      background: var(--navy);
+      border-radius: 20px;
+      padding: 36px 40px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      flex-wrap: wrap;
+    }
+    .zs-cab-feedback-text strong {
+      display: block; font-size: 19px; font-weight: 600; color: white; margin-bottom: 6px;
+    }
+    .zs-cab-feedback-text span {
+      font-size: 16px; color: rgba(255,255,255,0.82);
+    }
+    .zs-cab-feedback-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--orange); color: white; text-decoration: none;
+      padding: 14px 28px; border-radius: 100px;
+      font-size: 16px; font-weight: 600; font-family: 'Manrope', sans-serif;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(232,101,42,0.3);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .zs-cab-feedback-btn:hover, .zs-cab-feedback-btn:focus-visible {
+      background: var(--orange-warm); transform: translateY(-2px); outline: none;
+    }
+    .zs-cab-feedback-btn svg { width: 18px; height: 18px; fill: white; flex-shrink: 0; }
+    .zs-cab-tg { margin-top: 16px; text-align: center; font-size: 15px; color: var(--text-muted); }
+    .zs-cab-tg a { color: #2aabee; text-decoration: none; font-weight: 600; }
+    @media (hover: hover) { .zs-cab-tg a:hover { text-decoration: underline; } }
+
+    @media (max-width: 600px) {
+      .zs-cab-page { padding: 40px 16px 80px; }
+      .zs-cab-lesson-head { padding: 20px 20px 16px; }
+      .zs-cab-video-wrap { margin: 0 20px 20px; }
+      .zs-cab-feedback { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+      .zs-cab-feedback-btn { width: 100%; justify-content: center; }
+    }
+  </style>
+
+  <div class="zs-cab-page">
+
+    <a href="/courses/zhonglirovanie" class="zs-cab-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      О курсе
+    </a>
+
+    <h1 class="zs-cab-title">Жонглирование: <em>у вас получится</em></h1>
+    <p class="zs-cab-subtitle">Продолжайте практиковать, это единственный путь</p>
+
+    <div class="zs-cab-intro">
+      <strong>Как проходить.</strong> Уроки идут по порядку. В каждом упражнении есть критерий – выполнили его, переходите к следующему. Не получается – вернитесь на шаг назад, это тоже часть пути.
+      <br><strong>Тариф «С разбором».</strong> Присылайте мне видео на трёх этапах: один мяч, три броска, фонтан – <a href={tgHref} target="_blank" rel="noopener">в Телеграм</a>.
+    </div>
+
+    <div class="zs-cab-module">
+      <div class="zs-cab-module-title">Уроки курса</div>
+      <div class="zs-cab-lessons">
+        {lessons.map((l: any, i: number) => {
+          const tag = lessonTag(l.slug, i);
+          const mp4Url = `/lesson-videos/zhonglirovanie/${l.slug}.mp4#t=0.5`;
+          return (
+            <article class="zs-cab-lesson" id={l.slug}>
+              <div class="zs-cab-lesson-head">
+                <div class="zs-cab-lesson-num">{i}</div>
+                <div class="zs-cab-lesson-meta">
+                  <span class="zs-cab-lesson-tag" style={`color:${tag.color};background:${tag.bg}`}>{tag.label}</span>
+                  <div class="zs-cab-lesson-title">{l.title}</div>
+                  <div class="zs-cab-lesson-desc">{l.content_md}</div>
+                </div>
+              </div>
+              <div class="zs-cab-video-wrap" data-video-wrap>
+                <video controls preload="metadata" playsinline src={mp4Url} data-lesson-id={l.id}></video>
+                <button type="button" class="zs-cab-bigplay" aria-label="Воспроизвести">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="6,3 22,12 6,21"/></svg>
+                </button>
+                <div class="zs-cab-video-soon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>
+                  Видео скоро появится
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+
+    <div class="zs-cab-feedback">
+      <div class="zs-cab-feedback-text">
+        <strong>Есть вопрос или отзыв?</strong>
+        <span>Напишите Алексею напрямую – отвечает лично</span>
+      </div>
+      <a href={tgHref} target="_blank" rel="noopener noreferrer" class="zs-cab-feedback-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
+        Написать в Телеграме
+      </a>
+    </div>
+    <div class="zs-cab-tg">
+      Подпишитесь на <a href="https://t.me/lesha_larin" target="_blank" rel="noopener">Телеграм-канал</a>, если вдруг ещё нет – впереди много интересного
+    </div>
+
+  </div>
+
+  <script>
+    // Большая play-кнопка поверх плеера + Space переключает текущее видео,
+    // в том числе когда оно открыто во весь экран.
+    let activeVideo = null;
+    document.querySelectorAll('[data-video-wrap]').forEach((wrap) => {
+      const video = wrap.querySelector('video');
+      const btn = wrap.querySelector('.zs-cab-bigplay');
+      if (!video || !btn) return;
+      btn.addEventListener('click', () => { activeVideo = video; video.focus(); video.play(); });
+      video.addEventListener('play',  () => { activeVideo = video; wrap.classList.add('is-playing'); });
+      video.addEventListener('pause', () => wrap.classList.remove('is-playing'));
+      video.addEventListener('ended', () => wrap.classList.remove('is-playing'));
+      video.addEventListener('error', () => wrap.classList.add('is-missing'));
+      video.addEventListener('click',          () => activeVideo = video);
+      video.addEventListener('focus',          () => activeVideo = video, true);
+      video.addEventListener('webkitbeginfullscreen', () => activeVideo = video);
+      video.addEventListener('webkitendfullscreen',   () => activeVideo = null);
+    });
+    document.addEventListener('fullscreenchange', () => {
+      const fs = document.fullscreenElement;
+      if (fs && fs.tagName === 'VIDEO') { activeVideo = fs; fs.focus(); }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const t = e.target;
+      if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(t.tagName)) return;
+      if (t.isContentEditable) return;
+      if (t.tagName === 'VIDEO') return;
+      if (!activeVideo) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeVideo.paused) activeVideo.play();
+      else activeVideo.pause();
+    }, true);
+
+    // Подсветка урока при скроллe по #slug-якорю
+    if (window.location.hash) {
+      const el = document.querySelector(window.location.hash);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      }
+    }
+
+    // ─── Прогресс уроков → POST /api/lessons/{id}/progress ───────────
+    // «Начал» при play, позиция каждые 30 секунд и на паузе,
+    // «пройден» на 90% просмотра или по окончании.
+    // CSRF подставляет fetch-обёртка SiteLayout. Повторные отправки
+    // безопасны: бэкенд хранит максимум позиции и первый completed_at.
+    const sendProgress = (id: string, completed: boolean, pos: number) => {
+      fetch(`/api/lessons/${id}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ completed, last_position_sec: Math.floor(pos || 0) }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+    document.querySelectorAll<HTMLVideoElement>('video[data-lesson-id]').forEach((v) => {
+      const id = v.dataset.lessonId || '';
+      if (!id) return;
+      let lastSent = 0;
+      let done = false;
+      v.addEventListener('play', () => { if (!done) sendProgress(id, false, v.currentTime); });
+      v.addEventListener('timeupdate', () => {
+        if (done || !v.duration) return;
+        if (v.currentTime / v.duration >= 0.9) { done = true; sendProgress(id, true, v.currentTime); return; }
+        if (v.currentTime - lastSent >= 30) { lastSent = v.currentTime; sendProgress(id, false, v.currentTime); }
+      });
+      v.addEventListener('pause', () => { if (!done) sendProgress(id, false, v.currentTime); });
+      v.addEventListener('ended', () => { if (!done) { done = true; sendProgress(id, true, v.duration || v.currentTime); } });
+    });
+  </script>
+</SiteLayout>

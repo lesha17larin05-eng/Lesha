@@ -1,28 +1,31 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { extractLegacy } from '../../lib/legacy';
-import rawHtml from '../../legacy/zdorovaya-spina.html?raw';
+import rawHtml from '../../legacy/zhonglirovanie.html?raw';
 import { apiJson } from '../../lib/api';
+
+// Лендинг курса «Жонглирование: у вас получится». Логика покупки – как у
+// «Здоровой спины»: тарифы self/support → регистрация во всплывающем окне →
+// POST /api/courses/zhonglirovanie/checkout → Продамус.
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const user = (Astro.locals as any).user;
+const isAdmin = user?.role === 'admin';
 
-// Fetch enrollment status only for logged-in users
-let enrolled = false;
-if (user) {
-  const { data, status } = await apiJson<any>('/api/courses/zdorovaya-spina', { cookie });
-  if (status === 200) enrolled = !!data.enrolled;
+// Если курс снять с публикации в /admin/courses, API отвечает 404 –
+// страницу видит только админ (с плашкой «Черновик»).
+const { data, status } = await apiJson<any>('/api/courses/zhonglirovanie', { cookie });
+if (status !== 200 && !isAdmin) {
+  return new Response(null, { status: 404 });
 }
+const enrolled = status === 200 && !!data?.enrolled;
+const isDraft = status !== 200;
 
-const { styles, body: rawBody } = extractLegacy(rawHtml);
-// Strip anchor-nav (second <nav>) and edit bar
-const reSecondNav = /<nav[\s\S]*?<\/nav>/i;
-const reEditBar  = /<div\s+id=["']edit-bar["'][\s\S]*?<\/div>/i;
-const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
+const { styles, body } = extractLegacy(rawHtml);
 
 // FAQPage JSON-LD – собирается из FAQ прямо на странице (rich snippet в поиске).
 const stripTags = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const faqMatches = [...rawHtml.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<div class="faq-content">([\s\S]*?)<\/div>/g)];
+const faqMatches = [...rawHtml.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<div class="faq-content">([\s\S]*?)<\/div><\/details>/g)];
 const faqJsonLd = faqMatches.length ? JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -33,32 +36,34 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
   })),
 }) : '';
 ---
-<SiteLayout title="Здоровая спина – курс Алексея Ларина" active="courses" pageStyles={styles}>
+<SiteLayout
+  title="Жонглирование: у вас получится – курс Алексея Ларина"
+  description="Онлайн-курс жонглирования для новичков: научитесь жонглировать тремя мячами с нуля. 8 видеоуроков, 6 шагов и понятный критерий перехода в каждом упражнении."
+  active="courses"
+  pageStyles={styles}
+  ogImage="/img/IMG_4035.jpg"
+  noindex={isDraft}
+>
+  {isDraft && <div class="tm-draft-bar">Черновик: курс не опубликован – страницу видите только вы (админ). Опубликовать – в /admin/courses.</div>}
   {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
   <Fragment set:html={body} />
   <script define:vars={{ enrolled, isLoggedIn: !!user }}>
     if (enrolled) {
-      // Eyebrow
       const eyebrow = document.querySelector('.eyebrow-text');
-      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 12 уроков · онлайн';
+      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 8 видеоуроков · онлайн';
 
-      // Promise
       const promise = document.querySelector('.hero-promise p');
-      if (promise) promise.innerHTML = '<strong>Все 12 уроков открыты</strong> – переходите к занятиям и практикуйте. Это единственный путь.';
+      if (promise) promise.innerHTML = '<strong>Все уроки открыты</strong> – берите мячи и практикуйте. Это единственный путь.';
 
-      // CTA button
       const btn = document.querySelector('.btn-hero');
       if (btn) {
         btn.textContent = 'Перейти к урокам →';
-        btn.setAttribute('href', '/cabinet/zdorovaya-spina');
-        btn.removeAttribute('onclick');
+        btn.setAttribute('href', '/cabinet/zhonglirovanie');
       }
 
-      // Hide safety text and start-pill
       const safety = document.querySelector('.hero-safety');
       if (safety) safety.style.display = 'none';
 
-      // Hide tariffs, FAQ, final-cta sections
       ['#tariffs', '.final-cta', '.guarantee-faq'].forEach(sel => {
         const el = document.querySelector(sel);
         if (el) el.style.display = 'none';
@@ -235,7 +240,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
           // Перезагружаем страницу с tariff=… – autoTariff-логика ниже сама запустит checkout
           const tariff = _pendingTariff;
           if (tariff) {
-            location.href = '/courses/zdorovaya-spina?tariff=' + encodeURIComponent(tariff);
+            location.href = '/courses/zhonglirovanie?tariff=' + encodeURIComponent(tariff);
           } else {
             location.reload();
           }
@@ -259,7 +264,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
         openAuthModal(tariff, 'register');
         return;
       }
-      const r = await fetch('/api/courses/zdorovaya-spina/checkout?tariff=' + encodeURIComponent(tariff), {
+      const r = await fetch('/api/courses/zhonglirovanie/checkout?tariff=' + encodeURIComponent(tariff), {
         method: 'POST',
       });
       const data = await r.json().catch(() => ({}));
@@ -273,7 +278,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
           alert('Перед оплатой подтвердите email – ссылка отправлена в письме после регистрации.');
           break;
         case 'already_enrolled':
-          window.location.href = '/cabinet/zdorovaya-spina';
+          window.location.href = '/cabinet/zhonglirovanie';
           break;
         case 'bad_tariff':
         case 'tariff_required':
@@ -315,54 +320,9 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       else _run();
     }
 
-    // Видеоотзывы: клик по play-кнопке запускает видео, активное видео ставит
-    // на паузу остальные.
-    let _activeVresVideo = null;
-    document.querySelectorAll('[data-vres]').forEach((card) => {
-      const video = card.querySelector('video');
-      const btn = card.querySelector('.zs-vres-play');
-      if (!video || !btn) return;
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (_activeVresVideo && _activeVresVideo !== video) _activeVresVideo.pause();
-        _activeVresVideo = video;
-        video.play();
-      });
-      video.addEventListener('play',  () => { card.classList.add('is-playing'); _activeVresVideo = video; });
-      video.addEventListener('pause', () => card.classList.remove('is-playing'));
-      video.addEventListener('ended', () => card.classList.remove('is-playing'));
-    });
-
-    // Слайдер видеоотзывов: стрелки prev/next прокручивают ленту на ширину
-    // одной карточки плюс gap. На краях стрелки блокируются.
-    (() => {
-      const track = document.getElementById('zs-vres-track');
-      const prev  = document.getElementById('zs-vres-prev');
-      const next  = document.getElementById('zs-vres-next');
-      if (!track || !prev || !next) return;
-
-      const step = () => {
-        const card = track.querySelector('.zs-vres-card');
-        if (!card) return 320;
-        const styles = window.getComputedStyle(track);
-        const gap = parseFloat(styles.columnGap || styles.gap || '20');
-        return card.getBoundingClientRect().width + gap;
-      };
-
-      const updateButtons = () => {
-        const max = track.scrollWidth - track.clientWidth - 2;
-        prev.toggleAttribute('disabled', track.scrollLeft <= 1);
-        next.toggleAttribute('disabled', track.scrollLeft >= max);
-      };
-
-      prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
-      next.addEventListener('click', () => track.scrollBy({ left:  step(), behavior: 'smooth' }));
-      track.addEventListener('scroll', updateButtons, { passive: true });
-      window.addEventListener('resize', updateButtons);
-      updateButtons();
-    })();
   </script>
   <style is:global>
+    .tm-draft-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 200; background: #fff3cd; color: #6b4e00; border-top: 1px solid #f0d98a; padding: 10px 20px; font-size: 14px; text-align: center; }
     #zs-auth-modal {
       position: fixed; inset: 0; z-index: 1000;
       display: flex; align-items: center; justify-content: center;

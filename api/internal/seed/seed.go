@@ -28,9 +28,14 @@ func Run(ctx context.Context, repo *db.Repo, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+	zhID, err := ensureZhonglirovanie(ctx, repo)
+	if err != nil {
+		return err
+	}
 	// auto-enroll admin и тестового user
 	_ = repo.Grant(ctx, adminID, myagkiyID, "admin", &adminID)
 	_ = repo.Grant(ctx, adminID, spinaID, "admin", &adminID)
+	_ = repo.Grant(ctx, adminID, zhID, "admin", &adminID)
 	_ = repo.Grant(ctx, userID, myagkiyID, "free", nil)
 	if err := SeedArticles(ctx, repo, adminID); err != nil {
 		slog.Warn("articles seed", "err", err)

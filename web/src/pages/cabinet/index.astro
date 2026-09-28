@@ -7,7 +7,7 @@ const user = (Astro.locals as any).user;
 
 // «Продолжить с того же места» – последняя учебная активность
 const { data: cont, status: contStatus } = await apiJson<any>('/api/me/continue', { cookie });
-const cabinetPagesSet = new Set(['myagkiy-start', 'zdorovaya-spina']);
+const cabinetPagesSet = new Set(['myagkiy-start', 'zdorovaya-spina', 'zhonglirovanie']);
 const contHref = cont && contStatus === 200
   ? (cabinetPagesSet.has(cont.course_slug) ? `/cabinet/${cont.course_slug}#${cont.lesson_slug}` : `/courses/${cont.course_slug}`)
   : '';
@@ -49,7 +49,7 @@ const askSubscribe = user?.consent_marketing !== true;
       {(courses || []).map((c: any) => {
         // У курсов с кастомной страницей кабинета ведём сразу туда,
         // а не на публичный лендинг (лишний переход).
-        const cabinetPages = new Set(['myagkiy-start', 'zdorovaya-spina']);
+        const cabinetPages = new Set(['myagkiy-start', 'zdorovaya-spina', 'zhonglirovanie']);
         const href = cabinetPages.has(c.slug) ? `/cabinet/${c.slug}` : `/courses/${c.slug}`;
         return (
           <a class="card" href={href} style="color:inherit; display:block;">
