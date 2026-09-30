@@ -122,6 +122,27 @@ func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	source, _ := a.Repo.UserSource(r.Context(), u.ID)
+	// Анкеты «Точки перемен»: ответы и ссылка на анкету для каждой оплаченной услуги.
+	qs, _ := a.Repo.QuestionnairesByUser(r.Context(), u.ID)
+	filled := map[uuid.UUID]db.Questionnaire{}
+	for _, q := range qs {
+		filled[q.OrderID] = q
+	}
+	svcOrders, _ := a.Repo.PaidServiceOrdersByUser(r.Context(), u.ID)
+	ankety := []map[string]any{}
+	for _, so := range svcOrders {
+		row := map[string]any{"order_num": so.OrderNum, "url": a.anketaURL(so.ID)}
+		if q, ok := filled[so.ID]; ok {
+			var items []map[string]string
+			for _, aq := range anketaQuestions {
+				if v := q.Answers[aq.Key]; v != "" {
+					items = append(items, map[string]string{"label": aq.Label, "answer": v})
+				}
+			}
+			row["submitted_at"], row["items"] = q.SubmittedAt, items
+		}
+		ankety = append(ankety, row)
+	}
 	writeJSON(w, 200, map[string]any{
 		"user": map[string]any{
 			"id": u.ID, "email": u.Email, "name": u.Name, "phone": u.Phone, "role": u.Role, "source": source,
@@ -130,6 +151,7 @@ func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 		},
 		"courses": courses,
 		"orders":  orders,
+		"ankety":  ankety,
 	})
 }
 

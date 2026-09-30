@@ -1,0 +1,159 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { apiJson } from '../lib/api';
+// Анкета перед «Точкой перемен». Ссылка приходит в письме после оплаты:
+// /anketa?o=<заказ>&t=<подпись>. Вопросы и сохранённые ответы – GET /api/anketa.
+const o = Astro.url.searchParams.get('o') || '';
+const t = Astro.url.searchParams.get('t') || '';
+const q = `?o=${encodeURIComponent(o)}&t=${encodeURIComponent(t)}`;
+let data: any = null;
+if (o && t) {
+  const res = await apiJson<any>('/api/anketa' + q);
+  if (res.status === 200) data = res.data;
+}
+const questions: any[] = data?.questions ?? [];
+const answers: Record<string, string> = data?.answers ?? {};
+const groups: { name: string; items: any[] }[] = [];
+for (const qq of questions) {
+  const last = groups[groups.length - 1];
+  if (last && last.name === qq.group) last.items.push(qq);
+  else groups.push({ name: qq.group, items: [qq] });
+}
+---
+<SiteLayout title="Анкета перед «Точкой перемен» – Алексей Ларин" padTop={true} noindex={true}>
+  <section class="container anketa" data-q={q}>
+    {!data ? (
+      <div>
+        <h1>Ссылка не сработала</h1>
+        <p>Похоже, ссылка повреждена или заказ ещё не оплачен. Напишите мне в
+          <a href="https://t.me/larin_lesha" target="_blank" rel="noopener">Телеграм</a> или на
+          <a href="mailto:les-larin@yandex.ru">les-larin@yandex.ru</a> – пришлю анкету вручную.</p>
+      </div>
+    ) : (
+      <>
+        <div id="anketa-form-wrap">
+          <p class="eyebrow">«Точка перемен» · шаг 1</p>
+          <h1>{data.name ? `${data.name}, пара вопросов перед занятием` : 'Пара вопросов перед занятием'}</h1>
+          <p class="lead">Отвечайте своими словами – можно коротко. Чем честнее, тем точнее я соберу план под вас.
+            Займёт 5–7 минут. {data.submitted && <b>Вы уже заполняли анкету – можно поправить ответы и отправить снова.</b>}</p>
+
+          <form id="anketa-form" novalidate>
+            {groups.map((g) => (
+              <fieldset>
+                <legend>{g.name}</legend>
+                {g.items.map((qq: any) => (
+                  <label class="field" data-key={qq.key}>
+                    <span class="q">{qq.label}{qq.required && <span class="req" aria-label="обязательно"> *</span>}</span>
+                    {qq.hint && <span class="hint">{qq.hint}</span>}
+                    {qq.short
+                      ? <input type="text" name={qq.key} value={answers[qq.key] || ''} maxlength="3000" />
+                      : <textarea name={qq.key} rows="3" maxlength="3000">{answers[qq.key] || ''}</textarea>}
+                    <span class="err" hidden>Ответьте, пожалуйста, на этот вопрос</span>
+                  </label>
+                ))}
+              </fieldset>
+            ))}
+
+            <label class="consent">
+              <input type="checkbox" name="consent_health" />
+              <span>Согласен(на) на обработку сведений о моём здоровье, которые я указал(а) в анкете, –
+                чтобы Алексей Ларин подобрал безопасную нагрузку. Сведения не передаются третьим лицам.
+                <a href="/legal/privacy" target="_blank" rel="noopener">Политика конфиденциальности</a>.</span>
+            </label>
+            <p class="err" id="consent-err" hidden>Без этого согласия я не могу принять анкету</p>
+
+            <button type="submit" class="btn-primary" id="anketa-submit">Отправить анкету</button>
+            <p class="err" id="net-err" hidden>Не получилось отправить – проверьте интернет и попробуйте ещё раз. Ответы на странице не потеряются.</p>
+          </form>
+        </div>
+
+        <div id="anketa-done" hidden>
+          <h1>Спасибо, анкета у меня</h1>
+          <p class="lead">Прочитаю её и напишу вам в течение 1–2 дней – договоримся о времени занятия.</p>
+          <p>Если что-то вспомните – просто вернитесь по той же ссылке из письма и дополните ответы.</p>
+          <p>А пока можно подписаться на <a href="https://t.me/lesha_larin" target="_blank" rel="noopener">Телеграм-канал</a> – там короткие практики и разборы.</p>
+        </div>
+      </>
+    )}
+  </section>
+
+  <style>
+    .anketa { max-width: 680px; padding: 70px 20px 100px; }
+    .anketa h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(30px, 4vw, 42px); font-weight: 500; color: var(--navy); margin: 0 0 16px; line-height: 1.15; }
+    .anketa .eyebrow { font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--orange); font-weight: 700; margin-bottom: 10px; }
+    .anketa p { font-size: 17px; line-height: 1.7; color: var(--text-mid); margin-bottom: 12px; }
+    .anketa .lead { font-size: 18px; }
+    .anketa a { color: var(--orange); }
+    fieldset { border: none; padding: 0; margin: 34px 0 0; }
+    legend { font-family: 'Cormorant Garamond', serif; font-size: 26px; color: var(--navy); margin-bottom: 14px; }
+    .field { display: block; margin-bottom: 20px; }
+    .field .q { display: block; font-size: 17px; font-weight: 600; color: var(--navy); line-height: 1.45; }
+    .field .req { color: var(--orange); }
+    .field .hint { display: block; font-size: 15px; color: var(--text-muted); margin-top: 3px; }
+    .field textarea, .field input[type=text] { display: block; width: 100%; box-sizing: border-box; margin-top: 8px;
+      padding: 12px 14px; border: 1px solid var(--border, #e3d9c8); border-radius: 12px; background: #fff;
+      font: inherit; font-size: 16px; line-height: 1.5; resize: vertical; }
+    .field textarea:focus, .field input:focus { outline: 2px solid var(--orange); outline-offset: 1px; border-color: transparent; }
+    .field.invalid textarea, .field.invalid input { border-color: #c0392b; }
+    .err { color: #c0392b !important; font-size: 14px !important; margin: 6px 0 0 !important; display: block; }
+    .err[hidden] { display: none; }
+    .consent { display: flex; gap: 12px; align-items: flex-start; margin-top: 30px; padding: 16px 18px; background: #fff7f1;
+      border: 1px solid #f6d3bf; border-radius: 14px; font-size: 15px; line-height: 1.55; color: var(--text-mid); cursor: pointer; }
+    .consent input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--orange); flex-shrink: 0; }
+    #anketa-submit { margin-top: 24px; border: none; cursor: pointer; font-size: 17px; }
+    #anketa-submit:disabled { opacity: .6; cursor: progress; }
+  </style>
+
+  <script>
+    const root = document.querySelector('.anketa') as HTMLElement | null;
+    const q = root?.dataset.q || '';
+    const form = document.getElementById('anketa-form') as HTMLFormElement | null;
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const answers: Record<string, string> = {};
+      form.querySelectorAll<HTMLElement>('.field').forEach((f) => {
+        const key = f.dataset.key || '';
+        answers[key] = String(fd.get(key) || '').trim();
+        f.classList.remove('invalid');
+        (f.querySelector('.err') as HTMLElement).hidden = true;
+      });
+      const consent = !!fd.get('consent_health');
+      const consentErr = document.getElementById('consent-err') as HTMLElement;
+      const netErr = document.getElementById('net-err') as HTMLElement;
+      consentErr.hidden = consent;
+      netErr.hidden = true;
+      const btn = document.getElementById('anketa-submit') as HTMLButtonElement;
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/anketa' + q, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers, consent_health: consent }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok) {
+          (document.getElementById('anketa-form-wrap') as HTMLElement).hidden = true;
+          (document.getElementById('anketa-done') as HTMLElement).hidden = false;
+          window.scrollTo({ top: 0 });
+          (window as any).reachGoal?.('anketa_submit');
+          return;
+        }
+        if (d.error === 'required' || d.error === 'consent_health_required') {
+          let first: HTMLElement | null = null;
+          for (const key of (Array.isArray(d.missing) ? d.missing : [])) {
+            const f = form.querySelector<HTMLElement>(`.field[data-key="${key}"]`);
+            if (!f) continue;
+            f.classList.add('invalid');
+            (f.querySelector('.err') as HTMLElement).hidden = false;
+            first = first || f;
+          }
+          if (d.error === 'consent_health_required') consentErr.hidden = false;
+          (first || consentErr).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          netErr.hidden = false;
+        }
+      } catch { netErr.hidden = false; }
+      finally { btn.disabled = false; }
+    });
+  </script>
+</SiteLayout>

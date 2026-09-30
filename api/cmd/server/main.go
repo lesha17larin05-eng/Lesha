@@ -78,6 +78,8 @@ func main() {
 	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Get("/api/unsubscribe/status", app.UnsubscribeStatus)
 	r.Post("/api/unsubscribe/undo", app.UnsubscribeUndo)
+	r.Get("/api/anketa", app.GetAnketa)
+	r.Post("/api/anketa", app.SubmitAnketa)
 	r.Get("/api/subscribe", app.Subscribe)
 	r.Post("/api/subscribe", app.Subscribe)
 	// Форма «получать письма» в блоге и под отзывами.

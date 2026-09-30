@@ -40,7 +40,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends, unsubscribe_reasons RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends, unsubscribe_reasons, questionnaires RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -87,6 +87,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Get("/api/unsubscribe/status", app.UnsubscribeStatus)
 	r.Post("/api/unsubscribe/undo", app.UnsubscribeUndo)
+	r.Get("/api/anketa", app.GetAnketa)
+	r.Post("/api/anketa", app.SubmitAnketa)
 	r.Get("/api/subscribe", app.Subscribe)
 	r.Post("/api/subscribe", app.Subscribe)
 	r.Group(func(r chi.Router) {
@@ -2615,5 +2617,61 @@ func TestTrafficSource(t *testing.T) {
 	}
 	if r, _ := newClient(srv).do("GET", "/api/admin/sources", nil); r.StatusCode != 401 && r.StatusCode != 403 {
 		t.Fatalf("anon must not see sources: %d", r.StatusCode)
+	}
+}
+
+// TestAnketa – анкета «Точки перемен»: только по подписанной ссылке на
+// оплаченный заказ услуги, с согласием на данные о здоровье и обязательными полями.
+func TestAnketa(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	uid, err := repo.CreateUser(ctx, "anketa@b.ru", "x", "Мария Иванова", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	o, err := repo.CreateServiceOrder(ctx, uid, "start", 2990)
+	if err != nil {
+		t.Fatal(err)
+	}
+	q := "?o=" + o.ID.String() + "&t=" + handlers.AnketaToken(cfg.JWTSecret, o.ID.String())
+	c := newClient(srv)
+
+	// заказ ещё не оплачен – ссылка не работает
+	if r, _ := c.do("GET", "/api/anketa"+q, nil); r.StatusCode != 400 {
+		t.Fatalf("unpaid order: %d", r.StatusCode)
+	}
+	if err := repo.MarkOrderPaid(ctx, o.ID, "p1"); err != nil {
+		t.Fatal(err)
+	}
+	if r, _ := c.do("GET", "/api/anketa?o="+o.ID.String()+"&t=deadbeef", nil); r.StatusCode != 400 {
+		t.Fatalf("bad token: %d", r.StatusCode)
+	}
+	r, body := c.do("GET", "/api/anketa"+q, nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"name":"Мария"`) || !strings.Contains(string(body), `"submitted":false`) {
+		t.Fatalf("get: %d %s", r.StatusCode, body)
+	}
+	full := map[string]string{"goal": "спина", "activity": "почти ничего", "time": "3 раза по 30 минут", "slots": "пн вечер", "limits": "нет"}
+	// без согласия на данные о здоровье – нельзя
+	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": full}); r.StatusCode != 400 || !strings.Contains(string(body), "consent_health_required") {
+		t.Fatalf("no consent: %d %s", r.StatusCode, body)
+	}
+	// пропущено обязательное
+	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": map[string]string{"goal": "x"}, "consent_health": true}); r.StatusCode != 400 || !strings.Contains(string(body), `"slots"`) {
+		t.Fatalf("missing: %d %s", r.StatusCode, body)
+	}
+	full["unknown"] = "не сохраняем"
+	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": full, "consent_health": true}); r.StatusCode != 200 {
+		t.Fatalf("submit: %d %s", r.StatusCode, body)
+	}
+	saved, err := repo.GetQuestionnaire(ctx, o.ID)
+	if err != nil || saved.Answers["goal"] != "спина" || saved.Answers["unknown"] != "" {
+		t.Fatalf("saved: %+v %v", saved, err)
+	}
+	// повторная отправка перезаписывает, GET показывает ответы
+	full["goal"] = "вес"
+	c.do("POST", "/api/anketa"+q, map[string]any{"answers": full, "consent_health": true})
+	r, body = c.do("GET", "/api/anketa"+q, nil)
+	if !strings.Contains(string(body), `"goal":"вес"`) || !strings.Contains(string(body), `"submitted":true`) {
+		t.Fatalf("resubmit: %s", body)
 	}
 }
