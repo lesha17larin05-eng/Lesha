@@ -154,7 +154,7 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 ## Лендинг «Мягкого старта»: карточки уроков
 
-Сетка карточек «Уроки курса» на `/courses/myagkiy-start` ведёт: с доступом – в `/cabinet/myagkiy-start#<slug>` (свой mp4-плеер), без доступа – к блоку регистрации `#get-access`. Страницы `/courses/myagkiy-start/lessons/<slug>` встраивают YouTube, а CSP (`frame-src` в `nginx/nginx.conf`) его не пропускает – поэтому с лендинга на них больше не ссылаемся.
+Сетка карточек «Уроки курса» на `/courses/myagkiy-start` показывается только тем, кто ещё не записан (записанным хватает кнопки «Перейти к урокам» и списка в hero). Обложки – кадры из видео в `web/public/img/myagkiy-start/<slug>.{jpg,webp}` (+@2x), клик ведёт к блоку регистрации `#get-access`. Страницы `/courses/myagkiy-start/lessons/<slug>` встраивают YouTube, а CSP (`frame-src` в `nginx/nginx.conf`) его не пропускает – поэтому с лендинга на них больше не ссылаемся.
 
 ## Дожим и удержание
 
