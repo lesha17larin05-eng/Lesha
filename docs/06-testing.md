@@ -53,7 +53,8 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestCheckoutTariffPresets`            | Курс `zdorovaya-spina`: `?tariff=self` → order.AmountRub=3990, `?tariff=support` → 12990, без `?tariff` → 400 `tariff_required`, неизвестный → 400 `bad_tariff`, `?tariff=test10` обычному юзеру → 400 `bad_tariff`, админу → 200 и AmountRub=10. |
 | `TestZhonglirovanieTariffsAndDraft`    | Курс `zhonglirovanie`: черновик – checkout 404 и `GET /api/courses/zhonglirovanie` 404; после публикации `self` → 1490, `support` → 3990, без `?tariff` → 400 `tariff_required`. |
 | `TestAdminEndpointsRequireAdminRole`   | Юзер без `role=admin` → 403 на `/api/admin/stats`. |
-| `TestQuickSignupCreatesAndAuthenticates` | Quick-signup: 201 + `verify_required`, ДО verify — email не подтверждён, enrollment не выдан, `/api/me` 401; ПОСЛЕ `verify-email` — подтверждён, enrollment в published free, залогинен, в `/api/me/courses` только published free. |
+| `TestQuickSignupCreatesAndAuthenticates` | Quick-signup: 201 + `access_granted`, почта не подтверждена, но enrollment в published free выдан сразу и `/api/me` 200 (`can_fix_email:true`); в `/api/me/courses` только published free. Ссылка из письма (`verify-email`) подтверждает почту и логинит в новом браузере. |
+| `TestFixEmailAfterQuickSignup` | `fix-email`: аноним 401, кривой адрес 400, занятый 409, исправление меняет email и пароль (вход с новыми данными), после подтверждения почты – 409. |
 | `TestQuickSignupExistingEmailReturnsExists` | Тот же endpoint для уже существующего email → 200 `{exists:true}` без создания сессии. |
 | `TestQuickSignupRejectsBadEmail`       | Невалидный email → 400. |
 | `TestQuickSignupRequiresCSRF`          | Без `X-CSRF-Token` → 403 (защита write-эндпоинта). |

@@ -63,6 +63,7 @@ func main() {
 		r.Post("/logout", app.Logout)
 		r.Post("/refresh", app.Refresh)
 		r.Post("/verify-email", app.VerifyEmail)
+		r.Post("/fix-email", app.FixEmail)
 		r.Post("/resend-verification", app.ResendVerification)
 		r.Post("/forgot-password", app.ForgotPassword)
 		r.Post("/reset-password", app.ResetPassword)

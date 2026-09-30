@@ -39,6 +39,12 @@ const my = Array.isArray(myCourses) ? myCourses : [];
 const msProgress = my.find((c: any) => c.slug === 'myagkiy-start')?.progress_pct ?? 0;
 const hasZS = my.some((c: any) => c.slug === 'zdorovaya-spina');
 const showCrossSell = msProgress >= 100 && !hasZS;
+
+// Новичок сразу после регистрации: почта ещё не подтверждена – показываем,
+// куда ушло письмо с паролем, и даём исправить опечатку в адресе.
+const { data: me } = await apiJson<any>('/api/me', { cookie });
+const canFixEmail = !!me?.can_fix_email;
+const myEmail: string = me?.email || '';
 ---
 <SiteLayout title="Мягкий старт – уроки курса" active="course" padTop={true}>
   <style>
@@ -238,6 +244,20 @@ const showCrossSell = msProgress >= 100 && !hasZS;
     }
     @media (hover: hover) { .ms-crosssell-btn:hover { background: var(--orange-warm); transform: translateY(-1px); } }
     .ms-crosssell-btn:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+    /* ─── WELCOME / FIX EMAIL ─── */
+    .ms-welcome {
+      background: #fff7f1; border: 1px solid #f6d3bf; border-radius: 18px;
+      padding: 22px 26px; margin-bottom: 32px; color: var(--navy);
+    }
+    .ms-welcome-title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+    .ms-welcome p { font-size: 15px; line-height: 1.6; margin: 0; color: var(--text-mid); }
+    .ms-welcome b { color: var(--navy); overflow-wrap: anywhere; }
+    .ms-welcome-link { background: none; border: none; padding: 0; color: var(--orange); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
+    .ms-welcome-form { display: none; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .ms-welcome-form.is-open { display: flex; }
+    .ms-welcome-form input { flex: 1 1 220px; padding: 11px 14px; border: 1px solid #e3d9c8; border-radius: 10px; font: inherit; font-size: 16px; }
+    .ms-welcome-form button { background: var(--orange); color: #fff; border: none; border-radius: 100px; padding: 11px 22px; font: inherit; font-weight: 600; cursor: pointer; }
+    .ms-welcome-note { font-size: 14px; margin-top: 8px; min-height: 1em; }
   </style>
 
   <div class="ms-cab-page">
@@ -249,6 +269,19 @@ const showCrossSell = msProgress >= 100 && !hasZS;
 
     <h1 class="ms-cab-title">Мягкий <em>старт</em></h1>
     <p class="ms-cab-subtitle">Все уроки курса – смотрите в любом порядке</p>
+
+    {canFixEmail && (
+      <div class="ms-welcome" id="ms-welcome">
+        <div class="ms-welcome-title">Доступ открыт – можно начинать 🙌</div>
+        <p>Письмо с паролем для входа ушло на <b id="ms-welcome-email">{myEmail}</b>. Если его нет во «Входящих» – загляните в «Спам» и «Рассылки».
+          Не тот адрес? <button type="button" class="ms-welcome-link" id="ms-fix-open">Исправить</button></p>
+        <form class="ms-welcome-form" id="ms-fix-form" novalidate>
+          <input type="email" name="email" placeholder="Правильный email" autocomplete="email" required />
+          <button type="submit">Сохранить</button>
+        </form>
+        <div class="ms-welcome-note" id="ms-fix-note"></div>
+      </div>
+    )}
 
     {showCrossSell && (
       <div class="ms-crosssell">
@@ -321,6 +354,47 @@ const showCrossSell = msProgress >= 100 && !hasZS;
   </div>
 
   <script>
+    // «Не тот адрес? Исправить» – POST /api/auth/fix-email (CSRF ставит обёртка SiteLayout).
+    {
+      const open = document.getElementById('ms-fix-open');
+      const form = document.getElementById('ms-fix-form') as HTMLFormElement | null;
+      const note = document.getElementById('ms-fix-note');
+      const shown = document.getElementById('ms-welcome-email');
+      open?.addEventListener('click', () => {
+        form?.classList.add('is-open');
+        form?.querySelector('input')?.focus();
+      });
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = form.querySelector('input') as HTMLInputElement;
+        const email = input.value.trim().toLowerCase();
+        const say = (t: string, ok = false) => { if (note) { note.textContent = t; note.style.color = ok ? '#2e7d4f' : '#c0392b'; } };
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { say('Проверьте адрес – похоже, в нём ошибка'); return; }
+        const btn = form.querySelector('button') as HTMLButtonElement;
+        btn.disabled = true;
+        try {
+          const r = await fetch('/api/auth/fix-email', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+            body: JSON.stringify({ email }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (r.ok) {
+            if (shown) shown.textContent = d.email || email;
+            form.classList.remove('is-open');
+            say('Готово – письмо с новым паролем ушло на ' + (d.email || email), true);
+            (window as any).reachGoal?.('fix_email');
+          } else if (d.error === 'email_taken') {
+            say('Такой адрес уже зарегистрирован – войдите с ним через «Войти»');
+          } else if (d.error === 'email_locked') {
+            say('Адрес уже подтверждён – поменять его можно, написав мне в Телеграм');
+          } else {
+            say('Не получилось, попробуйте ещё раз');
+          }
+        } catch { say('Ошибка сети, попробуйте ещё раз'); }
+        finally { btn.disabled = false; }
+      });
+    }
+
     // Большая play-кнопка поверх плеера + Space переключает текущее видео,
     // в том числе когда оно открыто во весь экран.
     let activeVideo = null;

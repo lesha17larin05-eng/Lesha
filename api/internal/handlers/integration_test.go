@@ -68,6 +68,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/logout", app.Logout)
 		r.Post("/refresh", app.Refresh)
 		r.Post("/verify-email", app.VerifyEmail)
+		r.Post("/fix-email", app.FixEmail)
 		r.Post("/resend-verification", app.ResendVerification)
 		r.Post("/forgot-password", app.ForgotPassword)
 		r.Post("/reset-password", app.ResetPassword)
@@ -472,53 +473,113 @@ func TestQuickSignupCreatesAndAuthenticates(t *testing.T) {
 	if r.StatusCode != 201 {
 		t.Fatalf("quick-signup: %d %s", r.StatusCode, body)
 	}
-	if !strings.Contains(string(body), "\"created\":true") || !strings.Contains(string(body), "\"verify_required\":true") {
-		t.Fatalf("missing created/verify_required flags: %s", body)
+	if !strings.Contains(string(body), "\"created\":true") || !strings.Contains(string(body), "\"access_granted\":true") {
+		t.Fatalf("missing created/access_granted flags: %s", body)
 	}
 	u, err := repo.GetUserByEmail(ctx, "quick@b.ru")
 	if err != nil {
 		t.Fatalf("user not created: %v", err)
 	}
-	// До подтверждения почты: email НЕ верифицирован, доступа к курсу нет,
-	// сессия не выдана (защита от опечаток в email и фейковых регистраций).
+	// Доступ открыт сразу: почта ещё не подтверждена, но курс выдан и сессия есть.
 	if u.EmailVerifiedAt != nil {
 		t.Fatalf("email must NOT be verified before clicking the link")
 	}
-	if has, _ := repo.HasEnrollment(ctx, u.ID, freeID); has {
-		t.Fatalf("enrollment must NOT be granted before email verification")
-	}
-	if r, _ = c.do("GET", "/api/me", nil); r.StatusCode != 401 {
-		t.Fatalf("quick-signup must not authenticate, got /api/me = %d", r.StatusCode)
-	}
-
-	// Достаём verify-токен из dev-ссылки (AppEnv=test → verify_link_dev в ответе).
-	var qsResp struct {
-		VerifyLinkDev string `json:"verify_link_dev"`
-	}
-	if err := json.Unmarshal(body, &qsResp); err != nil || !strings.Contains(qsResp.VerifyLinkDev, "token=") {
-		t.Fatalf("verify_link_dev missing: %s", body)
-	}
-	token := qsResp.VerifyLinkDev[strings.Index(qsResp.VerifyLinkDev, "token=")+len("token="):]
-
-	// После verify: email подтверждён, выдан enrollment в published free курсы, юзер залогинен.
-	r, body = c.do("POST", "/api/auth/verify-email", map[string]any{"token": token})
-	if r.StatusCode != 200 {
-		t.Fatalf("verify-email: %d %s", r.StatusCode, body)
-	}
-	u, _ = repo.GetUserByEmail(ctx, "quick@b.ru")
-	if u.EmailVerifiedAt == nil {
-		t.Fatalf("email should be verified after verify-email")
-	}
 	if has, _ := repo.HasEnrollment(ctx, u.ID, freeID); !has {
-		t.Fatalf("expected enrollment in published free course after verify")
+		t.Fatalf("enrollment in published free course must be granted right away")
 	}
 	r, body = c.do("GET", "/api/me", nil)
-	if r.StatusCode != 200 || !strings.Contains(string(body), "quick@b.ru") {
-		t.Fatalf("me after verify: %d %s", r.StatusCode, body)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "quick@b.ru") ||
+		!strings.Contains(string(body), "\"can_fix_email\":true") {
+		t.Fatalf("quick-signup must authenticate: %d %s", r.StatusCode, body)
 	}
 	r, body = c.do("GET", "/api/me/courses", nil)
 	if !strings.Contains(string(body), "qs-free") || strings.Contains(string(body), "qs-paid") || strings.Contains(string(body), "qs-free-draft") {
 		t.Fatalf("expected only published free in /api/me/courses: %s", body)
+	}
+
+	// Ссылка «Открыть курс» из письма подтверждает почту и логинит (в новом браузере).
+	var qsResp struct {
+		VerifyLinkDev string `json:"verify_link_dev"`
+	}
+	r, body = newClient(srv).do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "quick2@b.ru", "name": "Q2", "consent_pd": true})
+	if err := json.Unmarshal(body, &qsResp); err != nil || !strings.Contains(qsResp.VerifyLinkDev, "token=") {
+		t.Fatalf("verify_link_dev missing: %s", body)
+	}
+	token := qsResp.VerifyLinkDev[strings.Index(qsResp.VerifyLinkDev, "token=")+len("token="):]
+	c3 := newClient(srv)
+	r, body = c3.do("POST", "/api/auth/verify-email", map[string]any{"token": token})
+	if r.StatusCode != 200 {
+		t.Fatalf("verify-email: %d %s", r.StatusCode, body)
+	}
+	u2, _ := repo.GetUserByEmail(ctx, "quick2@b.ru")
+	if u2.EmailVerifiedAt == nil {
+		t.Fatalf("email should be verified after verify-email")
+	}
+	r, body = c3.do("GET", "/api/me", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "quick2@b.ru") ||
+		!strings.Contains(string(body), "\"can_fix_email\":false") {
+		t.Fatalf("me after verify: %d %s", r.StatusCode, body)
+	}
+}
+
+func TestFixEmailAfterQuickSignup(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+	r, body := c.do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "typo@gmial.com", "name": "T", "consent_pd": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("quick-signup: %d %s", r.StatusCode, body)
+	}
+	var first struct {
+		PasswordDev string `json:"password_dev"`
+	}
+	_ = json.Unmarshal(body, &first)
+
+	// Анониму нельзя.
+	r, _ = newClient(srv).do("POST", "/api/auth/fix-email", map[string]any{"email": "x@gmail.com"})
+	if r.StatusCode != 401 {
+		t.Fatalf("anon fix-email: expected 401, got %d", r.StatusCode)
+	}
+	// Кривой адрес.
+	r, _ = c.do("POST", "/api/auth/fix-email", map[string]any{"email": "nope"})
+	if r.StatusCode != 400 {
+		t.Fatalf("bad email: expected 400, got %d", r.StatusCode)
+	}
+	// Занятый адрес.
+	newClient(srv).do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "busy@gmail.com", "name": "B", "consent_pd": true})
+	r, _ = c.do("POST", "/api/auth/fix-email", map[string]any{"email": "busy@gmail.com"})
+	if r.StatusCode != 409 {
+		t.Fatalf("taken email: expected 409, got %d", r.StatusCode)
+	}
+	// Исправляем.
+	r, body = c.do("POST", "/api/auth/fix-email", map[string]any{"email": " Typo@Gmail.com "})
+	if r.StatusCode != 200 {
+		t.Fatalf("fix-email: %d %s", r.StatusCode, body)
+	}
+	var fixed struct {
+		PasswordDev string `json:"password_dev"`
+	}
+	_ = json.Unmarshal(body, &fixed)
+	if fixed.PasswordDev == "" || fixed.PasswordDev == first.PasswordDev {
+		t.Fatalf("new password expected after fix-email: %s", body)
+	}
+	if _, err := repo.GetUserByEmail(ctx, "typo@gmial.com"); err == nil {
+		t.Fatalf("old email must be gone")
+	}
+	// Вход с новым адресом и новым паролем.
+	r, _ = newClient(srv).do("POST", "/api/auth/login", map[string]string{"email": "typo@gmail.com", "password": fixed.PasswordDev})
+	if r.StatusCode != 200 {
+		t.Fatalf("login with fixed email: %d", r.StatusCode)
+	}
+	// После подтверждения почты менять адрес нельзя.
+	u, _ := repo.GetUserByEmail(ctx, "typo@gmail.com")
+	_ = repo.MarkEmailVerified(ctx, u.ID)
+	r, _ = c.do("POST", "/api/auth/fix-email", map[string]any{"email": "other@gmail.com"})
+	if r.StatusCode != 409 {
+		t.Fatalf("verified email must be locked: got %d", r.StatusCode)
 	}
 }
 

@@ -67,6 +67,23 @@ func (r *Repo) MarkEmailVerified(ctx context.Context, userID uuid.UUID) error {
 	return err
 }
 
+// FixUnverifiedEmail меняет email у пользователя, который ещё НЕ подтвердил
+// почту (исправление опечатки сразу после регистрации). Вместе с email
+// меняется пароль – старый ушёл на неверный адрес. Возвращает ErrNotFound,
+// если почта уже подтверждена (условие в WHERE).
+func (r *Repo) FixUnverifiedEmail(ctx context.Context, userID uuid.UUID, email, hash string) error {
+	tag, err := r.Pool.Exec(ctx,
+		`UPDATE users SET email=$1, password_hash=$2, updated_at=now()
+		 WHERE id=$3 AND email_verified_at IS NULL`, email, hash, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 // SaveConsent сохраняет факт согласий пользователя на момент регистрации.
 // pd=true → consent_pd_at=now() (обязательное по 152-ФЗ).
 // marketing=true → consent_marketing_at=now(); marketing=false → NULL (отзыв или нет согласия).

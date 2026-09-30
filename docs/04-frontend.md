@@ -12,7 +12,7 @@ web/src/
     courses/index.astro           — витрина курсов (карточки из GET /api/courses). Бесплатный курс ведёт на лендинг /course, пока человек не записан
     start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
     consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
-    course.astro                  — лендинг бесплатного курса (legacy import). Форма «Начните сегодня» (`#quick-signup-form`) шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе создаём аккаунт, генерим пароль (на email), ставим cookies и ведём в `/cabinet`.
+    course.astro                  — лендинг бесплатного курса (legacy import). Форма «Начните сегодня» (`#quick-signup-form`) подсказывает опечатки в домене почты («gmial.com → gmail.com?», один раз останавливает отправку) и шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе аккаунт создан, cookies стоят – ведём сразу в `/cabinet/myagkiy-start`. Там для новичка (`can_fix_email`) плашка «Письмо ушло на … · Исправить» → `POST /api/auth/fix-email`.
     results.astro                 — кейсы/результаты учеников (legacy import)
     blog/
       index.astro                 — список статей (fetch /api/articles, дизайн как в сайт/blog.html)

@@ -113,6 +113,75 @@ const authedStyles = user ? `
         if (note) { note.textContent = msg; note.style.color = color; }
       };
 
+      // ─── Подсказка на опечатки в домене почты (gmial.com → gmail.com) ───
+      const DOMAINS = ['mail.ru', 'yandex.ru', 'gmail.com', 'ya.ru', 'bk.ru', 'list.ru', 'inbox.ru',
+        'rambler.ru', 'icloud.com', 'yandex.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'me.com', 'internet.ru'];
+      const TLD_FIX = { 'ru': 'ru', 'ry': 'ru', 'rj': 'ru', 'ri': 'ru', 'tu': 'ru', 'eu': 'ru', 'r': 'ru', 'rru': 'ru', 'ruu': 'ru',
+        'com': 'com', 'co': 'com', 'con': 'com', 'cim': 'com', 'cpm': 'com', 'vom': 'com', 'comm': 'com', 'om': 'com' };
+      const lev = (a, b) => {
+        const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+        for (let j = 1; j <= b.length; j++) d[0][j] = j;
+        for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+          d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+        return d[a.length][b.length];
+      };
+      const suggestEmail = (email) => {
+        const at = email.lastIndexOf('@');
+        if (at < 1) return null;
+        const user = email.slice(0, at);
+        let dom = email.slice(at + 1).replace(/,/g, '.').replace(/\.+$/, '');
+        if (!dom || DOMAINS.includes(dom)) return null;
+        // без точки: «mailru», «gmailcom»
+        const noDot = DOMAINS.find((d) => d.replace('.', '') === dom);
+        if (noDot) return user + '@' + noDot;
+        // совсем без зоны: «mail», «gmail», «yandex»
+        const bare = DOMAINS.find((d) => d.split('.')[0] === dom);
+        if (bare) return user + '@' + bare;
+        const parts = dom.split('.');
+        if (parts.length >= 2) {
+          const tld = parts.pop();
+          const fixedTld = TLD_FIX[tld];
+          if (fixedTld) {
+            const cand = parts.join('.') + '.' + fixedTld;
+            if (DOMAINS.includes(cand)) return user + '@' + cand;
+            dom = cand;
+          }
+        }
+        let best = null, bestD = 3;
+        for (const d of DOMAINS) {
+          const dist = lev(dom, d);
+          if (dist < bestD) { best = d; bestD = dist; }
+        }
+        return best && bestD <= 2 ? user + '@' + best : null;
+      };
+      const emailInput = form.querySelector('input[name="email"]');
+      const hint = document.createElement('div');
+      hint.style.cssText = 'display:none;font-size:14px;margin-top:6px;color:#ffd7c2;text-align:left;';
+      emailInput?.insertAdjacentElement('afterend', hint);
+      let pendingSuggestion = null;
+      let suggestionShownFor = null;
+      const showHint = () => {
+        const val = String(emailInput?.value || '').trim().toLowerCase();
+        pendingSuggestion = suggestEmail(val);
+        if (!pendingSuggestion) { hint.style.display = 'none'; return; }
+        hint.innerHTML = '';
+        hint.append('Может, вы имели в виду ');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = pendingSuggestion;
+        b.style.cssText = 'background:none;border:none;padding:0;color:#fff;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;';
+        b.addEventListener('click', () => {
+          emailInput.value = pendingSuggestion;
+          pendingSuggestion = null;
+          hint.style.display = 'none';
+          emailInput.focus();
+        });
+        hint.append(b, '?');
+        hint.style.display = 'block';
+      };
+      emailInput?.addEventListener('blur', showHint);
+      emailInput?.addEventListener('input', () => { if (hint.style.display !== 'none') showHint(); });
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData(form);
@@ -127,6 +196,15 @@ const authedStyles = user ? `
         }
         if (!email || !email.includes('@')) {
           setNote('Введите корректный email', '#ff8a8a');
+          return;
+        }
+        // Подозрение на опечатку: один раз останавливаем и показываем подсказку.
+        // Если человек уверен в своём адресе – второе нажатие отправит как есть.
+        const sug = suggestEmail(email);
+        if (sug && suggestionShownFor !== email) {
+          suggestionShownFor = email;
+          showHint();
+          setNote('Проверьте адрес почты – возможно, в нём опечатка', '#ffb38a');
           return;
         }
         if (!consentPd) {
@@ -144,9 +222,9 @@ const authedStyles = user ? `
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {
             window.reachGoal?.('quick_signup');
-            // Письмо с ссылкой подтверждения и паролем уже улетело.
-            // Перебрасываем на страницу-инструкцию.
-            window.location.href = '/auth/check-email?email=' + encodeURIComponent(email);
+            // Доступ открыт сразу, сессия уже выдана – ведём прямо к урокам.
+            // Письмо с паролем улетело; в кабинете покажем адрес и «Исправить».
+            window.location.href = '/cabinet/myagkiy-start';
             return;
           }
           if (res.ok && data.exists) {

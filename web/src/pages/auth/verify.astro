@@ -49,13 +49,13 @@ const styles = `
         });
         if (r.ok) {
           icon.textContent = '✅';
-          title.textContent = 'Email подтверждён';
-          msg.textContent = 'Доступ к курсу открыт. Сейчас переведём в кабинет…';
+          title.textContent = 'Почта подтверждена';
+          msg.textContent = 'Сейчас переведём к урокам…';
           setTimeout(() => { window.location.href = '/cabinet/myagkiy-start'; }, 1200);
         } else {
           icon.textContent = '❌';
           title.textContent = 'Ссылка не действует';
-          msg.textContent = 'Возможно, она уже использована или просрочена (24 часа).';
+          msg.textContent = 'Возможно, она уже использована или просрочена. Войдите с логином и паролем из письма.';
           cta.innerHTML = '<a href="/auth/login" class="verify-btn">Войти</a>';
         }
       } catch {

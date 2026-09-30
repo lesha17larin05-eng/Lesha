@@ -69,11 +69,10 @@ type quickSignupReq struct {
 }
 
 // QuickSignup – регистрация по email+имя за один шаг (для бесплатного курса).
-// Создаёт юзера, генерит временный пароль и токен подтверждения email,
-// отправляет письмо с ссылкой подтверждения и паролем. Доступ к курсу НЕ
-// выдаётся до тех пор, пока пользователь не кликнет по ссылке –
-// enrollment в free курсы делает VerifyEmail handler.
-// Это защита от опечаток в email и фейковых регистраций.
+// Создаёт юзера с временным паролем, сразу выдаёт бесплатные курсы и
+// логинит. Письмо с паролем и ссылкой «Открыть курс» (она же подтверждает
+// почту) уходит асинхронно. Опечатку в адресе можно исправить через
+// FixEmail, пока почта не подтверждена.
 func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	var in quickSignupReq
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
@@ -115,21 +114,17 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	if in.Phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
 	}
-	// Токен подтверждения – после клика VerifyEmail выдаст enrollment в free курсы.
-	rawTok, hashTok, _ := auth.RandomToken(32)
-	_ = a.Repo.CreateEmailToken(r.Context(), uid, hashTok, 24*time.Hour)
-	link := a.Cfg.AppHost + "/auth/verify?token=" + rawTok
-	a.Mail.Async(in.Email, "Подтвердите почту – доступ к бесплатному курсу",
-		"<p>Здравствуйте! Спасибо за регистрацию на сайте Алексея Ларина.</p>"+
-			"<p>Чтобы открыть доступ к курсу «Мягкий старт», подтвердите вашу почту: "+
-			"<a href=\""+link+"\">"+link+"</a></p>"+
-			"<p>Ссылка действительна 24 часа.</p>"+
-			"<hr>"+
-			"<p><b>Данные для входа в личный кабинет:</b><br>"+
-			"Логин: "+in.Email+"<br>"+
-			"Пароль: "+password+"</p>"+
-			"<p>Сохраните это письмо – пригодится в будущем.</p>")
-	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "verify_required": true}
+	// Доступ открываем сразу: выдаём бесплатные курсы и логиним. Подтверждение
+	// почты больше не блокирует уроки – письмо легко теряется в спаме, и
+	// человек уходил, так и не увидев курс. От опечаток защищают подсказка
+	// в форме и «Исправить адрес» (FixEmail), пока почта не подтверждена.
+	a.grantFreeCourses(r.Context(), uid)
+	if err := a.startSession(w, r, uid, "user"); err != nil {
+		writeErr(w, 500, "session_failed")
+		return
+	}
+	link := a.sendFreeAccessEmail(r.Context(), uid, in.Email, password)
+	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "access_granted": true}
 	if a.Cfg.AppEnv != "production" {
 		resp["password_dev"] = password
 		resp["verify_link_dev"] = link
@@ -217,32 +212,14 @@ func (a *App) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
-	// Идемпотентно выдаём enrollment во все free-курсы – для тех, кто пришёл
-	// через quick-signup на /course (доступ к курсу открывается только после verify).
-	// Repo.Grant – INSERT ... ON CONFLICT DO NOTHING, повторный verify не ломает.
-	enrolled := 0
-	if courses, err := a.Repo.ListCourses(r.Context(), true); err == nil {
-		for _, c := range courses {
-			if c.Kind != "free" {
-				continue
-			}
-			if err := a.Repo.Grant(r.Context(), uid, c.ID, "free", nil); err == nil {
-				enrolled++
-			}
-		}
-	}
+	// Идемпотентно выдаём enrollment во все free-курсы (Repo.Grant –
+	// ON CONFLICT DO NOTHING): для старых регистраций, где доступ ждал verify.
+	enrolled := a.grantFreeCourses(r.Context(), uid)
 	// Сразу логиним – после клика юзер попадает прямо в кабинет, без отдельной формы.
-	access, err := auth.IssueAccessToken(a.Cfg.JWTSecret, uid, "user")
-	if err != nil {
-		writeErr(w, 500, "token_failed")
-		return
-	}
-	refreshRaw, refreshHash, _ := auth.RandomToken(32)
-	if err := a.Repo.CreateSession(r.Context(), uid, refreshHash, r.UserAgent(), middleware.ClientIP(r), auth.RefreshTTL); err != nil {
+	if err := a.startSession(w, r, uid, "user"); err != nil {
 		writeErr(w, 500, "session_failed")
 		return
 	}
-	setAuthCookies(w, r, access, refreshRaw)
 	writeJSON(w, 200, map[string]any{"ok": "1", "enrolled_free": enrolled})
 }
 
@@ -310,6 +287,8 @@ func (a *App) Me(w http.ResponseWriter, r *http.Request) {
 		"id": u.ID, "email": u.Email, "name": u.Name, "role": u.Role,
 		"email_verified":    u.EmailVerifiedAt != nil,
 		"consent_marketing": consent,
+		// Можно ли исправить адрес (опечатка сразу после регистрации).
+		"can_fix_email": u.EmailVerifiedAt == nil && time.Since(u.CreatedAt) < fixEmailWindow,
 	})
 }
 
