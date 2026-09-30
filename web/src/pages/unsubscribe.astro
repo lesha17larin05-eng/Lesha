@@ -1,0 +1,133 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { apiJson } from '../lib/api';
+// Отписка в два шага: ссылка «Отписаться» из письма ведёт сюда. Здесь человек
+// выбирает причину и подтверждает – случайный тап ничего не меняет. После
+// отписки (и если уже отписан) можно сразу подписаться обратно.
+// u + t – подписанная ссылка из письма (handlers/unsubscribe.go).
+const u = Astro.url.searchParams.get('u') || '';
+const t = Astro.url.searchParams.get('t') || '';
+const q = `?u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}`;
+let state: 'invalid' | 'subscribed' | 'unsubscribed' = 'invalid';
+if (u && t) {
+  const { status, data } = await apiJson<any>('/api/unsubscribe/status' + q);
+  if (status === 200) state = data?.subscribed ? 'subscribed' : 'unsubscribed';
+}
+const reasons = [
+  ['too_often', 'Слишком часто пишете'],
+  ['not_relevant', 'Неинтересно или не про меня'],
+  ['already_have', 'Уже занимаюсь – всё, что нужно, есть'],
+  ['never_signed', 'Я не подписывался(ась)'],
+  ['other', 'Другое'],
+];
+---
+<SiteLayout title="Отписка от писем – Алексей Ларин" padTop={true} noindex={true}>
+  <section class="container unsub" data-q={q}>
+    {state === 'invalid' && (
+      <div>
+        <h1>Ссылка не сработала</h1>
+        <p>Похоже, ссылка повреждена – такое бывает, если письмо переслали или
+          почтовый клиент обрезал адрес. Напишите мне на
+          <a href="mailto:les-larin@yandex.ru">les-larin@yandex.ru</a> – отпишу вручную в тот же день.</p>
+        <div class="unsub-actions"><a class="btn-primary" href="/">На главную</a></div>
+      </div>
+    )}
+
+    <div id="step-confirm" hidden={state !== 'subscribed'}>
+      <h1>Отписаться от писем?</h1>
+      <p>Я пишу нечасто: короткие письма после бесплатного курса и анонсы новых проектов.
+        Если всё же хотите отписаться – подскажите, почему. Это правда помогает писать лучше.</p>
+      <form id="unsub-form" class="unsub-form">
+        {reasons.map(([key, label]) => (
+          <label class="reason"><input type="radio" name="reason" value={key} /> <span>{label}</span></label>
+        ))}
+        <textarea name="comment" rows="3" maxlength="1000" placeholder="Если хотите – пару слов (необязательно)"></textarea>
+        <div class="unsub-actions">
+          <button type="submit" class="btn-unsub">Отписаться</button>
+          <a class="btn-primary" href="/">Остаться</a>
+        </div>
+        <p class="unsub-note" id="unsub-err" hidden>Не получилось – проверьте интернет и попробуйте ещё раз.</p>
+      </form>
+    </div>
+
+    <div id="step-done" hidden={state !== 'unsubscribed'}>
+      <h1>Вы отписаны</h1>
+      <p>Больше писем с новостями и предложениями от меня не будет.</p>
+      <p class="unsub-note">Письма про ваши курсы – доступы, восстановление пароля – остаются:
+        они нужны, чтобы вы могли пользоваться тем, что у вас уже есть.</p>
+      <div class="unsub-back">
+        <p>Отписались случайно или передумали?</p>
+        <button type="button" class="btn-primary" id="resub-btn">Подписаться снова</button>
+      </div>
+      <div class="unsub-actions"><a class="unsub-link" href="/">На главную</a></div>
+    </div>
+
+    <div id="step-back" hidden>
+      <h1>Вы снова подписаны</h1>
+      <p>Спасибо, что остаётесь. Писать буду по делу и нечасто.</p>
+      <div class="unsub-actions"><a class="btn-primary" href="/">На главную</a></div>
+    </div>
+  </section>
+
+  <style>
+    .unsub { max-width: 620px; padding: 80px 20px 100px; }
+    .unsub h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 4vw, 44px); font-weight: 400; color: var(--navy); margin-bottom: 18px; }
+    .unsub p { font-size: 18px; line-height: 1.7; color: var(--text-mid); margin-bottom: 14px; }
+    .unsub-note { font-size: 16px !important; color: var(--text-muted) !important; }
+    .unsub-form { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .reason { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--border, #e8e1d4);
+      border-radius: 12px; background: #fff; cursor: pointer; font-size: 17px; color: var(--navy); }
+    .reason input { width: 18px; height: 18px; accent-color: var(--orange); flex-shrink: 0; }
+    .reason:has(input:checked) { border-color: var(--orange); background: #fff7f1; }
+    .unsub-form textarea { margin-top: 6px; padding: 12px 14px; border: 1px solid var(--border, #e8e1d4); border-radius: 12px;
+      font: inherit; font-size: 16px; resize: vertical; }
+    .unsub-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: 24px; }
+    .btn-unsub { background: transparent; border: 1.5px solid var(--text-muted, #8a8a8a); color: var(--text-mid);
+      border-radius: 100px; padding: 14px 28px; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .btn-unsub:disabled { opacity: .6; cursor: progress; }
+    @media (hover: hover) { .btn-unsub:hover { border-color: var(--navy); color: var(--navy); } }
+    .unsub-back { margin-top: 30px; padding: 22px 24px; border-radius: 16px; background: #fff7f1; border: 1px solid #f6d3bf; }
+    .unsub-back p { margin-bottom: 14px; color: var(--navy); font-weight: 600; }
+    .unsub-link { font-size: 16px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; }
+    @media (hover: hover) { .unsub-link:hover { color: var(--orange); } }
+  </style>
+
+  <script>
+    const root = document.querySelector('.unsub') as HTMLElement;
+    const q = root?.dataset.q || '';
+    const show = (id: string) => {
+      for (const s of ['step-confirm', 'step-done', 'step-back']) {
+        const el = document.getElementById(s);
+        if (el) el.hidden = s !== id;
+      }
+      window.scrollTo({ top: 0 });
+    };
+    const form = document.getElementById('unsub-form') as HTMLFormElement | null;
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const btn = form.querySelector('.btn-unsub') as HTMLButtonElement;
+      const err = document.getElementById('unsub-err');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/unsubscribe' + q, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: fd.get('reason') || '', comment: String(fd.get('comment') || '') }),
+        });
+        if (!r.ok) throw new Error(String(r.status));
+        show('step-done');
+      } catch { if (err) err.hidden = false; }
+      finally { btn.disabled = false; }
+    });
+    document.getElementById('resub-btn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/unsubscribe/undo' + q, { method: 'POST' });
+        if (!r.ok) throw new Error(String(r.status));
+        show('step-back');
+      } catch { btn.textContent = 'Не получилось – попробуйте ещё раз'; }
+      finally { btn.disabled = false; }
+    });
+  </script>
+</SiteLayout>

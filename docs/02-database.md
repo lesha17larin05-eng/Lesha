@@ -146,6 +146,10 @@ SQL каждой группы — отдельная константа, вво�
 
 `users.source` и `orders.source` – метка, откуда пришёл человек: из ссылки (`?from=insta`, `?utm_source=…[:utm_campaign]`) или по сайту-источнику (`ref:instagram`, `ref:youtube`, `ref:vk`, `ref:telegram`, `ref:search`, `ref:<домен>`). Её ставит в куку `src` (30 дней) компонент `web/src/components/SourceCapture.astro`; сервер пишет в `users.source` при регистрации (только если пусто – первое касание) и в `orders.source` при создании заказа. Сводка – `GET /api/admin/sources`, панель «Откуда пришли» на `/admin`.
 
+## unsubscribe_reasons (миграция 019)
+
+Причина отписки со страницы `/unsubscribe`: `user_id`, `reason` (белый список в `handlers/unsubscribe.go`), `comment` (≤1000 символов), `created_at`. Отписка «в один клик» из почтового клиента строк не создаёт. Сводка – `/admin`, панель «Почему отписываются».
+
 ## article_views
 
 Счётчик чтения статей (миграция `015_article_views`).

@@ -133,7 +133,8 @@ var (
 const (
 	dripLinkStyle = `color:#e8652a;`
 	dripBtnStyle  = `display:inline-block;background:#e8652a;color:#fff;text-decoration:none;` +
-		`padding:13px 26px;border-radius:100px;font-size:16px;font-weight:600;`
+		`padding:13px 26px;border-radius:100px;font-size:16px;font-weight:600;` +
+		`text-align:center;line-height:1.35;max-width:100%;box-sizing:border-box;`
 )
 
 func dripInline(s string) string {
@@ -168,8 +169,11 @@ func renderDripBody(body string) string {
 		switch {
 		case dripOnlyLinkRe.MatchString(block):
 			m := dripOnlyLinkRe.FindStringSubmatch(block)
+			// Стрелку приклеиваем к последнему слову неразрывным пробелом:
+			// на узком экране кнопка переносится, а «→» не должна уезжать одна.
+			label := strings.ReplaceAll(html.EscapeString(m[1]), " →", "&nbsp;→")
 			sb.WriteString(`<p style="margin:22px 0;"><a href="` + html.EscapeString(m[2]) + `" style="` + dripBtnStyle + `">` +
-				html.EscapeString(m[1]) + `</a></p>`)
+				label + `</a></p>`)
 		case strings.HasPrefix(lines[0], "- "):
 			sb.WriteString(`<ul style="padding-left:22px;margin:0 0 16px;">`)
 			for _, l := range lines {
@@ -213,7 +217,7 @@ func (a *App) dripHTML(st dripStep, name string, userID uuid.UUID) string {
 	sb.WriteString(`<hr style="border:none;border-top:1px solid #ece8e0;margin:26px 0 14px;">`)
 	sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
 		`Вы получили это письмо, потому что записались на бесплатный курс «Мягкий старт» на leshalarin.ru ` +
-		`и согласились получать материалы. <a href="` + a.unsubscribeURL(userID) + `" style="color:#777;">Отписаться</a> – ` +
+		`и согласились получать материалы. <a href="` + a.unsubscribePageURL(userID) + `" style="color:#777;">Отписаться</a> – ` +
 		`доступ к урокам при этом останется.</p>`)
 	sb.WriteString(`<img src="` + a.pixelURL("drip-"+strconv.Itoa(st.Step), userID) +
 		`" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;">`)

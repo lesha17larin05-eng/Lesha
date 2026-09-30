@@ -76,6 +76,8 @@ func main() {
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
+	r.Get("/api/unsubscribe/status", app.UnsubscribeStatus)
+	r.Post("/api/unsubscribe/undo", app.UnsubscribeUndo)
 	r.Get("/api/subscribe", app.Subscribe)
 	r.Post("/api/subscribe", app.Subscribe)
 	// Форма «получать письма» в блоге и под отзывами.
@@ -157,6 +159,7 @@ func main() {
 		r.Get("/api/admin/article-stats", app.AdminArticleStats)
 		r.Get("/api/admin/drip", app.AdminDrip)
 		r.Get("/api/admin/sources", app.AdminSources)
+		r.Get("/api/admin/unsubscribes", app.AdminUnsubscribes)
 		r.Post("/api/admin/drip/test", app.AdminDripTest)
 	})
 

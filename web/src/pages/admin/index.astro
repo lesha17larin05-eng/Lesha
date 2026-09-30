@@ -8,6 +8,13 @@ const { data: orders } = await apiJson<any[]>('/api/admin/orders?status=paid', {
 const { data: mailings } = await apiJson<any[]>('/api/admin/email-opens', { cookie });
 const { data: srcData } = await apiJson<any>('/api/admin/sources?days=30', { cookie });
 const sources: any[] = Array.isArray(srcData?.rows) ? srcData.rows : [];
+const { data: unsubData } = await apiJson<any>('/api/admin/unsubscribes?days=30', { cookie });
+const unsubReasons: any[] = Array.isArray(unsubData?.reasons) ? unsubData.reasons : [];
+const unsubComments: any[] = Array.isArray(unsubData?.comments) ? unsubData.comments : [];
+const reasonTitle: Record<string, string> = {
+  too_often: 'Слишком часто', not_relevant: 'Неинтересно / не про меня',
+  already_have: 'Уже занимаюсь', never_signed: 'Не подписывался(ась)', other: 'Другое',
+};
 const campaigns = Array.isArray(mailings) ? mailings : [];
 const user = (Astro.locals as any).user;
 const recent = (orders || []).slice(0, 8);
@@ -96,6 +103,25 @@ const fmtDate = (s: any) => {
       )}
     </section>
 
+    {unsubReasons.length > 0 && (
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Почему отписываются · 30 дней</h2>
+          <span class="panel-hint">причину выбирают на странице отписки; отписка из самой почты – без причины</span>
+        </div>
+        <table class="src-table">
+          <tbody>
+            {unsubReasons.map((r: any) => (<tr><td>{reasonTitle[r.reason] || r.reason}</td><td>{fmt(r.count)}</td></tr>))}
+          </tbody>
+        </table>
+        {unsubComments.length > 0 && (
+          <ul class="unsub-comments">
+            {unsubComments.map((c: any) => (<li><b>{reasonTitle[c.reason] || c.reason}:</b> {c.comment} <span class="muted">· {fmtDate(c.created_at)}</span></li>))}
+          </ul>
+        )}
+      </section>
+    )}
+
     {campaigns.length > 0 && (
       <section class="panel">
         <div class="panel-head">
@@ -149,6 +175,8 @@ const fmtDate = (s: any) => {
   </section>
 
   <style>
+    .unsub-comments { margin: 14px 0 0; padding-left: 18px; font-size: 15px; line-height: 1.6; }
+    .unsub-comments li { margin-bottom: 6px; }
     .src-table { width: 100%; border-collapse: collapse; font-size: 15px; }
     .src-table th, .src-table td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border); }
     .src-table th { color: var(--text-mid); font-weight: 600; font-size: 14px; }

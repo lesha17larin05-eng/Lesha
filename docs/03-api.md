@@ -156,8 +156,11 @@ JSON `{"error": "<code>"}`:
 
 | Эндпоинт | Описание |
 |---|---|
-| `GET /api/unsubscribe?u=<uuid>&t=<hex>` | Публичный, без auth. Ссылка из письма. Валидная подпись → `consent_marketing_at = NULL` + 303 на `/unsubscribed`; невалидная → 303 на `/unsubscribed?error=1` и ничего не меняет. Идемпотентен. `consent_pd_at` не трогается. |
-| `POST /api/unsubscribe?u=&t=` | «Отписка в один клик» (RFC 8058) — дёргает почтовый клиент из заголовка `List-Unsubscribe`. 200 `{"ok":1}` / 400 `invalid_token`. **Исключён из CSRF** в `middleware.CSRF` (у почтового клиента нет cookie; защита — подпись). |
+| `GET /api/unsubscribe?u=<uuid>&t=<hex>` | Ссылка из старых писем. **Ничего не меняет** – 303 на страницу подтверждения `/unsubscribe?u=&t=`. |
+| `GET /api/unsubscribe/status?u=&t=` | `{subscribed: bool}` для страницы `/unsubscribe`; плохая подпись → 400 `invalid_token`. |
+| `POST /api/unsubscribe?u=&t=` | Отписать: `consent_marketing_at = NULL` (`consent_pd_at` не трогается), идемпотентно. Тело `{reason, comment}` необязательно: со страницы – причина из белого списка (`too_often`, `not_relevant`, `already_have`, `never_signed`, `other`) + комментарий ≤1000 символов пишутся в `unsubscribe_reasons`; без тела – «отписка в один клик» (RFC 8058) из заголовка `List-Unsubscribe`. 200 `{"ok":1}` / 400 `invalid_token`. **Исключён из CSRF** в `middleware.CSRF` (у почтового клиента нет cookie; защита — подпись). |
+| `POST /api/unsubscribe/undo?u=&t=` | «Передумал» – вернуть согласие тем же токеном. 200 / 400 `invalid_token`. |
+| `GET /api/admin/unsubscribes?days=30` | Admin. `{days, reasons:[{reason,count}], comments:[{reason,comment,created_at}]}` (до 20 последних комментариев). |
 
 Подпись: `hex(HMAC_SHA256(key = JWT_SECRET, msg = "unsubscribe:" + user_id))`, функция `handlers.UnsubscribeToken`. Отдельного секрета и таблицы токенов нет — доменное разделение через префикс.
 

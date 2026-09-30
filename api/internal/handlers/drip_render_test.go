@@ -13,7 +13,7 @@ func TestRenderDripBody(t *testing.T) {
 		"<ul", "<li style=\"margin:0 0 8px;\"><b>Спина</b> – урок 3</li>",
 		"<ol", "<li style=\"margin:0 0 8px;\">Занятие</li>",
 		"<blockquote", "Цитата &lt;b&gt;",
-		`<a href="https://leshalarin.ru/cabinet" style="display:inline-block`, "Открыть уроки →</a>",
+		`<a href="https://leshalarin.ru/cabinet" style="display:inline-block`, "Открыть уроки&nbsp;→</a>",
 		`<a href="https://t.me/x" style="color:#e8652a;">канал</a>`, "<b>жирное</b>",
 	} {
 		if !strings.Contains(out, want) {

@@ -282,7 +282,7 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 
 	sb.WriteString(`<hr style="border:none;border-top:1px solid #ece8e0;margin:26px 0 14px;">`)
 	if subscribed {
-		unsub := a.unsubscribeURL(userID)
+		unsub := a.unsubscribePageURL(userID)
 		sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
 			`Вы получили это письмо, потому что регистрировались на leshalarin.ru и согласились получать новости. ` +
 			`<a href="` + unsub + `" style="color:#777;">Отписаться</a> – письма про ваши курсы при этом останутся.</p>`)
@@ -301,6 +301,13 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 
 func (a *App) unsubscribeURL(userID uuid.UUID) string {
 	return a.Cfg.AppHost + "/api/unsubscribe?u=" + userID.String() +
+		"&t=" + UnsubscribeToken(a.Cfg.JWTSecret, userID.String())
+}
+
+// unsubscribePageURL – ссылка «Отписаться» в теле письма: страница
+// подтверждения с выбором причины (а не мгновенная отписка).
+func (a *App) unsubscribePageURL(userID uuid.UUID) string {
+	return a.Cfg.AppHost + "/unsubscribe?u=" + userID.String() +
 		"&t=" + UnsubscribeToken(a.Cfg.JWTSecret, userID.String())
 }
 

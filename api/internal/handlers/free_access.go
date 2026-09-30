@@ -65,7 +65,7 @@ func (a *App) sendFreeAccessEmail(ctx context.Context, uid uuid.UUID, to, passwo
 			"<p>Доступ к курсу «Мягкий старт» открыт – все 8 уроков уже в вашем личном кабинете. "+
 			"Начните с того, что сейчас важнее всего.</p>"+
 			`<p><a href="`+link+`" style="display:inline-block;background:#e8652a;color:#fff;`+
-			`text-decoration:none;padding:12px 24px;border-radius:100px;font-weight:600">Открыть курс →</a></p>`+
+			`text-decoration:none;padding:12px 24px;border-radius:100px;font-weight:600">Открыть курс&nbsp;→</a></p>`+
 			"<p style=\"color:#777;font-size:13px\">Кнопка сразу входит в кабинет и подтверждает вашу почту. Действует 7 дней.</p>"+
 			"<hr>"+
 			"<p><b>Данные для входа в личный кабинет:</b><br>"+

@@ -40,7 +40,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends, unsubscribe_reasons RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -85,6 +85,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
+	r.Get("/api/unsubscribe/status", app.UnsubscribeStatus)
+	r.Post("/api/unsubscribe/undo", app.UnsubscribeUndo)
 	r.Get("/api/subscribe", app.Subscribe)
 	r.Post("/api/subscribe", app.Subscribe)
 	r.Group(func(r chi.Router) {
@@ -1494,27 +1496,60 @@ func TestUnsubscribe(t *testing.T) {
 		return resp
 	}
 
-	// чужая/подделанная подпись – согласие на месте
-	r := get("/api/unsubscribe?u=" + u.ID.String() + "&t=deadbeef")
-	if r.StatusCode != 303 {
-		t.Fatalf("ожидал редирект, получил %d", r.StatusCode)
-	}
-	if loc := r.Header.Get("Location"); loc != "/unsubscribed?error=1" {
-		t.Fatalf("плохая подпись должна вести на страницу ошибки, а ведёт на %s", loc)
+	token := handlers.UnsubscribeToken(cfg.JWTSecret, u.ID.String())
+	q := "?u=" + u.ID.String() + "&t=" + token
+
+	// GET по ссылке из старых писем ничего не меняет – ведёт на страницу подтверждения
+	r := get("/api/unsubscribe" + q)
+	if r.StatusCode != 303 || r.Header.Get("Location") != "/unsubscribe"+q {
+		t.Fatalf("GET должен вести на /unsubscribe: %d %s", r.StatusCode, r.Header.Get("Location"))
 	}
 	if !marketing() {
-		t.Fatal("подделанная подпись не должна отписывать")
+		t.Fatal("GET не должен отписывать – только страница подтверждения")
 	}
 
-	// валидная ссылка
-	token := handlers.UnsubscribeToken(cfg.JWTSecret, u.ID.String())
-	r = get("/api/unsubscribe?u=" + u.ID.String() + "&t=" + token)
-	if r.StatusCode != 303 || r.Header.Get("Location") != "/unsubscribed" {
-		t.Fatalf("валидная отписка: %d %s", r.StatusCode, r.Header.Get("Location"))
+	c2 := newClient(srv)
+	// статус: подделанная подпись – 400, валидная – подписан
+	if r, _ := c2.do("GET", "/api/unsubscribe/status?u="+u.ID.String()+"&t=deadbeef", nil); r.StatusCode != 400 {
+		t.Fatalf("status с плохой подписью: %d", r.StatusCode)
+	}
+	if r, body := c2.do("GET", "/api/unsubscribe/status"+q, nil); r.StatusCode != 200 || !strings.Contains(string(body), `"subscribed":true`) {
+		t.Fatalf("status: %d %s", r.StatusCode, body)
+	}
+
+	// подтверждение со страницы: причина + комментарий
+	r, body := c2.do("POST", "/api/unsubscribe"+q, map[string]string{"reason": "too_often", "comment": "  много писем  "})
+	if r.StatusCode != 200 {
+		t.Fatalf("отписка со страницы: %d %s", r.StatusCode, body)
 	}
 	if marketing() {
 		t.Fatal("согласие на маркетинг должно быть снято")
 	}
+	var reason, comment string
+	_ = repo.Pool.QueryRow(ctx, `SELECT reason, comment FROM unsubscribe_reasons WHERE user_id=$1`, u.ID).Scan(&reason, &comment)
+	if reason != "too_often" || comment != "много писем" {
+		t.Fatalf("причина не сохранилась: %q %q", reason, comment)
+	}
+	// неизвестная причина не пишется
+	c2.do("POST", "/api/unsubscribe"+q, map[string]string{"reason": "<script>"})
+	var n int
+	_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM unsubscribe_reasons`).Scan(&n)
+	if n != 1 {
+		t.Fatalf("неизвестная причина записалась: %d", n)
+	}
+
+	// «передумал» – подписка возвращается тем же токеном
+	if r, _ := c2.do("POST", "/api/unsubscribe/undo?u="+u.ID.String()+"&t=nope", nil); r.StatusCode != 400 {
+		t.Fatalf("undo с плохой подписью: %d", r.StatusCode)
+	}
+	if r, _ := c2.do("POST", "/api/unsubscribe/undo"+q, nil); r.StatusCode != 200 || !marketing() {
+		t.Fatalf("undo должен вернуть подписку: %d", r.StatusCode)
+	}
+	c2.do("POST", "/api/unsubscribe"+q, nil)
+	if marketing() {
+		t.Fatal("повторная отписка должна сработать")
+	}
+
 	// согласие на обработку ПД трогать нельзя
 	var pd *time.Time
 	_ = repo.Pool.QueryRow(ctx, `SELECT consent_pd_at FROM users WHERE id=$1`, u.ID).Scan(&pd)
