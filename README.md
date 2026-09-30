@@ -182,7 +182,7 @@ curl http://localhost/api/articles/akrojoga-chto-eto | jq '{slug,title,reading_m
 ## Куда заходить
 
 - Публичный сайт: <http://localhost/>
-- Бесплатный курс: <http://localhost/course>
+- Бесплатный курс: <http://localhost/courses/myagkiy-start>
 - Точка перемен: <http://localhost/start>
 - Отзывы: <http://localhost/results>
 - Блог: <http://localhost/blog>

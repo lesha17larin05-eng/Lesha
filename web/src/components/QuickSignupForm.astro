@@ -1,0 +1,192 @@
+---
+// Форма быстрой записи на «Мягкий старт»: имя + email → POST /api/auth/quick-signup,
+// доступ и сессия выдаются сразу, редирект в /cabinet/myagkiy-start.
+// Подсказка опечаток в домене почты (gmial.com → gmail.com).
+// Рассчитана на тёмный (navy) фон. Перенесена из legacy/course.html (2026-09-30).
+---
+    <form class="cta-form" id="quick-signup-form" novalidate>
+      <div class="form-row">
+        <input type="text" name="name" class="form-input" placeholder="Ваше имя *" autocomplete="name" required>
+        <input type="email" name="email" class="form-input" placeholder="Email *" autocomplete="email" required>
+      </div>
+      <input type="tel" name="phone" class="form-input" placeholder="Телефон (по желанию)" autocomplete="tel" style="width:100%; margin-top:8px;">
+
+      <label class="qs-consent">
+        <input type="checkbox" name="consent_pd" id="quick-consent-pd" required checked>
+        <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank" rel="noopener">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>.</span>
+      </label>
+      <label class="qs-consent">
+        <input type="checkbox" name="consent_marketing" id="quick-consent-marketing" checked>
+        <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом из любого письма.</span>
+      </label>
+
+      <button type="submit" class="btn-cta-full" id="quick-signup-submit" style="margin-top:22px;">Получить доступ →</button>
+      <p class="form-note" id="quick-signup-note">* – обязательные поля. Бесплатно · отписаться можно в любой момент</p>
+      <p class="form-note" style="margin-top:14px;">Уже есть аккаунт? <a href="/auth/login?next=/cabinet/myagkiy-start" style="color:#fff; text-decoration:underline; text-underline-offset:3px;">Войти и перейти к урокам →</a></p>
+    </form>
+
+<style>
+  .cta-form { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 40px; margin-bottom: 0; text-align: left; }
+  .form-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .form-input {
+    width: 100%; box-sizing: border-box; padding: 16px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07); color: white; font-size: 17px; font-family: 'Manrope', sans-serif;
+    outline: none; transition: border-color 0.2s ease;
+  }
+  .form-input::placeholder { color: rgba(255,255,255,0.65); }
+  .form-input:hover { border-color: rgba(255,255,255,0.35); }
+  .form-input:focus { border-color: rgba(255,255,255,0.65); }
+  .btn-cta-full {
+    width: 100%; padding: 18px; background: var(--orange); color: white; border: none; cursor: pointer;
+    border-radius: 100px; font-size: 18px; font-weight: 600; font-family: 'Manrope', sans-serif;
+    transition: background 0.2s ease, transform 0.2s ease; box-shadow: 0 8px 32px rgba(232,101,42,0.3);
+  }
+  .btn-cta-full:hover, .btn-cta-full:focus-visible { background: var(--orange-warm); transform: translateY(-2px); outline: none; }
+  .btn-cta-full:disabled { opacity: 0.7; cursor: default; transform: none; }
+  .form-note { font-size: 15px; color: rgba(255,255,255,0.78); margin-top: 14px; text-align: center; }
+  .qs-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.9); cursor: pointer; text-align: left; }
+  .qs-consent input { margin-top: 2px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
+  .qs-consent a { color: rgba(255,255,255,0.9); text-decoration: underline; transition: color 0.2s ease; }
+  .qs-consent a:hover { color: white; }
+  @media (max-width: 600px) { .cta-form { padding: 24px 20px; } }
+</style>
+
+<script is:inline>
+    (() => {
+      const form = document.getElementById('quick-signup-form');
+      if (!form) return;
+      const note = document.getElementById('quick-signup-note');
+      const btn = document.getElementById('quick-signup-submit');
+
+      const setNote = (msg, color = 'rgba(255,255,255,0.55)') => {
+        if (note) { note.textContent = msg; note.style.color = color; }
+      };
+
+      // ─── Подсказка на опечатки в домене почты (gmial.com → gmail.com) ───
+      const DOMAINS = ['mail.ru', 'yandex.ru', 'gmail.com', 'ya.ru', 'bk.ru', 'list.ru', 'inbox.ru',
+        'rambler.ru', 'icloud.com', 'yandex.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'me.com', 'internet.ru'];
+      const TLD_FIX = { 'ru': 'ru', 'ry': 'ru', 'rj': 'ru', 'ri': 'ru', 'tu': 'ru', 'eu': 'ru', 'r': 'ru', 'rru': 'ru', 'ruu': 'ru',
+        'com': 'com', 'co': 'com', 'con': 'com', 'cim': 'com', 'cpm': 'com', 'vom': 'com', 'comm': 'com', 'om': 'com' };
+      const lev = (a, b) => {
+        const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+        for (let j = 1; j <= b.length; j++) d[0][j] = j;
+        for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+          d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+        return d[a.length][b.length];
+      };
+      const suggestEmail = (email) => {
+        const at = email.lastIndexOf('@');
+        if (at < 1) return null;
+        const user = email.slice(0, at);
+        let dom = email.slice(at + 1).replace(/,/g, '.').replace(/\.+$/, '');
+        if (!dom || DOMAINS.includes(dom)) return null;
+        // без точки: «mailru», «gmailcom»
+        const noDot = DOMAINS.find((d) => d.replace('.', '') === dom);
+        if (noDot) return user + '@' + noDot;
+        // совсем без зоны: «mail», «gmail», «yandex»
+        const bare = DOMAINS.find((d) => d.split('.')[0] === dom);
+        if (bare) return user + '@' + bare;
+        const parts = dom.split('.');
+        if (parts.length >= 2) {
+          const tld = parts.pop();
+          const fixedTld = TLD_FIX[tld];
+          if (fixedTld) {
+            const cand = parts.join('.') + '.' + fixedTld;
+            if (DOMAINS.includes(cand)) return user + '@' + cand;
+            dom = cand;
+          }
+        }
+        let best = null, bestD = 3;
+        for (const d of DOMAINS) {
+          const dist = lev(dom, d);
+          if (dist < bestD) { best = d; bestD = dist; }
+        }
+        return best && bestD <= 2 ? user + '@' + best : null;
+      };
+      const emailInput = form.querySelector('input[name="email"]');
+      const hint = document.createElement('div');
+      hint.style.cssText = 'display:none;font-size:14px;margin-top:6px;color:#ffd7c2;text-align:left;';
+      emailInput?.insertAdjacentElement('afterend', hint);
+      let pendingSuggestion = null;
+      let suggestionShownFor = null;
+      const showHint = () => {
+        const val = String(emailInput?.value || '').trim().toLowerCase();
+        pendingSuggestion = suggestEmail(val);
+        if (!pendingSuggestion) { hint.style.display = 'none'; return; }
+        hint.innerHTML = '';
+        hint.append('Может, вы имели в виду ');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = pendingSuggestion;
+        b.style.cssText = 'background:none;border:none;padding:0;color:#fff;font:inherit;font-weight:700;text-decoration:underline;cursor:pointer;';
+        b.addEventListener('click', () => {
+          emailInput.value = pendingSuggestion;
+          pendingSuggestion = null;
+          hint.style.display = 'none';
+          emailInput.focus();
+        });
+        hint.append(b, '?');
+        hint.style.display = 'block';
+      };
+      emailInput?.addEventListener('blur', showHint);
+      emailInput?.addEventListener('input', () => { if (hint.style.display !== 'none') showHint(); });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const email = String(fd.get('email') || '').trim().toLowerCase();
+        const name = String(fd.get('name') || '').trim();
+        const phone = String(fd.get('phone') || '').trim();
+        const consentPd = !!fd.get('consent_pd');
+        const consentMarketing = !!fd.get('consent_marketing');
+        if (!name) {
+          setNote('Введите имя', '#ff8a8a');
+          return;
+        }
+        if (!email || !email.includes('@')) {
+          setNote('Введите корректный email', '#ff8a8a');
+          return;
+        }
+        // Подозрение на опечатку: один раз останавливаем и показываем подсказку.
+        // Если человек уверен в своём адресе – второе нажатие отправит как есть.
+        const sug = suggestEmail(email);
+        if (sug && suggestionShownFor !== email) {
+          suggestionShownFor = email;
+          showHint();
+          setNote('Проверьте адрес почты – возможно, в нём опечатка', '#ffb38a');
+          return;
+        }
+        if (!consentPd) {
+          setNote('Чтобы продолжить, нужно согласиться с обработкой персональных данных', '#ff8a8a');
+          return;
+        }
+        if (btn) { btn.disabled = true; btn.textContent = 'Отправляем...'; }
+        try {
+          const res = await fetch('/api/auth/quick-signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, name, phone, consent_pd: true, consent_marketing: consentMarketing }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.created) {
+            window.reachGoal?.('quick_signup');
+            // Доступ открыт сразу, сессия уже выдана – ведём прямо к урокам.
+            // Письмо с паролем улетело; в кабинете покажем адрес и «Исправить».
+            window.location.href = '/cabinet/myagkiy-start';
+            return;
+          }
+          if (res.ok && data.exists) {
+            setNote('Такой email уже есть – войдите в кабинет');
+            window.location.href = '/auth/login?email=' + encodeURIComponent(email) + '&next=/cabinet/myagkiy-start';
+            return;
+          }
+          setNote('Не получилось: ' + (data.error || res.status), '#ff8a8a');
+        } catch {
+          setNote('Ошибка сети, попробуйте ещё раз', '#ff8a8a');
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = 'Получить доступ →'; }
+        }
+      });
+    })();
+</script>

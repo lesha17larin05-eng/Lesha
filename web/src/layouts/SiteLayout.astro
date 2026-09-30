@@ -15,7 +15,7 @@ const {
 } = Astro.props as { title?: string; description?: string; active?: string; pageStyles?: string; padTop?: boolean; ogImage?: string; canonical?: string; noindex?: boolean; user?: any };
 const siteUrl = 'https://leshalarin.ru';
 // canonical можно переопределить пропом – для страниц-дублей
-// (например, /courses/myagkiy-start указывает на /course).
+// (сейчас не используется; /course → 301 на /courses/myagkiy-start).
 const canonicalPath = canonical || Astro.url.pathname;
 const canonicalUrl = siteUrl + canonicalPath;
 // Яндекс.Метрика: номер счётчика из env (runtime SSR, задаётся в .env → compose).

@@ -4,12 +4,12 @@ import { apiJson } from '../../lib/api';
 
 const user = (Astro.locals as any).user;
 if (!user) {
-  return Astro.redirect('/course', 302);
+  return Astro.redirect('/courses/myagkiy-start', 302);
 }
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data, status } = await apiJson<any>('/api/courses/myagkiy-start', { cookie });
-if (status !== 200) return Astro.redirect('/course', 302);
+if (status !== 200) return Astro.redirect('/courses/myagkiy-start', 302);
 
 // Ссылки на YouTube/ВК для каждого урока (захардкожены, как и на лендинге)
 const videoLinks: Record<string, { youtube: string; vk: string }> = {
@@ -262,7 +262,7 @@ const myEmail: string = me?.email || '';
 
   <div class="ms-cab-page">
 
-    <a href="/course" class="ms-cab-back">
+    <a href="/courses/myagkiy-start" class="ms-cab-back">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       О курсе
     </a>

@@ -16,8 +16,8 @@ export async function getNavCourses(): Promise<NavCourse[]> {
     const { status, data } = await apiJson<any[]>('/api/courses');
     if (status === 200 && Array.isArray(data)) {
       const list = data.map((c) => ({
-        // Бесплатный курс ведёт на свой лендинг /course – как в витрине /courses.
-        href: c.kind === 'free' ? '/course' : `/courses/${c.slug}`,
+        // Все курсы, включая бесплатный, живут на /courses/<slug>.
+        href: `/courses/${c.slug}`,
         title: String(c.title || ''),
       }));
       cache = { at: Date.now(), data: list };

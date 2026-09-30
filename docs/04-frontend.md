@@ -9,10 +9,10 @@ web/src/
   pages/
     index.astro                   — главная (новый дизайн: hero, услуги/курсы 2×2, обо мне, статьи)
     coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
-    courses/index.astro           — витрина курсов (карточки из GET /api/courses). Бесплатный курс ведёт на лендинг /course, пока человек не записан
+    courses/index.astro           — витрина курсов (карточки из GET /api/courses). Все курсы, включая бесплатный, ведут на /courses/<slug>
     start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
     consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
-    course.astro                  — лендинг бесплатного курса (legacy import). Форма «Начните сегодня» (`#quick-signup-form`) подсказывает опечатки в домене почты («gmial.com → gmail.com?», один раз останавливает отправку) и шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе аккаунт создан, cookies стоят – ведём сразу в `/cabinet/myagkiy-start`. Там для новичка (`can_fix_email`) плашка «Письмо ушло на … · Исправить» → `POST /api/auth/fix-email`.
+    course.astro                  — 301-редирект на /courses/myagkiy-start (с 2026-09-30; старый адрес живёт в рекламе и письмах). Форма «Начните сегодня» (`components/QuickSignupForm.astro`, `#quick-signup-form`, на /courses/myagkiy-start для неавторизованных) подсказывает опечатки в домене почты («gmial.com → gmail.com?», один раз останавливает отправку) и шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе аккаунт создан, cookies стоят – ведём сразу в `/cabinet/myagkiy-start`. Там для новичка (`can_fix_email`) плашка «Письмо ушло на … · Исправить» → `POST /api/auth/fix-email`.
     results.astro                 — кейсы/результаты учеников (legacy import)
     blog/
       index.astro                 — список статей (fetch /api/articles, дизайн как в сайт/blog.html)
@@ -56,9 +56,9 @@ web/src/
       forgot.astro
   layouts/
     Base.astro                    — кабинет/админ-layout (palette navy/orange, .container/.btn/.card)
-    SiteLayout.astro              — публичный layout сайта (Cormorant + Manrope, общая шапка + футер, поддержка pageStyles; проп `canonical` переопределяет canonical-URL — используется на /courses/myagkiy-start → /course)
+    SiteLayout.astro              — публичный layout сайта (Cormorant + Manrope, общая шапка + футер, поддержка pageStyles; проп `canonical` переопределяет canonical-URL — сейчас не используется)
   components/
-    SiteHeader.astro              — фиксированная навигация для публичных страниц; на ≤1080px ссылки скрываются и включается бургер-меню (6 пунктов + логотип + кнопка Салюта не влезают на планшетах). У пункта «Курсы» подменю со всеми опубликованными курсами (только названия): на десктопе выпадает при наведении/фокусе, в мобильном меню – отдельной плашкой под «Курсами». Список – `lib/nav-courses.ts` (GET /api/courses, кеш 60 с): новый курс появляется в меню сам после публикации; бесплатный ведёт на `/course`
+    SiteHeader.astro              — фиксированная навигация для публичных страниц; на ≤1080px ссылки скрываются и включается бургер-меню (6 пунктов + логотип + кнопка Салюта не влезают на планшетах). У пункта «Курсы» подменю со всеми опубликованными курсами (только названия): на десктопе выпадает при наведении/фокусе, в мобильном меню – отдельной плашкой под «Курсами». Список – `lib/nav-courses.ts` (GET /api/courses, кеш 60 с): новый курс появляется в меню сам после публикации; все курсы ведут на `/courses/<slug>`
     SiteFooter.astro              — футер с социальными иконками
   legacy/                         — оригинальные HTML-исходники маркетинговых страниц, импортируются через ?raw
   lib/
@@ -77,7 +77,7 @@ web/src/
 
 Публичные страницы (главная, блог, start, course, results) используют **`SiteLayout.astro`** + общие `SiteHeader`/`SiteFooter`. Внутренний кабинет/админка — **`Base.astro`** (минималистичная палитра, таблицы, формы).
 
-Адаптивность: помимо мобильного брейкпоинта 700px, у legacy-страниц (index/start/course/results) есть планшетные брейкпоинты 1000–1280px (промежуточные сетки 2–3 колонки, уменьшенные паддинги); у zdorovaya-spina исторически 960/1100. Hero-секции используют `min-height: 100svh` (с fallback `100vh`).
+Адаптивность: помимо мобильного брейкпоинта 700px, у legacy-страниц (index/start/results) есть планшетные брейкпоинты 1000–1280px (промежуточные сетки 2–3 колонки, уменьшенные паддинги); у zdorovaya-spina исторически 960/1100. Hero-секции используют `min-height: 100svh` (с fallback `100vh`).
 
 Служебная страница `/test-pay` (проверка интеграции с Продамусом, тариф `test10`) доступна только `role=admin`, остальным — 404.
 
@@ -139,7 +139,7 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 ## Аналитика (Яндекс.Метрика)
 
-Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/start), `quick_signup` (форма /course), `checkout_start` (переход к оплате «Здоровой спины»).
+Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/start), `quick_signup` (форма на /courses/myagkiy-start), `checkout_start` (переход к оплате «Здоровой спины»).
 
 ## Блог: даты, похожие статьи, JSON-LD
 
@@ -152,7 +152,9 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 Кастомные страницы кабинета (`cabinet/myagkiy-start.astro`, `cabinet/zdorovaya-spina.astro`) отправляют прогресс просмотра в `POST /api/lessons/{id}/progress`: отметка при play, позиция каждые 30 секунд и на паузе, `completed=true` на 90% просмотра или по окончании видео. `<video>` несёт `data-lesson-id`. До 2026-07-13 трекинг в кабинете отсутствовал — lesson_progress был пуст, прогресс-бары всегда 0%.
 
-## Лендинг «Мягкого старта»: карточки уроков
+## Лендинг «Мягкого старта»
+
+Основной адрес – `/courses/myagkiy-start` (`/course` отдаёт 301 сюда). Незалогиненным в блоке `#get-access` – форма быстрой записи `QuickSignupForm`, залогиненным без записи – кнопка «Записаться бесплатно» (`POST /api/courses/myagkiy-start/enroll-free`), записанным блок не показывается. Кнопка в hero для незалогиненных ведёт на `#get-access`.
 
 Сетка карточек «Уроки курса» на `/courses/myagkiy-start` показывается только тем, кто ещё не записан (записанным хватает кнопки «Перейти к урокам» и списка в hero). Обложки – кадры из видео в `web/public/img/myagkiy-start/<slug>.{jpg,webp}` (+@2x), клик ведёт к блоку регистрации `#get-access`. Страницы `/courses/myagkiy-start/lessons/<slug>` встраивают YouTube, а CSP (`frame-src` в `nginx/nginx.conf`) его не пропускает – поэтому с лендинга на них больше не ссылаемся.
 

@@ -2,6 +2,7 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { apiJson } from '../../lib/api';
 import ResponsiveImage from '../../components/ResponsiveImage.astro';
+import QuickSignupForm from '../../components/QuickSignupForm.astro';
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const user = (Astro.locals as any).user;
@@ -9,7 +10,7 @@ const user = (Astro.locals as any).user;
 const slug = 'myagkiy-start';
 
 const { data, status } = await apiJson<any>(`/api/courses/${slug}`, { cookie });
-if (status !== 200) return Astro.redirect('/course', 302);
+if (status !== 200) return Astro.redirect('/courses', 302);
 
 const enrolled: boolean = !!data.enrolled;
 const course = data.course;
@@ -59,8 +60,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
   };
 });
 ---
-{/* canonical → /course: две страницы описывают один курс, лендинг /course – основной */}
-<SiteLayout title="Мягкий старт – бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 видеоуроков – суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="courses" canonical="/course" padTop={false}>
+<SiteLayout title="Мягкий старт – бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 видеоуроков – суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="courses" padTop={false}>
   <style>
     /* ───── HERO ───── */
     .ms-hero {
@@ -487,7 +487,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
           ? <a href="/cabinet/myagkiy-start" class="ms-btn-hero">Перейти к урокам →</a>
           : user
             ? <button id="enroll-btn" class="ms-btn-hero">Получить доступ бесплатно →</button>
-            : <a href={`/auth/login?next=/courses/myagkiy-start`} class="ms-btn-hero">Войти и начать →</a>
+            : <a href="#get-access" class="ms-btn-hero">Получить доступ бесплатно →</a>
         }
         <div class="ms-hero-safety">Бесплатно – навсегда</div>
       </div>
@@ -623,7 +623,9 @@ const lessons = rawLessons.map((l: any, i: number) => {
       <div class="ms-enroll-inner">
         <div class="ms-section-label">Получить доступ</div>
         <h2 class="ms-section-title">Начните сегодня&nbsp;–<br><em>это бесплатно</em></h2>
-        <p class="ms-section-desc">Войдите или зарегистрируйтесь – и сразу получите доступ ко всем 8 урокам.</p>
+        {user ? (
+          <>
+            <p class="ms-section-desc">Нажмите кнопку – и сразу получите доступ ко всем 8 урокам.</p>
         <div class="ms-enroll-box">
           <div class="ms-enroll-features">
             <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>8 видео-уроков с практиками</div>
@@ -632,13 +634,17 @@ const lessons = rawLessons.map((l: any, i: number) => {
             <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Без подписок и скрытых платежей</div>
           </div>
           <div class="ms-enroll-btn-wrap">
-            {user
-              ? <button id="enroll-btn-bottom" class="ms-enroll-btn">Записаться бесплатно →</button>
-              : <a href={`/auth/register?next=/courses/myagkiy-start`} class="ms-enroll-btn">Зарегистрироваться бесплатно →</a>
-            }
+            <button id="enroll-btn-bottom" class="ms-enroll-btn">Записаться бесплатно →</button>
           </div>
           <p class="ms-enroll-note" style="margin-top:14px;">Бесплатно · без спама · отписаться в любой момент</p>
         </div>
+          </>
+        ) : (
+          <>
+            <p class="ms-section-desc">Оставьте имя и почту – и сразу получите доступ ко всем 8 урокам.</p>
+            <QuickSignupForm />
+          </>
+        )}
       </div>
     </section>
   )}

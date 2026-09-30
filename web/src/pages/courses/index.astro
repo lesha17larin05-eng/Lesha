@@ -78,7 +78,7 @@ const pageStyles = `
         {courses.map((c: any) => {
           const cover = covers[c.slug];
           return (
-            <a href={c.kind === 'free' && !c.enrolled ? '/course' : `/courses/${c.slug}`} class="course-card">
+            <a href={`/courses/${c.slug}`} class="course-card">
               <div class="cc-img">
                 {cover && (
                   <picture>
