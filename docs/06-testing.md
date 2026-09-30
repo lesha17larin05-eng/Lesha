@@ -79,6 +79,8 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestRegisterSavesConsentTimestamps`   | При `consent_pd=true, consent_marketing=true` — `users.consent_pd_at` и `users.consent_marketing_at` не NULL. При `consent_marketing=false` — `consent_marketing_at = NULL`, `consent_pd_at` всё равно проставлен. |
 
 | `TestSiteSettings`                     | Флаги сайта: публичный `GET /api/settings` без auth отдаёт `salut_visible:false` по умолчанию; не-админ на `PATCH /api/admin/settings` не проходит; неизвестный ключ и пустое тело → 400; админ включает → публичный GET отражает, в `audit_log` ровно одна запись `settings_update`; выключение возвращает `false`. |
+| `TestDripChain` | Автоцепочка: в день регистрации и до 9:00 МСК – ничего; день 1 – письмо 1 только подписанному новичку (без согласия и зарегистрированные до `drip_start_at` – мимо); не чаще раза в день; шаги по порядку на дни 3, 5; купившему «Здоровую спину» письма 4–5 – `skipped`; `drip_enabled=false` – тишина. |
+| `TestRenderDripBody`, `TestDripStepsRender` | Разметка писем цепочки (списки, цитата, кнопки, ссылки, имя) и что во всех 5 текстах нет сырой разметки и есть подпись. |
 
 | `TestUnsubscribe`                      | Отписка из письма: подделанная подпись → 303 на `/unsubscribed?error=1` и согласие на месте; валидная → 303 на `/unsubscribed` и `consent_marketing_at = NULL`, при этом `consent_pd_at` сохраняется; one-click `POST` без `X-CSRF-Token` → 200, с плохой подписью → 400. |
 

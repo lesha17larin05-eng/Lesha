@@ -7,6 +7,9 @@ const cookie = Astro.request.headers.get('cookie') || '';
 // всегда показывала актуальное состояние тумблеров.
 const { data } = await apiJson<Record<string, boolean>>('/api/settings', { cookie });
 const salutVisible = data?.salut_visible === true;
+const { data: drip } = await apiJson<any>('/api/admin/drip', { cookie });
+const dripOn = drip?.enabled === true;
+const dripSteps: any[] = Array.isArray(drip?.steps) ? drip.steps : [];
 const user = (Astro.locals as any).user;
 ---
 <Base title="Настройки сайта (админ)" user={user}>
@@ -39,6 +42,50 @@ const user = (Astro.locals as any).user;
         </span>
         <span class="save-hint" id="save-hint" hidden>Сохранено ✓</span>
       </div>
+    </div>
+    <div class="setting-card" style="margin-top:20px;">
+      <div class="setting-main">
+        <div class="setting-text">
+          <h2>Цепочка писем после «Мягкого старта»</h2>
+          <p class="muted">
+            Пять писем за 10 дней тем, кто записался на бесплатный курс после запуска цепочки
+            и поставил галочку «Получать материалы». Письма уходят с 9:00 до 21:00 по Москве,
+            не чаще одного в день. Письма 4 и 5 (с предложением) не получают те, у кого уже есть
+            «Здоровая спина» или оплачена «Точка перемен».
+          </p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="drip-toggle" checked={dripOn} />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="setting-state">
+        <span class="state-badge" id="drip-state" data-on={dripOn ? '1' : '0'}>
+          {dripOn ? 'Работает' : 'Выключена'}
+        </span>
+        <span class="save-hint" id="drip-hint" hidden>Сохранено ✓</span>
+      </div>
+
+      <table class="drip-table">
+        <thead><tr><th>№</th><th>День</th><th>Тема</th><th>Ушло</th><th>Открыли</th><th>Пропущено</th><th>Ошибки</th></tr></thead>
+        <tbody>
+          {dripSteps.map((s) => (
+            <tr>
+              <td>{s.step}</td><td>{s.day}</td><td>{s.subject}</td>
+              <td>{s.sent ?? 0}</td>
+              <td>{s.opened ?? 0}{s.sent ? ` (${Math.round(100 * (s.opened ?? 0) / s.sent)}%)` : ''}</td>
+              <td>{s.skipped ?? 0}</td><td>{s.failed ?? 0}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="muted" style="font-size:14px;margin:10px 0 0;">«Открыли» – по картинке-счётчику: часть почтовиков её не грузит, поэтому реальная цифра выше.</p>
+
+      <div class="drip-test">
+        <input type="email" id="drip-test-email" placeholder="Почта для теста (по умолчанию – ваша рабочая)" />
+        <button type="button" id="drip-test-btn">Прислать себе все 5 писем</button>
+      </div>
+      <p class="muted" id="drip-test-note" style="font-size:14px;margin:8px 0 0;"></p>
     </div>
   </section>
 
@@ -81,7 +128,15 @@ const user = (Astro.locals as any).user;
     .switch input:disabled { cursor: progress; }
     .switch input:disabled + .slider { opacity: .6; }
 
+    .drip-table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+    .drip-table th, .drip-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+    .drip-table th { color: var(--text-mid); font-weight: 600; }
+    .drip-test { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+    .drip-test input { flex: 1 1 240px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font: inherit; }
+    .drip-test button { background: var(--navy); color: #fff; border: none; border-radius: 99px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+    .drip-test button:disabled { opacity: .6; cursor: progress; }
     @media (max-width: 560px) {
+      .drip-table th:nth-child(2), .drip-table td:nth-child(2) { display: none; }
       .setting-main { flex-direction: column; gap: 16px; }
     }
   </style>
@@ -119,6 +174,47 @@ const user = (Astro.locals as any).user;
       } finally {
         toggle.disabled = false;
       }
+    });
+
+    // ─── Цепочка писем ───
+    const dripToggle = document.getElementById('drip-toggle');
+    const dripBadge = document.getElementById('drip-state');
+    const dripHint = document.getElementById('drip-hint');
+    dripToggle?.addEventListener('change', async () => {
+      const want = dripToggle.checked;
+      dripToggle.disabled = true;
+      try {
+        const r = await fetch('/api/admin/settings', {
+          method: 'PATCH', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ drip_enabled: want }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) { alert('Не удалось сохранить: ' + (j.error || r.status)); dripToggle.checked = !want; return; }
+        const on = j.drip_enabled === true;
+        dripToggle.checked = on;
+        dripBadge.textContent = on ? 'Работает' : 'Выключена';
+        dripBadge.setAttribute('data-on', on ? '1' : '0');
+        dripHint.hidden = false;
+        setTimeout(() => { dripHint.hidden = true; }, 2500);
+      } catch { alert('Сеть недоступна, изменение не сохранено'); dripToggle.checked = !want; }
+      finally { dripToggle.disabled = false; }
+    });
+
+    const testBtn = document.getElementById('drip-test-btn');
+    const testNote = document.getElementById('drip-test-note');
+    testBtn?.addEventListener('click', async () => {
+      const email = document.getElementById('drip-test-email').value.trim();
+      testBtn.disabled = true;
+      testNote.textContent = 'Отправляем…';
+      try {
+        const r = await fetch('/api/admin/drip/test', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(email ? { email } : {}),
+        });
+        const j = await r.json().catch(() => ({}));
+        testNote.textContent = r.ok ? `Готово – 5 писем ушли на ${j.sent_to}. Проверьте и «Спам».` : 'Не получилось: ' + (j.error || r.status);
+      } catch { testNote.textContent = 'Сеть недоступна'; }
+      finally { testBtn.disabled = false; }
     });
   </script>
 </Base>

@@ -40,7 +40,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -2428,5 +2428,111 @@ func TestAdminRefundOrder(t *testing.T) {
 	r, body = admin.do("GET", "/api/admin/orders", nil)
 	if r.StatusCode != 200 || !strings.Contains(string(body), so.ID.String()) {
 		t.Fatalf("заказ на услугу не попал в список: %d %s", r.StatusCode, body)
+	}
+}
+
+// TestDripChain – автоцепочка после «Мягкого старта»: кому, когда и что уходит.
+func TestDripChain(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	_ = srv
+	ctx := context.Background()
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", "")}
+	freeID, err := repo.CreateCourse(ctx, db.CourseInput{Slug: "myagkiy-start", Title: "MS", Kind: "free", IsPublished: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	price := 3990
+	zsID, err := repo.CreateCourse(ctx, db.CourseInput{Slug: "zdorovaya-spina", Title: "ZS", Kind: "paid", PriceRub: &price, IsPublished: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.SetSetting(ctx, "drip_start_at", "2026-09-30T00:00:00Z"); err != nil {
+		t.Fatal(err)
+	}
+	// Регистрация 1 октября 12:00 по Москве.
+	reg := time.Date(2026, 10, 1, 9, 0, 0, 0, time.UTC)
+	mk := func(email string, consent bool, created time.Time) uuid.UUID {
+		id, err := repo.CreateUser(ctx, email, "x", "Анна", "user")
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = repo.SaveConsent(ctx, id, true, consent)
+		_ = repo.Grant(ctx, id, freeID, "free", nil)
+		if _, err := repo.Pool.Exec(ctx, `UPDATE users SET created_at=$1 WHERE id=$2`, created, id); err != nil {
+			t.Fatal(err)
+		}
+		return id
+	}
+	a := mk("a@b.ru", true, reg)
+	mk("nomail@b.ru", false, reg)                 // без согласия на рассылку
+	mk("old@b.ru", true, reg.AddDate(0, 0, -30)) // до запуска цепочки
+
+	msk := func(day, hour int) time.Time { // день после регистрации, час по Москве
+		return time.Date(2026, 10, 1+day, hour-3, 0, 0, 0, time.UTC)
+	}
+	status := func(step int) string {
+		var s string
+		_ = repo.Pool.QueryRow(ctx, `SELECT status FROM drip_sends WHERE user_id=$1 AND step=$2`, a, step).Scan(&s)
+		return s
+	}
+	total := func() int {
+		var n int
+		_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM drip_sends`).Scan(&n)
+		return n
+	}
+
+	// В день регистрации ничего.
+	if err := app.SendOneDripEmailForTest(ctx, msk(0, 15)); err != db.ErrNotFound {
+		t.Fatalf("day 0: expected nothing, got %v", err)
+	}
+	// Ночью не шлём даже когда пора.
+	_ = app.SendOneDripEmailForTest(ctx, msk(1, 7))
+	if total() != 0 {
+		t.Fatalf("must not send before 9:00 MSK")
+	}
+	// День 1, 10:00 – письмо 1 только подписанному новичку.
+	if err := app.SendOneDripEmailForTest(ctx, msk(1, 10)); err != nil {
+		t.Fatalf("day 1: %v", err)
+	}
+	if status(1) != "sent" || total() != 1 {
+		t.Fatalf("step 1 must be sent to a@ only, total=%d", total())
+	}
+	if err := app.SendOneDripEmailForTest(ctx, msk(1, 11)); err != db.ErrNotFound {
+		t.Fatalf("second send same day: %v", err)
+	}
+	// День 2 – ещё рано для письма 2.
+	if err := app.SendOneDripEmailForTest(ctx, msk(2, 10)); err != db.ErrNotFound {
+		t.Fatalf("day 2: %v", err)
+	}
+	// День 3 и 5 – письма 2 и 3 (время отправки в тесте – «сейчас» БД, поэтому
+	// сдвигаем прошлые отправки назад, чтобы не сработал «не чаще раза в день»).
+	back := func() { _, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = sent_at - interval '3 days'`) }
+	back()
+	_ = app.SendOneDripEmailForTest(ctx, msk(3, 10))
+	if status(2) != "sent" {
+		t.Fatalf("step 2 must be sent on day 3")
+	}
+	back()
+	_ = app.SendOneDripEmailForTest(ctx, msk(5, 10))
+	if status(3) != "sent" {
+		t.Fatalf("step 3 must be sent on day 5")
+	}
+	// Купила «Здоровую спину» – письма с предложением пропускаются.
+	_ = repo.Grant(ctx, a, zsID, "purchase", nil)
+	back()
+	_ = app.SendOneDripEmailForTest(ctx, msk(7, 10))
+	if status(4) != "skipped" {
+		t.Fatalf("step 4 must be skipped for a buyer, got %q", status(4))
+	}
+	// Выключили в админке – ничего не уходит.
+	_ = repo.SetSetting(ctx, "drip_enabled", "false")
+	_ = app.SendOneDripEmailForTest(ctx, msk(10, 10))
+	if status(5) != "" {
+		t.Fatalf("disabled chain must not send")
+	}
+	_ = repo.SetSetting(ctx, "drip_enabled", "true")
+	_ = app.SendOneDripEmailForTest(ctx, msk(10, 10))
+	if status(5) != "skipped" {
+		t.Fatalf("step 5 must be skipped for a buyer, got %q", status(5))
 	}
 }

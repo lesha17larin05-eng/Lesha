@@ -155,6 +155,8 @@ func main() {
 		r.Patch("/api/admin/articles/{id}", app.AdminUpdateArticle)
 		r.Delete("/api/admin/articles/{id}", app.AdminDeleteArticle)
 		r.Get("/api/admin/article-stats", app.AdminArticleStats)
+		r.Get("/api/admin/drip", app.AdminDrip)
+		r.Post("/api/admin/drip/test", app.AdminDripTest)
 	})
 
 	// Фоновая отправка рассылок: одно письмо раз в несколько десятков секунд,
@@ -162,6 +164,8 @@ func main() {
 	workerCtx, stopWorker := context.WithCancel(ctx)
 	defer stopWorker()
 	go handlers.RunCampaignWorker(workerCtx, app)
+	// Автоцепочка писем после «Мягкого старта» (handlers/drip.go).
+	go handlers.RunDripWorker(workerCtx, app)
 
 	srv := &http.Server{
 		Addr:              ":8080",
