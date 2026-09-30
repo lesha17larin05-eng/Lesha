@@ -1,0 +1,37 @@
+---
+// Метка источника трафика. Ссылка вида leshalarin.ru/course?from=insta
+// (или ?utm_source=...) кладёт метку в куку `src` на 30 дней; сервер пишет её
+// в users.source при регистрации и в orders.source при оплате.
+// Без метки в ссылке – угадываем по сайту, с которого пришли
+// (instagram, youtube, vk, telegram…), но только если куки ещё нет.
+---
+<script is:inline>
+  (() => {
+    try {
+      const clean = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9_.:-]/g, '').slice(0, 48);
+      const q = new URLSearchParams(location.search);
+      let tag = clean(q.get('from') || q.get('utm_source'));
+      const camp = clean(q.get('utm_campaign'));
+      if (tag && camp) tag = (tag + ':' + camp).slice(0, 48);
+      const has = /(?:^|;\s*)src=/.test(document.cookie);
+      if (!tag && !has && document.referrer) {
+        let host = '';
+        try { host = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch {}
+        if (host && host !== location.hostname) {
+          const map = [
+            [/instagram\.com$/, 'ref:instagram'], [/(youtube\.com|youtu\.be)$/, 'ref:youtube'],
+            [/(vk\.com|vk\.ru|vkvideo\.ru)$/, 'ref:vk'], [/(t\.me|telegram\.org)$/, 'ref:telegram'],
+            [/dzen\.ru$/, 'ref:dzen'], [/tiktok\.com$/, 'ref:tiktok'],
+            [/(yandex\.|google\.)/, 'ref:search'],
+          ];
+          const hit = map.find(([re]) => re.test(host));
+          tag = hit ? hit[1] : clean('ref:' + host);
+        }
+      }
+      // Явная метка из ссылки перезаписывает старую; догадка по referrer – нет.
+      if (tag) {
+        document.cookie = 'src=' + encodeURIComponent(tag) + '; path=/; max-age=' + 60 * 60 * 24 * 30 + '; SameSite=Lax';
+      }
+    } catch {}
+  })();
+</script>

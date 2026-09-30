@@ -116,6 +116,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "order_failed")
 		return
 	}
+	a.tagOrder(r.Context(), r, o.ID)
 	// Продамус считает HMAC от json_encode(ksort_recursive($data)).
 	// Структура должна быть ВЛОЖЕННАЯ (products → array of objects),
 	// а не плоская "products[0][name]". flatten() в prodamus.PaymentURL
@@ -637,6 +638,8 @@ func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "order_failed")
 		return
 	}
+	a.tagUser(r.Context(), r, uid)
+	a.tagOrder(r.Context(), r, o.ID)
 
 	// В тестовом режиме Продамуса платёжной ссылки нет – отдаём локальную
 	// заглушку, как и для курсов.

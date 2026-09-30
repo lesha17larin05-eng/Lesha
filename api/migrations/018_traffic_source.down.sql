@@ -1,0 +1,4 @@
+DROP INDEX IF EXISTS idx_users_source;
+DROP INDEX IF EXISTS idx_orders_source;
+ALTER TABLE users  DROP COLUMN IF EXISTS source;
+ALTER TABLE orders DROP COLUMN IF EXISTS source;

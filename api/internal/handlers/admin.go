@@ -121,9 +121,10 @@ func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 		orders = []db.UserOrderInfo{}
 	}
 
+	source, _ := a.Repo.UserSource(r.Context(), u.ID)
 	writeJSON(w, 200, map[string]any{
 		"user": map[string]any{
-			"id": u.ID, "email": u.Email, "name": u.Name, "phone": u.Phone, "role": u.Role,
+			"id": u.ID, "email": u.Email, "name": u.Name, "phone": u.Phone, "role": u.Role, "source": source,
 			"email_verified_at": u.EmailVerifiedAt, "created_at": u.CreatedAt, "last_seen_at": u.LastSeenAt,
 			"consent_pd_at": pdAt, "consent_marketing_at": mktAt,
 		},

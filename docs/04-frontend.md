@@ -12,6 +12,7 @@ web/src/
     courses/index.astro           — витрина курсов (карточки из GET /api/courses). Все курсы, включая бесплатный, ведут на /courses/<slug>
     start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
     consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
+    (components/SourceCapture.astro — в <head> обоих лейаутов: ?from= / ?utm_source= или referrer → кука `src` на 30 дней, см. docs/02-database.md «Источник трафика»)
     course.astro                  — 301-редирект на /courses/myagkiy-start (с 2026-09-30; старый адрес живёт в рекламе и письмах). Форма «Начните сегодня» (`components/QuickSignupForm.astro`, `#quick-signup-form`, на /courses/myagkiy-start для неавторизованных) подсказывает опечатки в домене почты («gmial.com → gmail.com?», один раз останавливает отправку) и шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе аккаунт создан, cookies стоят – ведём сразу в `/cabinet/myagkiy-start`. Там для новичка (`can_fix_email`) плашка «Письмо ушло на … · Исправить» → `POST /api/auth/fix-email`.
     results.astro                 — кейсы/результаты учеников (legacy import)
     blog/

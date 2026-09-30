@@ -59,6 +59,7 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
         <tr><th>Имя</th><td>{u.name || '–'}</td></tr>
         <tr><th>Телефон</th><td>{u.phone ? <a href={`tel:${u.phone}`}>{u.phone}</a> : '–'}</td></tr>
         <tr><th>Зарегистрирован</th><td>{fmt(u.created_at)}</td></tr>
+        <tr><th>Откуда пришёл</th><td>{u.source || '–'}</td></tr>
         <tr><th>Последний визит</th><td>{fmt(u.last_seen_at)}</td></tr>
         <tr><th>Email подтверждён</th><td>{fmt(u.email_verified_at)}</td></tr>
         <tr><th>Согласие на обработку ПД</th><td>{fmt(u.consent_pd_at)}</td></tr>

@@ -126,6 +126,7 @@ JSON `{"error": "<code>"}`:
 | `GET /api/admin/campaigns` | Последние 50 рассылок с агрегатами: `total`, `sent`, `failed`, `pending`, `sent_today`, `opened`. |
 | `GET /api/admin/campaigns/{id}` | Рассылка + до 500 получателей (статус, время, открыл ли). |
 | `POST /api/admin/campaigns/{id}/test` | Пробное письмо на почту текущего админа, тема с префиксом `[ТЕСТ]`. |
+| `GET /api/admin/sources` | `?days=30` (1…3650) → `{days, rows:[{source, signups, subscribed, paid, revenue}]}`: регистрации за период по `users.source`, оплаты – по `orders.source`; пустой `source` = без метки. |
 | `GET /api/admin/drip` | Автоцепочка после «Мягкого старта»: `{enabled, start_at, steps:[{step, day, subject, offer, sent, skipped, failed, opened}]}`. |
 | `POST /api/admin/drip/test` | `{email?}` – все 5 писем цепочки на указанную почту (по умолчанию `LEAD_NOTIFY_EMAIL`), темы `[ТЕСТ n/5]`. Пишет `audit_log` (`drip_test`). |
 | `POST /api/admin/campaigns/{id}/start` \| `/pause` | Меняет статус. Другое действие → 400 `bad_action`. |

@@ -104,6 +104,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Group(func(r chi.Router) {
 		r.Use(mw.RequireAuth, mw.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
+		r.Get("/api/admin/sources", app.AdminSources)
 		r.Patch("/api/admin/settings", app.AdminUpdateSettings)
 		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/email-opens", app.AdminEmailOpens)
@@ -2534,5 +2535,50 @@ func TestDripChain(t *testing.T) {
 	_ = app.SendOneDripEmailForTest(ctx, msk(10, 10))
 	if status(5) != "skipped" {
 		t.Fatalf("step 5 must be skipped for a buyer, got %q", status(5))
+	}
+}
+
+// TestTrafficSource – метка ?from= (кука src) попадает в users.source при
+// регистрации, чистится от мусора и видна в сводке админки.
+func TestTrafficSource(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	if _, err := repo.CreateCourse(ctx, db.CourseInput{Slug: "myagkiy-start", Title: "MS", Kind: "free", IsPublished: true}); err != nil {
+		t.Fatal(err)
+	}
+	u, _ := url.Parse(srv.URL)
+	signup := func(email, src string) {
+		c := newClient(srv)
+		if src != "" {
+			c.jar.SetCookies(u, []*http.Cookie{{Name: "src", Value: src, Path: "/"}})
+		}
+		r, body := c.do("POST", "/api/auth/quick-signup", map[string]any{
+			"email": email, "name": "T", "consent_pd": true, "consent_marketing": true})
+		if r.StatusCode != 201 {
+			t.Fatalf("signup %s: %d %s", email, r.StatusCode, body)
+		}
+	}
+	signup("i1@b.ru", "insta")
+	signup("i2@b.ru", "ref%3Ainstagram") // как кодирует браузер ref:instagram
+	signup("x@b.ru", "<script>")         // мусор – не пишем
+	signup("n@b.ru", "")
+	src := func(email string) string {
+		var s *string
+		_ = repo.Pool.QueryRow(ctx, `SELECT source FROM users WHERE email=$1`, email).Scan(&s)
+		if s == nil {
+			return ""
+		}
+		return *s
+	}
+	if src("i1@b.ru") != "insta" || src("i2@b.ru") != "ref:instagram" || src("x@b.ru") != "" || src("n@b.ru") != "" {
+		t.Fatalf("sources: %q %q %q %q", src("i1@b.ru"), src("i2@b.ru"), src("x@b.ru"), src("n@b.ru"))
+	}
+	adm := adminClient(t, srv, repo)
+	r, body := adm.do("GET", "/api/admin/sources?days=7", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"source":"insta","signups":1,"subscribed":1`) {
+		t.Fatalf("admin sources: %d %s", r.StatusCode, body)
+	}
+	if r, _ := newClient(srv).do("GET", "/api/admin/sources", nil); r.StatusCode != 401 && r.StatusCode != 403 {
+		t.Fatalf("anon must not see sources: %d", r.StatusCode)
 	}
 }

@@ -156,6 +156,7 @@ func main() {
 		r.Delete("/api/admin/articles/{id}", app.AdminDeleteArticle)
 		r.Get("/api/admin/article-stats", app.AdminArticleStats)
 		r.Get("/api/admin/drip", app.AdminDrip)
+		r.Get("/api/admin/sources", app.AdminSources)
 		r.Post("/api/admin/drip/test", app.AdminDripTest)
 	})
 

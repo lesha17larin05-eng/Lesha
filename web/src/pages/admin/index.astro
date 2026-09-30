@@ -6,6 +6,8 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data: stats } = await apiJson<any>('/api/admin/stats', { cookie });
 const { data: orders } = await apiJson<any[]>('/api/admin/orders?status=paid', { cookie });
 const { data: mailings } = await apiJson<any[]>('/api/admin/email-opens', { cookie });
+const { data: srcData } = await apiJson<any>('/api/admin/sources?days=30', { cookie });
+const sources: any[] = Array.isArray(srcData?.rows) ? srcData.rows : [];
 const campaigns = Array.isArray(mailings) ? mailings : [];
 const user = (Astro.locals as any).user;
 const recent = (orders || []).slice(0, 8);
@@ -71,6 +73,29 @@ const fmtDate = (s: any) => {
       </a>
     </div>
 
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Откуда пришли · 30 дней</h2>
+        <span class="panel-hint">метка из ссылки (?from=insta) или сайт, с которого перешли (ref:…)</span>
+      </div>
+      {sources.length === 0 ? (
+        <div class="empty"><p>Пока пусто. Поставьте в профилях ссылки вида leshalarin.ru/course?from=insta – и здесь появятся цифры.</p></div>
+      ) : (
+        <table class="src-table">
+          <thead><tr><th>Источник</th><th>Регистрации</th><th>С подпиской</th><th>Оплаты</th><th>Сумма</th></tr></thead>
+          <tbody>
+            {sources.map((s: any) => (
+              <tr>
+                <td>{s.source || <span class="muted">без метки</span>}</td>
+                <td>{fmt(s.signups)}</td><td>{fmt(s.subscribed)}</td>
+                <td>{fmt(s.paid)}</td><td>{fmt(s.revenue)} ₽</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+
     {campaigns.length > 0 && (
       <section class="panel">
         <div class="panel-head">
@@ -124,6 +149,10 @@ const fmtDate = (s: any) => {
   </section>
 
   <style>
+    .src-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .src-table th, .src-table td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border); }
+    .src-table th { color: var(--text-mid); font-weight: 600; font-size: 14px; }
+    .src-table td:not(:first-child), .src-table th:not(:first-child) { text-align: right; white-space: nowrap; }
     .admin-dash { padding: 44px 24px 60px; }
     .dash-head { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
     .dash-head h1 { margin: 0 0 4px; font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 500; color: var(--navy); letter-spacing: -0.01em; }

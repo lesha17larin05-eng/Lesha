@@ -142,6 +142,10 @@ SQL каждой группы — отдельная константа, вво�
 
 Автоцепочка из 5 писем после регистрации на «Мягкий старт» (`handlers/drip.go`, тексты – `handlers/drip_texts.go`). PK `(user_id, step)` – шаг обрабатывается один раз. `status`: `sent`, `skipped` (письмо с предложением человеку, у которого уже есть «Здоровая спина» или оплачена «Точка перемен»), `failed` (SMTP-ошибка, в `error`). Миграция же кладёт в `site_settings` ключ `drip_start_at` (UTC, RFC3339) – цепочку получают только зарегистрированные после него. Выключатель – `site_settings.drip_enabled` (в белом списке, тумблер в `/admin/settings`). Открытия считаются пикселем с `campaign = 'drip-<step>'` в `email_opens`.
 
+## Источник трафика (миграция 018)
+
+`users.source` и `orders.source` – метка, откуда пришёл человек: из ссылки (`?from=insta`, `?utm_source=…[:utm_campaign]`) или по сайту-источнику (`ref:instagram`, `ref:youtube`, `ref:vk`, `ref:telegram`, `ref:search`, `ref:<домен>`). Её ставит в куку `src` (30 дней) компонент `web/src/components/SourceCapture.astro`; сервер пишет в `users.source` при регистрации (только если пусто – первое касание) и в `orders.source` при создании заказа. Сводка – `GET /api/admin/sources`, панель «Откуда пришли» на `/admin`.
+
 ## article_views
 
 Счётчик чтения статей (миграция `015_article_views`).

@@ -101,6 +101,7 @@ func (a *App) NewsletterSignup(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
+	a.tagUser(r.Context(), r, uid)
 
 	// Согласие на обработку ПД фиксируем сразу (галочка в форме),
 	// согласие на рассылку – только после нажатия ссылки в письме.

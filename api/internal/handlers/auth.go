@@ -46,6 +46,7 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	// Сохраняем факт согласий, чтобы можно было предъявить при жалобе/проверке.
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
+	a.tagUser(r.Context(), r, uid)
 	// Опциональный телефон – пригодится для Продамуса и для связи через админку.
 	if phone := strings.TrimSpace(in.Phone); phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, phone)
@@ -111,6 +112,7 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	}
 	// 152-ФЗ: сохраняем факт согласий (consent_pd обязательное, marketing – опциональное).
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
+	a.tagUser(r.Context(), r, uid)
 	if in.Phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
 	}
