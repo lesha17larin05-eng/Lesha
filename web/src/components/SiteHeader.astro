@@ -1,5 +1,9 @@
 ---
+import { getNavCourses } from '../lib/nav-courses';
 const { active = '', user = (Astro.locals as any).user } = Astro.props as { active?: string; user?: any };
+// Подменю «Курсы»: опубликованные курсы из API (кеш 60 с).
+const navCourses = await getNavCourses();
+const currentPath = Astro.url.pathname;
 const links = [
   { href: '/start', key: 'start', label: 'Точка перемен' },
   { href: '/coaching', key: 'home', label: 'Личное ведение' },
@@ -26,6 +30,42 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
     outline-offset: 3px;
     border-radius: 6px;
   }
+
+  /* ─── Подменю «Курсы» (десктоп): открывается при наведении и с клавиатуры ─── */
+  .snl-dd { position: relative; display: inline-flex; align-items: center; align-self: stretch; }
+  .snl-dd > a { gap: 5px; }
+  .snl-caret { width: 10px; height: 10px; transition: transform 0.2s ease; opacity: 0.7; }
+  .snl-dd:hover .snl-caret, .snl-dd:focus-within .snl-caret { transform: rotate(180deg); }
+  .snl-panel {
+    position: absolute; top: 100%; left: 50%;
+    transform: translate(-50%, 6px);
+    width: 340px; padding: 8px;
+    background: var(--warm-white); border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(26,39,68,0.12);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    z-index: 110;
+  }
+  /* «мостик», чтобы меню не закрывалось, пока курсор идёт от ссылки к панели */
+  .snl-panel::before { content: ''; position: absolute; left: 0; right: 0; top: -14px; height: 14px; }
+  .snl-dd:hover .snl-panel, .snl-dd:focus-within .snl-panel {
+    opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0);
+  }
+  .site-nav-links .snl-panel a {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+    min-height: 0; padding: 12px 14px; border-radius: 10px; border-bottom: none;
+    text-align: left; color: var(--text); font-weight: 400;
+    transition: background 0.15s ease;
+  }
+  .site-nav-links .snl-panel a:hover { background: rgba(26,39,68,0.05); color: var(--text); }
+  .site-nav-links .snl-panel a.is-current { background: rgba(232,101,42,0.07); }
+  .snl-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--navy); }
+  .snl-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--orange); background: #fff0e6; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+  .snl-badge.is-free { color: #0a6040; background: #d4f0e4; }
+  .snl-sub { font-size: 12.5px; line-height: 1.45; color: var(--text-muted); }
+  .snl-all { margin-top: 4px; border-top: 1px solid var(--border); padding-top: 4px; }
+  .site-nav-links .snl-all a { flex-direction: row; font-size: 13px; font-weight: 600; color: var(--orange); }
+  .site-nav-links .snl-all a:hover { color: var(--orange); }
 
   /* ─── Кнопка «Здоровая спина в Салюте» в шапке (десктоп) ─────────── */
   .site-nav-salyut {
@@ -93,6 +133,15 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
   .smm-link:hover { background: rgba(26,39,68,0.05); }
   .smm-link.is-active { color: var(--orange); font-weight: 600; background: rgba(232,101,42,0.06); }
   .smm-link.is-active::after { content: '·'; color: var(--orange); }
+  /* подпункты «Курсов» в мобильном меню */
+  .smm-sub {
+    display: block; margin: 0 0 6px 16px; padding: 10px 16px;
+    border-left: 2px solid var(--border);
+    font-size: 15px; color: var(--text-mid); text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .smm-sub:hover { background: rgba(26,39,68,0.04); border-left-color: var(--orange); }
+  .smm-sub.is-active { color: var(--orange); font-weight: 600; border-left-color: var(--orange); }
   .smm-divider { height: 1px; background: var(--border); margin: 12px 4px; }
   .smm-auth { padding: 12px 16px; font-size: 16px; color: var(--text-mid); text-decoration: none; border-radius: 10px; }
   .smm-auth:hover { background: rgba(26,39,68,0.05); }
@@ -116,9 +165,26 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
     <a href="/salut-2026" class={`site-nav-salyut${isSalyut ? ' is-active' : ''}`} aria-current={isSalyut ? 'page' : undefined}>Здоровая спина<br>в Салюте</a>
   )}
   <div class="site-nav-links">
-    {links.map(l => (
-      <a href={l.href} class={l.key === active ? 'active' : ''}>{l.label}</a>
-    ))}
+    {links.map(l => (l.key === 'courses' && navCourses.length > 0)
+      ? (
+        <div class="snl-dd">
+          <a href={l.href} class={l.key === active ? 'active' : ''} aria-haspopup="true">
+            {l.label}
+            <svg class="snl-caret" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg>
+          </a>
+          <div class="snl-panel">
+            {navCourses.map(c => (
+              <a href={c.href} class={currentPath === c.href ? 'is-current' : ''}>
+                <span class="snl-title">{c.title}{c.badge && <span class={`snl-badge${c.badge === 'Бесплатно' ? ' is-free' : ''}`}>{c.badge}</span>}</span>
+                {c.subtitle && <span class="snl-sub">{c.subtitle}</span>}
+              </a>
+            ))}
+            <div class="snl-all"><a href="/courses">Все курсы →</a></div>
+          </div>
+        </div>
+      )
+      : <a href={l.href} class={l.key === active ? 'active' : ''}>{l.label}</a>
+    )}
   </div>
   <div class="site-nav-right">
     {user
@@ -145,7 +211,12 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
       <a href="/salut-2026" class={`smm-salyut${isSalyut ? ' is-active' : ''}`}>Здоровая спина в Салюте</a>
     )}
     {links.map(l => (
-      <a href={l.href} class={`smm-link${l.key === active ? ' is-active' : ''}`}>{l.label}</a>
+      <>
+        <a href={l.href} class={`smm-link${l.key === active ? ' is-active' : ''}`}>{l.label}</a>
+        {l.key === 'courses' && navCourses.map(c => (
+          <a href={c.href} class={`smm-sub${currentPath === c.href ? ' is-active' : ''}`}>{c.title}</a>
+        ))}
+      </>
     ))}
     <div class="smm-divider"></div>
     {user
