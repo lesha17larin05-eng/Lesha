@@ -39,8 +39,8 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
   .snl-panel {
     position: absolute; top: 100%; left: 50%;
     transform: translate(-50%, 6px);
-    width: 340px; padding: 8px;
-    background: var(--warm-white); border: 1px solid var(--border); border-radius: 16px;
+    min-width: 260px; padding: 6px;
+    background: var(--warm-white); border: 1px solid var(--border); border-radius: 14px;
     box-shadow: 0 16px 40px rgba(26,39,68,0.12);
     opacity: 0; visibility: hidden; pointer-events: none;
     transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
@@ -52,20 +52,16 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
     opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0);
   }
   .site-nav-links .snl-panel a {
-    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
-    min-height: 0; padding: 12px 14px; border-radius: 10px; border-bottom: none;
-    text-align: left; color: var(--text); font-weight: 400;
-    transition: background 0.15s ease;
+    display: block; min-height: 0; padding: 10px 14px; border-radius: 9px; border-bottom: none;
+    text-align: left; white-space: nowrap;
+    font-size: 14px; font-weight: 500; color: var(--navy);
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .site-nav-links .snl-panel a:hover { background: rgba(26,39,68,0.05); color: var(--text); }
-  .site-nav-links .snl-panel a.is-current { background: rgba(232,101,42,0.07); }
-  .snl-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--navy); }
-  .snl-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--orange); background: #fff0e6; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
-  .snl-badge.is-free { color: #0a6040; background: #d4f0e4; }
-  .snl-sub { font-size: 12.5px; line-height: 1.45; color: var(--text-muted); }
+  .site-nav-links .snl-panel a:hover { background: rgba(26,39,68,0.05); color: var(--navy); }
+  .site-nav-links .snl-panel a.is-current { color: var(--orange); font-weight: 600; }
   .snl-all { margin-top: 4px; border-top: 1px solid var(--border); padding-top: 4px; }
-  .site-nav-links .snl-all a { flex-direction: row; font-size: 13px; font-weight: 600; color: var(--orange); }
-  .site-nav-links .snl-all a:hover { color: var(--orange); }
+  .site-nav-links .snl-all a { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .site-nav-links .snl-all a:hover { color: var(--navy); }
 
   /* ─── Кнопка «Здоровая спина в Салюте» в шапке (десктоп) ─────────── */
   .site-nav-salyut {
@@ -133,15 +129,23 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
   .smm-link:hover { background: rgba(26,39,68,0.05); }
   .smm-link.is-active { color: var(--orange); font-weight: 600; background: rgba(232,101,42,0.06); }
   .smm-link.is-active::after { content: '·'; color: var(--orange); }
-  /* подпункты «Курсов» в мобильном меню */
-  .smm-sub {
-    display: block; margin: 0 0 6px 16px; padding: 10px 16px;
-    border-left: 2px solid var(--border);
-    font-size: 15px; color: var(--text-mid); text-decoration: none;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  /* подпункты «Курсов» в мобильном меню – отдельной плашкой под пунктом */
+  .smm-group {
+    margin: 2px 0 8px 16px; padding: 6px;
+    background: var(--cream); border: 1px solid var(--border); border-radius: 12px;
+    display: flex; flex-direction: column;
   }
-  .smm-sub:hover { background: rgba(26,39,68,0.04); border-left-color: var(--orange); }
-  .smm-sub.is-active { color: var(--orange); font-weight: 600; border-left-color: var(--orange); }
+  .smm-sub {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px; border-radius: 8px;
+    font-size: 16px; color: var(--navy); text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .smm-sub::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background 0.15s; }
+  .smm-sub:hover { background: rgba(26,39,68,0.05); }
+  .smm-sub:hover::before { background: var(--orange); }
+  .smm-sub.is-active { color: var(--orange); font-weight: 600; }
+  .smm-sub.is-active::before { background: var(--orange); }
   .smm-divider { height: 1px; background: var(--border); margin: 12px 4px; }
   .smm-auth { padding: 12px 16px; font-size: 16px; color: var(--text-mid); text-decoration: none; border-radius: 10px; }
   .smm-auth:hover { background: rgba(26,39,68,0.05); }
@@ -174,10 +178,7 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
           </a>
           <div class="snl-panel">
             {navCourses.map(c => (
-              <a href={c.href} class={currentPath === c.href ? 'is-current' : ''}>
-                <span class="snl-title">{c.title}{c.badge && <span class={`snl-badge${c.badge === 'Бесплатно' ? ' is-free' : ''}`}>{c.badge}</span>}</span>
-                {c.subtitle && <span class="snl-sub">{c.subtitle}</span>}
-              </a>
+              <a href={c.href} class={currentPath === c.href ? 'is-current' : ''}>{c.title}</a>
             ))}
             <div class="snl-all"><a href="/courses">Все курсы →</a></div>
           </div>
@@ -213,9 +214,13 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
     {links.map(l => (
       <>
         <a href={l.href} class={`smm-link${l.key === active ? ' is-active' : ''}`}>{l.label}</a>
-        {l.key === 'courses' && navCourses.map(c => (
-          <a href={c.href} class={`smm-sub${currentPath === c.href ? ' is-active' : ''}`}>{c.title}</a>
-        ))}
+        {l.key === 'courses' && navCourses.length > 0 && (
+          <div class="smm-group">
+            {navCourses.map(c => (
+              <a href={c.href} class={`smm-sub${currentPath === c.href ? ' is-active' : ''}`}>{c.title}</a>
+            ))}
+          </div>
+        )}
       </>
     ))}
     <div class="smm-divider"></div>
