@@ -35,7 +35,7 @@ const videoLinks: Record<string, { youtube: string; vk: string }> = {
   'sheya':                 { youtube: 'https://youtu.be/WkpJ91SuzMQ', vk: 'https://vkvideo.ru/video-141544391_456239602?list=ln-lJenrW8Aw9WvjKOUph' },
   'zdorovaya-spina':       { youtube: 'https://youtu.be/2SteUTw8W70', vk: 'https://vkvideo.ru/video-141544391_456239603?list=ln-3uhrATQFzcGbPm733E' },
   'stopy':                 { youtube: 'https://youtu.be/YjBP2ZfncGQ', vk: 'https://vkvideo.ru/video-141544391_456239604?list=ln-gWUMLYyhdzuOpH97Ev' },
-  'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/8icidvUi444', vk: 'https://vkvideo.ru/video-141544391_456239605?list=ln-lzKgZrMzUEtSTRxRxZ' },
+  'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/EVL0Ptb80Hk', vk: 'https://vkvideo.ru/video-141544391_456239605?list=ln-lzKgZrMzUEtSTRxRxZ' },
   'meditatsiya':           { youtube: 'https://youtu.be/n__CTTITCzI', vk: 'https://vkvideo.ru/video-141544391_456239606?list=ln-zXzqkZWLYscI6e5vdL' },
   'itogovyy':              { youtube: 'https://youtu.be/YU806LDeie0', vk: 'https://vkvideo.ru/video-141544391_456239607?list=ln-zj1WZXmZgvtVCnakJ1' },
 };
@@ -517,8 +517,9 @@ const lessons = rawLessons.map((l: any, i: number) => {
   </section>
 
   {/* ═══════ VIDEO GRID – превью карточек, без плееров.
-       Сами плееры – в /cabinet/myagkiy-start. По клику на карточку
-       пользователь идёт на отдельную страницу урока с YouTube-плеером. ═══════ */}
+       Сами плееры (свои mp4) – в /cabinet/myagkiy-start.
+       Есть доступ → карточка ведёт к уроку в кабинете.
+       Нет доступа → к блоку регистрации (#get-access), чтобы видео не уходило мимо записи. ═══════ */}
   <section class="ms-course" id="lessons">
     <div class="container" style="max-width:1180px; margin:0 auto; padding:0;">
       <div class="ms-section-label">Уроки курса</div>
@@ -527,7 +528,7 @@ const lessons = rawLessons.map((l: any, i: number) => {
 
       <div class="ms-video-grid">
         {lessons.map(l => {
-          const lessonUrl = `/courses/${slug}/lessons/${l.slug}`;
+          const lessonUrl = enrolled ? `/cabinet/${slug}#${l.slug}` : '#get-access';
           return (
             <a href={lessonUrl} class="ms-video-card" style="text-decoration:none;">
               <div class="ms-video-stub">

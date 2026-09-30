@@ -152,6 +152,10 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 Кастомные страницы кабинета (`cabinet/myagkiy-start.astro`, `cabinet/zdorovaya-spina.astro`) отправляют прогресс просмотра в `POST /api/lessons/{id}/progress`: отметка при play, позиция каждые 30 секунд и на паузе, `completed=true` на 90% просмотра или по окончании видео. `<video>` несёт `data-lesson-id`. До 2026-07-13 трекинг в кабинете отсутствовал — lesson_progress был пуст, прогресс-бары всегда 0%.
 
+## Лендинг «Мягкого старта»: карточки уроков
+
+Сетка карточек «Уроки курса» на `/courses/myagkiy-start` ведёт: с доступом – в `/cabinet/myagkiy-start#<slug>` (свой mp4-плеер), без доступа – к блоку регистрации `#get-access`. Страницы `/courses/myagkiy-start/lessons/<slug>` встраивают YouTube, а CSP (`frame-src` в `nginx/nginx.conf`) его не пропускает – поэтому с лендинга на них больше не ссылаемся.
+
 ## Дожим и удержание
 
 - `/auth/check-email`: кнопка «Письмо не пришло — отправить ещё раз» → POST /api/auth/resend-verification. Такая же кнопка в карточке пользователя админки (для неподтверждённых).
