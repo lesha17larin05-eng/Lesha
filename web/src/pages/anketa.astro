@@ -2,12 +2,12 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { apiJson } from '../lib/api';
 // Анкета перед «Точкой перемен». Ссылка приходит в письме после оплаты:
-// /anketa?o=<заказ>&t=<подпись>. Вопросы и сохранённые ответы – GET /api/anketa.
-const o = Astro.url.searchParams.get('o') || '';
+// /anketa?u=<человек>&t=<подпись> (или ссылка из админки). Вопросы и сохранённые ответы – GET /api/anketa.
+const u = Astro.url.searchParams.get('u') || '';
 const t = Astro.url.searchParams.get('t') || '';
-const q = `?o=${encodeURIComponent(o)}&t=${encodeURIComponent(t)}`;
+const q = `?u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}`;
 let data: any = null;
-if (o && t) {
+if (u && t) {
   const res = await apiJson<any>('/api/anketa' + q);
   if (res.status === 200) data = res.data;
 }
@@ -25,14 +25,14 @@ for (const qq of questions) {
     {!data ? (
       <div>
         <h1>Ссылка не сработала</h1>
-        <p>Похоже, ссылка повреждена или заказ ещё не оплачен. Напишите мне в
+        <p>Похоже, ссылка повреждена – такое бывает, если письмо переслали или адрес обрезался. Напишите мне в
           <a href="https://t.me/larin_lesha" target="_blank" rel="noopener">Телеграм</a> или на
           <a href="mailto:les-larin@yandex.ru">les-larin@yandex.ru</a> – пришлю анкету вручную.</p>
       </div>
     ) : (
       <>
         <div id="anketa-form-wrap">
-          <p class="eyebrow">«Точка перемен» · шаг 1</p>
+          <p class="eyebrow">Перед занятием</p>
           <h1>{data.name ? `${data.name}, пара вопросов перед занятием` : 'Пара вопросов перед занятием'}</h1>
           <p class="lead">Отвечайте своими словами – можно коротко. Чем честнее, тем точнее я соберу план под вас.
             Займёт 5–7 минут. {data.submitted && <b>Вы уже заполняли анкету – можно поправить ответы и отправить снова.</b>}</p>

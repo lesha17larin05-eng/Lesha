@@ -712,7 +712,7 @@ func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
 	if u == nil {
 		return
 	}
-	anketa := a.anketaURL(o.ID)
+	anketa := a.anketaURL(o.UserID)
 	a.Mail.Async(u.Email, "Оплата получена – «Точка перемен»",
 		"<p>Здравствуйте! Оплата получена, спасибо.</p>"+
 			"<p><b>Первый шаг – анкета.</b> 5–7 минут: цель, что беспокоит, опыт и удобное время для занятия. "+

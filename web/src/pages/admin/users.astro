@@ -37,6 +37,19 @@ const user = (Astro.locals as any).user;
   <AdminNav active="users" />
   <section class="container" style="padding:50px 16px;">
     <h1>Пользователи</h1>
+
+    <details class="anketa-new">
+      <summary>Анкета перед занятием для клиента</summary>
+      <p class="muted">Для тех, кто платит напрямую. Если человека ещё нет на сайте – заведём аккаунт по почте
+        (без пароля и без подписки на письма). Ответы придут вам на почту и появятся в его карточке.</p>
+      <form id="anketa-new-form">
+        <input name="name" placeholder="Имя" />
+        <input name="email" type="email" placeholder="Email клиента" required />
+        <button type="submit" data-send="0">Получить ссылку</button>
+        <button type="submit" data-send="1">Отправить письмом</button>
+      </form>
+      <p id="anketa-new-result" class="muted"></p>
+    </details>
     <form method="get" class="users-filters">
       <input class="input" name="search" value={search} placeholder="email, имя или телефон" style="max-width:260px;" />
       <select class="input" name="course" style="width:auto;">
@@ -124,6 +137,37 @@ const user = (Astro.locals as any).user;
           btn.disabled = false; btn.textContent = old;
         }
       });
+    });
+  </script>
+  <style>
+    .anketa-new { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; margin: 10px 0 24px; }
+    .anketa-new summary { cursor: pointer; font-weight: 600; color: var(--navy); }
+    .anketa-new form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .anketa-new input { flex: 1 1 200px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px; font: inherit; }
+    .anketa-new button { border: none; border-radius: 99px; padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer; background: var(--navy); color: #fff; }
+    .anketa-new button[data-send="1"] { background: var(--orange); }
+    #anketa-new-result a { word-break: break-all; }
+  </style>
+  <script>
+    const af = document.getElementById('anketa-new-form') as HTMLFormElement | null;
+    const ar = document.getElementById('anketa-new-result') as HTMLElement | null;
+    af?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const send = ((e as SubmitEvent).submitter as HTMLElement | null)?.dataset.send === '1';
+      const fd = new FormData(af);
+      if (!ar) return;
+      ar.textContent = 'Секунду…';
+      try {
+        const r = await fetch('/api/admin/anketa', { method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: fd.get('email'), name: fd.get('name'), send }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { ar.textContent = d.error === 'bad_email' ? 'Проверьте email' : 'Не получилось: ' + (d.error || r.status); return; }
+        ar.innerHTML = '';
+        ar.append(send ? `Письмо ушло на ${d.email}. Ссылка: ` : 'Ссылка для клиента: ');
+        const a = document.createElement('a'); a.href = d.url; a.textContent = d.url; a.target = '_blank'; ar.append(a);
+        try { await navigator.clipboard.writeText(d.url); ar.append(' (скопирована)'); } catch {}
+        const card = document.createElement('a'); card.href = '/admin/users/' + d.user_id; card.textContent = ' · карточка клиента →'; ar.append(card);
+      } catch { ar.textContent = 'Нет сети'; }
     });
   </script>
 </Base>

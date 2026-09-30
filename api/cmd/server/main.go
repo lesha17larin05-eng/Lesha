@@ -162,6 +162,7 @@ func main() {
 		r.Get("/api/admin/drip", app.AdminDrip)
 		r.Get("/api/admin/sources", app.AdminSources)
 		r.Get("/api/admin/unsubscribes", app.AdminUnsubscribes)
+		r.Post("/api/admin/anketa", app.AdminAnketa)
 		r.Post("/api/admin/drip/test", app.AdminDripTest)
 	})
 

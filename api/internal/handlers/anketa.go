@@ -8,31 +8,32 @@ import (
 	"html"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/leshalarin/api/internal/db"
+	"github.com/leshalarin/api/internal/middleware"
 )
 
 // Анкета перед «Точкой перемен».
 //
-// После оплаты услуги человек получает письмо со ссылкой /anketa?o=<order>&t=<hmac>.
-// Страница берёт вопросы отсюда (GET /api/anketa), ответы уходят POST'ом,
-// сохраняются в questionnaires и приходят Алексею на почту. Заполнить можно
-// повторно – анкета перезапишется. Без галочки согласия на обработку
+// Ссылка /anketa?u=<user>&t=<hmac> – одна на человека. Приходит письмом после
+// оплаты услуги или от Алексея напрямую (админка: карточка пользователя или
+// «Анкета для клиента» по email). Страница берёт вопросы отсюда
+// (GET /api/anketa), ответы уходят POST'ом, сохраняются в questionnaires и
+// приходят Алексею на почту. Заполнить можно повторно – анкета перезапишется. Без галочки согласия на обработку
 // сведений о здоровье (152-ФЗ, особая категория) анкета не принимается.
 
 const anketaPrefix = "anketa:"
 
-func AnketaToken(secret, orderID string) string {
+func AnketaToken(secret, userID string) string {
 	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write([]byte(anketaPrefix + orderID))
+	mac.Write([]byte(anketaPrefix + userID))
 	return hex.EncodeToString(mac.Sum(nil))
 }
 
-func (a *App) anketaURL(orderID uuid.UUID) string {
-	return a.Cfg.AppHost + "/anketa?o=" + orderID.String() + "&t=" + AnketaToken(a.Cfg.JWTSecret, orderID.String())
+func (a *App) anketaURL(userID uuid.UUID) string {
+	return a.Cfg.AppHost + "/anketa?u=" + userID.String() + "&t=" + AnketaToken(a.Cfg.JWTSecret, userID.String())
 }
 
 type anketaQuestion struct {
@@ -75,9 +76,9 @@ var anketaQuestions = []anketaQuestion{
 
 const anketaMaxLen = 3000 // символов на ответ
 
-// anketaOrder – заказ услуги из подписанной ссылки, иначе nil.
-func (a *App) anketaOrder(r *http.Request) *db.Order {
-	id, err := uuid.Parse(r.URL.Query().Get("o"))
+// anketaUser – пользователь из подписанной ссылки, иначе nil.
+func (a *App) anketaUser(r *http.Request) *db.User {
+	id, err := uuid.Parse(r.URL.Query().Get("u"))
 	t := r.URL.Query().Get("t")
 	if err != nil || t == "" {
 		return nil
@@ -85,29 +86,27 @@ func (a *App) anketaOrder(r *http.Request) *db.Order {
 	if !hmac.Equal([]byte(AnketaToken(a.Cfg.JWTSecret, id.String())), []byte(t)) {
 		return nil
 	}
-	o, err := a.Repo.GetOrder(r.Context(), id)
-	if err != nil || o.Service == "" || o.Status != "paid" {
+	u, err := a.Repo.GetUser(r.Context(), id)
+	if err != nil {
 		return nil
 	}
-	return o
+	return u
 }
 
 // GetAnketa – GET /api/anketa?o=&t=: вопросы, имя и уже сохранённые ответы.
 func (a *App) GetAnketa(w http.ResponseWriter, r *http.Request) {
-	o := a.anketaOrder(r)
-	if o == nil {
+	u := a.anketaUser(r)
+	if u == nil {
 		writeErr(w, 400, "invalid_link")
 		return
 	}
 	name := ""
-	if u, err := a.Repo.GetUser(r.Context(), o.UserID); err == nil {
-		if f := strings.Fields(u.Name); len(f) > 0 {
-			name = f[0]
-		}
+	if f := strings.Fields(u.Name); len(f) > 0 {
+		name = f[0]
 	}
 	answers := map[string]string{}
 	submitted := false
-	if q, err := a.Repo.GetQuestionnaire(r.Context(), o.ID); err == nil {
+	if q, err := a.Repo.GetQuestionnaire(r.Context(), u.ID); err == nil {
 		answers, submitted = q.Answers, true
 	}
 	writeJSON(w, 200, map[string]any{
@@ -117,8 +116,8 @@ func (a *App) GetAnketa(w http.ResponseWriter, r *http.Request) {
 
 // SubmitAnketa – POST /api/anketa?o=&t= {answers, consent_health}.
 func (a *App) SubmitAnketa(w http.ResponseWriter, r *http.Request) {
-	o := a.anketaOrder(r)
-	if o == nil {
+	u := a.anketaUser(r)
+	if u == nil {
 		writeErr(w, 400, "invalid_link")
 		return
 	}
@@ -152,30 +151,25 @@ func (a *App) SubmitAnketa(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]any{"error": "required", "missing": missing})
 		return
 	}
-	_, existed := a.Repo.GetQuestionnaire(r.Context(), o.ID)
-	if err := a.Repo.SaveQuestionnaire(r.Context(), o.ID, o.UserID, clean); err != nil {
+	_, existed := a.Repo.GetQuestionnaire(r.Context(), u.ID)
+	if err := a.Repo.SaveQuestionnaire(r.Context(), u.ID, clean); err != nil {
 		slog.Warn("anketa save", "err", err)
 		writeErr(w, 500, "db")
 		return
 	}
-	a.notifyAnketa(r, o, clean, existed == nil)
+	a.notifyAnketa(u, clean, existed == nil)
 	writeJSON(w, 200, map[string]any{"ok": 1})
 }
 
 // notifyAnketa – ответы анкеты Алексею на почту.
-func (a *App) notifyAnketa(r *http.Request, o *db.Order, answers map[string]string, updated bool) {
-	u, err := a.Repo.GetUser(r.Context(), o.UserID)
-	if err != nil {
-		return
-	}
+func (a *App) notifyAnketa(u *db.User, answers map[string]string, updated bool) {
 	subject := "Анкета «Точки перемен»: " + u.Name
 	if updated {
 		subject = "Анкета обновлена: " + u.Name
 	}
 	var sb strings.Builder
 	sb.WriteString(`<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;line-height:1.55;max-width:640px;">`)
-	sb.WriteString(`<p><b>` + html.EscapeString(u.Name) + `</b> &lt;` + html.EscapeString(u.Email) + `&gt; · заказ №` +
-		strconv.FormatInt(o.OrderNum, 10) + `</p>`)
+	sb.WriteString(`<p><b>` + html.EscapeString(u.Name) + `</b> &lt;` + html.EscapeString(u.Email) + `&gt;</p>`)
 	group := ""
 	for _, q := range anketaQuestions {
 		if q.Group != group {
@@ -191,4 +185,75 @@ func (a *App) notifyAnketa(r *http.Request, o *db.Order, answers map[string]stri
 	}
 	sb.WriteString(`<p style="margin-top:24px;"><a href="` + a.Cfg.AppHost + `/admin/users/` + u.ID.String() + `">Карточка в админке →</a></p></div>`)
 	a.Mail.Async(a.Cfg.LeadNotifyEmail, subject, sb.String())
+}
+
+// sendAnketaEmail – письмо человеку со ссылкой на анкету (отправка напрямую из админки).
+func (a *App) sendAnketaEmail(u *db.User) error {
+	greeting := "Здравствуйте!"
+	if f := strings.Fields(u.Name); len(f) > 0 {
+		greeting = "Здравствуйте, " + html.EscapeString(f[0]) + "!"
+	}
+	link := a.anketaURL(u.ID)
+	return a.Mail.Send(u.Email, "Анкета перед занятием",
+		"<p>"+greeting+" Это Алексей Ларин.</p>"+
+			"<p>Перед нашим занятием заполните, пожалуйста, короткую анкету – 5–7 минут: цель, что беспокоит, "+
+			"опыт и удобное время. Так я не буду тратить занятие на расспросы и сразу соберу план под вас.</p>"+
+			`<p><a href="`+link+`" style="display:inline-block;background:#e8652a;color:#fff;text-decoration:none;`+
+			`padding:12px 24px;border-radius:100px;font-weight:600">Заполнить анкету&nbsp;→</a></p>`+
+			"<p>Если что-то непонятно – просто ответьте на это письмо или напишите в "+
+			`<a href="https://t.me/larin_lesha">Телеграм</a>.</p>`+
+			"<p>Алексей Ларин</p>")
+}
+
+// AdminAnketa – POST /api/admin/anketa {user_id? | email + name?, send?}.
+// Ссылка на анкету для любого человека: по id из карточки или по email
+// (если человека ещё нет – заводим «пустой» аккаунт, как при оплате услуги).
+// send=true – ещё и письмо со ссылкой.
+func (a *App) AdminAnketa(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		UserID string `json:"user_id"`
+		Email  string `json:"email"`
+		Name   string `json:"name"`
+		Send   bool   `json:"send"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in); err != nil {
+		writeErr(w, 400, "bad_json")
+		return
+	}
+	var uid uuid.UUID
+	if in.UserID != "" {
+		id, err := uuid.Parse(in.UserID)
+		if err != nil {
+			writeErr(w, 400, "bad_id")
+			return
+		}
+		uid = id
+	} else {
+		email := strings.ToLower(strings.TrimSpace(in.Email))
+		if !strings.Contains(email, "@") || len(email) < 5 || len(email) > 254 {
+			writeErr(w, 400, "bad_email")
+			return
+		}
+		id, err := a.findOrCreateUser(r.Context(), email, strings.TrimSpace(in.Name))
+		if err != nil {
+			writeErr(w, 500, "db")
+			return
+		}
+		uid = id
+	}
+	u, err := a.Repo.GetUser(r.Context(), uid)
+	if err != nil {
+		writeErr(w, 404, "not_found")
+		return
+	}
+	if in.Send {
+		if err := a.sendAnketaEmail(u); err != nil {
+			slog.Warn("anketa email", "to", u.Email, "err", err)
+			writeErr(w, 500, "smtp")
+			return
+		}
+	}
+	adminID, _ := middleware.UserID(r.Context())
+	a.Repo.Audit(r.Context(), adminID, "anketa_link", "user", &u.ID, map[string]any{"sent": in.Send})
+	writeJSON(w, 200, map[string]any{"url": a.anketaURL(u.ID), "user_id": u.ID, "email": u.Email, "sent": in.Send})
 }

@@ -109,6 +109,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Use(mw.RequireAuth, mw.RequireAdmin)
 		r.Get("/api/admin/stats", app.AdminStats)
 		r.Get("/api/admin/sources", app.AdminSources)
+		r.Post("/api/admin/anketa", app.AdminAnketa)
 		r.Patch("/api/admin/settings", app.AdminUpdateSettings)
 		r.Get("/api/admin/activity", app.AdminActivity)
 		r.Get("/api/admin/email-opens", app.AdminEmailOpens)
@@ -2620,8 +2621,9 @@ func TestTrafficSource(t *testing.T) {
 	}
 }
 
-// TestAnketa – анкета «Точки перемен»: только по подписанной ссылке на
-// оплаченный заказ услуги, с согласием на данные о здоровье и обязательными полями.
+// TestAnketa – анкета «Точки перемен»: одна на человека, только по подписанной
+// ссылке, с согласием на данные о здоровье и обязательными полями; админ
+// получает ссылку для любого человека (в т.ч. нового – по email).
 func TestAnketa(t *testing.T) {
 	srv, repo, cfg := setup(t)
 	ctx := context.Background()
@@ -2629,21 +2631,10 @@ func TestAnketa(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	o, err := repo.CreateServiceOrder(ctx, uid, "start", 2990)
-	if err != nil {
-		t.Fatal(err)
-	}
-	q := "?o=" + o.ID.String() + "&t=" + handlers.AnketaToken(cfg.JWTSecret, o.ID.String())
+	q := "?u=" + uid.String() + "&t=" + handlers.AnketaToken(cfg.JWTSecret, uid.String())
 	c := newClient(srv)
 
-	// заказ ещё не оплачен – ссылка не работает
-	if r, _ := c.do("GET", "/api/anketa"+q, nil); r.StatusCode != 400 {
-		t.Fatalf("unpaid order: %d", r.StatusCode)
-	}
-	if err := repo.MarkOrderPaid(ctx, o.ID, "p1"); err != nil {
-		t.Fatal(err)
-	}
-	if r, _ := c.do("GET", "/api/anketa?o="+o.ID.String()+"&t=deadbeef", nil); r.StatusCode != 400 {
+	if r, _ := c.do("GET", "/api/anketa?u="+uid.String()+"&t=deadbeef", nil); r.StatusCode != 400 {
 		t.Fatalf("bad token: %d", r.StatusCode)
 	}
 	r, body := c.do("GET", "/api/anketa"+q, nil)
@@ -2651,11 +2642,11 @@ func TestAnketa(t *testing.T) {
 		t.Fatalf("get: %d %s", r.StatusCode, body)
 	}
 	full := map[string]string{"goal": "спина", "activity": "почти ничего", "time": "3 раза по 30 минут", "slots": "пн вечер", "limits": "нет"}
-	// без согласия на данные о здоровье – нельзя
-	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": full}); r.StatusCode != 400 || !strings.Contains(string(body), "consent_health_required") {
+	// без согласия – нельзя, и сразу видно, что ещё не заполнено
+	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": map[string]string{"goal": "x"}}); r.StatusCode != 400 ||
+		!strings.Contains(string(body), "consent_health_required") || !strings.Contains(string(body), `"slots"`) {
 		t.Fatalf("no consent: %d %s", r.StatusCode, body)
 	}
-	// пропущено обязательное
 	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": map[string]string{"goal": "x"}, "consent_health": true}); r.StatusCode != 400 || !strings.Contains(string(body), `"slots"`) {
 		t.Fatalf("missing: %d %s", r.StatusCode, body)
 	}
@@ -2663,15 +2654,35 @@ func TestAnketa(t *testing.T) {
 	if r, body := c.do("POST", "/api/anketa"+q, map[string]any{"answers": full, "consent_health": true}); r.StatusCode != 200 {
 		t.Fatalf("submit: %d %s", r.StatusCode, body)
 	}
-	saved, err := repo.GetQuestionnaire(ctx, o.ID)
+	saved, err := repo.GetQuestionnaire(ctx, uid)
 	if err != nil || saved.Answers["goal"] != "спина" || saved.Answers["unknown"] != "" {
 		t.Fatalf("saved: %+v %v", saved, err)
 	}
-	// повторная отправка перезаписывает, GET показывает ответы
 	full["goal"] = "вес"
 	c.do("POST", "/api/anketa"+q, map[string]any{"answers": full, "consent_health": true})
-	r, body = c.do("GET", "/api/anketa"+q, nil)
+	_, body = c.do("GET", "/api/anketa"+q, nil)
 	if !strings.Contains(string(body), `"goal":"вес"`) || !strings.Contains(string(body), `"submitted":true`) {
 		t.Fatalf("resubmit: %s", body)
+	}
+
+	// админка: ссылка для любого человека
+	if r, _ := newClient(srv).do("POST", "/api/admin/anketa", map[string]any{"email": "new@b.ru"}); r.StatusCode != 401 && r.StatusCode != 403 {
+		t.Fatalf("anon admin anketa: %d", r.StatusCode)
+	}
+	adm := adminClient(t, srv, repo)
+	r, body = adm.do("POST", "/api/admin/anketa", map[string]any{"email": " New@B.ru ", "name": "Пётр"})
+	if r.StatusCode != 200 || !strings.Contains(string(body), "/anketa?u=") {
+		t.Fatalf("admin by email: %d %s", r.StatusCode, body)
+	}
+	nu, err := repo.GetUserByEmail(ctx, "new@b.ru")
+	if err != nil || nu.Name != "Пётр" {
+		t.Fatalf("new user not created: %v", err)
+	}
+	r, body = adm.do("POST", "/api/admin/anketa", map[string]any{"user_id": uid.String(), "send": true})
+	if r.StatusCode != 200 || !strings.Contains(string(body), handlers.AnketaToken(cfg.JWTSecret, uid.String())) {
+		t.Fatalf("admin by id: %d %s", r.StatusCode, body)
+	}
+	if r, _ := adm.do("POST", "/api/admin/anketa", map[string]any{"email": "nope"}); r.StatusCode != 400 {
+		t.Fatalf("bad email: %d", r.StatusCode)
 	}
 }

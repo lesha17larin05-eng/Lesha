@@ -12,7 +12,7 @@ if (status !== 200 || !data?.user) {
 const u = data.user;
 const courses = Array.isArray(data.courses) ? data.courses : [];
 const orders = Array.isArray(data.orders) ? data.orders : [];
-const ankety: any[] = Array.isArray(data.ankety) ? data.ankety : [];
+const anketa: any = data.anketa || null;
 const me = (Astro.locals as any).user;
 
 const fmt = (iso?: string | null, withTime = true) => {
@@ -129,19 +129,23 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
         </table>
     }
 
-    {ankety.length > 0 && (
+    {anketa && (
       <>
-        <h2 style="margin-top:36px;">Анкета «Точки перемен»</h2>
-        {ankety.map((a: any) => (
-          <div class="anketa-card">
-            <p class="muted">Заказ №{a.order_num} · {a.submitted_at ? `заполнена ${fmt(a.submitted_at)}` : 'ещё не заполнена'}
-              · <a href={a.url} target="_blank" rel="noopener">ссылка на анкету</a>
-              <button type="button" class="copy-anketa" data-url={a.url}>скопировать</button></p>
-            {Array.isArray(a.items) && a.items.map((it: any) => (
-              <div class="anketa-item"><div class="muted">{it.label}</div><div class="anketa-answer">{it.answer}</div></div>
-            ))}
+        <h2 style="margin-top:36px;">Анкета перед занятием</h2>
+        <div class="anketa-card" data-user={u.id}>
+          <p class="muted">{anketa.submitted_at
+              ? `Заполнена ${fmt(anketa.submitted_at)}${anketa.updated_at && anketa.updated_at !== anketa.submitted_at ? `, обновлена ${fmt(anketa.updated_at)}` : ''}`
+              : 'Ещё не заполнена'}</p>
+          <div class="anketa-actions">
+            <a href={anketa.url} target="_blank" rel="noopener">открыть анкету</a>
+            <button type="button" class="copy-anketa" data-url={anketa.url}>скопировать ссылку</button>
+            <button type="button" class="send-anketa">отправить на почту {u.email}</button>
+            <span class="send-note muted"></span>
           </div>
-        ))}
+          {Array.isArray(anketa.items) && anketa.items.map((it: any) => (
+            <div class="anketa-item"><div class="muted">{it.label}</div><div class="anketa-answer">{it.answer}</div></div>
+          ))}
+        </div>
       </>
     )}
   </section>
@@ -149,11 +153,23 @@ const mins = (sec: number) => (sec ? Math.round(sec / 60) + ' мин' : '');
     .anketa-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-top: 12px; }
     .anketa-item { margin-top: 12px; }
     .anketa-answer { white-space: pre-wrap; line-height: 1.55; }
-    .copy-anketa { background: none; border: 1px solid var(--border); border-radius: 99px; padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; margin-left: 6px; }
+    .anketa-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .copy-anketa, .send-anketa { background: none; border: 1px solid var(--border); border-radius: 99px; padding: 2px 10px; font: inherit; font-size: 13px; cursor: pointer; margin-left: 6px; }
   </style>
   <script>
     document.querySelectorAll<HTMLButtonElement>('.copy-anketa').forEach((b) => b.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(b.dataset.url || ''); b.textContent = 'скопировано ✓'; } catch { b.textContent = 'не вышло'; }
+    }));
+    document.querySelectorAll<HTMLButtonElement>('.send-anketa').forEach((b) => b.addEventListener('click', async () => {
+      const card = b.closest('.anketa-card') as HTMLElement;
+      const note = card.querySelector('.send-note') as HTMLElement;
+      b.disabled = true; note.textContent = 'отправляем…';
+      try {
+        const r = await fetch('/api/admin/anketa', { method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ user_id: card.dataset.user, send: true }) });
+        note.textContent = r.ok ? 'письмо отправлено ✓' : 'не получилось';
+      } catch { note.textContent = 'нет сети'; }
+      finally { b.disabled = false; }
     }));
   </script>
   <style>
