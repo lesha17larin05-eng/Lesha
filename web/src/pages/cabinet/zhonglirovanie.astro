@@ -26,6 +26,19 @@ function lessonTag(slug: string, n: number): { label: string; color: string; bg:
   return { label: `Шаг ${n}`, color: '#1A2744', bg: 'rgba(26,39,68,0.08)' };
 }
 
+// Резервные ссылки на YouTube/VK для каждого урока – кнопки под плеером
+// (удобно смотреть с телефона или Smart TV). Пустая строка – кнопки нет.
+const videoLinks: Record<string, { youtube: string; vk: string }> = {
+  'znakomstvo':       { youtube: '', vk: '' },
+  'odin-myach':       { youtube: '', vk: '' },
+  'dva-myacha':       { youtube: '', vk: '' },
+  'dva-v-odnoy-ruke': { youtube: '', vk: '' },
+  'tri-broska':       { youtube: '', vk: '' },
+  'bez-ostanovki':    { youtube: '', vk: '' },
+  'cel-30-sekund':    { youtube: '', vk: '' },
+  'chto-dalshe':      { youtube: '', vk: '' },
+};
+
 const tgHref = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Прохожу курс по жонглированию. ');
 ---
 <SiteLayout title="Жонглирование: у вас получится – уроки курса" active="courses" padTop={true} noindex={true}>
@@ -180,6 +193,25 @@ const tgHref = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здрав
     .zs-cab-intro a { color: var(--orange); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(232,101,42,0.3); transition: border-color .2s; }
     .zs-cab-intro a:hover, .zs-cab-intro a:focus-visible { border-bottom-color: var(--orange); outline: none; }
 
+    /* Platform buttons (YouTube/VK) */
+    .zs-cab-platforms {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      padding: 0 28px 24px;
+    }
+    .zs-cab-platform {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 16px; border-radius: 100px;
+      font-size: 14px; font-weight: 600; color: white;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .2s;
+    }
+    .zs-cab-platform--yt { background: #ff0000; }
+    .zs-cab-platform--vk { background: #0077ff; }
+    @media (hover: hover) {
+      .zs-cab-platform:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+    }
+    .zs-cab-platform svg { width: 16px; height: 16px; }
+
     /* ─── FEEDBACK ─── */
     .zs-cab-feedback {
       margin-top: 56px;
@@ -241,6 +273,7 @@ const tgHref = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здрав
         {lessons.map((l: any, i: number) => {
           const tag = lessonTag(l.slug, i);
           const mp4Url = `/lesson-videos/zhonglirovanie/${l.slug}.mp4#t=0.5`;
+          const v = videoLinks[l.slug] ?? { youtube: '', vk: '' };
           return (
             <article class="zs-cab-lesson" id={l.slug}>
               <div class="zs-cab-lesson-head">
@@ -261,6 +294,22 @@ const tgHref = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здрав
                   Видео скоро появится
                 </div>
               </div>
+              {(v.youtube || v.vk) && (
+                <div class="zs-cab-platforms">
+                  {v.youtube && (
+                    <a href={v.youtube} target="_blank" rel="noopener" class="zs-cab-platform zs-cab-platform--yt">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+                      YouTube
+                    </a>
+                  )}
+                  {v.vk && (
+                    <a href={v.vk} target="_blank" rel="noopener" class="zs-cab-platform zs-cab-platform--vk">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
+                      ВКонтакте
+                    </a>
+                  )}
+                </div>
+              )}
             </article>
           );
         })}
