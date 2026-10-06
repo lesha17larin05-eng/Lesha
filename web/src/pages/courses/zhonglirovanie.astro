@@ -4,9 +4,11 @@ import { extractLegacy } from '../../lib/legacy';
 import rawHtml from '../../legacy/zhonglirovanie.html?raw';
 import { apiJson } from '../../lib/api';
 
-// Лендинг курса «Жонглирование: у вас получится». Логика покупки – как у
-// «Здоровой спины»: тарифы self/support → регистрация во всплывающем окне →
-// POST /api/courses/zhonglirovanie/checkout → Продамус.
+// Лендинг курса «Жонглирование: у вас получится».
+// Покупка в один шаг: кнопка тарифа → окно «имя + почта + согласие» →
+// POST /api/courses/zhonglirovanie/quick-checkout → Продамус (без пароля и
+// подтверждения почты; залогиненный покупает сразу). Стартовая цена тарифа
+// приходит из API (поле tariffs) и подставляется в разметку здесь, на SSR.
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const user = (Astro.locals as any).user;
@@ -21,7 +23,28 @@ if (status !== 200 && !isAdmin) {
 const enrolled = status === 200 && !!data?.enrolled;
 const isDraft = status !== 200;
 
-const { styles, body } = extractLegacy(rawHtml);
+const { styles, body: rawBody } = extractLegacy(rawHtml);
+
+// ─── Стартовая цена (акция со сроком) ─────────────────────────────
+const fmtRub = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const tariffs: Record<string, { price: number; base_price: number; promo_until?: string }> = data?.tariffs || {};
+const self = tariffs.self;
+const promoUntil = self?.promo_until || null;
+// Последний день акции по Москве (promo_until – полночь следующего дня).
+const promoLastDay = promoUntil
+  ? new Date(new Date(promoUntil).getTime() - 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' })
+  : '';
+let body = rawBody;
+if (self && promoUntil) {
+  const base = fmtRub(self.base_price), now = fmtRub(self.price);
+  body = body
+    .replace(`<div class="tariff-price">${base}<small>₽</small></div>`,
+      `<div class="tariff-price"><span class="tp-old">${base} ₽</span>${now}<small>₽</small></div>` +
+      `<div class="tp-promo">Стартовая цена до ${promoLastDay} · осталось <b data-countdown>…</b></div>`)
+    .replace(`Купить за ${base} ₽`, `Купить за ${now} ₽`)
+    .replace('<span class="hero-safety">',
+      `<span class="hero-promo">Старт продаж: <b>${now} ₽</b> вместо ${base} ₽ до ${promoLastDay}</span><span class="hero-safety">`);
+}
 
 // FAQPage JSON-LD – собирается из FAQ прямо на странице (rich snippet в поиске).
 const stripTags = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -47,7 +70,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
   {isDraft && <div class="tm-draft-bar">Черновик: курс не опубликован – страницу видите только вы (админ). Опубликовать – в /admin/courses.</div>}
   {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
   <Fragment set:html={body} />
-  <script define:vars={{ enrolled, isLoggedIn: !!user }}>
+  <script define:vars={{ enrolled, isLoggedIn: !!user, promoUntil }}>
     if (enrolled) {
       const eyebrow = document.querySelector('.eyebrow-text');
       if (eyebrow) eyebrow.textContent = 'Доступ открыт · 8 видеоуроков · онлайн';
@@ -61,267 +84,147 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
         btn.setAttribute('href', '/cabinet/zhonglirovanie');
       }
 
-      const safety = document.querySelector('.hero-safety');
-      if (safety) safety.style.display = 'none';
-
+      ['.hero-safety', '.hero-promo'].forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) el.style.display = 'none';
+      });
       ['#tariffs', '.final-cta', '.guarantee-faq'].forEach(sel => {
         const el = document.querySelector(sel);
         if (el) el.style.display = 'none';
       });
     }
 
-    // ─── Inline auth modal: регистрация/вход без перехода на /auth/* ─────
-    let _pendingTariff = null;
+    // ─── Отсчёт до конца стартовой цены ───────────────────────────
+    if (promoUntil) {
+      const end = new Date(promoUntil).getTime();
+      const els = document.querySelectorAll('[data-countdown]');
+      const pad = (n) => String(n).padStart(2, '0');
+      const tick = () => {
+        const left = Math.max(0, end - Date.now());
+        if (left === 0) { location.reload(); return; }
+        const d = Math.floor(left / 86400000);
+        const h = Math.floor(left / 3600000) % 24;
+        const m = Math.floor(left / 60000) % 60;
+        const s = Math.floor(left / 1000) % 60;
+        const text = (d > 0 ? d + ' дн ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s);
+        els.forEach((el) => { el.textContent = text; });
+      };
+      tick();
+      setInterval(tick, 1000);
+    }
 
-    function openAuthModal(tariff, mode) {
-      _pendingTariff = tariff;
-      if (document.getElementById('zs-auth-modal')) {
-        switchAuthMode(mode || 'register');
-        return;
-      }
+    // ─── Покупка в один шаг ───────────────────────────────────────
+    // Залогиненный – сразу на оплату. Остальным – окно «имя + почта».
+    const ERRORS = {
+      bad_email: 'Проверьте адрес почты.',
+      name_required: 'Укажите имя.',
+      consent_pd_required: 'Чтобы продолжить, отметьте согласие.',
+      bad_tariff: 'Неизвестный тариф. Обновите страницу.',
+    };
+
+    async function quickCheckout(payload) {
+      const r = await fetch('/api/courses/zhonglirovanie/quick-checkout', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json().catch(() => ({}));
+      return { ok: r.ok && !!j.payment_url, status: r.status, data: j };
+    }
+
+    function goPay(url) {
+      window.reachGoal?.('checkout_start');
+      window.location.href = url;
+    }
+
+    function openBuyModal(tariff, label, priceText) {
+      document.getElementById('zs-auth-modal')?.remove();
       const wrap = document.createElement('div');
       wrap.id = 'zs-auth-modal';
       wrap.innerHTML = `
         <div class="zs-modal-back" data-close></div>
         <div class="zs-modal-card" role="dialog" aria-modal="true" aria-labelledby="zs-modal-title">
           <button class="zs-modal-close" data-close aria-label="Закрыть">×</button>
-
-          <div data-mode="register">
-            <h3 id="zs-modal-title">Регистрация</h3>
-            <p class="zs-modal-switch">Уже есть аккаунт? <a href="#" data-switch="login">Войти</a></p>
-            <form class="zs-form" data-form="register" novalidate>
-              <label><span class="zs-lbl">Имя <i class="zs-req">*</i></span><input name="name" required autocomplete="name" /></label>
-              <label><span class="zs-lbl">Email <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" /></label>
-              <label><span class="zs-lbl">Телефон</span><input name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" /></label>
-              <label><span class="zs-lbl">Пароль <em class="zs-opt">минимум 8 символов</em> <i class="zs-req">*</i></span><input name="password" type="password" required minlength="8" autocomplete="new-password" /></label>
-              <label class="zs-check">
-                <input type="checkbox" name="consent_pd" required checked />
-                <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
-              </label>
-              <label class="zs-check">
-                <input type="checkbox" name="consent_marketing" checked />
-                <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом.</span>
-              </label>
-              <button class="zs-submit" type="submit">Создать аккаунт</button>
-              <div class="zs-msg" hidden></div>
-            </form>
-          </div>
-
-          <div data-mode="login" hidden>
-            <h3>Вход</h3>
-            <p class="zs-modal-switch">Нет аккаунта? <a href="#" data-switch="register">Зарегистрироваться</a></p>
-            <form class="zs-form" data-form="login" novalidate>
-              <label><span class="zs-lbl">Email <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" /></label>
-              <label><span class="zs-lbl">Пароль <i class="zs-req">*</i></span><input name="password" type="password" required autocomplete="current-password" /></label>
-              <button class="zs-submit" type="submit">Войти и продолжить</button>
-              <p class="zs-forgot"><a href="/auth/forgot">Забыли пароль?</a></p>
-              <div class="zs-msg" hidden></div>
-            </form>
-          </div>
-        </div>
-      `;
+          <h3 id="zs-modal-title">${label}</h3>
+          <p class="zs-modal-switch">${priceText}. Доступ к урокам откроется сразу после оплаты, ссылка для входа придёт на почту.</p>
+          <form class="zs-form" novalidate>
+            <label><span class="zs-lbl">Имя <i class="zs-req">*</i></span><input name="name" required autocomplete="name" /></label>
+            <label><span class="zs-lbl">Почта <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" inputmode="email" /></label>
+            <label class="zs-check">
+              <input type="checkbox" name="consent_pd" required />
+              <span>Даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/legal/offer" target="_blank">оферту</a>.</span>
+            </label>
+            <button class="zs-submit" type="submit">Перейти к оплате</button>
+            <div class="zs-msg" hidden></div>
+          </form>
+        </div>`;
       document.body.appendChild(wrap);
       document.body.style.overflow = 'hidden';
-
-      const close = () => {
-        wrap.remove();
-        document.body.style.overflow = '';
-        _pendingTariff = null;
-      };
-      wrap.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close));
-      wrap.querySelectorAll('[data-switch]').forEach(el => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          switchAuthMode(el.getAttribute('data-switch'));
-        });
-      });
+      const close = () => { wrap.remove(); document.body.style.overflow = ''; };
+      wrap.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
       document.addEventListener('keydown', function onEsc(e) {
         if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
       });
-
-      wrap.querySelector('[data-form="register"]').addEventListener('submit', handleRegister);
-      wrap.querySelector('[data-form="login"]').addEventListener('submit', handleLogin);
-
-      switchAuthMode(mode || 'register');
-      setTimeout(() => {
-        const firstInput = wrap.querySelector('[data-mode="register"]:not([hidden]) input[name="email"], [data-mode="login"]:not([hidden]) input[name="email"]');
-        if (firstInput) firstInput.focus();
-      }, 50);
-    }
-
-    function switchAuthMode(mode) {
-      const wrap = document.getElementById('zs-auth-modal');
-      if (!wrap) return;
-      wrap.querySelectorAll('[data-mode]').forEach(el => {
-        el.hidden = el.getAttribute('data-mode') !== mode;
-      });
-      const titleEl = wrap.querySelector('#zs-modal-title');
-      if (titleEl) titleEl.textContent = mode === 'login' ? 'Вход' : 'Регистрация';
-      const focusInput = wrap.querySelector(`[data-mode="${mode}"] input[name="email"]`);
-      if (focusInput) focusInput.focus();
-    }
-
-    function setSubmitState(form, busy, busyLabel) {
-      const btn = form.querySelector('.zs-submit');
-      if (!btn) return;
-      if (busy) {
-        btn.dataset.orig = btn.textContent;
-        btn.textContent = busyLabel || 'Подождите…';
-        btn.disabled = true;
-      } else {
-        if (btn.dataset.orig) btn.textContent = btn.dataset.orig;
-        btn.disabled = false;
-      }
-    }
-
-    function showMsg(form, text, ok) {
-      const m = form.querySelector('.zs-msg');
-      if (!m) return;
-      m.textContent = text;
-      m.className = 'zs-msg ' + (ok ? 'is-ok' : 'is-err');
-      m.hidden = false;
-    }
-
-    async function handleRegister(e) {
-      e.preventDefault();
-      const form = e.target;
-      const fd = new FormData(form);
-      if (!String(fd.get('name') || '').trim()) {
-        showMsg(form, 'Укажите имя – обращаемся к вам в кабинете и в письмах.', false);
-        return;
-      }
-      if (!fd.get('consent_pd')) {
-        showMsg(form, 'Чтобы продолжить, нужно согласиться с обработкой персональных данных.', false);
-        return;
-      }
-      setSubmitState(form, true, 'Создаём аккаунт…');
-      try {
-        const r = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            email: fd.get('email'),
-            password: fd.get('password'),
-            name: fd.get('name'),
-            phone: fd.get('phone'),
-            consent_pd: true,
-            consent_marketing: !!fd.get('consent_marketing'),
-          }),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok) {
-          showMsg(form, 'Аккаунт создан. Мы отправили письмо на ' + fd.get('email') + ' – подтвердите email по ссылке в письме, и оплата откроется автоматически.', true);
-          form.querySelector('.zs-submit').style.display = 'none';
-        } else {
-          showMsg(form, j.error === 'email_taken'
-            ? 'Этот email уже зарегистрирован. Войдите по ссылке выше.'
-            : (j.error || 'Не удалось создать аккаунт.'), false);
-        }
-      } catch {
-        showMsg(form, 'Ошибка соединения. Попробуйте ещё раз.', false);
-      } finally {
-        setSubmitState(form, false);
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const form = e.target;
-      const fd = new FormData(form);
-      setSubmitState(form, true, 'Входим…');
-      try {
-        const r = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok) {
-          // Перезагружаем страницу с tariff=… – autoTariff-логика ниже сама запустит checkout
-          const tariff = _pendingTariff;
-          if (tariff) {
-            location.href = '/courses/zhonglirovanie?tariff=' + encodeURIComponent(tariff);
+      const form = wrap.querySelector('form');
+      const msg = wrap.querySelector('.zs-msg');
+      const btn = wrap.querySelector('.zs-submit');
+      const say = (html, ok) => { msg.innerHTML = html; msg.className = 'zs-msg ' + (ok ? 'is-ok' : 'is-err'); msg.hidden = false; };
+      setTimeout(() => wrap.querySelector('input[name="name"]')?.focus(), 50);
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const name = String(fd.get('name') || '').trim();
+        const email = String(fd.get('email') || '').trim();
+        if (!name) return say(ERRORS.name_required);
+        if (!email.includes('@') || !email.includes('.')) return say(ERRORS.bad_email);
+        if (!fd.get('consent_pd')) return say(ERRORS.consent_pd_required);
+        btn.disabled = true; btn.textContent = 'Открываю оплату…';
+        try {
+          const res = await quickCheckout({ tariff, name, email, consent_pd: true });
+          if (res.ok) return goPay(res.data.payment_url);
+          if (res.data.error === 'already_enrolled') {
+            say('У этого адреса уже есть доступ к курсу. <a href="/auth/login?next=/cabinet/zhonglirovanie">Войдите</a>, чтобы перейти к урокам.');
           } else {
-            location.reload();
+            say(ERRORS[res.data.error] || 'Не получилось открыть оплату. Напишите мне в Телеграм @larin_lesha – разберёмся.');
           }
-        } else if (j.error === 'email_not_verified') {
-          showMsg(form, 'Email не подтверждён. Проверьте почту и пройдите по ссылке из письма.', false);
-        } else {
-          showMsg(form, j.error === 'invalid_credentials' || j.error === 'bad_credentials'
-            ? 'Неверный email или пароль.' : (j.error || 'Не удалось войти.'), false);
+        } catch {
+          say('Ошибка соединения. Попробуйте ещё раз.');
         }
-      } catch {
-        showMsg(form, 'Ошибка соединения. Попробуйте ещё раз.', false);
-      } finally {
-        setSubmitState(form, false);
-      }
-    }
-
-    // ─── Tariff buttons → POST /checkout → редирект на Продамус ─────────
-    async function startCheckout(tariff) {
-      // незалогиненный юзер: открываем inline-форму регистрации (с переключением на вход)
-      if (!isLoggedIn) {
-        openAuthModal(tariff, 'register');
-        return;
-      }
-      const r = await fetch('/api/courses/zhonglirovanie/checkout?tariff=' + encodeURIComponent(tariff), {
-        method: 'POST',
+        btn.disabled = false; btn.textContent = 'Перейти к оплате';
       });
-      const data = await r.json().catch(() => ({}));
-      if (r.ok && data.payment_url) {
-        window.reachGoal?.('checkout_start');
-        window.location.href = data.payment_url;
-        return;
-      }
-      switch (data.error) {
-        case 'email_not_verified':
-          alert('Перед оплатой подтвердите email – ссылка отправлена в письме после регистрации.');
-          break;
-        case 'already_enrolled':
-          window.location.href = '/cabinet/zhonglirovanie';
-          break;
-        case 'bad_tariff':
-        case 'tariff_required':
-          alert('Неизвестный тариф. Обновите страницу и попробуйте снова.');
-          break;
-        default:
-          alert('Не удалось создать платёж. Попробуйте позже или напишите в Telegram @larin_lesha.');
-      }
     }
 
     document.querySelectorAll('[data-tariff]').forEach((el) => {
-      el.addEventListener('click', (e) => {
+      el.addEventListener('click', async (e) => {
         e.preventDefault();
-        const key = el.getAttribute('data-tariff');
-        if (key !== 'self' && key !== 'support') return;
-        const origLabel = el.textContent;
+        const tariff = el.getAttribute('data-tariff');
+        const card = el.closest('.tariff-card');
+        const label = card?.querySelector('.tariff-name')?.textContent?.trim() || 'Курс';
+        const priceText = (el.textContent || '').replace('Купить за', 'Стоимость').trim();
+        if (!isLoggedIn) { openBuyModal(tariff, 'Тариф «' + label.charAt(0) + label.slice(1).toLowerCase() + '»', priceText); return; }
+        const orig = el.textContent;
         el.style.pointerEvents = 'none';
         el.textContent = 'Открываю оплату…';
-        startCheckout(key)
-          .catch(() => alert('Ошибка соединения. Попробуйте ещё раз.'))
-          .finally(() => {
-            el.style.pointerEvents = '';
-            el.textContent = origLabel;
-          });
+        try {
+          const res = await quickCheckout({ tariff });
+          if (res.ok) return goPay(res.data.payment_url);
+          if (res.data.error === 'already_enrolled') { window.location.href = '/cabinet/zhonglirovanie'; return; }
+          alert('Не получилось открыть оплату. Напишите мне в Телеграм @larin_lesha – разберёмся.');
+        } catch {
+          alert('Ошибка соединения. Попробуйте ещё раз.');
+        }
+        el.style.pointerEvents = '';
+        el.textContent = orig;
       });
     });
-
-    // Если страница открыта с ?tariff=... и юзер залогинен – автозапуск чекаута.
-    // Это срабатывает после регистрации (мы редиректим обратно на эту URL).
-    const _q = new URLSearchParams(window.location.search);
-    const _autoTariff = _q.get('tariff');
-    if (_autoTariff && isLoggedIn && !enrolled) {
-      history.replaceState({}, '', window.location.pathname);
-      // Ждём DOMContentLoaded: к этому моменту выполнен модульный скрипт
-      // SiteLayout с fetch-обёрткой, которая ставит X-CSRF-Token. Без ожидания
-      // inline-скрипт стрелял раньше обёртки → 403 и «Не удалось создать платёж».
-      const _run = () => startCheckout(_autoTariff).catch(() => alert('Ошибка соединения. Попробуйте ещё раз.'));
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _run, { once: true });
-      else _run();
-    }
-
   </script>
   <style is:global>
+    .tp-old { font-family: 'Manrope', sans-serif; font-size: 22px; color: rgba(255,255,255,0.55); text-decoration: line-through; margin-right: 12px; vertical-align: middle; }
+    .tp-promo { display: inline-block; margin: 4px 0 18px; padding: 6px 12px; border-radius: 100px; background: rgba(232,101,42,0.18); color: #ffb48a; font-size: 14px; font-weight: 600; }
+    .tp-promo b { color: #fff; font-variant-numeric: tabular-nums; }
+    .hero-promo { display: inline-block; font-size: 16px; color: #ffb48a; }
+    .hero-promo b { color: #fff; }
     .tm-draft-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 200; background: #fff3cd; color: #6b4e00; border-top: 1px solid #f0d98a; padding: 10px 20px; font-size: 14px; text-align: center; }
     #zs-auth-modal {
       position: fixed; inset: 0; z-index: 1000;

@@ -8,6 +8,10 @@
 
 `POST /api/courses/{slug}/checkout[?tariff=...]`:
 1. Если курс есть в `tariffPresets` (мапа в `handlers/payments.go`) — обязательно нужен `?tariff=<key>`. Без него → 400 `tariff_required`, с неизвестным → 400 `bad_tariff`. Цена и имя товара берутся из пресета. Для остальных платных курсов используется `courses.price_rub` / `courses.title`. Сейчас в пресетах: `zdorovaya-spina` → `self` (3990 ₽) и `support` (12990 ₽); `zhonglirovanie` → `self` (1490 ₽) и `support` (3990 ₽, «С разбором»). После оплаты любого тарифа юзер получает enrollment в один и тот же курс; «поддержка» и «разбор видео» — внешние услуги (Телеграм с Алексеем), не привязаны к коду.
+
+**Акция с дедлайном.** У пресета могут быть `PromoPriceRub` и `PromoUntil`: до этого момента `tariffPreset.current()` отдаёт акционную цену (и в checkout, и в quick-checkout, и в `tariffs` у `GET /api/courses/{slug}`). Сейчас: `zhonglirovanie/self` – 990 ₽ до конца 18.10.2026 по Москве (`PromoUntil` = 19.10 00:00 MSK), потом сама вернётся к 1490 ₽. Лендинг показывает старую цену зачёркнутой и таймер. Время в тестах подменяется `handlers.SetNowForTest`.
+
+**Покупка в один шаг** (`POST /api/courses/{slug}/quick-checkout`): имя + почта + согласие → аккаунт находится/создаётся по почте → заказ → Продамус. `urlSuccess` – `/kurs-oplachen?course=<slug>`. В письме вебхука об оплате курса, кроме ссылки на кабинет, есть ссылка «задать пароль» (reset-токен на 7 дней): по ней человек задаёт пароль и сразу оказывается залогинен.
    Черновик курса (`is_published=false`) обычный пользователь купить не может → 404 `not_found`; админ может (проверка оплаты до запуска).
 2. Проверяем `email_verified_at != NULL`. Если нет → 400 `email_not_verified`.
 3. Проверяем нет ли уже enrollment → 400 `already_enrolled`.
@@ -103,6 +107,8 @@ Handler в `payments.go::ProdamusWebhook`:
 Кабинеты `/cabinet/zdorovaya-spina` и `/cabinet/zhonglirovanie` берут видео не из HLS-пайплайна, а готовыми mp4: `/lesson-videos/<course-slug>/<lesson-slug>.mp4`. Файлы лежат на сервере в `/root/data/videos/<course-slug>/` и загружаются вручную через scp (в git не попадают).
 
 Для каждого платного курса в `nginx/nginx.conf` нужен **отдельный** `location /lesson-videos/<slug>/` с `auth_request /_lesson_mp4_auth` (Go-хендлер `LessonMp4Auth` проверяет enrollment). Без него файлы уйдут через открытый `location /lesson-videos/` для бесплатных курсов. Сейчас защищены: `zdorovaya-spina`, `zhonglirovanie`.
+
+Промо-видео для лендингов – открытая папка `/root/data/videos/promo/` (отдаётся общим `location /lesson-videos/`). Сейчас там `zhonglirovanie-znakomstvo.mp4` – копия урока «Знакомство с курсом» для блока «Первый урок – бесплатно».
 
 Имена файлов курса жонглирования (`/root/data/videos/zhonglirovanie/`): `znakomstvo.mp4`, `odin-myach.mp4`, `dva-myacha.mp4`, `dva-v-odnoy-ruke.mp4`, `tri-broska.mp4`, `bez-ostanovki.mp4`, `cel-30-sekund.mp4`, `chto-dalshe.mp4`.
 Пока файла нет, кабинет жонглирования показывает на месте плеера заглушку «Видео скоро появится» (событие `error` у `<video>` → класс `is-missing`).

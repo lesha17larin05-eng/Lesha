@@ -11,6 +11,7 @@ web/src/
     coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
     courses/index.astro           — витрина курсов (карточки из GET /api/courses). Все курсы, включая бесплатный, ведут на /courses/<slug>
     start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
+    kurs-oplachen.astro           — «Оплата получена» после покупки курса в один шаг (urlSuccess quick-checkout, `?course=<slug>`). Залогиненному – кнопка к урокам; остальным – про письмо со ссылкой «задать пароль», кнопки `/auth/forgot` и вход. noindex
     consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
     (components/SourceCapture.astro — в <head> обоих лейаутов: ?from= / ?utm_source= или referrer → кука `src` на 30 дней, см. docs/02-database.md «Источник трафика»)
     course.astro                  — 301-редирект на /courses/myagkiy-start (с 2026-09-30; старый адрес живёт в рекламе и письмах). Форма «Начните сегодня» (`components/QuickSignupForm.astro`, `#quick-signup-form`, на /courses/myagkiy-start для неавторизованных) подсказывает опечатки в домене почты («gmial.com → gmail.com?», один раз останавливает отправку) и шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе аккаунт создан, cookies стоят – ведём сразу в `/cabinet/myagkiy-start`. Там для новичка (`can_fix_email`) плашка «Письмо ушло на … · Исправить» → `POST /api/auth/fix-email`.
@@ -20,7 +21,7 @@ web/src/
       [slug].astro                — статья (fetch /api/articles/{slug}, content_html через set:html)
     courses/
       index.astro                 — каталог (SiteLayout, маркетинговые карточки с фото/ценой/CTA; обложки – мапа covers)
-      zhonglirovanie.astro        — лендинг «Жонглирование: у вас получится» (legacy/zhonglirovanie.html через extractLegacy; фото IMG_4035, схема фонтана /img/zhonglirovanie/fontan.svg). Тарифы self/support, модалка регистрации/входа и автозапуск чекаута – как у «Здоровой спины». Если курс снять с публикации (API 404) – страница 404 для всех, кроме админа (у админа жёлтая плашка «Черновик» и noindex)
+      zhonglirovanie.astro        — лендинг «Жонглирование: у вас получится» (legacy/zhonglirovanie.html через extractLegacy; фото IMG_4035, схема фонтана /img/zhonglirovanie/fontan.svg). Тарифы self/support; покупка в один шаг – модалка «имя + почта + согласие» → `POST quick-checkout` → оплата (залогиненный – сразу на оплату). Цены берутся из `tariffs` API: при акции – зачёркнутая старая цена, акционная и таймер `[data-countdown]` до `promo_until` (по окончании страница перезагружается). Блок `#video` – бесплатное видео знакомства (`/lesson-videos/promo/zhonglirovanie-znakomstvo.mp4`, постер `/img/zhonglirovanie/intro-poster.jpg`). Если курс снять с публикации (API 404) – страница 404 для всех, кроме админа (у админа жёлтая плашка «Черновик» и noindex)
       [slug].astro                — страница курса
       [slug]/lessons/[lesson].astro — урок (HLS-плеер, прогресс)
     cabinet/

@@ -59,9 +59,26 @@ func (a *App) GetCourse(w http.ResponseWriter, r *http.Request) {
 			visible = append(visible, l)
 		}
 	}
-	writeJSON(w, 200, map[string]any{
+	out := map[string]any{
 		"course": c, "modules": modules, "lessons": visible, "enrolled": enrolled,
-	})
+	}
+	// Действующие цены тарифов (с учётом стартовой цены) – для лендинга.
+	if presets, ok := tariffPresets[c.Slug]; ok {
+		tariffs := map[string]any{}
+		for key, p := range presets {
+			if adminOnlyTariffs[key] {
+				continue
+			}
+			price, promo := p.current()
+			t := map[string]any{"price": price, "base_price": p.PriceRub}
+			if promo {
+				t["promo_until"] = p.PromoUntil
+			}
+			tariffs[key] = t
+		}
+		out["tariffs"] = tariffs
+	}
+	writeJSON(w, 200, out)
 }
 
 func (a *App) GetLesson(w http.ResponseWriter, r *http.Request) {

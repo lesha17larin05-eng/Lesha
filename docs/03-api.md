@@ -33,9 +33,9 @@ In-memory token bucket (`api/internal/middleware/middleware.go`): 20 запро�
 | `POST /api/auth/refresh`               | по refresh-cookie выдаёт новый access.         |
 | `POST /api/auth/verify-email`          | `{token}` → подтверждает email.                |
 | `POST /api/auth/forgot-password`       | `{email}` → создаёт reset-токен, шлёт письмо.  |
-| `POST /api/auth/reset-password`        | `{token, password}`.                           |
+| `POST /api/auth/reset-password`        | `{token, password}`. Задаёт пароль, помечает почту подтверждённой и сразу логинит (ставит cookies сессии) – по этой ссылке впервые входят покупатели «в один шаг». |
 | `GET  /api/courses`                    | Список **опубликованных** курсов. Если есть auth — добавляет `enrolled` для каждого. |
-| `GET  /api/courses/{slug}`             | Курс + модули + уроки. У платного без enrollment контент уроков (`content_md`, `video_id`) вычищен (кроме `is_preview`). Черновик (`is_published=false`) → 404. |
+| `GET  /api/courses/{slug}`             | Курс + модули + уроки. У платного без enrollment контент уроков (`content_md`, `video_id`) вычищен (кроме `is_preview`). Черновик (`is_published=false`) → 404. Для курсов с пресетами – поле `tariffs`: `{key: {price, base_price, promo_until?}}` (текущая цена с учётом акции; служебные тарифы не отдаются). |
 | `GET  /api/courses/{slug}/lessons/{lesson_slug}` | Урок. Для платного без enrollment и не-preview → 403. |
 
 ## Authenticated user
@@ -47,6 +47,7 @@ In-memory token bucket (`api/internal/middleware/middleware.go`): 20 запро�
 | `GET  /api/me/courses`                         | Мои курсы с прогрессом (`progress_pct`, `lessons_done/total`). |
 | `POST /api/courses/{slug}/enroll-free`         | Мгновенная запись на бесплатный курс. |
 | `POST /api/courses/{slug}/checkout[?tariff=]`  | Создаёт `order` (status=`pending`). Возвращает `{payment_url, order_id}`. В test mode (`PRODAMUS_TEST_MODE=true`) возвращает локальный `/api/dev/fake-payment?order_id=...`. Требует `email_verified`. Для курсов с несколькими тарифами (сейчас только `zdorovaya-spina`: `tariff=self` 3990 ₽ / `tariff=support` 12990 ₽) параметр `tariff` обязателен; без него → 400 `tariff_required`, с неизвестным значением → 400 `bad_tariff`. Цена и имя товара в payform берутся из пресета (`tariffPresets` в `handlers/payments.go`), не из `courses.price_rub`. Служебные тарифы из `adminOnlyTariffs` (сейчас `test10`, 10 ₽) доступны только пользователям с ролью `admin` — остальным → 400 `bad_tariff`. |
+| `POST /api/courses/{slug}/quick-checkout`  | Покупка в один шаг, без регистрации: `{name, email, tariff, consent_pd}`. Аккаунт находится или создаётся по почте (как `/api/checkout/service`), пароль не нужен. Залогиненный покупает на свой аккаунт (name/email игнорируются). Цена – из пресета с учётом акции. Ответ `{payment_url, order_id}`; после оплаты Продамус ведёт на `/kurs-oplachen?course=<slug>`. Ошибки: 400 `bad_tariff`/`bad_email`/`name_required`/`consent_pd_required`, 404 – курс не платный или черновик (не-админу), 409 `already_enrolled`. |
 | `GET  /api/courses/{slug}/files/{name}`        | Защищённая отдача PDF-материалов курса (`metodichka.pdf`, `kalendar.pdf`, `zamery.pdf`). Доступ только при наличии enrollment у текущего пользователя. Файлы embed-ятся в бинарь из `api/internal/assets/courses/{slug}/` (см. `handlers/course_files.go`). Белый список slug → файлов жёстко зашит в коде ради защиты от path traversal и случайной публикации лишнего. |
 | `POST /api/lessons/{id}/progress`              | `{completed: bool, last_position_sec: int}` upsert. |
 | `GET  /api/videos/{id}/playback`               | Возвращает `{playback_url}` со встроенным signed JWT (TTL `VIDEO_TOKEN_TTL`, по умолчанию 2 часа). |

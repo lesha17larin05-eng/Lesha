@@ -1,0 +1,47 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+// Куда человек попадает после оплаты курса, купленного в один шаг
+// (POST /api/courses/{slug}/quick-checkout → Продамус → urlSuccess сюда).
+// Аккаунт мог создаться без пароля, поэтому объясняем, как войти.
+const user = (Astro.locals as any).user;
+const slug = (Astro.url.searchParams.get('course') || '').replace(/[^a-z0-9-]/g, '');
+const cabinet = slug ? `/cabinet/${slug}` : '/cabinet';
+---
+<SiteLayout title="Оплата получена – Алексей Ларин" padTop={true} noindex={true}>
+  <section class="container paid">
+    <h1>Оплата получена, <em>курс открыт</em></h1>
+    {user ? (
+      <>
+        <p>Спасибо! Уроки уже ждут вас в личном кабинете. Если кнопка покажет, что доступа нет, –
+          подождите минуту и обновите страницу: подтверждение оплаты иногда приходит с небольшой задержкой.</p>
+        <div class="paid-actions">
+          <a class="btn-primary" href={cabinet}>Перейти к урокам →</a>
+        </div>
+      </>
+    ) : (
+      <>
+        <p>Спасибо! На почту, которую вы указали, уже летит письмо со ссылкой. По ней вы зададите
+          пароль и сразу попадёте к урокам. Логин – этот адрес почты.</p>
+        <p class="paid-note">Письма нет через 5 минут? Загляните в «Спам» и «Рассылки». Или запросите ссылку ещё раз –
+          кнопкой ниже, на ту же почту.</p>
+        <div class="paid-actions">
+          <a class="btn-primary" href="/auth/forgot">Получить ссылку для входа</a>
+          <a class="paid-link" href={`/auth/login?next=${encodeURIComponent(cabinet)}`}>У меня есть пароль – войти</a>
+        </div>
+      </>
+    )}
+    <p class="paid-note">Вопросы по курсу или оплате – пишите мне в Телеграм <a class="paid-link" href="https://t.me/larin_lesha" target="_blank" rel="noopener">@larin_lesha</a>.</p>
+  </section>
+
+  <style>
+    .paid { max-width: 640px; padding: 80px 20px 100px; }
+    .paid h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(32px, 4vw, 44px); font-weight: 400; color: var(--navy); margin-bottom: 18px; }
+    .paid h1 em { font-style: italic; }
+    .paid p { font-size: 17px; line-height: 1.8; color: var(--text-mid); margin-bottom: 14px; }
+    .paid-note { font-size: 15px; color: var(--text-muted); }
+    .paid-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin: 30px 0 24px; }
+    .paid-link { font-size: 15px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color 0.2s; }
+    @media (hover: hover) { .paid-link:hover { color: var(--orange); } }
+    .paid-link:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  </style>
+</SiteLayout>

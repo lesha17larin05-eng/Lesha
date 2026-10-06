@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -21,10 +22,28 @@ import (
 )
 
 // tariffPreset – пресет тарифа для курса с несколькими ценами.
+// PromoPriceRub/PromoUntil – стартовая цена со сроком: до PromoUntil
+// включительно берётся PromoPriceRub, после – PriceRub (без правок кода).
 type tariffPreset struct {
-	PriceRub int
-	Title    string
+	PriceRub      int
+	Title         string
+	PromoPriceRub int
+	PromoUntil    time.Time
 }
+
+// nowFn – текущее время; в тестах подменяется, чтобы проверить срок акции.
+var nowFn = time.Now
+
+// current – действующая цена тарифа и признак акции.
+func (p tariffPreset) current() (price int, promo bool) {
+	if p.PromoPriceRub > 0 && nowFn().Before(p.PromoUntil) {
+		return p.PromoPriceRub, true
+	}
+	return p.PriceRub, false
+}
+
+// moscow – часовой пояс сроков акций (сервер может жить в UTC).
+var moscow = time.FixedZone("MSK", 3*60*60)
 
 // tariffPresets – мапа курсов с несколькими тарифами.
 // Если у курса есть запись здесь – Checkout требует ?tariff=<key> и берёт
@@ -44,7 +63,9 @@ var tariffPresets = map[string]map[string]tariffPreset{
 	// «Жонглирование: у вас получится». Оба тарифа открывают один и тот же курс;
 	// «С разбором» – 3 разбора видео ученика в Телеграме, вне кода.
 	"zhonglirovanie": {
-		"self":    {PriceRub: 1490, Title: "Жонглирование – Самостоятельный"},
+		// Стартовая цена 990 ₽ – до конца 18.10.2026 по Москве.
+		"self": {PriceRub: 1490, Title: "Жонглирование – Самостоятельный",
+			PromoPriceRub: 990, PromoUntil: time.Date(2026, 10, 19, 0, 0, 0, 0, moscow)},
 		"support": {PriceRub: 3990, Title: "Жонглирование – С разбором"},
 	},
 }
@@ -75,7 +96,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 			writeErr(w, 400, "bad_tariff")
 			return
 		}
-		price = p.PriceRub
+		price, _ = p.current()
 		title = p.Title
 	} else {
 		if c.PriceRub == nil {
@@ -117,6 +138,21 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.tagOrder(r.Context(), r, o.ID)
+	payURL, err := a.coursePaymentURL(o, u.Email, u.Name, u.Phone, title, price,
+		a.Cfg.AppHost+"/cabinet/courses", a.Cfg.AppHost+"/cabinet/courses?paid="+c.Slug)
+	if err != nil {
+		writeErr(w, 500, "sign_failed")
+		return
+	}
+	writeJSON(w, 200, map[string]string{"payment_url": payURL, "order_id": o.ID.String()})
+}
+
+// coursePaymentURL – подписанная ссылка Продамуса на оплату курса
+// (общая для Checkout и QuickCheckout). В тестовом режиме – fake-payment.
+func (a *App) coursePaymentURL(o *db.Order, email, name, phone, title string, price int, returnURL, successURL string) (string, error) {
+	if a.Cfg.ProdamusTestMode {
+		return a.Cfg.AppHost + "/api/dev/fake-payment?order_id=" + o.ID.String(), nil
+	}
 	// Продамус считает HMAC от json_encode(ksort_recursive($data)).
 	// Структура должна быть ВЛОЖЕННАЯ (products → array of objects),
 	// а не плоская "products[0][name]". flatten() в prodamus.PaymentURL
@@ -127,7 +163,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		"do":             "pay",
 		"order_id":       o.ID.String(),
 		"order_num":      strconv.FormatInt(o.OrderNum, 10),
-		"customer_email": u.Email,
+		"customer_email": email,
 		"products": []any{
 			map[string]any{
 				"name":     title,
@@ -135,8 +171,8 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 				"quantity": "1",
 			},
 		},
-		"urlReturn":       a.Cfg.AppHost + "/cabinet/courses",
-		"urlSuccess":      a.Cfg.AppHost + "/cabinet/courses?paid=" + c.Slug,
+		"urlReturn":       returnURL,
+		"urlSuccess":      successURL,
 		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
 		// ВАЖНО: касса в режиме самозанятого подмешивает npd_income_type в подпись
 		// ДО проверки. Если этого параметра нет в наших params – Продамус считает
@@ -150,29 +186,19 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 		// в webhook'ах (тело придёт в JSON, а не в php-keys formdata).
 		"callbackType": "json",
 	}
-	// Имя и телефон из профиля – чтобы Продамус не подставлял UUID order_id в поле «Имя».
-	if n := strings.TrimSpace(u.Name); n != "" {
+	// Имя и телефон – чтобы Продамус не подставлял UUID order_id в поле «Имя».
+	if n := strings.TrimSpace(name); n != "" {
 		params["customer_name"] = n
 	}
-	if p := strings.TrimSpace(u.Phone); p != "" {
+	if p := strings.TrimSpace(phone); p != "" {
 		params["customer_phone"] = p
-	}
-	if a.Cfg.ProdamusTestMode {
-		// in test mode return our fake-payment endpoint
-		writeJSON(w, 200, map[string]string{
-			"payment_url": a.Cfg.AppHost + "/api/dev/fake-payment?order_id=" + o.ID.String(),
-			"order_id":    o.ID.String(),
-		})
-		return
 	}
 	url, err := a.Prodamus.PaymentURL(params)
 	if err != nil {
-		writeErr(w, 500, "sign_failed")
-		return
+		return "", err
 	}
-	// TEMP debug: лог итогового URL чтобы понять что отправляется Продамусу.
-	slog.Info("prodamus checkout url", "email", u.Email, "order_id", o.ID, "url", url)
-	writeJSON(w, 200, map[string]string{"payment_url": url, "order_id": o.ID.String()})
+	slog.Info("prodamus checkout url", "email", email, "order_id", o.ID)
+	return url, nil
 }
 
 // PayShortcut – короткая ссылка /pay/{order_id}. По order_id ищет заказ,
@@ -365,10 +391,23 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 			c, _ := a.Repo.GetCourseByID(r.Context(), o.CourseID)
 			if u != nil && c != nil {
 				cabinetURL := a.Cfg.AppHost + "/cabinet/" + c.Slug
+				// Покупка в один шаг (QuickCheckout) создаёт аккаунт без известного
+				// человеку пароля – даём ссылку «задать пароль и войти» (7 дней).
+				// Тем, у кого пароль есть, она не мешает.
+				loginHTML := ""
+				if raw, hash, err := auth.RandomToken(32); err == nil {
+					if err := a.Repo.CreatePasswordResetToken(r.Context(), u.ID, hash, 7*24*time.Hour); err == nil {
+						link := a.Cfg.AppHost + "/auth/reset?token=" + raw
+						loginHTML = "<p><b>Первый вход:</b> если вы ещё не заходили на сайт или не помните пароль – " +
+							"<a href=\"" + link + "\">задайте пароль по этой ссылке</a> (действует 7 дней). " +
+							"Логин – этот адрес почты.</p>"
+					}
+				}
 				a.Mail.Async(u.Email, "Оплата получена – курс «"+c.Title+"» открыт",
 					"<p>Здравствуйте! Спасибо за оплату – доступ к курсу «"+c.Title+"» уже открыт.</p>"+
 						"<p><b>Начать заниматься:</b> <a href=\""+cabinetURL+"\">"+cabinetURL+"</a><br>"+
 						"Уроки открываются в личном кабинете, доступ действует год, темп выбираете сами.</p>"+
+						loginHTML+
 						"<p>Если возникнут вопросы по курсу или оплате – просто ответьте на это письмо "+
 						"или напишите в Телеграм: <a href=\"https://t.me/larin_lesha\">@larin_lesha</a>.</p>"+
 						"<p>Хорошей практики!<br>Алексей Ларин</p>")

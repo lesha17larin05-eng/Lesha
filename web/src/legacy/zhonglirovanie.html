@@ -392,6 +392,12 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .fontan img { width: 100%; height: auto; display: block; }
 .fontan figcaption { font-size: 15px; color: var(--text-muted); line-height: 1.6; padding: 8px 8px 6px; }
 
+/* Первый урок */
+.intro-video { padding: 100px 80px; background: var(--cream); display: grid; grid-template-columns: 1fr 1.35fr; gap: 56px; align-items: center; }
+.intro-video .section-desc { margin-bottom: 28px; }
+.iv-player { border-radius: 20px; overflow: hidden; background: #000; aspect-ratio: 16 / 9; box-shadow: 0 20px 56px rgba(26,39,68,0.18); }
+.iv-player video { width: 100%; height: 100%; display: block; object-fit: contain; background: #000; }
+
 /* Лесенка шагов */
 .method { padding: 100px 80px; background: var(--cream); }
 .ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
@@ -450,7 +456,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   .ball-card.main { grid-column: 1 / -1; }
 }
 @media (max-width: 960px) {
-  .method, .camp, .balls, .why { padding: 60px 24px; }
+  .method, .camp, .balls, .why, .intro-video { padding: 60px 24px; }
+  .intro-video { grid-template-columns: 1fr; gap: 28px; }
   .method-head { grid-template-columns: 1fr; gap: 28px; }
   .ladder, .method-note, .camp-grid, .balls-grid, .why-grid { grid-template-columns: 1fr; }
   .camp-quote { padding: 28px; }
@@ -493,6 +500,19 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="badge-sub">Нужны 3 мяча и немного места</div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ===== ПЕРВЫЙ УРОК ===== -->
+<section class="intro-video" id="video">
+  <div class="iv-text">
+    <div class="section-label">Первый урок – бесплатно</div>
+    <h2 class="section-title">Посмотрите, <em>как я объясняю</em></h2>
+    <p class="section-desc">Знакомство с курсом – 3,5 минуты. Как устроена методика и почему она подходит тем, кто сомневается. Если откликнется – дальше по шагам.</p>
+    <a href="#tariffs" class="btn-outline iv-cta">Выбрать тариф →</a>
+  </div>
+  <div class="iv-player">
+    <video controls preload="none" playsinline poster="/img/zhonglirovanie/intro-poster.jpg" src="/lesson-videos/promo/zhonglirovanie-znakomstvo.mp4"></video>
   </div>
 </section>
 
@@ -772,7 +792,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="tariffs" id="tariffs">
   <div class="section-label">Тарифы</div>
   <h2 class="section-title">Выберите, <em>как пройти курс</em></h2>
-  <p class="section-desc">Доступ открывается в личном кабинете сразу после оплаты. Можно начать сегодня.</p>
+  <p class="section-desc">Без регистрации: имя, почта – и оплата. Уроки откроются сразу, можно начать сегодня.</p>
   <div class="tariff-grid">
     <div class="tariff-card">
       <div class="tariff-name">Самостоятельный</div>
@@ -824,7 +844,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <details class="faq-item"><summary>Сколько нужно места?</summary><div class="faq-content"><p>Немного свободного пространства перед собой и над головой. Удобнее всего стоять перед кроватью или диваном – упавшие мячи будет проще поднимать.</p></div></details>
         <details class="faq-item"><summary>Что делать, если застрял на каком-то шаге?</summary><div class="faq-content"><p>Вернуться на шаг назад – это нормально и работает. Пересмотреть урок и сверить технику. Снять себя на телефон – со стороны ошибки видно сразу. А в тарифе «С разбором» я посмотрю ваши видео и подскажу сам.</p></div></details>
         <details class="faq-item"><summary>Можно заниматься вместе с ребёнком по одной покупке?</summary><div class="faq-content"><p>Да, смотрите уроки вместе. Разборы видео в тарифе «С разбором» – для одного человека.</p></div></details>
-        <details class="faq-item"><summary>Как я получу доступ?</summary><div class="faq-content"><p>Сразу после оплаты уроки откроются в личном кабинете на сайте. Доступ – на 1 год, смотреть можно с телефона и компьютера.</p></div></details>
+        <details class="faq-item"><summary>Как я получу доступ?</summary><div class="faq-content"><p>Регистрироваться заранее не нужно: укажите имя и почту и оплатите. Уроки откроются в личном кабинете сразу после оплаты, а ссылка для входа придёт на почту. Доступ – на 1 год, смотреть можно с телефона и компьютера.</p></div></details>
       </div>
     </div>
   </div>

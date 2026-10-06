@@ -9,3 +9,11 @@ import (
 func (a *App) SendOneDripEmailForTest(ctx context.Context, now time.Time) error {
 	return a.sendOneDripEmail(ctx, now)
 }
+
+// SetNowForTest подменяет «текущее время» для расчёта стартовой цены тарифа.
+// Возвращает функцию отката.
+func SetNowForTest(t time.Time) func() {
+	prev := nowFn
+	nowFn = func() time.Time { return t }
+	return func() { nowFn = prev }
+}

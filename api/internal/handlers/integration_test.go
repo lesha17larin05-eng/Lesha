@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/leshalarin/api/internal/auth"
 	"github.com/leshalarin/api/internal/config"
 	"github.com/leshalarin/api/internal/db"
 	"github.com/leshalarin/api/internal/email"
@@ -81,6 +82,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Post("/api/articles/{slug}/view", app.TrackArticleView)
 	r.Post("/api/newsletter", app.NewsletterSignup)
 	r.Post("/api/checkout/service", app.ServiceCheckout)
+	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
@@ -2362,7 +2364,8 @@ func TestZhonglirovanieTariffsAndDraft(t *testing.T) {
 		t.Fatalf("draft course visible: %d", r.StatusCode)
 	}
 
-	// 2) после публикации – оба тарифа с правильной суммой
+	// 2) после публикации – оба тарифа с правильной суммой (после стартовой цены)
+	defer handlers.SetNowForTest(time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC))()
 	_, _ = repo.Pool.Exec(ctx, `UPDATE courses SET is_published=true WHERE id=$1`, cid)
 	r, body = c1.do("POST", "/api/courses/zhonglirovanie/checkout?tariff=self", nil)
 	if r.StatusCode != 200 || amount(t, body) != 1490 {
@@ -2684,5 +2687,134 @@ func TestAnketa(t *testing.T) {
 	}
 	if r, _ := adm.do("POST", "/api/admin/anketa", map[string]any{"email": "nope"}); r.StatusCode != 400 {
 		t.Fatalf("bad email: %d", r.StatusCode)
+	}
+}
+
+// Покупка курса в один шаг: имя + почта → заказ и ссылка на оплату, без
+// пароля и подтверждения почты. Стартовая цена «Самостоятельного» действует
+// до 19.10.2026 00:00 МСК, после – обычная.
+func TestQuickCheckoutAndPromo(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	price := 1490
+	cid, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zhonglirovanie", Title: "Жонглирование", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	orderAmount := func(t *testing.T, body []byte) int {
+		t.Helper()
+		var resp struct {
+			OrderID    string `json:"order_id"`
+			PaymentURL string `json:"payment_url"`
+		}
+		_ = json.Unmarshal(body, &resp)
+		oid, err := uuid.Parse(resp.OrderID)
+		if err != nil || !strings.Contains(resp.PaymentURL, "fake-payment") {
+			t.Fatalf("bad response: %s", body)
+		}
+		o, err := repo.GetOrder(ctx, oid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return o.AmountRub
+	}
+	buy := map[string]any{"email": "New@Buyer.ru", "name": "Анна", "tariff": "self", "consent_pd": true}
+
+	// 1) во время акции – 990, аккаунт создаётся по почте (в нижнем регистре)
+	undo := handlers.SetNowForTest(time.Date(2026, 10, 10, 12, 0, 0, 0, time.UTC))
+	c := newClient(srv)
+	r, body := c.do("POST", "/api/courses/zhonglirovanie/quick-checkout", buy)
+	if r.StatusCode != 200 || orderAmount(t, body) != 990 {
+		t.Fatalf("promo: %d %s", r.StatusCode, body)
+	}
+	u, err := repo.GetUserByEmail(ctx, "new@buyer.ru")
+	if err != nil || u.Name != "Анна" {
+		t.Fatalf("user not created: %v", err)
+	}
+	// цены для лендинга: self – 990 и срок акции, support – без акции
+	_, body = c.do("GET", "/api/courses/zhonglirovanie", nil)
+	var cr struct {
+		Tariffs map[string]struct {
+			Price      int     `json:"price"`
+			BasePrice  int     `json:"base_price"`
+			PromoUntil *string `json:"promo_until"`
+		} `json:"tariffs"`
+	}
+	_ = json.Unmarshal(body, &cr)
+	if cr.Tariffs["self"].Price != 990 || cr.Tariffs["self"].BasePrice != 1490 || cr.Tariffs["self"].PromoUntil == nil ||
+		cr.Tariffs["support"].Price != 3990 || cr.Tariffs["support"].PromoUntil != nil {
+		t.Fatalf("tariffs: %s", body)
+	}
+	undo()
+
+	// 2) после срока – обычная цена; повторная покупка того же адреса – тот же аккаунт
+	undo = handlers.SetNowForTest(time.Date(2026, 10, 18, 21, 0, 0, 0, time.UTC)) // 19.10 00:00 МСК
+	r, body = newClient(srv).do("POST", "/api/courses/zhonglirovanie/quick-checkout", buy)
+	if r.StatusCode != 200 || orderAmount(t, body) != 1490 {
+		t.Fatalf("after promo: %d %s", r.StatusCode, body)
+	}
+	undo()
+
+	// 3) ошибки ввода
+	for _, tc := range []struct {
+		body map[string]any
+		want string
+	}{
+		{map[string]any{"email": "a@b.ru", "name": "А", "tariff": "self"}, "consent_pd_required"},
+		{map[string]any{"email": "nope", "name": "А", "tariff": "self", "consent_pd": true}, "bad_email"},
+		{map[string]any{"email": "a@b.ru", "name": " ", "tariff": "self", "consent_pd": true}, "name_required"},
+		{map[string]any{"email": "a@b.ru", "name": "А", "tariff": "premium", "consent_pd": true}, "bad_tariff"},
+	} {
+		r, body := newClient(srv).do("POST", "/api/courses/zhonglirovanie/quick-checkout", tc.body)
+		if r.StatusCode != 400 || !strings.Contains(string(body), tc.want) {
+			t.Fatalf("want %s, got %d %s", tc.want, r.StatusCode, body)
+		}
+	}
+	// без CSRF – отказ
+	if r, _ := newClient(srv).doNoCSRF("POST", "/api/courses/zhonglirovanie/quick-checkout", buy); r.StatusCode != 403 {
+		t.Fatalf("csrf: %d", r.StatusCode)
+	}
+
+	// 4) у адреса уже есть доступ – 409, нового заказа нет
+	_ = repo.Grant(ctx, u.ID, cid, "purchase", nil)
+	r, body = newClient(srv).do("POST", "/api/courses/zhonglirovanie/quick-checkout", buy)
+	if r.StatusCode != 409 || !strings.Contains(string(body), "already_enrolled") {
+		t.Fatalf("enrolled: %d %s", r.StatusCode, body)
+	}
+
+	// 5) черновик курса анониму не продаётся
+	_, _ = repo.Pool.Exec(ctx, `UPDATE courses SET is_published=false WHERE id=$1`, cid)
+	b2 := map[string]any{"email": "other@buyer.ru", "name": "Б", "tariff": "self", "consent_pd": true}
+	if r, _ := newClient(srv).do("POST", "/api/courses/zhonglirovanie/quick-checkout", b2); r.StatusCode != 404 {
+		t.Fatalf("draft: %d", r.StatusCode)
+	}
+}
+
+// Сброс пароля по ссылке из письма сразу логинит и подтверждает почту –
+// так покупатель из QuickCheckout попадает в кабинет одним кликом.
+func TestResetPasswordLogsIn(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+	c.do("POST", "/api/auth/register", map[string]any{"email": "rs@b.ru", "password": "password123", "consent_pd": true})
+	u, _ := repo.GetUserByEmail(ctx, "rs@b.ru")
+	raw, hash, _ := auth.RandomToken(32)
+	if err := repo.CreatePasswordResetToken(ctx, u.ID, hash, time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	fresh := newClient(srv)
+	if r, _ := fresh.do("GET", "/api/me", nil); r.StatusCode != 401 {
+		t.Fatalf("must be anonymous first: %d", r.StatusCode)
+	}
+	r, body := fresh.do("POST", "/api/auth/reset-password", map[string]any{"Token": raw, "Password": "newpassword1"})
+	if r.StatusCode != 200 {
+		t.Fatalf("reset: %d %s", r.StatusCode, body)
+	}
+	r, body = fresh.do("GET", "/api/me", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"email_verified":true`) {
+		t.Fatalf("me after reset: %d %s", r.StatusCode, body)
 	}
 }

@@ -274,6 +274,17 @@ func (a *App) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, "db")
 		return
 	}
+	// Ссылка пришла на почту – значит, адрес подтверждён. И сразу входим:
+	// страница сброса после успеха ведёт в /cabinet (раньше там ждал логин).
+	_ = a.Repo.MarkEmailVerified(r.Context(), uid)
+	role := "user"
+	if u, err := a.Repo.GetUser(r.Context(), uid); err == nil {
+		role = u.Role
+	}
+	if err := a.startSession(w, r, uid, role); err != nil {
+		writeErr(w, 500, "session_failed")
+		return
+	}
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
 
