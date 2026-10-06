@@ -29,14 +29,14 @@ function lessonTag(slug: string, n: number): { label: string; color: string; bg:
 // Резервные ссылки на YouTube/VK для каждого урока – кнопки под плеером
 // (удобно смотреть с телефона или Smart TV). Пустая строка – кнопки нет.
 const videoLinks: Record<string, { youtube: string; vk: string }> = {
-  'znakomstvo':       { youtube: '', vk: '' },
-  'odin-myach':       { youtube: '', vk: '' },
-  'dva-myacha':       { youtube: '', vk: '' },
-  'dva-v-odnoy-ruke': { youtube: '', vk: '' },
-  'tri-broska':       { youtube: '', vk: '' },
-  'bez-ostanovki':    { youtube: '', vk: '' },
-  'cel-30-sekund':    { youtube: '', vk: '' },
-  'chto-dalshe':      { youtube: '', vk: '' },
+  'znakomstvo':       { youtube: 'https://youtu.be/nwzSJmJOHeE', vk: 'https://vkvideo.ru/video-141544391_456239669?list=ln-jUxes5J5yFrYxPxOCv' },
+  'odin-myach':       { youtube: 'https://youtu.be/zpOulRC5XZs', vk: 'https://vkvideo.ru/video-141544391_456239670?list=ln-DnUIs37BsFeATtKC3n' },
+  'dva-myacha':       { youtube: 'https://youtu.be/x4hFI1e8PZE', vk: 'https://vkvideo.ru/video-141544391_456239672?list=ln-z2CXLTnGxvzMZbdHUt' },
+  'dva-v-odnoy-ruke': { youtube: 'https://youtu.be/N6j4n1w-ifA', vk: 'https://vkvideo.ru/video-141544391_456239671?list=ln-QZooI65EuBcC4XOSFx' },
+  'tri-broska':       { youtube: 'https://youtu.be/2G24eddsqYw', vk: 'https://vkvideo.ru/video-141544391_456239674?list=ln-Rji5W7V0KJ18Rh0MSV' },
+  'bez-ostanovki':    { youtube: 'https://youtu.be/n4WlJDgZrBA', vk: 'https://vkvideo.ru/video-141544391_456239673?list=ln-lLhsuXxOiPaXV8tyN9' },
+  'cel-30-sekund':    { youtube: 'https://youtu.be/fCdnmU08tp4', vk: 'https://vkvideo.ru/video-141544391_456239676?list=ln-E6qrUs31YSe9sTzgBa' },
+  'chto-dalshe':      { youtube: 'https://youtu.be/EQZgsLVZrpo', vk: 'https://vkvideo.ru/video-141544391_456239675?list=ln-Q9pqqM1HxDAGVelMT2' },
 };
 
 const tgHref = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Прохожу курс по жонглированию. ');
