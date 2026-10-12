@@ -430,6 +430,10 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 /* Лагерь / Катя */
 .camp { padding: 100px 80px; background: white; }
+.camp-head { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 48px; }
+.camp-head .section-desc { margin-bottom: 0; }
+.camp-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/2; box-shadow: 0 24px 60px rgba(27,38,70,0.12); }
+.camp-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; display: block; }
 .camp-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: stretch; }
 .camp-quote { background: var(--cream); border: 1px solid var(--border); border-radius: 24px; padding: 40px; display: flex; flex-direction: column; gap: 18px; }
 .camp-quote blockquote { font-family: 'Cormorant Garamond', serif; font-size: 25px; font-style: italic; line-height: 1.5; color: var(--navy); }
@@ -466,7 +470,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 @media (max-width: 960px) {
   .method, .camp, .balls, .why, .intro-video { padding: 60px 24px; }
   .intro-video { grid-template-columns: 1fr; gap: 28px; }
-  .method-head { grid-template-columns: 1fr; gap: 28px; }
+  .method-head, .camp-head { grid-template-columns: 1fr; gap: 28px; }
   .ladder, .method-note, .camp-grid, .why-grid { grid-template-columns: 1fr; }
   .camp-quote { padding: 28px; }
   .camp-quote blockquote { font-size: 22px; }
@@ -515,8 +519,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="intro-video" id="video">
   <div class="iv-text">
     <div class="section-label">Первый урок – бесплатно</div>
-    <h2 class="section-title">Попробуйте <em>до покупки</em></h2>
-    <p class="section-desc">Знакомство с курсом – 3,5 минуты. Как устроена методика и почему она подходит тем, кто сомневается. Если откликнется – дальше по шагам.</p>
+    <h2 class="section-title">Как устроен <em>курс</em></h2>
+    <p class="section-desc">Первое видео курса – знакомство, 3,5 минуты. Как устроена методика, как по ней заниматься и почему она подходит тем, кто сомневается, что у него получится.</p>
     <a href="#tariffs" class="btn-outline iv-cta">Выбрать тариф →</a>
   </div>
   <div class="iv-player">
@@ -622,7 +626,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="story-content">
     <div class="section-label">Почему именно я</div>
     <h2 class="section-title" style="color:white;">Методика родилась <em>в детском лагере</em></h2>
-    <div class="story-pull">Сам я учился жонглировать около трёх недель – без методики, наугад. Поэтому собрал шаги, по которым этот путь проходят быстрее и без лишних ошибок.</div>
+    <div class="story-pull">Я сходил на одно занятие по жонглированию, где объяснили суть, – и потом около трёх недель тренировался сам, пока не получилось. В курсе я даю эту суть по шагам и с понятными критериями.</div>
     <p class="story-text">Работая тренером в лагере, я предлагал научиться жонглировать всем желающим. Я уже сбился со счёта – больше 50 детей, вожатых и взрослых. Так сложилась методика: последовательные шаги, понятные критерии и разбор ошибок, которые встречаются почти у всех.</p>
     <p class="story-text">Меня больше всего вдохновляют люди, которые заранее решили, что у них не получится. Они доверяются, делают первый шаг, практикуют – и у них получается. Этот опыт потом помогает пробовать новое и в других сферах жизни.</p>
     <div class="creds">
@@ -635,9 +639,19 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 <!-- ===== ЛАГЕРЬ ===== -->
 <section class="camp" id="results">
-  <div class="section-label">Как это было в лагере</div>
-  <h2 class="section-title">Учились <em>между делом</em> – и получалось</h2>
-  <p class="section-desc">Вожатая Катя забегала на жонглирование в перерывах – свободного времени у вожатых немного. Её интервью есть в третьем уроке.</p>
+  <div class="camp-head">
+    <div>
+      <div class="section-label">Как это было в лагере</div>
+      <h2 class="section-title">Учились <em>между делом</em> – и получалось</h2>
+      <p class="section-desc">Вожатая Катя забегала на жонглирование в перерывах – свободного времени у вожатых немного. Её интервью есть в третьем уроке.</p>
+    </div>
+    <div class="camp-photo">
+      <picture>
+        <source srcset="/img/zhonglirovanie/author.webp 1x, /img/zhonglirovanie/author@2x.webp 2x" type="image/webp">
+        <img src="/img/zhonglirovanie/author.jpg" srcset="/img/zhonglirovanie/author.jpg 1x, /img/zhonglirovanie/author@2x.jpg 2x" alt="Алексей Ларин с мячами у знака «Я люблю Салют» в детском лагере" width="1200" height="800" loading="lazy">
+      </picture>
+    </div>
+  </div>
   <div class="camp-grid">
     <div class="camp-quote">
       <blockquote>«Меня очень веселит сам процесс. Первые 2–3 минутки ещё никакие, а потом входишь в кураж – и какое-то веселье, и даже физическая активность, хотя, казалось бы, только мячи. А потом можно хвастаться: смотрите, что умею!»</blockquote>
@@ -818,7 +832,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <h2 class="section-title" style="margin-bottom:28px;">Частые <em>вопросы</em></h2>
       <div class="faq-list">
         <details class="faq-item"><summary>Мне кажется, у меня совсем нет координации. Получится?</summary><div class="faq-content"><p>Курс сделан в первую очередь для вас. Мы начинаем с одного мяча, и на каждом шаге есть понятный критерий. Вам не нужно «уметь» – нужно пройти шаги по порядку и практиковать.</p></div></details>
-        <details class="faq-item"><summary>Сколько времени нужно, чтобы научиться?</summary><div class="faq-content"><p>Индивидуально. В лагере кому-то на первый шаг хватало 15 минут, кому-то – нескольких дней. Я сам без методики учился около трёх недель – по шагам обычно выходит быстрее.</p><p>Хватит коротких подходов с отдыхом, например по 10–15 минут в день. Отдых тоже важен: в это время нервная система усваивает навык.</p></div></details>
+        <details class="faq-item"><summary>Сколько времени нужно, чтобы научиться?</summary><div class="faq-content"><p>Индивидуально. В лагере кому-то на первый шаг хватало 15 минут, кому-то – нескольких дней. Я сам после одного занятия, где объяснили суть, тренировался около трёх недель.</p><p>Хватит коротких подходов с отдыхом, например по 10–15 минут в день. Отдых тоже важен: в это время нервная система усваивает навык.</p></div></details>
         <details class="faq-item"><summary>С какого возраста можно?</summary><div class="faq-content"><p>Методику проходили дети, подростки, вожатые и взрослые. Если ребёнок может удержать внимание на объяснении и повторить за видео – ему подойдёт. Верхнего предела по возрасту нет.</p></div></details>
         <details class="faq-item"><summary>Какие мячи нужны и где их взять?</summary><div class="faq-content"><p>Для начала – любой мяч, который есть дома, например теннисный: первые уроки вы всё равно занимаетесь с одним мячом. И сразу закажите на маркетплейсе набор «мячи для жонглирования» – с мелким песком внутри, они не отскакивают и лучше слушаются руки. <a class="tg-text-link" href="#balls">Подробно – в блоке про мячи</a>.</p></div></details>
         <details class="faq-item"><summary>Сколько нужно места?</summary><div class="faq-content"><p>Немного свободного пространства перед собой и над головой. Удобнее всего стоять перед кроватью или диваном – упавшие мячи будет проще поднимать.</p></div></details>
