@@ -43,7 +43,7 @@ if (self && promoUntil) {
       `<div class="tp-promo">Стартовая цена до ${promoLastDay} · осталось <b data-countdown>…</b></div>`)
     .replace(`Купить за ${base} ₽`, `Купить за ${now} ₽`)
     .replace('<span class="hero-safety">',
-      `<span class="hero-promo">Старт продаж: <b>${now} ₽</b> вместо ${base} ₽ до ${promoLastDay}</span><span class="hero-safety">`)
+      `<span class="hero-promo">Старт продаж: <b>${now} ₽</b> вместо ${base} ₽ до ${promoLastDay} · осталось <b data-countdown>…</b></span><span class="hero-safety">`)
     .replace('<p class="fc-promo"></p>',
       `<p class="fc-promo">Стартовая цена – <b>${now} ₽</b> вместо ${base} ₽, только до ${promoLastDay}</p>`);
 }
@@ -72,6 +72,12 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
   {isDraft && <div class="tm-draft-bar">Черновик: курс не опубликован – страницу видите только вы (админ). Опубликовать – в /admin/courses.</div>}
   {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
   <Fragment set:html={body} />
+  {promoUntil && !enrolled && self && (
+    <div class="promo-bar" id="promo-bar" aria-hidden="true">
+      <div class="pb-text"><span class="pb-label">Стартовая цена</span> <b>{fmtRub(self.price)} ₽</b> <s>{fmtRub(self.base_price)} ₽</s><span class="pb-left"> · <span class="pb-word">осталось </span><b data-countdown>…</b></span></div>
+      <a href="#tariffs" class="pb-btn" tabindex="-1">Купить</a>
+    </div>
+  )}
   <script define:vars={{ enrolled, isLoggedIn: !!user, promoUntil }}>
     if (enrolled) {
       const eyebrow = document.querySelector('.eyebrow-text');
@@ -221,6 +227,26 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
       });
     });
 
+    // Липкая плашка со стартовой ценой: появляется после первого экрана,
+    // прячется, когда на экране тарифы (там своя цена и таймер).
+    (function () {
+      const bar = document.getElementById('promo-bar');
+      const tariffs = document.getElementById('tariffs');
+      if (!bar) return;
+      let tariffsVisible = false;
+      const update = () => {
+        const show = window.scrollY > window.innerHeight * 0.8 && !tariffsVisible;
+        bar.classList.toggle('is-on', show);
+        bar.setAttribute('aria-hidden', show ? 'false' : 'true');
+        bar.querySelector('.pb-btn').tabIndex = show ? 0 : -1;
+      };
+      if (tariffs && 'IntersectionObserver' in window) {
+        new IntersectionObserver(([e]) => { tariffsVisible = e.isIntersecting; update(); }, { threshold: 0.15 }).observe(tariffs);
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+
     // Рилсы из лагеря в блоке «Почему именно я»: миниатюры переключают ролик.
     (function () {
       const main = document.querySelector('.reel-main video');
@@ -236,6 +262,22 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
     })();
   </script>
   <style is:global>
+    .promo-bar { position: fixed; left: 50%; bottom: 20px; z-index: 50; transform: translate(-50%, 140%); display: flex; align-items: center; gap: 18px; padding: 10px 10px 10px 22px; border-radius: 100px; background: #1a2744; color: #fff; box-shadow: 0 16px 40px rgba(10,20,40,0.35); font-size: 15px; white-space: nowrap; transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
+    .promo-bar.is-on { transform: translate(-50%, 0); opacity: 1; }
+    .promo-bar .pb-label { color: rgba(255,255,255,0.7); }
+    .promo-bar s { color: rgba(255,255,255,0.5); margin-left: 4px; }
+    .promo-bar .pb-left { color: #ffb48a; }
+    .promo-bar .pb-left b { color: #fff; font-variant-numeric: tabular-nums; }
+    .pb-btn { background: #e8652a; color: #fff; text-decoration: none; font-weight: 700; padding: 10px 22px; border-radius: 100px; transition: background 0.2s ease, transform 0.2s ease; }
+    @media (hover: hover) { .pb-btn:hover { background: #f07a3f; transform: translateY(-1px); } }
+    .pb-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    @media (max-width: 600px) {
+      .promo-bar { left: 12px; right: 12px; bottom: 12px; transform: translateY(140%); gap: 10px; padding: 8px 8px 8px 16px; font-size: 13.5px; justify-content: space-between; white-space: normal; }
+      .promo-bar.is-on { transform: translateY(0); }
+      .promo-bar .pb-label { display: none; }
+      .promo-bar .pb-word { display: none; }
+      .promo-bar .pb-text { white-space: nowrap; }
+    }
     .tp-old { font-family: 'Manrope', sans-serif; font-size: 22px; color: rgba(255,255,255,0.55); text-decoration: line-through; margin-right: 12px; vertical-align: middle; }
     .tp-promo { display: inline-block; margin: 4px 0 18px; padding: 6px 12px; border-radius: 100px; background: rgba(232,101,42,0.18); color: #ffb48a; font-size: 14px; font-weight: 600; }
     .tp-promo b { color: #fff; font-variant-numeric: tabular-nums; }
