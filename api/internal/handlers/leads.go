@@ -64,7 +64,7 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 		"consultation": "Консультация (старая страница)",
 		"other":        "Сайт",
 	}[in.Source]
-	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Новая заявка: "+sourceTitle,
+	a.notifyAdmin("📩 ", "Новая заявка: "+sourceTitle,
 		"<p><b>Имя:</b> "+html.EscapeString(in.Name)+"</p>"+
 			"<p><b>Контакт:</b> "+html.EscapeString(in.Contact)+"</p>"+
 			"<p><b>Откуда:</b> "+sourceTitle+"</p>"+

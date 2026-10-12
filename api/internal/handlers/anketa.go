@@ -184,7 +184,7 @@ func (a *App) notifyAnketa(u *db.User, answers map[string]string, updated bool) 
 			strings.ReplaceAll(html.EscapeString(v), "\n", "<br>") + `</p>`)
 	}
 	sb.WriteString(`<p style="margin-top:24px;"><a href="` + a.Cfg.AppHost + `/admin/users/` + u.ID.String() + `">Карточка в админке →</a></p></div>`)
-	a.Mail.Async(a.Cfg.LeadNotifyEmail, subject, sb.String())
+	a.notifyAdmin("📋 ", subject, sb.String())
 }
 
 // sendAnketaEmail – письмо человеку со ссылкой на анкету (отправка напрямую из админки).

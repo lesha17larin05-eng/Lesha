@@ -12,6 +12,7 @@ import (
 	"net/mail"
 	"net/smtp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -26,6 +27,31 @@ type Sender struct {
 	// OnAsyncFail вызывается, когда письмо из Async не ушло ни через один
 	// ящик. В проде – кладёт письмо в очередь повторной отправки.
 	OnAsyncFail func(to, subject, body string, err error)
+
+	mu           sync.Mutex
+	failingSince time.Time // с какого момента письма не уходят (ноль – всё хорошо)
+	lastErr      string
+}
+
+// Health – с какого момента письма не уходят ни через один ящик (ноль –
+// последнее письмо ушло) и последняя ошибка.
+func (s *Sender) Health() (time.Time, string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.failingSince, s.lastErr
+}
+
+func (s *Sender) track(err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err == nil {
+		s.failingSince, s.lastErr = time.Time{}, ""
+		return
+	}
+	if s.failingSince.IsZero() {
+		s.failingSince = time.Now()
+	}
+	s.lastErr = err.Error()
 }
 
 func New(host, port, user, pass, from string) *Sender {
@@ -40,6 +66,29 @@ func (s *Sender) Send(to, subject, body string) error {
 // SendWithHeaders – то же самое, но с дополнительными заголовками
 // (например, List-Unsubscribe для писем рассылки).
 func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]string) error {
+	if s.Host == "" || isReservedTestDomain(to) {
+		return s.sendOnce(to, subject, body, extra)
+	}
+	err := s.sendWithFallback(to, subject, body, extra)
+	if err != nil && isRecipientError(err) {
+		// Отказ по конкретному адресу (нет такого ящика) – почта при этом работает.
+		return err
+	}
+	s.track(err)
+	return err
+}
+
+// isRecipientError – последний из ящиков дошёл до сервера и вошёл, но
+// сервер отверг конкретного адресата. Почта при этом работает.
+func isRecipientError(err error) bool {
+	msg := err.Error()
+	if i := strings.LastIndex(msg, "запасной ящик: "); i >= 0 {
+		msg = msg[i:]
+	}
+	return strings.Contains(msg, "smtp RCPT TO")
+}
+
+func (s *Sender) sendWithFallback(to, subject, body string, extra map[string]string) error {
 	err := s.sendOnce(to, subject, body, extra)
 	if err == nil || s.Fallback == nil || s.Fallback.Host == "" {
 		return err

@@ -85,6 +85,7 @@ make deploy
 | `DATA_DIR`              | Корень bind mount.                                | `./data`       |
 | `POSTGRES_USER/PASSWORD/DB` | Используются и postgres-контейнером и `DATABASE_URL`. | `app/app/app` |
 | `SMTP_HOST/PORT/USER/PASSWORD/FROM` | SMTP. Если HOST пуст — письма пропускаются (логируются). В проде с 12.10.2026 — `smtp.mail.ru`, ящик `leshalarin.trener@mail.ru` (пароль для внешних приложений, только SMTP). | пусто |
+| `TELEGRAM_RELAY_URL/SECRET` | Уведомления в Telegram через Google Apps Script (см. «Уведомления в Telegram»). Пусто — выключено. | пусто |
 | `SMTP2_HOST/PORT/USER/PASSWORD/FROM` | Запасной ящик. Если основной не ответил/отказал — письмо уходит через запасной (от его адреса). В проде — прежний Яндекс `Les-larin@yandex.ru`. | пусто |
 | `PRODAMUS_PAYFORM_URL`  | URL платёжной страницы (например `https://leshalarin.payform.ru`). | dev placeholder |
 | `PRODAMUS_SECRET_KEY`   | Секрет для HMAC-подписи (берётся в кабинете Продамуса). | dev placeholder |
@@ -227,5 +228,50 @@ docker compose -f docker-compose.yml --env-file .env up -d --force-recreate ngin
 ```sql
 SELECT to_addr, subject, attempts, last_error, next_at FROM email_outbox WHERE sent_at IS NULL;
 SELECT u.email, d.step, d.attempts, d.error FROM drip_sends d JOIN users u ON u.id = d.user_id WHERE d.status = 'failed';
+```
+
+## Уведомления в Telegram
+
+С сервера `api.telegram.org` недоступен (блокировка у хостинга), поэтому сообщения идут через прокладку – веб-приложение Google Apps Script в Google-аккаунте Алексея. Сервер шлёт `POST {"secret","text"}` на `TELEGRAM_RELAY_URL`, скрипт проверяет `secret` и пересылает текст боту (токен бота и chat_id живут только в скрипте). Код – `internal/notify`.
+
+Что приходит:
+- 🆕 регистрация на «Мягкий старт» (имя, почта, метка источника);
+- 💰 оплата курса и «Точки перемен», ↩️ возврат, ⚠️ оплата без заказа;
+- 📩 заявка с сайта, 📋 анкета (дублируют письма на `LEAD_NOTIFY_EMAIL` – `notifyAdmin`);
+- ⚠️ «Письма не отправляются» – ни один ящик не принимает письма дольше 30 минут (повтор раз в 6 часов), ✅ «Почта снова работает» (`RunMailMonitor`, состояние – `email.Sender.Health`). Отказ по конкретному адресу («нет такого ящика») сбоем не считается.
+
+Проверка: `docker compose -f docker-compose.yml --env-file .env exec -T api /app/server tg-test`.
+
+Код скрипта-прокладки (script.google.com → Развертывание → Веб-приложение, «от имени: меня», «доступ: все»):
+
+```js
+const BOT_TOKEN = '<токен от @BotFather>';
+const SECRET = '<TELEGRAM_RELAY_SECRET>';
+function doPost(e) {
+  const data = JSON.parse((e.postData && e.postData.contents) || '{}');
+  if (data.secret !== SECRET) return out('forbidden');
+  const chatId = getChatId();
+  if (!chatId) return out('no_chat');
+  return out(send(chatId, String(data.text || '').slice(0, 4000)) ? 'ok' : 'tg_error');
+}
+function send(chatId, text) {
+  const r = UrlFetchApp.fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    payload: JSON.stringify({ chat_id: chatId, text: text, disable_web_page_preview: true }) });
+  return r.getResponseCode() === 200;
+}
+function getChatId() { /* первый раз берёт chat_id из getUpdates (после «Старт» в боте) и запоминает */
+  const props = PropertiesService.getScriptProperties();
+  let id = props.getProperty('CHAT_ID');
+  if (id) return id;
+  const r = JSON.parse(UrlFetchApp.fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/getUpdates').getContentText());
+  const chats = (r.result || []).filter(u => u.message).map(u => u.message.chat.id);
+  if (!chats.length) return null;
+  id = String(chats[chats.length - 1]);
+  props.setProperty('CHAT_ID', id);
+  return id;
+}
+function out(s) { return ContentService.createTextOutput(s); }
+function test() { send(getChatId(), 'Уведомления с сайта подключены ✅'); }
 ```
 

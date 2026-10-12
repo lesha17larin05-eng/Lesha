@@ -403,6 +403,8 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 							"Логин – этот адрес почты.</p>"
 					}
 				}
+				a.TG.Async("💰 Оплачен курс «" + c.Title + "»\n" + strings.TrimSpace(u.Name+" "+u.Email) +
+					"\nСумма: " + strconv.Itoa(o.AmountRub) + " ₽, заказ №" + strconv.FormatInt(o.OrderNum, 10))
 				a.Mail.Async(u.Email, "Оплата получена – курс «"+c.Title+"» открыт",
 					"<p>Здравствуйте! Спасибо за оплату – доступ к курсу «"+c.Title+"» уже открыт.</p>"+
 						"<p><b>Начать заниматься:</b> <a href=\""+cabinetURL+"\">"+cabinetURL+"</a><br>"+
@@ -569,7 +571,7 @@ func (a *App) notifyUnmatchedPayment(parsed map[string]any) {
 	if email != "" {
 		grantURL += "?email=" + url.QueryEscape(email)
 	}
-	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Оплата без заказа на сайте – нужно выдать доступ",
+	a.notifyAdmin("⚠️ ", "Оплата без заказа на сайте – нужно выдать доступ",
 		"<p>Пришла оплата по ссылке, выставленной вручную в кабинете Продамуса. "+
 			"На сайте такого заказа нет, поэтому доступ автоматически не выдан.</p>"+
 			"<p>Если это курс в лагере – делать ничего не нужно, он идёт офлайн и доступов "+
@@ -605,7 +607,7 @@ func (a *App) handleRefund(r *http.Request, o *db.Order, status string) {
 		accessLine = "Доступ остался: он был выдан не за эту покупку (подарен или бесплатный), " +
 			"поэтому автоматически я его не трогаю."
 	}
-	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Возврат оплаты – заказ №"+strconv.FormatInt(o.OrderNum, 10),
+	a.notifyAdmin("↩️ ", "Возврат оплаты – заказ №"+strconv.FormatInt(o.OrderNum, 10),
 		"<p>Продамус сообщил о возврате денег.</p>"+
 			"<p><b>Заказ:</b> №"+strconv.FormatInt(o.OrderNum, 10)+"<br>"+
 			"<b>Курс:</b> "+html.EscapeString(c.Title)+"<br>"+
@@ -764,7 +766,7 @@ func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
 			"<p>Если после занятия решите, что это не ваше – верну деньги полностью.</p>"+
 			"<p>Алексей Ларин</p>")
 
-	a.Mail.Async(a.Cfg.LeadNotifyEmail, "Оплачена «Точка перемен»",
+	a.notifyAdmin("💰 ", "Оплачена «Точка перемен»",
 		"<p><b>Кто:</b> "+html.EscapeString(u.Name)+" &lt;"+html.EscapeString(u.Email)+"&gt;</p>"+
 			"<p><b>Что:</b> "+html.EscapeString(svc.Title)+"</p>"+
 			"<p><b>Сумма:</b> "+strconv.Itoa(o.AmountRub)+" ₽</p>"+

@@ -131,3 +131,27 @@ func TestPrimaryOKSkipsFallback(t *testing.T) {
 		t.Fatalf("main=%v backup=%v", main.rcpt, backup.rcpt)
 	}
 }
+
+func TestHealthTracksOutage(t *testing.T) {
+	s := New("127.0.0.1", closedPort(t), "a@main.ru", "x", "a@main.ru")
+	if since, _ := s.Health(); !since.IsZero() {
+		t.Fatal("fresh sender must be healthy")
+	}
+	_ = s.Send("client@mail.ru", "x", "x")
+	since, lastErr := s.Health()
+	if since.IsZero() || lastErr == "" {
+		t.Fatal("failed send must mark outage")
+	}
+	_ = s.Send("client@mail.ru", "x", "x")
+	if again, _ := s.Health(); !again.Equal(since) {
+		t.Fatal("outage start must not move on repeated failures")
+	}
+	ok := startFakeSMTP(t)
+	s.Port = ok.port()
+	if err := s.Send("client@mail.ru", "x", "x"); err != nil {
+		t.Fatal(err)
+	}
+	if since, _ := s.Health(); !since.IsZero() {
+		t.Fatal("successful send must clear outage")
+	}
+}

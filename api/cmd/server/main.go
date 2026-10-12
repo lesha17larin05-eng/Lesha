@@ -16,6 +16,7 @@ import (
 	"github.com/leshalarin/api/internal/email"
 	"github.com/leshalarin/api/internal/handlers"
 	"github.com/leshalarin/api/internal/middleware"
+	"github.com/leshalarin/api/internal/notify"
 	"github.com/leshalarin/api/internal/prodamus"
 	"github.com/leshalarin/api/internal/seed"
 )
@@ -52,6 +53,17 @@ func main() {
 		Repo:     repo,
 		Mail:     mail,
 		Prodamus: prodamus.New(cfg.ProdamusPayformURL, cfg.ProdamusSecret),
+		TG:       notify.New(cfg.TelegramRelayURL, cfg.TelegramRelaySecret),
+	}
+
+	// Разовая проверка: /app/server tg-test – сообщение в Telegram.
+	if len(os.Args) > 1 && os.Args[1] == "tg-test" {
+		if err := app.TG.Send("🔔 Проверка: уведомления с сайта leshalarin.ru работают."); err != nil || !app.TG.Enabled() {
+			fmt.Println("FAIL", err, "enabled:", app.TG.Enabled())
+			os.Exit(1)
+		}
+		fmt.Println("OK")
+		os.Exit(0)
 	}
 
 	// Разовые команды: /app/server resend-access a@b.ru [c@d.ru ...]
@@ -202,6 +214,7 @@ func main() {
 	// Автоцепочка писем после «Мягкого старта» (handlers/drip.go).
 	go handlers.RunDripWorker(workerCtx, app)
 	go handlers.RunOutboxWorker(workerCtx, app)
+	go handlers.RunMailMonitor(workerCtx, app)
 
 	srv := &http.Server{
 		Addr:              ":8080",

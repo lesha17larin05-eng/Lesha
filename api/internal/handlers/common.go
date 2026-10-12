@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/leshalarin/api/internal/notify"
 	"net/http"
 	"strings"
 	"time"
@@ -18,6 +19,8 @@ type App struct {
 	Repo     *db.Repo
 	Mail     *email.Sender
 	Prodamus *prodamus.Client
+	// TG – уведомления Алексею в Telegram (nil или пустой URL – выключено).
+	TG *notify.Telegram
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

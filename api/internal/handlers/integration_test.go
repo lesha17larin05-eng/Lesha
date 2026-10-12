@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"net/http/cookiejar"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -24,8 +25,51 @@ import (
 	"github.com/leshalarin/api/internal/email"
 	"github.com/leshalarin/api/internal/handlers"
 	mw "github.com/leshalarin/api/internal/middleware"
+	"github.com/leshalarin/api/internal/notify"
 	"github.com/leshalarin/api/internal/prodamus"
 )
+
+// Прокладка Telegram для тестов: запоминает тексты уведомлений.
+var (
+	relayMu   sync.Mutex
+	relayMsgs []string
+)
+
+func testRelay(t *testing.T) *httptest.Server {
+	relayMu.Lock()
+	relayMsgs = nil
+	relayMu.Unlock()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var in map[string]string
+		_ = json.NewDecoder(r.Body).Decode(&in)
+		if in["secret"] == "relay-secret" {
+			relayMu.Lock()
+			relayMsgs = append(relayMsgs, in["text"])
+			relayMu.Unlock()
+		}
+		w.Write([]byte("ok"))
+	}))
+	t.Cleanup(srv.Close)
+	return srv
+}
+
+// waitRelay ждёт уведомление, содержащее substr (уведомления асинхронные).
+func waitRelay(t *testing.T, substr string) string {
+	t.Helper()
+	for i := 0; i < 100; i++ {
+		relayMu.Lock()
+		for _, m := range relayMsgs {
+			if strings.Contains(m, substr) {
+				relayMu.Unlock()
+				return m
+			}
+		}
+		relayMu.Unlock()
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatalf("telegram: нет уведомления с %q, есть %v", substr, relayMsgs)
+	return ""
+}
 
 func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	t.Helper()
@@ -45,17 +89,18 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
-		JWTSecret: "test-jwt-secret-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-		ProdamusSecret: "test-pd-secret",
+		JWTSecret:        "test-jwt-secret-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+		ProdamusSecret:   "test-pd-secret",
 		ProdamusTestMode: true,
 		VideoTokenSecret: "test-video-secret",
-		VideoTokenTTL: time.Hour,
-		CORSOrigin: "*",
+		VideoTokenTTL:    time.Hour,
+		CORSOrigin:       "*",
 	}
 	app := &handlers.App{
 		Cfg: cfg, Repo: repo,
-		Mail: email.New("", "", "", "", ""),
+		Mail:     email.New("", "", "", "", ""),
 		Prodamus: prodamus.New("https://test.payform.ru", cfg.ProdamusSecret),
+		TG:       notify.New(testRelay(t).URL, "relay-secret"),
 	}
 	r := chi.NewRouter()
 	r.Use(mw.RequestID, mw.Recover, mw.CORS("*"))
@@ -177,8 +222,8 @@ func (c *client) doNoCSRF(method, path string, body any) (*http.Response, []byte
 }
 
 type client struct {
-	srv *httptest.Server
-	jar *cookiejar.Jar
+	srv  *httptest.Server
+	jar  *cookiejar.Jar
 	csrf string
 }
 
@@ -2096,7 +2141,6 @@ func TestProdamusRefundClosesAccess(t *testing.T) {
 	}
 }
 
-
 // TestArticleViewCounter — счётчик чтения статей: публичный маяк пишет
 // события без CSRF, мусор игнорируется, сводка закрыта от обычного юзера.
 func TestArticleViewCounter(t *testing.T) {
@@ -2154,7 +2198,6 @@ func TestArticleViewCounter(t *testing.T) {
 		t.Fatalf("30d window: %d, last=%v", s.Opens30, s.LastOpen)
 	}
 }
-
 
 // TestNewsletterSignup — подписка с сайта: форма только заводит адрес и
 // шлёт письмо, само согласие ставится по ссылке из письма.
@@ -2225,7 +2268,6 @@ func TestNewsletterSignup(t *testing.T) {
 	}
 }
 
-
 // TestServiceCheckout — оплата «Точки перемен» без регистрации: заказ
 // создаётся без курса, после оплаты доступ к курсам не выдаётся.
 func TestServiceCheckout(t *testing.T) {
@@ -2235,7 +2277,7 @@ func TestServiceCheckout(t *testing.T) {
 
 	// Проверки формы
 	for _, bad := range []map[string]any{
-		{"service": "start", "email": "a@b.ru", "name": "Иван"},                    // нет согласия
+		{"service": "start", "email": "a@b.ru", "name": "Иван"},                     // нет согласия
 		{"service": "start", "email": "кривая", "name": "Иван", "consent_pd": true}, // адрес
 		{"service": "start", "email": "a@b.ru", "name": "", "consent_pd": true},     // имя
 		{"service": "чужая", "email": "a@b.ru", "name": "Иван", "consent_pd": true}, // услуга
@@ -2381,7 +2423,6 @@ func TestZhonglirovanieTariffsAndDraft(t *testing.T) {
 	}
 }
 
-
 // TestNoSecretLinksInProduction — ответы API не должны содержать ссылок
 // восстановления и подтверждения. Раньше /auth/forgot-password отдавал
 // готовую ссылку сброса всем подряд: зная чужой email, можно было забрать
@@ -2419,7 +2460,6 @@ func TestNoSecretLinksInProduction(t *testing.T) {
 		t.Fatalf("токен сброса должен быть создан: %v %d", err, n)
 	}
 }
-
 
 // TestAdminRefundOrder — ручной возврат: Продамус присылает уведомление о
 // возврате не всегда, поэтому админ закрывает доступ сам.
@@ -2506,7 +2546,7 @@ func TestDripChain(t *testing.T) {
 		return id
 	}
 	a := mk("a@b.ru", true, reg)
-	mk("nomail@b.ru", false, reg)                 // без согласия на рассылку
+	mk("nomail@b.ru", false, reg)                // без согласия на рассылку
 	mk("old@b.ru", true, reg.AddDate(0, 0, -30)) // до запуска цепочки
 
 	msk := func(day, hour int) time.Time { // день после регистрации, час по Москве
@@ -2888,5 +2928,35 @@ func TestEmailRetry(t *testing.T) {
 	_, _ = repo.Pool.Exec(ctx, `UPDATE email_outbox SET created_at = now() - interval '4 days' WHERE sent_at IS NULL`)
 	if n, _ := repo.OutboxPending(ctx); n != 0 {
 		t.Fatalf("expired letters must not be pending, got %d", n)
+	}
+}
+
+// TestTelegramNotifications – новая подписка и заявка приходят в Telegram.
+func TestTelegramNotifications(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	if _, err := repo.CreateCourse(ctx, db.CourseInput{Slug: "myagkiy-start", Title: "MS", Kind: "free", IsPublished: true}); err != nil {
+		t.Fatal(err)
+	}
+	u, _ := url.Parse(srv.URL)
+	c := newClient(srv)
+	c.jar.SetCookies(u, []*http.Cookie{{Name: "src", Value: "reels", Path: "/"}})
+	r, body := c.do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "tg@b.ru", "name": "Ольга", "consent_pd": true, "consent_marketing": false})
+	if r.StatusCode != 201 {
+		t.Fatalf("signup: %d %s", r.StatusCode, body)
+	}
+	msg := waitRelay(t, "Подписка на «Мягкий старт»")
+	if !strings.Contains(msg, "Ольга tg@b.ru") || !strings.Contains(msg, "Откуда: reels") || !strings.Contains(msg, "Без согласия") {
+		t.Fatalf("signup message: %q", msg)
+	}
+	r, body = newClient(srv).do("POST", "/api/leads", map[string]any{
+		"name": "Иван <b>", "contact": "@ivan", "source": "coaching", "message": "хочу", "consent_pd": true})
+	if r.StatusCode >= 300 {
+		t.Fatalf("lead: %d %s", r.StatusCode, body)
+	}
+	msg = waitRelay(t, "Новая заявка: Личное ведение")
+	if !strings.Contains(msg, "Имя: Иван <b>") || !strings.Contains(msg, "@ivan") {
+		t.Fatalf("lead message: %q", msg)
 	}
 }

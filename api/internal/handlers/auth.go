@@ -126,6 +126,7 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	link := a.sendFreeAccessEmail(r.Context(), uid, in.Email, password)
+	a.notifySignup(in.Name, in.Email, trafficSource(r), in.ConsentMarketing)
 	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "access_granted": true}
 	if a.Cfg.AppEnv != "production" {
 		resp["password_dev"] = password
