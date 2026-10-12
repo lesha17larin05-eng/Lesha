@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -35,11 +36,36 @@ func main() {
 		slog.Warn("seed warning", "err", err)
 	}
 
+	mail := email.New(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.SMTPFrom)
+	if cfg.SMTP2Host != "" {
+		mail.Fallback = email.New(cfg.SMTP2Host, cfg.SMTP2Port, cfg.SMTP2User, cfg.SMTP2Password, cfg.SMTP2From)
+	}
+	// Письмо не ушло ни через один ящик – в очередь повторной отправки.
+	mail.OnAsyncFail = func(to, subject, body string, err error) {
+		if qerr := repo.EnqueueEmail(context.Background(), to, subject, body, err.Error()); qerr != nil {
+			slog.Error("email enqueue failed", "err", qerr, "to", to)
+		}
+	}
+
 	app := &handlers.App{
 		Cfg:      cfg,
 		Repo:     repo,
-		Mail:     email.New(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.SMTPFrom),
+		Mail:     mail,
 		Prodamus: prodamus.New(cfg.ProdamusPayformURL, cfg.ProdamusSecret),
+	}
+
+	// Разовые команды: /app/server resend-access a@b.ru [c@d.ru ...]
+	if len(os.Args) > 2 && os.Args[1] == "resend-access" {
+		code := 0
+		for _, addr := range os.Args[2:] {
+			if err := app.ResendFreeAccess(ctx, addr); err != nil {
+				fmt.Println("FAIL", addr, err)
+				code = 1
+				continue
+			}
+			fmt.Println("OK", addr)
+		}
+		os.Exit(code)
 	}
 
 	r := chi.NewRouter()
@@ -175,6 +201,7 @@ func main() {
 	go handlers.RunCampaignWorker(workerCtx, app)
 	// Автоцепочка писем после «Мягкого старта» (handlers/drip.go).
 	go handlers.RunDripWorker(workerCtx, app)
+	go handlers.RunOutboxWorker(workerCtx, app)
 
 	srv := &http.Server{
 		Addr:              ":8080",

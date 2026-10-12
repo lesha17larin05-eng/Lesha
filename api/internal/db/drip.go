@@ -34,7 +34,8 @@ func (r *Repo) DripStartAt(ctx context.Context) (time.Time, error) {
 //   - есть доступ к «Мягкому старту» и согласие на рассылку;
 //   - зарегистрирован после запуска цепочки;
 //   - с регистрации прошло не меньше day календарных дней (по Москве);
-//   - этот шаг ещё не обработан, предыдущий – обработан (идём по порядку);
+//   - этот шаг ещё не обработан (или не ушёл из-за почты: тогда повтор не чаще
+//     раза в 30 минут, до 8 попыток), предыдущий – обработан (идём по порядку);
 //   - за последние 20 часов ему не уходило письмо цепочки (не чаще раза в день).
 func (r *Repo) NextDripRecipient(ctx context.Context, step, day int, startAt, now time.Time) (*DripRecipient, error) {
 	rec := &DripRecipient{}
@@ -48,8 +49,11 @@ func (r *Repo) NextDripRecipient(ctx context.Context, step, day int, startAt, no
 		   AND u.created_at >= $3
 		   AND ($4::timestamptz AT TIME ZONE 'Europe/Moscow')::date
 		       - (u.created_at AT TIME ZONE 'Europe/Moscow')::date >= $2
-		   AND NOT EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.step = $1)
-		   AND ($1 = 1 OR EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.step = $1 - 1))
+		   AND NOT EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.step = $1
+		                     AND NOT (d.status = 'failed' AND d.attempts < 8
+		                              AND d.sent_at <= $4::timestamptz - interval '30 minutes'))
+		   AND ($1 = 1 OR EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.step = $1 - 1
+		                           AND d.status <> 'failed'))
 		   AND NOT EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.status = 'sent'
 		                     AND d.sent_at > $4::timestamptz - interval '20 hours')
 		 ORDER BY u.created_at
@@ -74,11 +78,15 @@ func (r *Repo) HasPaidProduct(ctx context.Context, userID uuid.UUID) (bool, erro
 	return ok, err
 }
 
-// RecordDrip фиксирует результат шага (sent / skipped / failed).
+// RecordDrip фиксирует результат шага (sent / skipped / failed). Повторная
+// попытка после failed перезаписывает строку и увеличивает attempts.
 func (r *Repo) RecordDrip(ctx context.Context, userID uuid.UUID, step int, status, errText string) error {
 	_, err := r.Pool.Exec(ctx,
 		`INSERT INTO drip_sends(user_id, step, status, error) VALUES ($1, $2, $3, NULLIF($4, ''))
-		 ON CONFLICT (user_id, step) DO NOTHING`, userID, step, status, errText)
+		 ON CONFLICT (user_id, step) DO UPDATE
+		   SET status = EXCLUDED.status, error = EXCLUDED.error, sent_at = now(),
+		       attempts = drip_sends.attempts + 1
+		 WHERE drip_sends.status = 'failed'`, userID, step, status, errText)
 	return err
 }
 

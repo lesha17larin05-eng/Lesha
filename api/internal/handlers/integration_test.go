@@ -41,7 +41,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		t.Fatal(err)
 	}
 	// reset schema
-	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends, unsubscribe_reasons, questionnaires RESTART IDENTITY CASCADE`)
+	mustExec(t, pool, `TRUNCATE users, courses, modules, lessons, videos, enrollments, lesson_progress, lesson_activity, orders, payment_webhooks, sessions, email_verification_tokens, password_reset_tokens, audit_log, articles, leads, site_settings, email_opens, campaigns, campaign_recipients, article_views, drip_sends, unsubscribe_reasons, questionnaires, email_outbox RESTART IDENTITY CASCADE`)
 	repo := db.NewRepo(pool)
 	cfg := &config.Config{
 		AppEnv: "test", AppHost: "http://test",
@@ -2546,9 +2546,10 @@ func TestDripChain(t *testing.T) {
 	if err := app.SendOneDripEmailForTest(ctx, msk(2, 10)); err != db.ErrNotFound {
 		t.Fatalf("day 2: %v", err)
 	}
-	// День 3 и 5 – письма 2 и 3 (время отправки в тесте – «сейчас» БД, поэтому
-	// сдвигаем прошлые отправки назад, чтобы не сработал «не чаще раза в день»).
-	back := func() { _, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = sent_at - interval '3 days'`) }
+	// День 3 и 5 – письма 2 и 3 (время отправки в тесте – реальное «сейчас» БД,
+	// поэтому ставим прошлым отправкам дату регистрации, чтобы не сработал
+	// «не чаще раза в день» – независимо от того, когда запускают тест).
+	back := func() { _, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = $1`, reg) }
 	back()
 	_ = app.SendOneDripEmailForTest(ctx, msk(3, 10))
 	if status(2) != "sent" {
@@ -2816,5 +2817,76 @@ func TestResetPasswordLogsIn(t *testing.T) {
 	r, body = fresh.do("GET", "/api/me", nil)
 	if r.StatusCode != 200 || !strings.Contains(string(body), `"email_verified":true`) {
 		t.Fatalf("me after reset: %d %s", r.StatusCode, body)
+	}
+}
+
+// TestEmailRetry – письма, не ушедшие из-за почты, отправляются повторно:
+// шаг цепочки со статусом failed и письмо из очереди email_outbox.
+func TestEmailRetry(t *testing.T) {
+	_, repo, cfg := setup(t)
+	ctx := context.Background()
+	// Пустой SMTP_HOST – отправка «успешна» без сети.
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", "")}
+	freeID, err := repo.CreateCourse(ctx, db.CourseInput{Slug: "myagkiy-start", Title: "MS", Kind: "free", IsPublished: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = repo.SetSetting(ctx, "drip_start_at", "2026-09-30T00:00:00Z")
+	_ = repo.SetSetting(ctx, "drip_enabled", "true")
+	id, err := repo.CreateUser(ctx, "late@b.ru", "x", "Анна", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = repo.SaveConsent(ctx, id, true, true)
+	_ = repo.Grant(ctx, id, freeID, "free", nil)
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET created_at='2026-10-10T09:00:00Z' WHERE id=$1`, id)
+	// Письмо 1 не ушло 5 минут назад – повтор ещё рано.
+	_, _ = repo.Pool.Exec(ctx, `INSERT INTO drip_sends(user_id, step, status, error, sent_at)
+		VALUES ($1, 1, 'failed', 'timeout', now() - interval '5 minutes')`, id)
+	now := time.Now()
+	if h := now.UTC().Add(3 * time.Hour).Hour(); h < 9 || h >= 21 {
+		now = time.Date(now.Year(), now.Month(), now.Day(), 9, 0, 0, 0, time.UTC) // 12:00 МСК
+	}
+	if err := app.SendOneDripEmailForTest(ctx, now); err != db.ErrNotFound {
+		t.Fatalf("retry too early: %v", err)
+	}
+	// Через 40 минут – повтор уходит, строка становится sent, попытка №2.
+	_, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = now() - interval '40 minutes'`)
+	if err := app.SendOneDripEmailForTest(ctx, now); err != nil {
+		t.Fatalf("retry: %v", err)
+	}
+	var st string
+	var attempts int
+	_ = repo.Pool.QueryRow(ctx, `SELECT status, attempts FROM drip_sends WHERE user_id=$1 AND step=1`, id).Scan(&st, &attempts)
+	if st != "sent" || attempts != 2 {
+		t.Fatalf("after retry: status=%q attempts=%d", st, attempts)
+	}
+	// Отправленный шаг не перезаписывается.
+	_ = repo.RecordDrip(ctx, id, 1, "failed", "x")
+	_ = repo.Pool.QueryRow(ctx, `SELECT status FROM drip_sends WHERE user_id=$1 AND step=1`, id).Scan(&st)
+	if st != "sent" {
+		t.Fatalf("sent step must stay sent, got %q", st)
+	}
+
+	// Очередь разовых писем: письмо ждёт 5 минут, потом уходит.
+	if err := repo.EnqueueEmail(ctx, "late@b.ru", "Доступ", "<p>x</p>", "timeout"); err != nil {
+		t.Fatal(err)
+	}
+	if n, _ := repo.OutboxPending(ctx); n != 1 {
+		t.Fatalf("pending=%d", n)
+	}
+	_ = app.RetryOutboxForTest(ctx, time.Now())
+	if n, _ := repo.OutboxPending(ctx); n != 1 {
+		t.Fatalf("must wait before first retry, pending=%d", n)
+	}
+	_ = app.RetryOutboxForTest(ctx, time.Now().Add(6*time.Minute))
+	if n, _ := repo.OutboxPending(ctx); n != 0 {
+		t.Fatalf("must be sent after retry, pending=%d", n)
+	}
+	// Старше 3 суток – не пытаемся.
+	_ = repo.EnqueueEmail(ctx, "late@b.ru", "Старое", "x", "")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE email_outbox SET created_at = now() - interval '4 days' WHERE sent_at IS NULL`)
+	if n, _ := repo.OutboxPending(ctx); n != 0 {
+		t.Fatalf("expired letters must not be pending, got %d", n)
 	}
 }

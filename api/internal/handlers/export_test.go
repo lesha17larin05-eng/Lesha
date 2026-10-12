@@ -17,3 +17,8 @@ func SetNowForTest(t time.Time) func() {
 	nowFn = func() time.Time { return t }
 	return func() { nowFn = prev }
 }
+
+// RetryOutboxForTest – одна порция повторной отправки из email_outbox.
+func (a *App) RetryOutboxForTest(ctx context.Context, now time.Time) error {
+	return a.retryOutbox(ctx, now)
+}

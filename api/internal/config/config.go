@@ -6,28 +6,30 @@ import (
 )
 
 type Config struct {
-	AppEnv             string
-	AppHost            string
-	JWTSecret          string
-	SessionSecret      string
-	DatabaseURL        string
-	SMTPHost           string
-	SMTPPort           string
-	SMTPUser           string
-	SMTPPassword       string
-	SMTPFrom           string
-	ProdamusPayformURL string
-	ProdamusSecret     string
-	ProdamusTestMode   bool
-	VideoTokenSecret   string
-	VideoTokenTTL      time.Duration
-	VideoStoragePath   string
-	AdminEmail         string
-	LeadNotifyEmail    string
-	AdminPassword      string
-	UserEmail          string
-	UserPassword       string
-	CORSOrigin         string
+	AppEnv        string
+	AppHost       string
+	JWTSecret     string
+	SessionSecret string
+	DatabaseURL   string
+	SMTPHost      string
+	SMTPPort      string
+	SMTPUser      string
+	SMTPPassword  string
+	SMTPFrom      string
+	// Запасной ящик (SMTP2_*): письмо уходит через него, если основной недоступен.
+	SMTP2Host, SMTP2Port, SMTP2User, SMTP2Password, SMTP2From string
+	ProdamusPayformURL                                        string
+	ProdamusSecret                                            string
+	ProdamusTestMode                                          bool
+	VideoTokenSecret                                          string
+	VideoTokenTTL                                             time.Duration
+	VideoStoragePath                                          string
+	AdminEmail                                                string
+	LeadNotifyEmail                                           string
+	AdminPassword                                             string
+	UserEmail                                                 string
+	UserPassword                                              string
+	CORSOrigin                                                string
 }
 
 func env(k, def string) string {
@@ -53,6 +55,11 @@ func Load() *Config {
 		SMTPUser:           os.Getenv("SMTP_USER"),
 		SMTPPassword:       os.Getenv("SMTP_PASSWORD"),
 		SMTPFrom:           env("SMTP_FROM", "Leshalarin <info@leshalarin.ru>"),
+		SMTP2Host:          os.Getenv("SMTP2_HOST"),
+		SMTP2Port:          env("SMTP2_PORT", "465"),
+		SMTP2User:          os.Getenv("SMTP2_USER"),
+		SMTP2Password:      os.Getenv("SMTP2_PASSWORD"),
+		SMTP2From:          os.Getenv("SMTP2_FROM"),
 		ProdamusPayformURL: env("PRODAMUS_PAYFORM_URL", "https://leshalarin.payform.ru"),
 		ProdamusSecret:     env("PRODAMUS_SECRET_KEY", "test"),
 		ProdamusTestMode:   env("PRODAMUS_TEST_MODE", "true") == "true",

@@ -86,7 +86,7 @@ make test
 │   │   ├── auth/                 argon2id, JWT, рандом-токены
 │   │   ├── config/               загрузка env
 │   │   ├── db/                   pgxpool + репозитории + модели
-│   │   ├── email/                SMTP (async)
+│   │   ├── email/                SMTP (async, запасной ящик SMTP2_*, очередь повтора)
 │   │   ├── handlers/             HTTP-хендлеры (auth, courses, payments, video, admin)
 │   │   ├── middleware/           request-id, logger, recover, CORS, auth, CSRF, rate limit
 │   │   ├── prodamus/             клиент + HMAC sign/verify

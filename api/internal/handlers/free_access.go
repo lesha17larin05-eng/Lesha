@@ -57,23 +57,34 @@ func (a *App) startSession(w http.ResponseWriter, r *http.Request, uid uuid.UUID
 // sendFreeAccessEmail – письмо «доступ открыт»: кнопка в кабинет (она же
 // подтверждает почту) и данные для входа. Возвращает ссылку (для dev/тестов).
 func (a *App) sendFreeAccessEmail(ctx context.Context, uid uuid.UUID, to, password string) string {
+	subject, body, link := a.freeAccessEmailWithLink(ctx, uid, to, password)
+	a.Mail.Async(to, subject, body)
+	return link
+}
+
+// freeAccessEmail – тема и тело письма «доступ открыт» (с новой ссылкой входа).
+func (a *App) freeAccessEmail(ctx context.Context, uid uuid.UUID, to, password string) (string, string) {
+	subject, body, _ := a.freeAccessEmailWithLink(ctx, uid, to, password)
+	return subject, body
+}
+
+func (a *App) freeAccessEmailWithLink(ctx context.Context, uid uuid.UUID, to, password string) (string, string, string) {
 	rawTok, hashTok, _ := auth.RandomToken(32)
 	_ = a.Repo.CreateEmailToken(ctx, uid, hashTok, freeAccessLinkTTL)
 	link := a.Cfg.AppHost + "/auth/verify?token=" + rawTok
-	a.Mail.Async(to, "Доступ к курсу «Мягкий старт» открыт",
-		"<p>Здравствуйте! Это Алексей Ларин.</p>"+
-			"<p>Доступ к курсу «Мягкий старт» открыт – все 8 уроков уже в вашем личном кабинете. "+
-			"Начните с того, что сейчас важнее всего.</p>"+
-			`<p><a href="`+link+`" style="display:inline-block;background:#e8652a;color:#fff;`+
-			`text-decoration:none;padding:12px 24px;border-radius:100px;font-weight:600">Открыть курс&nbsp;→</a></p>`+
-			"<p style=\"color:#777;font-size:13px\">Кнопка сразу входит в кабинет и подтверждает вашу почту. Действует 7 дней.</p>"+
-			"<hr>"+
-			"<p><b>Данные для входа в личный кабинет:</b><br>"+
-			"Сайт: leshalarin.ru<br>"+
-			"Логин: "+html.EscapeString(to)+"<br>"+
-			"Пароль: "+password+"</p>"+
-			"<p>Сохраните это письмо – пригодится, чтобы вернуться к урокам.</p>")
-	return link
+	body := "<p>Здравствуйте! Это Алексей Ларин.</p>" +
+		"<p>Доступ к курсу «Мягкий старт» открыт – все 8 уроков уже в вашем личном кабинете. " +
+		"Начните с того, что сейчас важнее всего.</p>" +
+		`<p><a href="` + link + `" style="display:inline-block;background:#e8652a;color:#fff;` +
+		`text-decoration:none;padding:12px 24px;border-radius:100px;font-weight:600">Открыть курс&nbsp;→</a></p>` +
+		"<p style=\"color:#777;font-size:13px\">Кнопка сразу входит в кабинет и подтверждает вашу почту. Действует 7 дней.</p>" +
+		"<hr>" +
+		"<p><b>Данные для входа в личный кабинет:</b><br>" +
+		"Сайт: leshalarin.ru<br>" +
+		"Логин: " + html.EscapeString(to) + "<br>" +
+		"Пароль: " + password + "</p>" +
+		"<p>Сохраните это письмо – пригодится, чтобы вернуться к урокам.</p>"
+	return "Доступ к курсу «Мягкий старт» открыт", body, link
 }
 
 // FixEmail – POST /api/auth/fix-email {"email": "..."}.

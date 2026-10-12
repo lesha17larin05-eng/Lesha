@@ -2,8 +2,8 @@ package email
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"log/slog"
@@ -19,6 +19,13 @@ import (
 // Порт 465 – implicit TLS (SMTPS); 587/25 – STARTTLS.
 type Sender struct {
 	Host, Port, User, Pass, From string
+
+	// Fallback – запасной ящик (другой почтовый сервис). Если основной не
+	// ответил или отказал, письмо уходит через запасной – от его адреса.
+	Fallback *Sender
+	// OnAsyncFail вызывается, когда письмо из Async не ушло ни через один
+	// ящик. В проде – кладёт письмо в очередь повторной отправки.
+	OnAsyncFail func(to, subject, body string, err error)
 }
 
 func New(host, port, user, pass, from string) *Sender {
@@ -33,6 +40,22 @@ func (s *Sender) Send(to, subject, body string) error {
 // SendWithHeaders – то же самое, но с дополнительными заголовками
 // (например, List-Unsubscribe для писем рассылки).
 func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]string) error {
+	err := s.sendOnce(to, subject, body, extra)
+	if err == nil || s.Fallback == nil || s.Fallback.Host == "" {
+		return err
+	}
+	if err2 := s.Fallback.sendOnce(to, subject, body, extra); err2 != nil {
+		return fmt.Errorf("%w; запасной ящик: %v", err, err2)
+	}
+	slog.Warn("email sent via fallback", "to", to, "primary_err", err)
+	return nil
+}
+
+// dialTimeout – сколько ждать соединения с почтовым сервером. Без него
+// недоступный сервер держит отправку по 2 минуты.
+const dialTimeout = 20 * time.Second
+
+func (s *Sender) sendOnce(to, subject, body string, extra map[string]string) error {
 	if s.Host == "" {
 		slog.Info("email skipped (no SMTP configured)", "to", to, "subject", subject)
 		return nil
@@ -50,7 +73,7 @@ func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]stri
 
 	if s.Port == "465" {
 		// Implicit TLS (SMTPS) – соединение уже в TLS с первого байта.
-		conn, err := tls.Dial("tcp", addr, &tls.Config{ServerName: s.Host})
+		conn, err := tls.DialWithDialer(&net.Dialer{Timeout: dialTimeout}, "tcp", addr, &tls.Config{ServerName: s.Host})
 		if err != nil {
 			return fmt.Errorf("smtp tls dial %s: %w", addr, err)
 		}
@@ -61,10 +84,14 @@ func (s *Sender) SendWithHeaders(to, subject, body string, extra map[string]stri
 		}
 	} else {
 		// STARTTLS (порт 587) или plain (25).
-		var err error
-		c, err = smtp.Dial(addr)
+		conn, err := net.DialTimeout("tcp", addr, dialTimeout)
 		if err != nil {
 			return fmt.Errorf("smtp dial %s: %w", addr, err)
+		}
+		c, err = smtp.NewClient(conn, s.Host)
+		if err != nil {
+			conn.Close()
+			return fmt.Errorf("smtp new client: %w", err)
 		}
 		if ok, _ := c.Extension("STARTTLS"); ok {
 			if err = c.StartTLS(&tls.Config{ServerName: s.Host}); err != nil {
@@ -181,11 +208,15 @@ func randID() string {
 	return hex.EncodeToString(b)
 }
 
-// Async запускает Send в горутине; ошибки логируются.
+// Async запускает Send в горутине. Если письмо не ушло – логирует и
+// передаёт его в OnAsyncFail (очередь повторной отправки).
 func (s *Sender) Async(to, subject, body string) {
 	go func() {
 		if err := s.Send(to, subject, body); err != nil {
 			slog.Error("email send failed", "err", err, "to", to)
+			if s.OnAsyncFail != nil {
+				s.OnAsyncFail(to, subject, body, err)
+			}
 		}
 	}()
 }
