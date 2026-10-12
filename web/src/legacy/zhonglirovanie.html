@@ -397,8 +397,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .hero-right.tm-hero-right { justify-content: center; }
 .tm-hero-art { position: absolute; inset: 0; }
 .tm-hero-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; display: block; }
-.method-head { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 48px; }
-.method-head .section-desc { margin-bottom: 0; }
 .fontan { background: white; border: 1px solid var(--border); border-radius: 24px; padding: 20px 20px 12px; }
 .fontan img { width: 100%; height: auto; display: block; }
 .fontan figcaption { font-size: 15px; color: var(--text-muted); line-height: 1.6; padding: 8px 8px 6px; }
@@ -411,22 +409,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 /* Лесенка шагов */
 .method { padding: 100px 80px; background: var(--cream); }
-.ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: step; }
-.step-card { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 26px 24px 22px; display: flex; flex-direction: column; gap: 10px; position: relative; }
-.step-top { display: flex; align-items: center; gap: 12px; }
-.step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: white; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.step-balls { display: flex; gap: 4px; margin-left: auto; }
-.step-balls i { width: 12px; height: 12px; border-radius: 50%; background: var(--border); display: block; }
-.step-balls i.on { background: var(--orange); }
-.step-card h3 { font-size: 19px; font-weight: 700; color: var(--navy); line-height: 1.3; }
-.step-card p { font-size: 15.5px; color: var(--text-muted); line-height: 1.65; flex: 1; }
-.step-crit { font-size: 14.5px; color: var(--navy); background: #fff0e6; border-radius: 12px; padding: 10px 14px; line-height: 1.5; }
 .step-crit b { color: var(--orange); font-weight: 700; }
-.step-card.final { border-color: var(--orange); }
-.step-card.final .step-num { background: var(--orange); }
-.method-note { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.method-note div { background: transparent; border-left: 3px solid var(--orange); padding: 4px 0 4px 18px; font-size: 16px; color: var(--text-mid); line-height: 1.65; }
-.method-note b { color: var(--navy); }
 
 /* Лагерь / Катя */
 .camp { padding: 100px 80px; background: white; }
@@ -463,21 +446,51 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
 @media (max-width: 1100px) {
-  .ladder { grid-template-columns: repeat(2, 1fr); }
   .balls-wrap { grid-template-columns: 1fr; gap: 36px; }
   .balls-photo { aspect-ratio: 4/5; max-width: 460px; }
 }
 @media (max-width: 960px) {
-  .method, .camp, .balls, .why, .intro-video { padding: 60px 24px; }
+  .camp, .balls, .why, .intro-video { padding: 60px 24px; }
   .intro-video { grid-template-columns: 1fr; gap: 28px; }
-  .method-head, .camp-head { grid-template-columns: 1fr; gap: 28px; }
-  .ladder, .method-note, .camp-grid, .why-grid { grid-template-columns: 1fr; }
+  .camp-head { grid-template-columns: 1fr; gap: 28px; }
+  .camp-grid, .why-grid { grid-template-columns: 1fr; }
   .camp-quote { padding: 28px; }
   .camp-quote blockquote { font-size: 22px; }
   .hero-right.tm-hero-right { min-height: 440px; }
   .hero-stats { gap: 24px; flex-wrap: wrap; }
 }
 
+
+/* ===== ПРОГРАММА-ПУТЬ ===== */
+.path { padding: 100px 80px; background: var(--cream); }
+.path-wrap { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 64px; align-items: start; }
+.path-side { position: sticky; top: 96px; }
+.path-side .fontan { margin-top: 28px; }
+.path-list { list-style: none; position: relative; display: flex; flex-direction: column; gap: 14px; }
+.path-list::before { content: ''; position: absolute; left: 21px; top: 22px; bottom: 22px; width: 2px; background: linear-gradient(var(--border), var(--orange)); }
+.path-item { position: relative; display: grid; grid-template-columns: 44px 1fr; gap: 18px; align-items: start; }
+.path-item > div { background: white; border: 1px solid var(--border); border-radius: 18px; padding: 18px 22px; transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+@media (hover: hover) { .path-item > div:hover { border-color: var(--orange); box-shadow: 0 10px 30px rgba(27,38,70,0.07); transform: translateX(3px); } }
+.path-dot { position: relative; z-index: 1; width: 44px; height: 44px; border-radius: 50%; background: var(--navy); color: white; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px var(--cream); }
+.path-item h3 { font-size: 18px; font-weight: 700; color: var(--navy); line-height: 1.3; margin-bottom: 4px; }
+.path-item p { font-size: 15.5px; color: var(--text-muted); line-height: 1.6; }
+.path-crit { display: inline-block; margin-top: 10px; font-size: 13.5px; font-weight: 600; color: var(--orange); background: #fff0e6; border-radius: 100px; padding: 5px 12px; }
+.path-free { display: inline-block; vertical-align: middle; margin-left: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #0a6040; background: #d4f0e4; border-radius: 100px; padding: 3px 9px; }
+.path-item.is-start .path-dot, .path-item.is-end .path-dot { background: white; color: var(--navy); border: 2px solid var(--border); }
+.path-item.is-peak .path-dot { background: var(--orange); }
+.path-item.is-peak > div { border-color: var(--orange); background: linear-gradient(135deg, #fff, #fff4ec); }
+.path-item.is-peak h3 { font-size: 20px; }
+.path-cta { text-align: center; margin-top: 48px; }
+.fc-promo { font-size: 16px; color: var(--orange); margin: -8px 0 28px; }
+.fc-promo:empty { display: none; }
+@media (max-width: 960px) {
+  .path { padding: 60px 24px; }
+  .path-wrap { grid-template-columns: 1fr; gap: 36px; }
+  .path-side { position: static; }
+  .path-item { grid-template-columns: 36px 1fr; gap: 12px; }
+  .path-dot { width: 36px; height: 36px; font-size: 14px; }
+  .path-list::before { left: 17px; }
+}
 </style>
 </head>
 <body>
@@ -515,20 +528,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== ПЕРВЫЙ УРОК ===== -->
-<section class="intro-video" id="video">
-  <div class="iv-text">
-    <div class="section-label">Первый урок – бесплатно</div>
-    <h2 class="section-title">Как устроен <em>курс</em></h2>
-    <p class="section-desc">Первое видео курса – знакомство, 3,5 минуты. Как устроена методика, как по ней заниматься и почему она подходит тем, кто сомневается, что у него получится.</p>
-    <a href="#tariffs" class="btn-outline iv-cta">Выбрать тариф →</a>
-  </div>
-  <div class="iv-player">
-    <video controls preload="none" playsinline poster="/img/zhonglirovanie/intro-poster.jpg" src="/lesson-videos/promo/zhonglirovanie-znakomstvo.mp4"></video>
-  </div>
-</section>
-
-<!-- ===== ДЛЯ КОГО ===== -->
 <section class="problems" id="problems">
   <div class="section-label">Для кого курс</div>
   <h2 class="section-title">Если вы хоть раз подумали <em>«я бы тоже так хотел»</em></h2>
@@ -557,59 +556,43 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== МЕТОДИКА ===== -->
-<section class="method" id="method">
-  <div class="method-head">
-    <div>
-      <div class="section-label">Методика</div>
-      <h2 class="section-title">Шесть шагов <em>от одного мяча к трём</em></h2>
-      <p class="section-desc">Вы не прыгаете сразу к трём мячам. У каждого шага – свой критерий. Выполнили – переходите дальше. Не выходит – делаете шаг назад, это тоже часть пути.</p>
-    </div>
-    <figure class="fontan">
-      <img src="/img/zhonglirovanie/fontan.svg" alt="Схема жонглирования тремя мячами: каждый мяч вылетает из центральной точки и по дуге летит в другую руку" width="440" height="370" loading="lazy">
-      <figcaption>Каждый мяч вылетает из центра и летит в другую руку – по очереди вправо и влево. К этой картинке вы придёте за 6 шагов.</figcaption>
-    </figure>
+<section class="intro-video" id="video">
+  <div class="iv-text">
+    <div class="section-label">Первый урок – бесплатно</div>
+    <h2 class="section-title">Как устроен <em>курс</em></h2>
+    <p class="section-desc">Первое видео курса – знакомство, 3,5 минуты. Как устроена методика, как по ней заниматься и почему она подходит тем, кто сомневается, что у него получится.</p>
+    <a href="#tariffs" class="btn-outline iv-cta">Выбрать тариф →</a>
   </div>
-  <div class="ladder">
-    <div class="step-card">
-      <div class="step-top"><span class="step-num">1</span><span class="step-balls"><i class="on"></i><i></i><i></i></span></div>
-      <h3>Фундамент – один мяч</h3>
-      <div class="step-crit">Дальше, когда <b>8 из 10</b> бросков точные</div>
-    </div>
-    <div class="step-card">
-      <div class="step-top"><span class="step-num">2</span><span class="step-balls"><i class="on"></i><i class="on"></i><i></i></span></div>
-      <h3>Два мяча</h3>
-      <div class="step-crit">Дальше, когда <b>8 из 10</b> пар точные – с обеих рук</div>
-    </div>
-    <div class="step-card">
-      <div class="step-top"><span class="step-num">3</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
-      <h3>Два мяча в одной руке</h3>
-      <div class="step-crit">Дальше, когда лишний мяч <b>не мешает</b> точным броскам</div>
-    </div>
-    <div class="step-card">
-      <div class="step-top"><span class="step-num">4</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
-      <h3>Три броска</h3>
-      <div class="step-crit">Дальше, когда третий бросок <b>уверенно выходит</b></div>
-    </div>
-    <div class="step-card">
-      <div class="step-top"><span class="step-num">5</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
-      <h3>Без остановки</h3>
-      <div class="step-crit">Дальше, когда получается <b>7 бросков</b> подряд</div>
-    </div>
-    <div class="step-card final">
-      <div class="step-top"><span class="step-num">6</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
-      <h3>Цель – 30 секунд</h3>
-      <div class="step-crit">Финиш: <b>30 секунд</b> жонглирования и подарок себе</div>
-    </div>
-  </div>
-  <div class="method-note">
-    <div><b>Разбор ошибок в каждом уроке.</b> Те, что встречались почти у всех – у детей, вожатых и взрослых.</div>
-    <div><b>Свой темп.</b> Кому-то на первый шаг хватает 15 минут, кому-то нужно несколько дней. Это нормально.</div>
-    <div><b>Взгляд со стороны.</b> Покажу, как снимать себя на телефон и находить ошибки самостоятельно.</div>
+  <div class="iv-player">
+    <video controls preload="none" playsinline poster="/img/zhonglirovanie/intro-poster.jpg" src="/lesson-videos/promo/zhonglirovanie-znakomstvo.mp4"></video>
   </div>
 </section>
 
-<!-- ===== ОБ АВТОРЕ ===== -->
+<section class="path" id="program">
+  <div class="path-wrap">
+    <div class="path-side">
+      <div class="section-label">Программа</div>
+      <h2 class="section-title">8 уроков – <em>шаг за шагом к трём мячам</em></h2>
+      <p class="section-desc">Вы не прыгаете сразу к трём мячам. Каждый урок – одно упражнение и понятный критерий: получилось – идёте дальше. В каждом уроке – разбор ошибок, которые встречались почти у всех.</p>
+      <figure class="fontan">
+        <img src="/img/zhonglirovanie/fontan.svg" alt="Схема жонглирования тремя мячами: каждый мяч вылетает из центральной точки и по дуге летит в другую руку" width="440" height="370" loading="lazy">
+        <figcaption>Каждый мяч вылетает из центра и летит в другую руку – по очереди вправо и влево. К этой картинке вы придёте за 6 шагов.</figcaption>
+      </figure>
+    </div>
+    <ol class="path-list">
+      <li class="path-item is-start"><span class="path-dot">0</span><div><h3>Знакомство с курсом <span class="path-free">бесплатно</span></h3><p>Как устроена методика и как по ней заниматься.</p></div></li>
+      <li class="path-item"><span class="path-dot">1</span><div><h3>Фундамент – один мяч</h3><p>Бросок «ковшом» через центр по дуге и 4 частые ошибки.</p><span class="path-crit">Дальше, когда 8 из 10 бросков точные</span></div></li>
+      <li class="path-item"><span class="path-dot">2</span><div><h3>Два мяча</h3><p>Оба броска вверх, в обе стороны – и почему нельзя передавать мяч внизу.</p><span class="path-crit">Дальше, когда 8 из 10 пар точные – с обеих рук</span></div></li>
+      <li class="path-item"><span class="path-dot">3</span><div><h3>Два мяча в одной руке</h3><p>Хват, который готовит руку к третьему мячу. И интервью с вожатой Катей.</p><span class="path-crit">Дальше, когда лишний мяч не мешает броскам</span></div></li>
+      <li class="path-item"><span class="path-dot">4</span><div><h3>Три броска</h3><p>Раз, два, три – поймали. Что делать, если третий мяч «не отпускается».</p><span class="path-crit">Дальше, когда третий бросок выходит уверенно</span></div></li>
+      <li class="path-item"><span class="path-dot">5</span><div><h3>Без остановки</h3><p>Четвёртый, пятый бросок и дальше. Однажды случится магия – как первый шаг ребёнка.</p><span class="path-crit">Дальше, когда получается 7 бросков подряд</span></div></li>
+      <li class="path-item is-peak"><span class="path-dot">6</span><div><h3>Вершина – 30 секунд</h3><p>Подходы, отдых, секундомер – и подарок себе, который вы придумаете заранее.</p></div></li>
+      <li class="path-item is-end"><span class="path-dot">7</span><div><h3>Что дальше</h3><p>Жонглирование как медитация на 3–5 минут, следующий трюк и как научить близкого.</p></div></li>
+    </ol>
+  </div>
+  <div class="path-cta"><a href="#tariffs" class="btn-hero">Начать первый шаг →</a></div>
+</section>
+
 <section class="story" id="story">
   <div class="story-reels">
     <div class="reel-main">
@@ -637,7 +620,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== ЛАГЕРЬ ===== -->
 <section class="camp" id="results">
   <div class="camp-head">
     <div>
@@ -664,87 +646,17 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== ПРОГРАММА ===== -->
-<section class="program" id="program">
-  <div class="section-label">Программа</div>
-  <h2 class="section-title">8 видеоуроков – <em>и никакой воды</em></h2>
-  <p class="section-desc">Что внутри каждого урока – подробно.</p>
-  <div class="program-grid">
-    <div class="program-card intro-card program-card--wide">
-      <div><div class="pm-num">Урок 0</div><div class="pm-title">Знакомство с курсом</div></div>
-      <div>
-        <div class="pm-lessons"><div class="pm-lesson"><span class="pm-lesson-dot"></span>Как устроена методика и почему она подходит тем, кто сомневается</div></div>
-        <div class="pm-focus">Практика – единственный путь</div>
-      </div>
-    </div>
-    <div class="program-card">
-      <div class="pm-num">Урок 1</div><div class="pm-title">Фундамент – один мяч</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Исходное положение, боковые точки и центр</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Бросок «ковшом» через центр по дуге</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>4 частые ошибки и главная – мяч уходит вперёд</div>
-      </div>
-      <div class="pm-focus">На этом броске строится всё</div>
-    </div>
-    <div class="program-card">
-      <div class="pm-num">Урок 2</div><div class="pm-title">Два мяча</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Разминка и работа в одной плоскости</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Серии по 10–15 бросков в обе стороны</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Почему нельзя передавать мяч внизу</div>
-      </div>
-      <div class="pm-focus">Обе руки – одинаково</div>
-    </div>
-    <div class="program-card">
-      <div class="pm-num">Урок 3</div><div class="pm-title">Два мяча в одной руке</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Хват: мизинец и безымянный + три пальца</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Как чувствовать руки и направлять мяч</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Интервью с Катей, которая уже жонглирует</div>
-      </div>
-      <div class="pm-focus">Готовим руку к третьему мячу</div>
-    </div>
-    <div class="program-card">
-      <div class="pm-num">Урок 4</div><div class="pm-title">Три броска</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Раз, два, три – поймали</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Что делать, если третий мяч «не отпускается»</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Чек-лист техники перед следующим шагом</div>
-      </div>
-      <div class="pm-focus">Вершина уже рядом</div>
-    </div>
-    <div class="program-card">
-      <div class="pm-num">Урок 5</div><div class="pm-title">Жонглируем без остановки</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Четвёртый, пятый бросок и дальше</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Почему подход должен заканчиваться падением</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Жонглируем вместе – «зеркальные нейроны»</div>
-      </div>
-      <div class="pm-focus">Однажды случится магия</div>
-    </div>
-    <div class="program-card final-card">
-      <div class="pm-num">Урок 6</div><div class="pm-title">Цель – 30 секунд</div>
-      <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Подарок себе за результат</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Подходы, отдых и как засекать время</div>
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Как убрать лишнее напряжение</div>
-      </div>
-      <div class="pm-focus">Финиш – 30 секунд</div>
-    </div>
-    <div class="program-card intro-card program-card--wide">
-      <div><div class="pm-num">Урок 7</div><div class="pm-title">Что дальше</div></div>
-      <div>
-        <div class="pm-lessons">
-          <div class="pm-lesson"><span class="pm-lesson-dot"></span>Жонглирование как медитация на 3–5 минут</div>
-          <div class="pm-lesson"><span class="pm-lesson-dot"></span>Следующий трюк – два мяча в одной руке</div>
-          <div class="pm-lesson"><span class="pm-lesson-dot"></span>Как научить жонглировать близкого человека</div>
-        </div>
-      </div>
-    </div>
+<section class="why">
+  <div class="section-label">Больше, чем три мяча</div>
+  <h2 class="section-title">Что останется с вами <em>после курса</em></h2>
+  <p class="section-desc">Сам по себе навык в жизни пригождается не так часто. Самое ценное – то, что вы заберёте вместе с ним.</p>
+  <div class="why-grid">
+    <div class="inc-card"><h3>Опыт «я могу больше»</h3><p>Вы берётесь за то, что казалось «для циркачей», идёте по шагам – и получается. Этот опыт переносится на музыку, спорт, работу – куда угодно.</p></div>
+    <div class="inc-card"><h3>Перезагрузка за 5 минут</h3><p>Взяли мячи – и мысли отпустили. Внимание на броске, тело включилось. А если добавить внимание к дыханию, получается настоящая медитация.</p></div>
+    <div class="inc-card"><h3>Навык, который впечатляет</h3><p>«Ого, ты умеешь жонглировать!» – и, возможно, вы вдохновите кого-то пройти этот путь. А научить его сможете уже сами.</p></div>
   </div>
 </section>
 
-<!-- ===== МЯЧИ ===== -->
 <section class="balls" id="balls">
   <div class="balls-wrap">
     <div class="balls-photo">
@@ -770,19 +682,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== ЧТО ДАЁТ ===== -->
-<section class="why">
-  <div class="section-label">Больше, чем три мяча</div>
-  <h2 class="section-title">Что останется с вами <em>после курса</em></h2>
-  <p class="section-desc">Сам по себе навык в жизни пригождается не так часто. Самое ценное – то, что вы заберёте вместе с ним.</p>
-  <div class="why-grid">
-    <div class="inc-card"><h3>Опыт «я могу больше»</h3><p>Вы берётесь за то, что казалось «для циркачей», идёте по шагам – и получается. Этот опыт переносится на музыку, спорт, работу – куда угодно.</p></div>
-    <div class="inc-card"><h3>Перезагрузка за 5 минут</h3><p>Взяли мячи – и мысли отпустили. Внимание на броске, тело включилось. А если добавить внимание к дыханию, получается настоящая медитация.</p></div>
-    <div class="inc-card"><h3>Навык, который впечатляет</h3><p>«Ого, ты умеешь жонглировать!» – и, возможно, вы вдохновите кого-то пройти этот путь. А научить его сможете уже сами.</p></div>
-  </div>
-</section>
-
-<!-- ===== ТАРИФЫ ===== -->
 <section class="tariffs" id="tariffs">
   <div class="section-label">Тарифы</div>
   <h2 class="section-title">Выберите, <em>как пройти курс</em></h2>
@@ -818,7 +717,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== ГАРАНТИЯ + FAQ ===== -->
 <section class="guarantee-faq" id="faq">
   <div class="gf-grid">
     <div class="guarantee-box">
@@ -844,11 +742,11 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   </div>
 </section>
 
-<!-- ===== FINAL CTA ===== -->
 <section class="final-cta">
   <div class="section-label">Первый шаг</div>
   <h2 class="section-title">Пусть этот курс будет <em>не только про жонглирование</em></h2>
   <p class="section-desc">А про то, что новому можно учиться в любом возрасте. Возьмите мяч – и сделайте первый бросок уже сегодня.</p>
+  <p class="fc-promo"></p>
   <div class="final-actions">
     <a href="#tariffs" class="btn-hero">Выбрать тариф →</a>
     <div class="final-tg-col">

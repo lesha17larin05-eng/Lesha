@@ -43,7 +43,9 @@ if (self && promoUntil) {
       `<div class="tp-promo">Стартовая цена до ${promoLastDay} · осталось <b data-countdown>…</b></div>`)
     .replace(`Купить за ${base} ₽`, `Купить за ${now} ₽`)
     .replace('<span class="hero-safety">',
-      `<span class="hero-promo">Старт продаж: <b>${now} ₽</b> вместо ${base} ₽ до ${promoLastDay}</span><span class="hero-safety">`);
+      `<span class="hero-promo">Старт продаж: <b>${now} ₽</b> вместо ${base} ₽ до ${promoLastDay}</span><span class="hero-safety">`)
+    .replace('<p class="fc-promo"></p>',
+      `<p class="fc-promo">Стартовая цена – <b>${now} ₽</b> вместо ${base} ₽, только до ${promoLastDay}</p>`);
 }
 
 // FAQPage JSON-LD – собирается из FAQ прямо на странице (rich snippet в поиске).
@@ -64,7 +66,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
   description="Онлайн-курс жонглирования для новичков: научитесь жонглировать тремя мячами с нуля. 8 видеоуроков, 6 шагов и понятный критерий перехода в каждом упражнении."
   active="courses"
   pageStyles={styles}
-  ogImage="/img/IMG_4035.jpg"
+  ogImage="/img/zhonglirovanie/juggling@2x.jpg"
   noindex={isDraft}
 >
   {isDraft && <div class="tm-draft-bar">Черновик: курс не опубликован – страницу видите только вы (админ). Опубликовать – в /admin/courses.</div>}
@@ -84,7 +86,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
         btn.setAttribute('href', '/cabinet/zhonglirovanie');
       }
 
-      ['.hero-safety', '.hero-promo'].forEach(sel => {
+      ['.hero-safety', '.hero-promo', '.fc-promo'].forEach(sel => {
         const el = document.querySelector(sel);
         if (el) el.style.display = 'none';
       });
