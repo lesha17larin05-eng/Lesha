@@ -430,17 +430,14 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 /* Мячи */
 .balls { padding: 100px 80px; background: var(--cream); }
-.balls-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; }
-.ball-card { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 28px 26px; }
-.ball-card.main { border-color: var(--orange); }
-.ball-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; border-radius: 100px; margin-bottom: 14px; background: #d4f0e4; color: #0a6040; }
-.ball-tag.alt { background: #eef1f7; color: var(--navy); }
-.ball-card h3 { font-size: 19px; font-weight: 700; color: var(--navy); margin-bottom: 10px; line-height: 1.3; }
-.ball-card p { font-size: 15.5px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
-.ball-card ul { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 6px 0 4px; }
-.ball-card li { font-size: 15.5px; color: var(--text-mid); line-height: 1.55; padding-left: 22px; position: relative; }
-.ball-card li::before { content: '•'; position: absolute; left: 6px; color: var(--orange); font-weight: 700; }
-.ball-card li.no::before { content: '×'; color: var(--text-light); }
+.balls-wrap { display: grid; grid-template-columns: 1fr 1.1fr; gap: 64px; align-items: center; }
+.balls-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 4/5; box-shadow: 0 24px 60px rgba(27,38,70,0.12); }
+.balls-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 60% 50%; display: block; }
+.balls-steps { list-style: none; counter-reset: bs; display: flex; flex-direction: column; gap: 18px; margin-top: 8px; }
+.balls-steps li { counter-increment: bs; position: relative; padding: 22px 24px 22px 70px; background: white; border: 1px solid var(--border); border-radius: 18px; font-size: 16px; line-height: 1.7; color: var(--text-mid); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+@media (hover: hover) { .balls-steps li:hover { border-color: var(--orange); box-shadow: 0 10px 30px rgba(27,38,70,0.07); } }
+.balls-steps li::before { content: counter(bs); position: absolute; left: 22px; top: 20px; width: 32px; height: 32px; border-radius: 50%; background: var(--orange); color: white; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.balls-steps b { color: var(--navy); display: block; margin-bottom: 4px; font-size: 17px; }
 .ball-search { display: inline-block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; color: var(--navy); }
 .balls-tip { margin-top: 24px; background: var(--navy); color: rgba(255,255,255,0.92); border-radius: 20px; padding: 24px 28px; display: flex; gap: 16px; align-items: flex-start; font-size: 16px; line-height: 1.7; }
 .balls-tip b { color: white; }
@@ -452,14 +449,14 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 @media (max-width: 1100px) {
   .ladder { grid-template-columns: repeat(2, 1fr); }
-  .balls-grid { grid-template-columns: 1fr 1fr; }
-  .ball-card.main { grid-column: 1 / -1; }
+  .balls-wrap { grid-template-columns: 1fr; gap: 36px; }
+  .balls-photo { aspect-ratio: 3/2; }
 }
 @media (max-width: 960px) {
   .method, .camp, .balls, .why, .intro-video { padding: 60px 24px; }
   .intro-video { grid-template-columns: 1fr; gap: 28px; }
   .method-head { grid-template-columns: 1fr; gap: 28px; }
-  .ladder, .method-note, .camp-grid, .balls-grid, .why-grid { grid-template-columns: 1fr; }
+  .ladder, .method-note, .camp-grid, .why-grid { grid-template-columns: 1fr; }
   .camp-quote { padding: 28px; }
   .camp-quote blockquote { font-size: 22px; }
   .hero-right.tm-hero-right { min-height: 440px; }
@@ -491,13 +488,13 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     </div>
   </div>
   <div class="hero-right tm-hero-right">
-    <div class="tm-hero-art"><picture><source srcset="/img/IMG_4035.webp 1x, /img/IMG_4035@2x.webp 2x" type="image/webp"><img src="/img/IMG_4035.jpg" srcset="/img/IMG_4035.jpg 1x, /img/IMG_4035@2x.jpg 2x" alt="Алексей Ларин" width="1200" height="800" fetchpriority="high"></picture></div>
+    <div class="tm-hero-art"><picture><source srcset="/img/zhonglirovanie/hero.webp 1x, /img/zhonglirovanie/hero@2x.webp 2x" type="image/webp"><img src="/img/zhonglirovanie/hero.jpg" srcset="/img/zhonglirovanie/hero.jpg 1x, /img/zhonglirovanie/hero@2x.jpg 2x" alt="Алексей Ларин протягивает три мяча для жонглирования" width="858" height="1288" fetchpriority="high"></picture></div>
     <div class="start-pill"><span class="start-dot"></span>Доступ сразу после оплаты</div>
     <div class="course-badge">
       <div class="badge-icon">●</div>
       <div>
         <div class="badge-title">Первые броски – сегодня</div>
-        <div class="badge-sub">Нужны 3 мяча и немного места</div>
+        <div class="badge-sub">Для начала хватит одного мяча</div>
       </div>
     </div>
   </div>
@@ -617,8 +614,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="story" id="story">
   <div class="story-photo">
     <picture>
-      <source srcset="/img/IMG_4023.webp 1x, /img/IMG_4023@2x.webp 2x" type="image/webp">
-      <img src="/img/IMG_4023.jpg" srcset="/img/IMG_4023.jpg 1x, /img/IMG_4023@2x.jpg 2x" alt="Алексей Ларин" loading="lazy" style="object-position:50% 20%">
+      <source srcset="/img/zhonglirovanie/author.webp 1x, /img/zhonglirovanie/author@2x.webp 2x" type="image/webp">
+      <img src="/img/zhonglirovanie/author.jpg" srcset="/img/zhonglirovanie/author.jpg 1x, /img/zhonglirovanie/author@2x.jpg 2x" alt="Алексей Ларин с мячами у знака «Я люблю Салют» в детском лагере" loading="lazy" style="object-position:50% 50%">
     </picture>
   </div>
   <div class="story-content">
@@ -734,40 +731,22 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 <!-- ===== МЯЧИ ===== -->
 <section class="balls" id="balls">
-  <div class="section-label">Что понадобится</div>
-  <h2 class="section-title">Три мяча – <em>и можно начинать</em></h2>
-  <p class="section-desc">Специального инвентаря, кроме мячей, не нужно. Главное – чтобы все три были одинаковыми и не отскакивали от пола.</p>
-  <div class="balls-grid">
-    <div class="ball-card main">
-      <span class="ball-tag">Лучший вариант</span>
-      <h3>Мячи для жонглирования с наполнителем</h3>
-      <p>Мягкие мячи, внутри мелкий песок или гранулы. Продаются на любом маркетплейсе – ищите <span class="ball-search">мячи для жонглирования</span>.</p>
-      <ul>
-        <li>Диаметр 6–7 см – удобно лежат в ладони, два помещаются в одной руке</li>
-        <li>Вес 100–130 г – чувствуется в руке, не сдувает при броске</li>
-        <li>Мягкие, не отскакивают – упавший мяч остаётся на месте</li>
-        <li>Набор из 3 одинаковых – разные мячи летят по-разному</li>
-        <li>Разных цветов – проще следить за каждым</li>
-      </ul>
+  <div class="balls-wrap">
+    <div class="balls-photo">
+      <picture>
+        <source srcset="/img/zhonglirovanie/juggling.webp 1x, /img/zhonglirovanie/juggling@2x.webp 2x" type="image/webp">
+        <img src="/img/zhonglirovanie/juggling.jpg" srcset="/img/zhonglirovanie/juggling.jpg 1x, /img/zhonglirovanie/juggling@2x.jpg 2x" alt="Алексей жонглирует тремя мячами в осеннем парке" width="1000" height="667" loading="lazy">
+      </picture>
     </div>
-    <div class="ball-card">
-      <span class="ball-tag alt">Сделать самому</span>
-      <h3>Из шариков и крупы – за 10 минут</h3>
-      <ul>
-        <li>Насыпьте в маленький пакет с застёжкой 100–120 г пшена или риса, выпустите воздух</li>
-        <li>У воздушного шарика отрежьте горлышко и натяните его на пакет</li>
-        <li>Второй шарик без горлышка натяните сверху, закрыв отверстие</li>
-        <li>Повторите ещё 2 раза – одинаково по весу</li>
-      </ul>
-    </div>
-    <div class="ball-card">
-      <span class="ball-tag alt">На первое время</span>
-      <h3>Что есть дома</h3>
-      <ul>
-        <li>Мячи для тенниса – годятся для первых уроков, но легче и отскакивают</li>
-        <li>Три одинаковых мандарина или небольших яблока – для первых бросков</li>
-        <li class="no">Не подойдут: надувные, прыгучие и мячи разного размера</li>
-      </ul>
+    <div class="balls-content">
+      <div class="section-label">Что понадобится</div>
+      <h2 class="section-title">Мячи: <em>начните с того, что есть</em></h2>
+      <p class="section-desc">Покупать что-то заранее и ждать доставку не нужно – начать можно уже сегодня.</p>
+      <ol class="balls-steps">
+        <li><b>Возьмите мяч, который есть дома.</b> Подойдёт теннисный или любой другой примерно такого размера, чтобы удобно лежал в ладони. Если мяча нет – найдите что-то похожее. Только, пожалуйста, не еду 🙂</li>
+        <li><b>Сразу закажите мячи для жонглирования на маркетплейсе.</b> Они так и называются – ищите <span class="ball-search">мячи для жонглирования</span>. Внутри у них мелкий песок: мяч не отскакивает и лучше слушается руки. Берите набор из трёх одинаковых.</li>
+        <li><b>Первое время вы всё равно работаете с одним мячом.</b> Пока едут хорошие мячи, вы отработаете точный бросок. А когда они приедут – закрепите опыт и пойдёте дальше.</li>
+      </ol>
     </div>
   </div>
   <div class="balls-tip">
@@ -840,7 +819,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <details class="faq-item"><summary>Мне кажется, у меня совсем нет координации. Получится?</summary><div class="faq-content"><p>Курс сделан в первую очередь для вас. Мы начинаем с одного мяча, и на каждом шаге есть понятный критерий. Вам не нужно «уметь» – нужно пройти шаги по порядку и практиковать.</p></div></details>
         <details class="faq-item"><summary>Сколько времени нужно, чтобы научиться?</summary><div class="faq-content"><p>Индивидуально. В лагере кому-то на первый шаг хватало 15 минут, кому-то – нескольких дней. Я сам без методики учился около трёх недель – по шагам обычно выходит быстрее.</p><p>Хватит коротких подходов с отдыхом, например по 10–15 минут в день. Отдых тоже важен: в это время нервная система усваивает навык.</p></div></details>
         <details class="faq-item"><summary>С какого возраста можно?</summary><div class="faq-content"><p>Методику проходили дети, подростки, вожатые и взрослые. Если ребёнок может удержать внимание на объяснении и повторить за видео – ему подойдёт. Верхнего предела по возрасту нет.</p></div></details>
-        <details class="faq-item"><summary>Какие мячи нужны и где их взять?</summary><div class="faq-content"><p>Три одинаковых мяча диаметром 6–7 см, которые не отскакивают. Удобнее всего мячи для жонглирования с наполнителем – они есть на любом маркетплейсе. Можно сделать самому из шариков и крупы. <a class="tg-text-link" href="#balls">Подробно – в блоке про мячи</a>.</p></div></details>
+        <details class="faq-item"><summary>Какие мячи нужны и где их взять?</summary><div class="faq-content"><p>Для начала – любой мяч, который есть дома, например теннисный: первые уроки вы всё равно занимаетесь с одним мячом. И сразу закажите на маркетплейсе набор «мячи для жонглирования» – с мелким песком внутри, они не отскакивают и лучше слушаются руки. <a class="tg-text-link" href="#balls">Подробно – в блоке про мячи</a>.</p></div></details>
         <details class="faq-item"><summary>Сколько нужно места?</summary><div class="faq-content"><p>Немного свободного пространства перед собой и над головой. Удобнее всего стоять перед кроватью или диваном – упавшие мячи будет проще поднимать.</p></div></details>
         <details class="faq-item"><summary>Что делать, если застрял на каком-то шаге?</summary><div class="faq-content"><p>Вернуться на шаг назад – это нормально и работает. Пересмотреть урок и сверить технику. Снять себя на телефон – со стороны ошибки видно сразу. А в тарифе «С разбором» я посмотрю ваши видео и подскажу сам.</p></div></details>
         <details class="faq-item"><summary>Можно заниматься вместе с ребёнком по одной покупке?</summary><div class="faq-content"><p>Да, смотрите уроки вместе. Разборы видео в тарифе «С разбором» – для одного человека.</p></div></details>
