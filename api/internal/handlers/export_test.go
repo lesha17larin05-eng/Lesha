@@ -27,3 +27,8 @@ func (a *App) RetryOutboxForTest(ctx context.Context, now time.Time) error {
 func (a *App) CheckStuckPaymentsForTest(ctx context.Context, now time.Time) error {
 	return a.checkStuckPayments(ctx, now)
 }
+
+// CheckAbandonedPaymentsForTest – один проход поиска брошенных оплат.
+func (a *App) CheckAbandonedPaymentsForTest(ctx context.Context, now time.Time) error {
+	return a.checkAbandonedPayments(ctx, now)
+}

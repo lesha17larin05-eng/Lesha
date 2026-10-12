@@ -2882,17 +2882,19 @@ func TestEmailRetry(t *testing.T) {
 	_ = repo.Grant(ctx, id, freeID, "free", nil)
 	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET created_at='2026-10-10T09:00:00Z' WHERE id=$1`, id)
 	// Письмо 1 не ушло 5 минут назад – повтор ещё рано.
-	_, _ = repo.Pool.Exec(ctx, `INSERT INTO drip_sends(user_id, step, status, error, sent_at)
-		VALUES ($1, 1, 'failed', 'timeout', now() - interval '5 minutes')`, id)
 	now := time.Now()
 	if h := now.UTC().Add(3 * time.Hour).Hour(); h < 9 || h >= 21 {
 		now = time.Date(now.Year(), now.Month(), now.Day(), 9, 0, 0, 0, time.UTC) // 12:00 МСК
 	}
+	// Время отправки считаем от того же now, что передаём воркеру, – иначе
+	// вечером (now подменён на 12:00) «5 минут назад» оказывается в будущем.
+	_, _ = repo.Pool.Exec(ctx, `INSERT INTO drip_sends(user_id, step, status, error, sent_at)
+		VALUES ($1, 1, 'failed', 'timeout', $2)`, id, now.Add(-5*time.Minute))
 	if err := app.SendOneDripEmailForTest(ctx, now); err != db.ErrNotFound {
 		t.Fatalf("retry too early: %v", err)
 	}
 	// Через 40 минут – повтор уходит, строка становится sent, попытка №2.
-	_, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = now() - interval '40 minutes'`)
+	_, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = $1`, now.Add(-40*time.Minute))
 	if err := app.SendOneDripEmailForTest(ctx, now); err != nil {
 		t.Fatalf("retry: %v", err)
 	}
@@ -3092,5 +3094,88 @@ func TestStuckPaymentAlert(t *testing.T) {
 	msg = waitRelay(t, "Подтверждение пришло с опозданием")
 	if !strings.Contains(msg, "stuck@buyer.ru") {
 		t.Fatalf("late message: %q", msg)
+	}
+}
+
+// Брошенная оплата: перешёл к оплате и не оплатил за час → одно уведомление.
+// Не тревожим, если человек потом попробовал ещё раз (уведомление только по
+// последнему заказу) или вернулся с оплаты (это «зависшая» оплата).
+func TestAbandonedPaymentAlert(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	price := 1490
+	if _, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zhonglirovanie", Title: "Жонглирование", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	buy := func(email string) string {
+		t.Helper()
+		r, body := newClient(srv).do("POST", "/api/courses/zhonglirovanie/quick-checkout",
+			map[string]any{"email": email, "name": "Покупатель", "tariff": "self", "consent_pd": true})
+		if r.StatusCode != 200 {
+			t.Fatalf("checkout %s: %d %s", email, r.StatusCode, body)
+		}
+		var resp struct {
+			OrderID string `json:"order_id"`
+		}
+		_ = json.Unmarshal(body, &resp)
+		return resp.OrderID
+	}
+	buy("gone@buyer.ru")
+	buy("retry@buyer.ru")
+	retryLast := buy("retry@buyer.ru")
+	back := buy("back@buyer.ru")
+	if r, _ := newClient(srv).do("GET", "/api/orders/"+back+"/status?returned=1", nil); r.StatusCode != 200 {
+		t.Fatal("status")
+	}
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", ""),
+		TG: notify.New(testRelay(t).URL, "relay-secret")}
+	now := time.Now()
+	count := func(substr string) int {
+		relayMu.Lock()
+		defer relayMu.Unlock()
+		n := 0
+		for _, m := range relayMsgs {
+			if strings.Contains(m, "Не завершил оплату") && strings.Contains(m, substr) {
+				n++
+			}
+		}
+		return n
+	}
+	if err := app.CheckAbandonedPaymentsForTest(ctx, now.Add(30*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	if count("@buyer.ru") != 0 {
+		t.Fatal("alerted too early")
+	}
+	for i := 0; i < 2; i++ {
+		if err := app.CheckAbandonedPaymentsForTest(ctx, now.Add(61*time.Minute)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	msg := waitRelay(t, "gone@buyer.ru")
+	if !strings.Contains(msg, "Жонглирование") || !strings.Contains(msg, "990 ₽") {
+		t.Fatalf("abandoned message: %q", msg)
+	}
+	waitRelay(t, "retry@buyer.ru")
+	time.Sleep(100 * time.Millisecond)
+	if count("gone@buyer.ru") != 1 || count("retry@buyer.ru") != 1 || count("back@buyer.ru") != 0 {
+		t.Fatalf("counts: gone=%d retry=%d back=%d", count("gone@buyer.ru"), count("retry@buyer.ru"), count("back@buyer.ru"))
+	}
+	o, _ := repo.GetOrder(ctx, uuid.MustParse(retryLast))
+	if !strings.Contains(waitRelay(t, "retry@buyer.ru"), "№"+strconv.FormatInt(o.OrderNum, 10)) {
+		t.Fatal("retry alert should be about the latest order")
+	}
+	// через сутки старые заказы уже не поднимаем
+	before := count("@buyer.ru")
+	if err := app.CheckAbandonedPaymentsForTest(ctx, now.Add(26*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	if count("@buyer.ru") != before {
+		t.Fatal("old orders must not be alerted")
 	}
 }

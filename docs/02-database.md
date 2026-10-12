@@ -182,3 +182,7 @@ SQL каждой группы — отдельная константа, вво�
 ### orders.returned_at, orders.stuck_alerted_at (миграция 022)
 
 `returned_at` – когда покупатель вернулся с оплаты с отметкой «успешно» (страница `/kurs-oplachen` вызывает `GET /api/orders/{id}/status?returned=1`; ставится один раз и только для `pending`). `stuck_alerted_at` – когда Алексею ушло уведомление «оплата без подтверждения» (`handlers/payments_watch.go`). Частичный индекс `idx_orders_stuck` – по ожидающим заказам без уведомления.
+
+### orders.abandoned_alerted_at (миграция 023)
+
+Когда Алексею ушло уведомление «🛒 не завершил оплату» – заказ `pending` старше часа, покупатель не возвращался с оплаты (`returned_at IS NULL`) и не делал новых попыток купить то же самое (`Repo.AbandonedOrders`, окно – последние сутки).

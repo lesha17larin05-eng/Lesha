@@ -63,6 +63,9 @@ func RunStuckPaymentWatcher(ctx context.Context, a *App) {
 			if err := a.checkStuckPayments(ctx, time.Now()); err != nil {
 				slog.Warn("stuck payments check failed", "err", err)
 			}
+			if err := a.checkAbandonedPayments(ctx, time.Now()); err != nil {
+				slog.Warn("abandoned payments check failed", "err", err)
+			}
 		}
 	}
 }
@@ -95,4 +98,38 @@ func (a *App) alertCheckoutFail(what, email, reason string) {
 	}
 	a.TG.Async("🛑 Покупатель не смог перейти к оплате\n" + what + who + "\nОшибка: " + reason +
 		"\n\nПокупатель увидел сообщение об ошибке. Если повторится – напишите разработчику.")
+}
+
+// ─── Брошенная оплата ────────────────────────────────────────────────────
+//
+// Человек ввёл имя и почту, перешёл к оплате – и не оплатил за
+// abandonedAfter. Это тёплый покупатель: Алексей может написать лично.
+// Смотрим только заказы последних суток (старые «висящие» заказы не
+// поднимаем) и не трогаем тех, кто потом попробовал ещё раз или купил.
+
+const abandonedAfter = time.Hour
+
+func (a *App) checkAbandonedPayments(ctx context.Context, now time.Time) error {
+	list, err := a.Repo.AbandonedOrders(ctx, now.Add(-24*time.Hour), now.Add(-abandonedAfter))
+	if err != nil {
+		return err
+	}
+	for _, s := range list {
+		what := "Курс «" + s.CourseTitle + "»"
+		if s.CourseSlug == "" {
+			what = "Услуга «" + s.Service + "»"
+		}
+		who := s.Email
+		if s.Name != "" {
+			who = s.Name + ", " + s.Email
+		}
+		a.TG.Async("🛒 Не завершил оплату – заказ №" + strconv.FormatInt(s.OrderNum, 10) + "\n" +
+			who + "\n" + what + ", " + strconv.Itoa(s.AmountRub) + " ₽\n" +
+			"Перешёл к оплате в " + moscowNow(s.CreatedAt).Format("15:04") + " по Москве и не оплатил.\n\n" +
+			"Можно написать лично: спросить, что остановило, и помочь с оплатой.")
+		if err := a.Repo.MarkAbandonedAlerted(ctx, s.ID); err != nil {
+			return err
+		}
+	}
+	return nil
 }
