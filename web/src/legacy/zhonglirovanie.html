@@ -119,7 +119,7 @@ nav.top-nav {
 
 /* ===== PROBLEMS ===== */
 .problems { padding: 100px 80px; background: white; }
-.problems-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.problems-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
 .problem-card { background: var(--cream); border-radius: 20px; padding: 32px 28px; border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
 .problem-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.2s; }
 .problem-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.07); }
@@ -132,6 +132,17 @@ nav.top-nav {
 /* ===== STORY ===== */
 .story { padding: 100px 80px; background: var(--navy); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; overflow: hidden; }
 .story::before { content: '"'; position: absolute; top: -20px; left: 60px; font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+.story-reels { display: flex; flex-direction: column; align-items: center; gap: 16px; position: relative; z-index: 1; }
+.reel-main { width: min(100%, 340px); aspect-ratio: 9/16; border-radius: 24px; overflow: hidden; background: #000; box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
+.reel-main video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.reel-thumbs { display: flex; gap: 10px; }
+.reel-thumb { width: 64px; aspect-ratio: 9/16; padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; cursor: pointer; background: none; opacity: 0.55; transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
+.reel-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.reel-thumb.is-active { opacity: 1; border-color: var(--orange); }
+@media (hover: hover) { .reel-thumb:hover { opacity: 1; transform: translateY(-2px); } }
+.reel-thumb:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; opacity: 1; }
+.reel-note { font-size: 14px; color: rgba(255,255,255,0.6); }
+@media (max-width: 960px) { .story { grid-template-columns: 1fr; gap: 44px; } }
 .story-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 3/4; }
 .story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
 .story-content .section-label { color: #7ab0f0; }
@@ -432,7 +443,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 .balls { padding: 100px 80px; background: var(--cream); }
 .balls-wrap { display: grid; grid-template-columns: 1fr 1.1fr; gap: 64px; align-items: center; }
 .balls-photo { border-radius: 24px; overflow: hidden; aspect-ratio: 4/5; box-shadow: 0 24px 60px rgba(27,38,70,0.12); }
-.balls-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 75% 50%; display: block; }
+.balls-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
 .balls-steps { list-style: none; counter-reset: bs; display: flex; flex-direction: column; gap: 18px; margin-top: 8px; }
 .balls-steps li { counter-increment: bs; position: relative; padding: 22px 24px 22px 70px; background: white; border: 1px solid var(--border); border-radius: 18px; font-size: 16px; line-height: 1.7; color: var(--text-mid); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
 @media (hover: hover) { .balls-steps li:hover { border-color: var(--orange); box-shadow: 0 10px 30px rgba(27,38,70,0.07); } }
@@ -450,7 +461,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 @media (max-width: 1100px) {
   .ladder { grid-template-columns: repeat(2, 1fr); }
   .balls-wrap { grid-template-columns: 1fr; gap: 36px; }
-  .balls-photo { aspect-ratio: 3/2; }
+  .balls-photo { aspect-ratio: 4/5; max-width: 460px; }
 }
 @media (max-width: 960px) {
   .method, .camp, .balls, .why, .intro-video { padding: 60px 24px; }
@@ -475,7 +486,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <h1>Жонглирование: <em>у вас получится</em></h1>
     <p class="hero-sub">Научитесь жонглировать тремя мячами с нуля – шаг за шагом</p>
     <div class="hero-promise">
-      <p>Пошаговая методика, по которой я научил жонглировать <strong>больше 50 детей и взрослых</strong>. От одного мяча – к фонтану из трёх. В каждом упражнении понятный критерий: <strong>8 точных бросков из 10</strong> – и можно дальше.</p>
+      <p>Пошаговая методика, по которой я научил жонглировать <strong>больше 50 детей и взрослых</strong>. От одного мяча – к трём. В каждом упражнении понятный критерий: <strong>8 точных бросков из 10</strong> – и можно дальше.</p>
     </div>
     <div class="hero-cta">
       <a href="#tariffs" class="btn-hero">Смотреть тарифы →</a>
@@ -488,7 +499,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     </div>
   </div>
   <div class="hero-right tm-hero-right">
-    <div class="tm-hero-art"><picture><source srcset="/img/zhonglirovanie/hero.webp 1x, /img/zhonglirovanie/hero@2x.webp 2x" type="image/webp"><img src="/img/zhonglirovanie/hero.jpg" srcset="/img/zhonglirovanie/hero.jpg 1x, /img/zhonglirovanie/hero@2x.jpg 2x" alt="Алексей Ларин протягивает три мяча для жонглирования" width="858" height="1288" fetchpriority="high"></picture></div>
+    <div class="tm-hero-art"><picture><source srcset="/img/zhonglirovanie/juggling.webp 1x, /img/zhonglirovanie/juggling@2x.webp 2x" type="image/webp"><img src="/img/zhonglirovanie/juggling.jpg" srcset="/img/zhonglirovanie/juggling.jpg 1x, /img/zhonglirovanie/juggling@2x.jpg 2x" alt="Алексей Ларин жонглирует тремя мячами" width="1200" height="840" fetchpriority="high" style="object-position:68% 50%"></picture></div>
     <div class="start-pill"><span class="start-dot"></span>Доступ сразу после оплаты</div>
     <div class="course-badge">
       <div class="badge-icon">●</div>
@@ -504,7 +515,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="intro-video" id="video">
   <div class="iv-text">
     <div class="section-label">Первый урок – бесплатно</div>
-    <h2 class="section-title">Посмотрите, <em>как я объясняю</em></h2>
+    <h2 class="section-title">Попробуйте <em>до покупки</em></h2>
     <p class="section-desc">Знакомство с курсом – 3,5 минуты. Как устроена методика и почему она подходит тем, кто сомневается. Если откликнется – дальше по шагам.</p>
     <a href="#tariffs" class="btn-outline iv-cta">Выбрать тариф →</a>
   </div>
@@ -530,11 +541,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <p>Кажется, что про себя уже всё понятно. Жонглирование – быстрый и честный способ снова почувствовать: «я могу больше, чем думал».</p>
     </div>
     <div class="problem-card">
-      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/></svg></div>
-      <h3>Голова перегружена мыслями</h3>
-      <p>3–5 минут с мячами – и вы переключились: внимание на броске, тело включилось, кровь разогналась. Такая активная медитация.</p>
-    </div>
-    <div class="problem-card">
       <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="2.2"/><path d="M3 20c0-3 2.2-5.5 5-5.5s5 2.5 5 5.5M13.5 20c.2-2.4 1.6-4.2 3.5-4.2s3.3 1.8 3.5 4.2"/></svg></div>
       <h3>Хотите заниматься с ребёнком</h3>
       <p>Методика выросла в детском лагере. Учиться вместе и видеть глаза ребёнка, когда у него получилось, – отдельное удовольствие.</p>
@@ -543,11 +549,6 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4-2.5z"/></svg></div>
       <h3>Пробовали по роликам – и бросили</h3>
       <p>В роликах обычно показывают результат, а не путь к нему. Здесь – последовательные упражнения, разбор частых ошибок и понятно, когда идти дальше.</p>
-    </div>
-    <div class="problem-card">
-      <div class="problem-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></div>
-      <h3>Хочется удивлять близких</h3>
-      <p>Небольшой навык, который всегда впечатляет. А потом вы сможете сами научить друга – шаги уже знаете.</p>
     </div>
   </div>
 </section>
@@ -561,45 +562,39 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
       <p class="section-desc">Вы не прыгаете сразу к трём мячам. У каждого шага – свой критерий. Выполнили – переходите дальше. Не выходит – делаете шаг назад, это тоже часть пути.</p>
     </div>
     <figure class="fontan">
-      <img src="/img/zhonglirovanie/fontan.svg" alt="Схема жонглирования: первый мяч летит вправо, второй влево, третий снова вправо" width="580" height="390" loading="lazy">
-      <figcaption>Так выглядит фонтан из трёх мячей: каждый бросок – из центра в сторону, по очереди вправо и влево. К этой картинке вы придёте за 6 шагов.</figcaption>
+      <img src="/img/zhonglirovanie/fontan.svg" alt="Схема жонглирования тремя мячами: каждый мяч вылетает из центральной точки и по дуге летит в другую руку" width="440" height="370" loading="lazy">
+      <figcaption>Каждый мяч вылетает из центра и летит в другую руку – по очереди вправо и влево. К этой картинке вы придёте за 6 шагов.</figcaption>
     </figure>
   </div>
   <div class="ladder">
     <div class="step-card">
       <div class="step-top"><span class="step-num">1</span><span class="step-balls"><i class="on"></i><i></i><i></i></span></div>
       <h3>Фундамент – один мяч</h3>
-      <p>Бросок из боковой точки через центр по небольшой дуге – чуть выше лба – в другую руку. На этом броске строится всё жонглирование.</p>
       <div class="step-crit">Дальше, когда <b>8 из 10</b> бросков точные</div>
     </div>
     <div class="step-card">
       <div class="step-top"><span class="step-num">2</span><span class="step-balls"><i class="on"></i><i class="on"></i><i></i></span></div>
       <h3>Два мяча</h3>
-      <p>Бросок, следом второй – тоже вверх, а не передачей внизу. Отрабатываем в обе стороны: правая-левая и левая-правая.</p>
       <div class="step-crit">Дальше, когда <b>8 из 10</b> пар точные – с обеих рук</div>
     </div>
     <div class="step-card">
       <div class="step-top"><span class="step-num">3</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
       <h3>Два мяча в одной руке</h3>
-      <p>Учимся держать третий мяч мизинцем и безымянным и бросать тремя пальцами. Рука привыкает, что в ней что-то есть.</p>
       <div class="step-crit">Дальше, когда лишний мяч <b>не мешает</b> точным броскам</div>
     </div>
     <div class="step-card">
       <div class="step-top"><span class="step-num">4</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
       <h3>Три броска</h3>
-      <p>Раз, два, три – поймали. Главная задача – выпустить третий мяч. Если ступор – сначала просто бросьте его куда-нибудь.</p>
       <div class="step-crit">Дальше, когда третий бросок <b>уверенно выходит</b></div>
     </div>
     <div class="step-card">
       <div class="step-top"><span class="step-num">5</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
       <h3>Без остановки</h3>
-      <p>Четвёртый, пятый бросок… Подход теперь заканчивается не ловлей, а упавшим мячом. Однажды случится магия – как первый шаг ребёнка.</p>
       <div class="step-crit">Дальше, когда получается <b>7 бросков</b> подряд</div>
     </div>
     <div class="step-card final">
       <div class="step-top"><span class="step-num">6</span><span class="step-balls"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
       <h3>Цель – 30 секунд</h3>
-      <p>Тренируемся подходами с отдыхом и засекаем время. Заранее придумываете себе подарок – за первые 30 секунд.</p>
       <div class="step-crit">Финиш: <b>30 секунд</b> жонглирования и подарок себе</div>
     </div>
   </div>
@@ -612,16 +607,22 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 <!-- ===== ОБ АВТОРЕ ===== -->
 <section class="story" id="story">
-  <div class="story-photo">
-    <picture>
-      <source srcset="/img/zhonglirovanie/author.webp 1x, /img/zhonglirovanie/author@2x.webp 2x" type="image/webp">
-      <img src="/img/zhonglirovanie/author.jpg" srcset="/img/zhonglirovanie/author.jpg 1x, /img/zhonglirovanie/author@2x.jpg 2x" alt="Алексей Ларин с мячами у знака «Я люблю Салют» в детском лагере" loading="lazy" style="object-position:50% 50%">
-    </picture>
+  <div class="story-reels">
+    <div class="reel-main">
+      <video controls preload="none" playsinline poster="/img/zhonglirovanie/reel-1.jpg" src="/lesson-videos/promo/zh-reel-1.mp4" aria-label="Ролик из лагеря"></video>
+    </div>
+    <div class="reel-thumbs" role="list">
+      <button type="button" class="reel-thumb is-active" data-reel="1" aria-label="Ролик 1" role="listitem"><img src="/img/zhonglirovanie/reel-1.jpg" alt="" width="90" height="160" loading="lazy"></button>
+      <button type="button" class="reel-thumb" data-reel="2" aria-label="Ролик 2" role="listitem"><img src="/img/zhonglirovanie/reel-2.jpg" alt="" width="90" height="160" loading="lazy"></button>
+      <button type="button" class="reel-thumb" data-reel="3" aria-label="Ролик 3" role="listitem"><img src="/img/zhonglirovanie/reel-3.jpg" alt="" width="90" height="160" loading="lazy"></button>
+      <button type="button" class="reel-thumb" data-reel="4" aria-label="Ролик 4" role="listitem"><img src="/img/zhonglirovanie/reel-4.jpg" alt="" width="90" height="160" loading="lazy"></button>
+    </div>
+    <p class="reel-note">Ролики из лагеря – так это было вживую</p>
   </div>
   <div class="story-content">
     <div class="section-label">Почему именно я</div>
     <h2 class="section-title" style="color:white;">Методика родилась <em>в детском лагере</em></h2>
-    <div class="story-pull">Я научился жонглировать сам – примерно за три недели. А потом зимой купил пианино и уже трижды выступал перед большой аудиторией.</div>
+    <div class="story-pull">Сам я учился жонглировать около трёх недель – без методики, наугад. Поэтому собрал шаги, по которым этот путь проходят быстрее и без лишних ошибок.</div>
     <p class="story-text">Работая тренером в лагере, я предлагал научиться жонглировать всем желающим. Я уже сбился со счёта – больше 50 детей, вожатых и взрослых. Так сложилась методика: последовательные шаги, понятные критерии и разбор ошибок, которые встречаются почти у всех.</p>
     <p class="story-text">Меня больше всего вдохновляют люди, которые заранее решили, что у них не получится. Они доверяются, делают первый шаг, практикуют – и у них получается. Этот опыт потом помогает пробовать новое и в других сферах жизни.</p>
     <div class="creds">
@@ -653,7 +654,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 <section class="program" id="program">
   <div class="section-label">Программа</div>
   <h2 class="section-title">8 видеоуроков – <em>и никакой воды</em></h2>
-  <p class="section-desc">Каждый урок – одно упражнение: как делать, частые ошибки и когда переходить дальше.</p>
+  <p class="section-desc">Что внутри каждого урока – подробно.</p>
   <div class="program-grid">
     <div class="program-card intro-card program-card--wide">
       <div><div class="pm-num">Урок 0</div><div class="pm-title">Знакомство с курсом</div></div>
@@ -669,7 +670,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="pm-lesson"><span class="pm-lesson-dot"></span>Бросок «ковшом» через центр по дуге</div>
         <div class="pm-lesson"><span class="pm-lesson-dot"></span>4 частые ошибки и главная – мяч уходит вперёд</div>
       </div>
-      <div class="pm-focus">Критерий: 8 точных из 10</div>
+      <div class="pm-focus">На этом броске строится всё</div>
     </div>
     <div class="program-card">
       <div class="pm-num">Урок 2</div><div class="pm-title">Два мяча</div>
@@ -678,7 +679,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="pm-lesson"><span class="pm-lesson-dot"></span>Серии по 10–15 бросков в обе стороны</div>
         <div class="pm-lesson"><span class="pm-lesson-dot"></span>Почему нельзя передавать мяч внизу</div>
       </div>
-      <div class="pm-focus">Критерий: 8 точных пар из 10 с обеих рук</div>
+      <div class="pm-focus">Обе руки – одинаково</div>
     </div>
     <div class="program-card">
       <div class="pm-num">Урок 3</div><div class="pm-title">Два мяча в одной руке</div>
@@ -701,11 +702,11 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
     <div class="program-card">
       <div class="pm-num">Урок 5</div><div class="pm-title">Жонглируем без остановки</div>
       <div class="pm-lessons">
-        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Четвёртый бросок и дальше – запускаем фонтан</div>
+        <div class="pm-lesson"><span class="pm-lesson-dot"></span>Четвёртый, пятый бросок и дальше</div>
         <div class="pm-lesson"><span class="pm-lesson-dot"></span>Почему подход должен заканчиваться падением</div>
         <div class="pm-lesson"><span class="pm-lesson-dot"></span>Жонглируем вместе – «зеркальные нейроны»</div>
       </div>
-      <div class="pm-focus">Критерий: 7 бросков подряд</div>
+      <div class="pm-focus">Однажды случится магия</div>
     </div>
     <div class="program-card final-card">
       <div class="pm-num">Урок 6</div><div class="pm-title">Цель – 30 секунд</div>
@@ -734,8 +735,8 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
   <div class="balls-wrap">
     <div class="balls-photo">
       <picture>
-        <source srcset="/img/zhonglirovanie/juggling.webp 1x, /img/zhonglirovanie/juggling@2x.webp 2x" type="image/webp">
-        <img src="/img/zhonglirovanie/juggling.jpg" srcset="/img/zhonglirovanie/juggling.jpg 1x, /img/zhonglirovanie/juggling@2x.jpg 2x" alt="Алексей жонглирует тремя мячами в осеннем парке" width="1000" height="667" loading="lazy">
+        <source srcset="/img/zhonglirovanie/hero.webp 1x, /img/zhonglirovanie/hero@2x.webp 2x" type="image/webp">
+        <img src="/img/zhonglirovanie/hero.jpg" srcset="/img/zhonglirovanie/hero.jpg 1x, /img/zhonglirovanie/hero@2x.jpg 2x" alt="Алексей протягивает три мяча для жонглирования" width="858" height="1288" loading="lazy">
       </picture>
     </div>
     <div class="balls-content">
@@ -794,7 +795,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
         <div class="tariff-feature"><span class="tf-check">✓</span>Всё из тарифа «Самостоятельный»</div>
         <div class="tariff-divider"></div>
         <div class="tariff-divider-label">Дополнительно</div>
-        <div class="tariff-feature bonus"><span class="tf-check">★</span>3 разбора ваших видео в Телеграме: один мяч, три броска, фонтан</div>
+        <div class="tariff-feature bonus"><span class="tf-check">★</span>3 разбора ваших видео в Телеграме: один мяч, три броска, жонглирование без остановки</div>
         <div class="tariff-feature bonus"><span class="tf-check">★</span>Ответ голосовым: что уже хорошо и 1–2 точные поправки</div>
         <div class="tariff-feature bonus"><span class="tf-check">★</span>Вопросы по технике в личных сообщениях 30 дней</div>
       </div>

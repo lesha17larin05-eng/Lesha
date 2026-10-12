@@ -108,7 +108,7 @@ Handler в `payments.go::ProdamusWebhook`:
 
 Для каждого платного курса в `nginx/nginx.conf` нужен **отдельный** `location /lesson-videos/<slug>/` с `auth_request /_lesson_mp4_auth` (Go-хендлер `LessonMp4Auth` проверяет enrollment). Без него файлы уйдут через открытый `location /lesson-videos/` для бесплатных курсов. Сейчас защищены: `zdorovaya-spina`, `zhonglirovanie`.
 
-Промо-видео для лендингов – открытая папка `/root/data/videos/promo/` (отдаётся общим `location /lesson-videos/`). Сейчас там `zhonglirovanie-znakomstvo.mp4` – копия урока «Знакомство с курсом» для блока «Первый урок – бесплатно».
+Промо-видео для лендингов – открытая папка `/root/data/videos/promo/` (отдаётся общим `location /lesson-videos/`). Сейчас там `zhonglirovanie-znakomstvo.mp4` – копия урока «Знакомство с курсом» для блока «Первый урок – бесплатно». И рилсы из лагеря для блока «Почему именно я»: `zh-reel-1.mp4` … `zh-reel-4.mp4` (720p, x264 CRF 24, AAC 96k, faststart; постеры – `web/public/img/zhonglirovanie/reel-N.jpg`). Загружаются вручную через scp.
 
 Имена файлов курса жонглирования (`/root/data/videos/zhonglirovanie/`): `znakomstvo.mp4`, `odin-myach.mp4`, `dva-myacha.mp4`, `dva-v-odnoy-ruke.mp4`, `tri-broska.mp4`, `bez-ostanovki.mp4`, `cel-30-sekund.mp4`, `chto-dalshe.mp4`.
 Пока файла нет, кабинет жонглирования показывает на месте плеера заглушку «Видео скоро появится» (событие `error` у `<video>` → класс `is-missing`).

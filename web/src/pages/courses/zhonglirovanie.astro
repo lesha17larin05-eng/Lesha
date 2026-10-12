@@ -218,6 +218,20 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
         el.textContent = orig;
       });
     });
+
+    // Рилсы из лагеря в блоке «Почему именно я»: миниатюры переключают ролик.
+    (function () {
+      const main = document.querySelector('.reel-main video');
+      const thumbs = document.querySelectorAll('.reel-thumb');
+      if (!main || !thumbs.length) return;
+      thumbs.forEach((t) => t.addEventListener('click', () => {
+        const n = t.dataset.reel;
+        thumbs.forEach((x) => x.classList.toggle('is-active', x === t));
+        main.poster = `/img/zhonglirovanie/reel-${n}.jpg`;
+        main.src = `/lesson-videos/promo/zh-reel-${n}.mp4`;
+        main.play().catch(() => {});
+      }));
+    })();
   </script>
   <style is:global>
     .tp-old { font-family: 'Manrope', sans-serif; font-size: 22px; color: rgba(255,255,255,0.55); text-decoration: line-through; margin-right: 12px; vertical-align: middle; }
