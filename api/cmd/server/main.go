@@ -126,6 +126,7 @@ func main() {
 	r.Post("/api/checkout/service", app.ServiceCheckout)
 	// Покупка курса в один шаг (имя + почта → оплата), без регистрации.
 	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
+	r.Get("/api/orders/{id}/status", app.OrderStatus)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	// Маяк счётчика чтения: публичный, без CSRF (см. TrackArticleView).

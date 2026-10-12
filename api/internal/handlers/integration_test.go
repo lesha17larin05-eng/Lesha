@@ -128,6 +128,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Post("/api/newsletter", app.NewsletterSignup)
 	r.Post("/api/checkout/service", app.ServiceCheckout)
 	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
+	r.Get("/api/orders/{id}/status", app.OrderStatus)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
@@ -2958,5 +2959,59 @@ func TestTelegramNotifications(t *testing.T) {
 	msg = waitRelay(t, "Новая заявка: Личное ведение")
 	if !strings.Contains(msg, "Имя: Иван <b>") || !strings.Contains(msg, "@ivan") {
 		t.Fatalf("lead message: %q", msg)
+	}
+}
+
+// Страница после оплаты опрашивает статус заказа: pending → paid,
+// почта отдаётся замаскированной; чужой/кривой id – 404.
+func TestOrderStatus(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	price := 1490
+	if _, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zhonglirovanie", Title: "Жонглирование", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	c := newClient(srv)
+	r, body := c.do("POST", "/api/courses/zhonglirovanie/quick-checkout",
+		map[string]any{"email": "great-happy@buyer.ru", "name": "Анна", "tariff": "self", "consent_pd": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("checkout: %d %s", r.StatusCode, body)
+	}
+	var resp struct {
+		OrderID string `json:"order_id"`
+	}
+	_ = json.Unmarshal(body, &resp)
+	oid := uuid.MustParse(resp.OrderID)
+
+	type st struct {
+		Status    string `json:"status"`
+		EmailHint string `json:"email_hint"`
+	}
+	get := func() st {
+		t.Helper()
+		r, body := newClient(srv).do("GET", "/api/orders/"+oid.String()+"/status", nil)
+		if r.StatusCode != 200 {
+			t.Fatalf("status: %d %s", r.StatusCode, body)
+		}
+		var s st
+		_ = json.Unmarshal(body, &s)
+		return s
+	}
+	if s := get(); s.Status != "pending" || s.EmailHint != "gre•••@buyer.ru" {
+		t.Fatalf("pending: %+v", s)
+	}
+	if err := repo.MarkOrderPaid(ctx, oid, "123"); err != nil {
+		t.Fatal(err)
+	}
+	if s := get(); s.Status != "paid" {
+		t.Fatalf("paid: %+v", s)
+	}
+	for _, id := range []string{"not-a-uuid", uuid.NewString()} {
+		if r, _ := newClient(srv).do("GET", "/api/orders/"+id+"/status", nil); r.StatusCode != 404 {
+			t.Fatalf("%s: want 404, got %d", id, r.StatusCode)
+		}
 	}
 }
