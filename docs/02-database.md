@@ -179,3 +179,6 @@ SQL каждой группы — отдельная константа, вво�
 
 Очередь повторной отправки разовых писем, которые не ушли ни через основной, ни через запасной ящик (`email.Sender.OnAsyncFail` → `Repo.EnqueueEmail`). Поля: `to_addr`, `subject`, `body` (готовый HTML), `attempts`, `last_error`, `next_at` (когда следующая попытка), `sent_at` (NULL – ещё не ушло). Воркер – `handlers/outbox.go`.
 
+### orders.returned_at, orders.stuck_alerted_at (миграция 022)
+
+`returned_at` – когда покупатель вернулся с оплаты с отметкой «успешно» (страница `/kurs-oplachen` вызывает `GET /api/orders/{id}/status?returned=1`; ставится один раз и только для `pending`). `stuck_alerted_at` – когда Алексею ушло уведомление «оплата без подтверждения» (`handlers/payments_watch.go`). Частичный индекс `idx_orders_stuck` – по ожидающим заказам без уведомления.

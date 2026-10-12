@@ -30,6 +30,12 @@ func (a *App) OrderStatus(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 404, "not_found")
 		return
 	}
+	// Страница после оплаты передаёт returned=1, если Продамус вернул
+	// покупателя с отметкой «успешно» – от этого момента сторож считает,
+	// сколько ждём подтверждения (payments_watch.go).
+	if r.URL.Query().Get("returned") == "1" && o.Status == "pending" {
+		_ = a.Repo.MarkOrderReturned(r.Context(), o.ID)
+	}
 	hint := ""
 	if u, err := a.Repo.GetUser(r.Context(), o.UserID); err == nil {
 		hint = maskEmail(u.Email)

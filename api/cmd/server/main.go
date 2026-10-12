@@ -216,6 +216,7 @@ func main() {
 	go handlers.RunDripWorker(workerCtx, app)
 	go handlers.RunOutboxWorker(workerCtx, app)
 	go handlers.RunMailMonitor(workerCtx, app)
+	go handlers.RunStuckPaymentWatcher(workerCtx, app)
 
 	srv := &http.Server{
 		Addr:              ":8080",

@@ -19,7 +19,10 @@ let status = '';
 let emailHint = '';
 if (orderId) {
   const cookie = Astro.request.headers.get('cookie') || '';
-  const { data, status: code } = await apiJson<any>(`/api/orders/${orderId}/status`, { cookie });
+  // Продамус вернул с отметкой «успешно» – запоминаем момент возврата:
+  // если подтверждение не придёт за 10 минут, Алексею уйдёт уведомление.
+  const returned = Astro.url.searchParams.get('_payform_status') === 'success' ? '?returned=1' : '';
+  const { data, status: code } = await apiJson<any>(`/api/orders/${orderId}/status${returned}`, { cookie });
   if (code === 200) {
     status = data?.status || '';
     emailHint = data?.email_hint || '';

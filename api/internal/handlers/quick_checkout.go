@@ -75,6 +75,7 @@ func (a *App) QuickCheckout(w http.ResponseWriter, r *http.Request) {
 		}
 		uid, err = a.findOrCreateUser(r.Context(), email, name)
 		if err != nil {
+			a.alertCheckoutFail("Курс «"+c.Title+"»", email, "не удалось завести покупателя")
 			writeErr(w, 500, "db")
 			return
 		}
@@ -98,6 +99,7 @@ func (a *App) QuickCheckout(w http.ResponseWriter, r *http.Request) {
 	}
 	o, err := a.Repo.CreateOrder(r.Context(), uid, c.ID, price)
 	if err != nil {
+		a.alertCheckoutFail("Курс «"+c.Title+"»", u.Email, "не удалось создать заказ")
 		writeErr(w, 500, "order_failed")
 		return
 	}
@@ -105,6 +107,7 @@ func (a *App) QuickCheckout(w http.ResponseWriter, r *http.Request) {
 	payURL, err := a.coursePaymentURL(o, u.Email, u.Name, u.Phone, title, price,
 		a.Cfg.AppHost+"/courses/"+c.Slug, a.Cfg.AppHost+"/kurs-oplachen?course="+c.Slug)
 	if err != nil {
+		a.alertCheckoutFail("Курс «"+c.Title+"»", u.Email, "не удалось подписать ссылку на оплату")
 		writeErr(w, 500, "sign_failed")
 		return
 	}

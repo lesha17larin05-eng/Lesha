@@ -3015,3 +3015,82 @@ func TestOrderStatus(t *testing.T) {
 		}
 	}
 }
+
+// Зависшая оплата: покупатель вернулся «успешно», подтверждения от Продамуса
+// нет 10 минут → одно уведомление Алексею (без повторов). Когда подтверждение
+// всё-таки приходит – в сообщении об оплате пометка «пришло с опозданием».
+func TestStuckPaymentAlert(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	price := 1490
+	if _, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zhonglirovanie", Title: "Жонглирование", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	r, body := newClient(srv).do("POST", "/api/courses/zhonglirovanie/quick-checkout",
+		map[string]any{"email": "stuck@buyer.ru", "name": "Пётр", "tariff": "self", "consent_pd": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("checkout: %d %s", r.StatusCode, body)
+	}
+	var resp struct {
+		OrderID string `json:"order_id"`
+	}
+	_ = json.Unmarshal(body, &resp)
+	oid := uuid.MustParse(resp.OrderID)
+	if r, _ := newClient(srv).do("GET", "/api/orders/"+oid.String()+"/status?returned=1", nil); r.StatusCode != 200 {
+		t.Fatalf("status: %d", r.StatusCode)
+	}
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", ""),
+		TG: notify.New(testRelay(t).URL, "relay-secret")}
+	now := time.Now()
+	// 5 минут – ещё рано
+	if err := app.CheckStuckPaymentsForTest(ctx, now.Add(5*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if repo.WasStuckAlerted(ctx, oid) {
+		t.Fatal("alerted too early")
+	}
+	// 11 минут – уведомление, один раз
+	for i := 0; i < 2; i++ {
+		if err := app.CheckStuckPaymentsForTest(ctx, now.Add(11*time.Minute)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	msg := waitRelay(t, "Оплата без подтверждения")
+	if !strings.Contains(msg, "stuck@buyer.ru") || !strings.Contains(msg, "Жонглирование") || !strings.Contains(msg, "990 ₽") {
+		t.Fatalf("stuck message: %q", msg)
+	}
+	relayMu.Lock()
+	n := 0
+	for _, m := range relayMsgs {
+		if strings.Contains(m, "stuck@buyer.ru") && strings.Contains(m, "Оплата без подтверждения") {
+			n++
+		}
+	}
+	relayMu.Unlock()
+	if n != 1 {
+		t.Fatalf("want 1 stuck alert, got %d", n)
+	}
+	// подтверждение пришло с опозданием
+	wh := map[string]any{"order_id": oid.String(), "payment_status": "success"}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, wh)
+	form := url.Values{}
+	for k, v := range wh {
+		form.Set(k, v.(string))
+	}
+	form.Set("signature", sig)
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+	msg = waitRelay(t, "Подтверждение пришло с опозданием")
+	if !strings.Contains(msg, "stuck@buyer.ru") {
+		t.Fatalf("late message: %q", msg)
+	}
+}

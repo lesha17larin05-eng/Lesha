@@ -22,3 +22,8 @@ func SetNowForTest(t time.Time) func() {
 func (a *App) RetryOutboxForTest(ctx context.Context, now time.Time) error {
 	return a.retryOutbox(ctx, now)
 }
+
+// CheckStuckPaymentsForTest – один проход сторожа зависших оплат.
+func (a *App) CheckStuckPaymentsForTest(ctx context.Context, now time.Time) error {
+	return a.checkStuckPayments(ctx, now)
+}

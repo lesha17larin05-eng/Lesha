@@ -134,6 +134,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	}
 	o, err := a.Repo.CreateOrder(r.Context(), uid, c.ID, price)
 	if err != nil {
+		a.alertCheckoutFail("Курс «"+c.Title+"»", u.Email, "не удалось создать заказ")
 		writeErr(w, 500, "order_failed")
 		return
 	}
@@ -141,6 +142,7 @@ func (a *App) Checkout(w http.ResponseWriter, r *http.Request) {
 	payURL, err := a.coursePaymentURL(o, u.Email, u.Name, u.Phone, title, price,
 		a.Cfg.AppHost+"/cabinet/courses", a.Cfg.AppHost+"/cabinet/courses?paid="+c.Slug)
 	if err != nil {
+		a.alertCheckoutFail("Курс «"+c.Title+"»", u.Email, "не удалось подписать ссылку на оплату")
 		writeErr(w, 500, "sign_failed")
 		return
 	}
@@ -403,8 +405,12 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 							"Логин – этот адрес почты.</p>"
 					}
 				}
+				late := ""
+				if a.Repo.WasStuckAlerted(r.Context(), o.ID) {
+					late = "\n✅ Подтверждение пришло с опозданием – доступ открылся сам, письмо покупателю ушло. Вручную ничего делать не нужно."
+				}
 				a.TG.Async("💰 Оплачен курс «" + c.Title + "»\n" + strings.TrimSpace(u.Name+" "+u.Email) +
-					"\nСумма: " + strconv.Itoa(o.AmountRub) + " ₽, заказ №" + strconv.FormatInt(o.OrderNum, 10))
+					"\nСумма: " + strconv.Itoa(o.AmountRub) + " ₽, заказ №" + strconv.FormatInt(o.OrderNum, 10) + late)
 				a.Mail.Async(u.Email, "Оплата получена – курс «"+c.Title+"» открыт",
 					"<p>Здравствуйте! Спасибо за оплату – доступ к курсу «"+c.Title+"» уже открыт.</p>"+
 						"<p><b>Начать заниматься:</b> <a href=\""+cabinetURL+"\">"+cabinetURL+"</a><br>"+
@@ -667,6 +673,7 @@ func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
 	// Находим или заводим человека – тем же способом, что и подписка на письма.
 	uid, err := a.findOrCreateUser(r.Context(), email, name)
 	if err != nil {
+		a.alertCheckoutFail(svc.Title, email, "не удалось завести покупателя")
 		writeErr(w, 500, "db")
 		return
 	}
@@ -676,6 +683,7 @@ func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
 
 	o, err := a.Repo.CreateServiceOrder(r.Context(), uid, in.Service, svc.PriceRub)
 	if err != nil {
+		a.alertCheckoutFail(svc.Title, email, "не удалось создать заказ")
 		writeErr(w, 500, "order_failed")
 		return
 	}
@@ -711,6 +719,7 @@ func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
 	}
 	url, err := a.Prodamus.PaymentURL(params)
 	if err != nil {
+		a.alertCheckoutFail(svc.Title, email, "не удалось подписать ссылку на оплату")
 		writeErr(w, 500, "payment_url")
 		return
 	}
