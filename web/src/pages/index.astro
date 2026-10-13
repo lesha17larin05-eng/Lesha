@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { apiJson } from '../lib/api';
+import { coverPositionsCard } from '../lib/covers';
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data: articlesData } = await apiJson<any[]>('/api/articles?limit=3', { cookie });
@@ -128,6 +129,7 @@ const pageStyles = `
 
   /* ─── Видеоотзывы на главной ─────────────────────────────────────── */
   .home-reviews { padding: 90px 80px; background: white; text-align: center; }
+  .home-reviews .home-section-title,
   .home-reviews .home-section-desc { margin-left: auto; margin-right: auto; }
   .hr-grid { max-width: 1100px; margin: 36px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
   .hr-card {
@@ -505,7 +507,7 @@ const pageStyles = `
       <div class="articles-grid">
         {articles.map(a => (
           <a href={`/blog/${a.slug}`} class="article-card">
-            <div class="article-img" style={a.cover_image_url ? `background-image:url(${a.cover_image_url})` : ''}></div>
+            <div class="article-img" style={a.cover_image_url ? `background-image:url(${a.cover_image_url});background-position:${coverPositionsCard[a.slug] ?? 'center center'}` : ''}></div>
             <div class="article-body">
               {a.tag && <span class="article-tag">{a.tag}</span>}
               <div class="article-title">{a.title}</div>

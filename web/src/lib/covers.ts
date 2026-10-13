@@ -1,5 +1,6 @@
 // Позиционирование обложек статей (object/background-position).
-// Единый источник для blog/index.astro (карточки) и blog/[slug].astro (шапка статьи).
+// Единый источник для карточек (главная index.astro, blog/index.astro, «Похожие статьи»)
+// и шапки статьи (blog/[slug].astro).
 // Значения могут отличаться: у карточки и полноразмерной обложки разный кроп.
 
 export const coverPositionsCard: Record<string, string> = {
