@@ -1,11 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
+// ?email=… – подставляется со страницы входа после неудачной попытки.
+const prefill = (Astro.url.searchParams.get('email') || '').slice(0, 200);
 ---
-<Base title="Восстановление пароля">
+<Base title="Ссылка для входа">
   <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
-    <h1>Восстановление пароля</h1>
+    <h1>Ссылка для входа</h1>
+    <p class="muted">Пришлём на почту ссылку: по ней вы зададите пароль и сразу войдёте. Подходит, если вы забыли пароль или купили курс и ещё его не задавали.</p>
     <form id="f" class="form">
-      <div><label class="label">Email</label><input class="input" name="email" type="email" required /></div>
+      <div><label class="label">Email</label><input class="input" name="email" type="email" required value={prefill} /></div>
       <button class="btn" type="submit">Отправить ссылку</button>
       <div id="msg" hidden></div>
     </form>
@@ -26,7 +29,7 @@ import Base from '../../layouts/Base.astro';
         m.innerHTML = 'Если email существует – письмо отправлено.' +
           ' <br/><small>Dev: <a href="'+j.reset_link_dev+'">'+j.reset_link_dev+'</a></small>';
       } else {
-        m.textContent = 'Если такой email зарегистрирован, мы отправили на него ссылку для сброса пароля. Проверьте почту (в т.ч. папку «Спам»).';
+        m.textContent = 'Если такая почта есть на сайте, мы отправили на неё ссылку для входа. Письмо приходит за минуту – если его нет, загляните в «Спам» и «Рассылки».';
       }
       m.hidden = false;
     });

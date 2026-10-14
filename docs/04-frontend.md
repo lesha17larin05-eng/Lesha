@@ -54,10 +54,10 @@ web/src/
     unsubscribed.astro            — старая страница «Вы отписаны» (новые письма сюда не ведут)
     subscribed.astro              — куда ведёт кнопка «Хочу получать письма» (noindex; ?error=1 — битая ссылка)
     auth/
-      login.astro
+      login.astro                 — вход; `?email=` подставляет почту. При неверном пароле – «Неверная почта или пароль. Если вы купили курс и ещё не задавали пароль – получите ссылку для входа» (ссылка на /auth/forgot?email=…)
       register.astro
       verify.astro
-      forgot.astro
+      forgot.astro                — «Ссылка для входа»: письмо со ссылкой задать пароль и войти (для забывших пароль и купивших курс в один шаг); `?email=` подставляет почту
   layouts/
     Base.astro                    — кабинет/админ-layout (palette navy/orange, .container/.btn/.card)
     SiteLayout.astro              — публичный layout сайта (Cormorant + Manrope, общая шапка + футер, поддержка pageStyles; проп `canonical` переопределяет canonical-URL — сейчас не используется)

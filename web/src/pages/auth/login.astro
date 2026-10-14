@@ -1,17 +1,18 @@
 ---
 import Base from '../../layouts/Base.astro';
 const next = Astro.url.searchParams.get('next') || '/cabinet';
+const prefill = (Astro.url.searchParams.get('email') || '').slice(0, 200);
 ---
 <Base title="Вход">
   <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
     <h1>Вход</h1>
     <form id="f" class="form">
-      <div><label class="label">Email</label><input class="input" name="email" type="email" required /></div>
+      <div><label class="label">Email</label><input class="input" name="email" type="email" required value={prefill} /></div>
       <div><label class="label">Пароль</label><input class="input" name="password" type="password" required /></div>
       <button class="btn" type="submit">Войти</button>
       <div id="err" class="alert" hidden></div>
       <p class="muted">Нет аккаунта? <a href="/auth/register">Зарегистрироваться</a></p>
-      <p class="muted"><a href="/auth/forgot">Забыли пароль?</a></p>
+      <p class="muted"><a href="/auth/forgot" id="forgot-link">Забыли пароль или ещё не задавали его?</a></p>
     </form>
   </section>
   <style>
@@ -34,8 +35,21 @@ const next = Astro.url.searchParams.get('next') || '/cabinet';
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
       });
-      if (r.ok) location.href = next;
-      else { const j = await r.json().catch(() => ({})); err.textContent = j.error || 'Ошибка'; err.hidden = false; }
+      if (r.ok) { location.href = next; return; }
+      const j = await r.json().catch(() => ({}));
+      const email = String(fd.get('email') || '').trim();
+      const forgot = '/auth/forgot' + (email ? '?email=' + encodeURIComponent(email) : '');
+      err.innerHTML = '';
+      if (j.error === 'invalid_credentials') {
+        // Покупатели курса «в один шаг» пароля не задавали – подсказываем путь.
+        err.append('Неверная почта или пароль. Если вы купили курс и ещё не задавали пароль – ');
+        const a = document.createElement('a');
+        a.href = forgot; a.textContent = 'получите ссылку для входа на почту';
+        err.append(a, '.');
+      } else {
+        err.textContent = 'Не получилось войти. Попробуйте ещё раз через минуту.';
+      }
+      err.hidden = false;
     });
   </script>
 </Base>
