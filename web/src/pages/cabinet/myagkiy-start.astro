@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import SubscribeInvite from '../../components/SubscribeInvite.astro';
 import { apiJson } from '../../lib/api';
 
 const user = (Astro.locals as any).user;
@@ -269,6 +270,8 @@ const myEmail: string = me?.email || '';
 
     <h1 class="ms-cab-title">Мягкий <em>старт</em></h1>
     <p class="ms-cab-subtitle">Все уроки курса – смотрите в любом порядке</p>
+
+    <SubscribeInvite />
 
     {canFixEmail && (
       <div class="ms-welcome" id="ms-welcome">

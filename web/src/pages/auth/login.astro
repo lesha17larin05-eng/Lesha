@@ -1,22 +1,52 @@
 ---
 import Base from '../../layouts/Base.astro';
-const next = Astro.url.searchParams.get('next') || '/cabinet';
+// Только относительный путь на нашем сайте – иначе ссылка входа уводила бы на чужой.
+const rawNext = Astro.url.searchParams.get('next') || '/cabinet';
+const next = rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.includes('\\') ? rawNext : '/cabinet';
 const prefill = (Astro.url.searchParams.get('email') || '').slice(0, 200);
+const startWithCode = Astro.url.searchParams.get('mode') === 'code';
 ---
 <Base title="Вход">
   <section class="container auth-page" style="padding:60px 16px; max-width:480px;">
     <h1>Вход</h1>
-    <form id="f" class="form">
-      <div><label class="label">Email</label><input class="input" name="email" type="email" required value={prefill} /></div>
-      <div><label class="label">Пароль</label><input class="input" name="password" type="password" required /></div>
+
+    <form id="f" class="form" hidden={startWithCode}>
+      <div><label class="label">Email</label><input class="input" name="email" type="email" required autocomplete="email" value={prefill} /></div>
+      <div><label class="label">Пароль</label><input class="input" name="password" type="password" required autocomplete="current-password" /></div>
       <button class="btn" type="submit">Войти</button>
       <div id="err" class="alert" hidden></div>
+      <button type="button" class="mode-link" data-mode="code">Войти по коду из письма – без пароля</button>
       <p class="muted">Нет аккаунта? <a href="/auth/register">Зарегистрироваться</a></p>
-      <p class="muted"><a href="/auth/forgot" id="forgot-link">Забыли пароль или ещё не задавали его?</a></p>
+      <p class="muted"><a href="/auth/forgot" id="forgot-link">Забыли пароль? Задать новый</a></p>
+    </form>
+
+    <form id="fc" class="form" hidden={!startWithCode}>
+      <p class="muted code-lead">Пришлю на почту код из 6 цифр – введите его здесь, и вы в кабинете.</p>
+      <div><label class="label">Email</label><input class="input" name="email" type="email" required autocomplete="email" value={prefill} /></div>
+      <div class="code-step" hidden>
+        <label class="label">Код из письма</label>
+        <input class="input code-input" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" />
+        <p class="muted code-hint">Письмо идёт до минуты. Нет во «Входящих» – загляните в «Спам» и «Рассылки».</p>
+      </div>
+      <button class="btn" type="submit" id="fc-btn">Прислать код</button>
+      <div id="errc" class="alert" hidden></div>
+      <button type="button" class="mode-link" id="resend" hidden>Прислать код ещё раз</button>
+      <button type="button" class="mode-link" data-mode="password">Войти с паролем</button>
     </form>
   </section>
   <style>
     .auth-page { width: 100%; box-sizing: border-box; }
+    .form[hidden], .code-step[hidden], .mode-link[hidden] { display: none; }
+    .mode-link {
+      background: none; border: none; padding: 0; cursor: pointer; font: inherit;
+      color: var(--orange, #e8652a); text-decoration: underline; text-underline-offset: 3px;
+      text-align: left; transition: color .2s ease, opacity .2s ease;
+    }
+    @media (hover: hover) { .mode-link:hover { opacity: .75; } }
+    .mode-link:focus-visible { outline: 2px solid var(--orange, #e8652a); outline-offset: 2px; border-radius: 4px; }
+    .code-lead { margin: 0; }
+    .code-input { font-size: 24px; letter-spacing: 6px; font-variant-numeric: tabular-nums; max-width: 220px; }
+    .code-hint { margin: 6px 0 0; font-size: 14px; }
     @media (max-width: 480px) {
       .auth-page { padding: 40px 16px !important; }
       .form { max-width: 100%; }
@@ -25,7 +55,22 @@ const prefill = (Astro.url.searchParams.get('email') || '').slice(0, 200);
   </style>
   <script define:vars={{ next }}>
     const form = document.getElementById('f');
+    const formCode = document.getElementById('fc');
     const err = document.getElementById('err');
+    const errc = document.getElementById('errc');
+
+    // Переключение «пароль ↔ код»: почта переносится в другую форму.
+    document.querySelectorAll('.mode-link[data-mode]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const toCode = b.dataset.mode === 'code';
+        const from = toCode ? form : formCode;
+        const to = toCode ? formCode : form;
+        to.elements.email.value = from.elements.email.value;
+        from.hidden = true; to.hidden = false;
+        (to.elements.email.value ? (toCode ? to.querySelector('#fc-btn') : to.elements.password) : to.elements.email).focus();
+      });
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       err.hidden = true;
@@ -37,19 +82,84 @@ const prefill = (Astro.url.searchParams.get('email') || '').slice(0, 200);
       });
       if (r.ok) { location.href = next; return; }
       const j = await r.json().catch(() => ({}));
-      const email = String(fd.get('email') || '').trim();
-      const forgot = '/auth/forgot' + (email ? '?email=' + encodeURIComponent(email) : '');
       err.innerHTML = '';
       if (j.error === 'invalid_credentials') {
-        // Покупатели курса «в один шаг» пароля не задавали – подсказываем путь.
-        err.append('Неверная почта или пароль. Если вы купили курс и ещё не задавали пароль – ');
-        const a = document.createElement('a');
-        a.href = forgot; a.textContent = 'получите ссылку для входа на почту';
-        err.append(a, '.');
+        err.append('Неверная почта или пароль. Пароль есть в письме о доступе к курсу. Или ');
+        const a = document.createElement('button');
+        a.type = 'button'; a.className = 'mode-link'; a.textContent = 'войдите по коду из письма';
+        a.addEventListener('click', () => document.querySelector('.mode-link[data-mode="code"]').click());
+        err.append(a, ' – без пароля.');
       } else {
         err.textContent = 'Не получилось войти. Попробуйте ещё раз через минуту.';
       }
       err.hidden = false;
+    });
+
+    // Вход по коду: шаг 1 – прислать код, шаг 2 – ввести.
+    const step = formCode.querySelector('.code-step');
+    const btn = document.getElementById('fc-btn');
+    const resend = document.getElementById('resend');
+    let sent = false;
+
+    async function sendCode() {
+      const email = String(formCode.elements.email.value || '').trim();
+      if (!email) { formCode.elements.email.focus(); return; }
+      btn.disabled = true;
+      const r = await fetch('/api/auth/code', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => null);
+      btn.disabled = false;
+      if (!r || !r.ok) {
+        errc.textContent = r && r.status === 429
+          ? 'Слишком много попыток. Подождите 15 минут и попробуйте снова.'
+          : 'Не получилось отправить код. Проверьте почту в поле выше.';
+        errc.hidden = false;
+        return;
+      }
+      sent = true;
+      errc.hidden = true;
+      step.hidden = false;
+      btn.textContent = 'Войти';
+      resend.hidden = true;
+      setTimeout(() => { resend.hidden = false; }, 60000);
+      formCode.elements.code.focus();
+    }
+
+    resend.addEventListener('click', sendCode);
+
+    formCode.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errc.hidden = true;
+      if (!sent) { await sendCode(); return; }
+      const email = String(formCode.elements.email.value || '').trim();
+      const code = String(formCode.elements.code.value || '').replace(/\D/g, '');
+      if (code.length !== 6) {
+        errc.textContent = 'В коде 6 цифр – проверьте письмо.';
+        errc.hidden = false;
+        return;
+      }
+      btn.disabled = true;
+      const r = await fetch('/api/auth/code/verify', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      }).catch(() => null);
+      btn.disabled = false;
+      if (r && r.ok) { location.href = next; return; }
+      const j = r ? await r.json().catch(() => ({})) : {};
+      errc.textContent = j.error === 'too_many_attempts'
+        ? 'Слишком много неверных попыток. Пришлите новый код.'
+        : 'Код не подошёл или устарел (он действует 15 минут). Проверьте цифры или пришлите новый код.';
+      errc.hidden = false;
+      resend.hidden = false;
+    });
+
+    // Почту поменяли после отправки кода – начинаем заново.
+    formCode.elements.email.addEventListener('input', () => {
+      if (!sent) return;
+      sent = false; step.hidden = true; btn.textContent = 'Прислать код'; resend.hidden = true;
     });
   </script>
 </Base>

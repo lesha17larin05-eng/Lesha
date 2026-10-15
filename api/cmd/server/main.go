@@ -105,6 +105,10 @@ func main() {
 		r.Post("/resend-verification", app.ResendVerification)
 		r.Post("/forgot-password", app.ForgotPassword)
 		r.Post("/reset-password", app.ResetPassword)
+		// Вход без пароля: кнопка из письма о доступе и код на почту.
+		r.Post("/link", app.LoginByLink)
+		r.Post("/code", app.RequestLoginCode)
+		r.Post("/code/verify", app.VerifyLoginCode)
 	})
 
 	r.Get("/api/courses", app.ListCourses)
@@ -127,6 +131,7 @@ func main() {
 	// Покупка курса в один шаг (имя + почта → оплата), без регистрации.
 	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/orders/{id}/status", app.OrderStatus)
+	r.Get("/api/orders/{id}/enter", app.OrderEnter)
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	// Маяк счётчика чтения: публичный, без CSRF (см. TrackArticleView).

@@ -1,0 +1,59 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+// Кнопка «Перейти к урокам» из письма о доступе. Вход делаем запросом из
+// страницы (POST), а не прямо по ссылке: почтовые сканеры открывают ссылки
+// сами, и вход по GET срабатывал бы у них, а не у человека.
+const token = (Astro.url.searchParams.get('token') || '').replace(/[^0-9a-f]/gi, '').slice(0, 128);
+const styles = `
+.link-wrap { max-width: 520px; margin: 0 auto; padding: 100px 24px; text-align: center; }
+.link-wrap h1 { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 500; color: var(--navy); margin-bottom: 14px; }
+.link-msg { font-size: 17px; color: var(--text-mid); line-height: 1.6; margin-bottom: 22px; }
+.link-actions { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.link-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--orange); color: white; text-decoration: none; padding: 14px 28px; border-radius: 100px; font-size: 16px; font-weight: 600; transition: background 0.2s ease; }
+@media (hover: hover) { .link-btn:hover { background: var(--orange-warm); } }
+.link-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
+.link-sub { font-size: 15px; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color .2s ease; }
+@media (hover: hover) { .link-sub:hover { color: var(--orange); } }
+.spinner { width: 34px; height: 34px; margin: 10px auto 0; border-radius: 50%; border: 3px solid rgba(232,101,42,0.2); border-top-color: var(--orange); animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+`;
+---
+<SiteLayout title="Вход – Алексей Ларин" padTop={true} noindex={true} pageStyles={styles}>
+  <section class="link-wrap" data-token={token}>
+    <h1 id="title">Входим в кабинет…</h1>
+    <p id="msg" class="link-msg">Секунду.</p>
+    <div id="spin" class="spinner" aria-hidden="true"></div>
+    <div id="cta" class="link-actions" hidden>
+      <a href="/auth/login?mode=code" class="link-btn">Войти по коду из письма</a>
+      <a href="/auth/login" class="link-sub">Войти с паролем</a>
+    </div>
+  </section>
+  <script>
+    const root = document.querySelector('.link-wrap') as HTMLElement;
+    const token = root.dataset.token || '';
+    const fail = () => {
+      document.getElementById('title')!.textContent = 'Ссылка больше не действует';
+      document.getElementById('msg')!.textContent =
+        'Кнопка из письма работает 7 дней. Войдите по паролю из того же письма или по коду – пришлю его на почту.';
+      document.getElementById('spin')!.hidden = true;
+      document.getElementById('cta')!.hidden = false;
+    };
+    (async () => {
+      if (!token) return fail();
+      try {
+        const getCsrf = () => (document.cookie.match(/(?:^|;\s*)csrf=([^;]+)/) || [])[1] || '';
+        // Первый визит из почты в новой вкладке: CSRF-куки ещё нет – прогреваем.
+        if (!getCsrf()) { try { await fetch('/api/me', { credentials: 'include' }); } catch {} }
+        const r = await fetch('/api/auth/link', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'X-CSRF-Token': getCsrf() },
+          credentials: 'include',
+          body: JSON.stringify({ token }),
+        });
+        if (!r.ok) return fail();
+        const d = await r.json().catch(() => ({}));
+        location.replace(typeof d.next === 'string' && d.next.startsWith('/') && !d.next.startsWith('//') ? d.next : '/cabinet');
+      } catch { fail(); }
+    })();
+  </script>
+</SiteLayout>

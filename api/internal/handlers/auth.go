@@ -297,10 +297,13 @@ func (a *App) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	consent, _ := a.Repo.HasMarketingConsent(r.Context(), uid)
+	offer, _ := a.Repo.SubscribeOfferAllowed(r.Context(), uid)
 	writeJSON(w, 200, map[string]any{
 		"id": u.ID, "email": u.Email, "name": u.Name, "role": u.Role,
 		"email_verified":    u.EmailVerifiedAt != nil,
 		"consent_marketing": consent,
+		// Предлагать ли подписаться (нет согласия и человек не отписывался).
+		"subscribe_offer": offer,
 		// Можно ли исправить адрес (опечатка сразу после регистрации).
 		"can_fix_email": u.EmailVerifiedAt == nil && time.Since(u.CreatedAt) < fixEmailWindow,
 	})

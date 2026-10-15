@@ -11,7 +11,7 @@ web/src/
     coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
     courses/index.astro           — витрина курсов (карточки из GET /api/courses). Все курсы, включая бесплатный, ведут на /courses/<slug>
     start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Форма заявки (#lead-form → POST /api/leads, source=start)
-    kurs-oplachen.astro           — страница после оплаты курса в один шаг (urlSuccess quick-checkout, `?course=<slug>`; Продамус добавляет `_payform_order_id`). Пока заказ не `paid` (webhook ещё не пришёл) – «Оплата прошла, открываем доступ» и опрос `GET /api/orders/{id}/status` каждые 3 с; через 45 с – «Подтверждение задерживается» с кнопкой в Телеграм, опрос продолжается. Когда `paid` – «курс открыт», на какую почту ушло письмо (маска) и кнопка «Отправить ссылку ещё раз»; залогиненному – «Перейти к урокам». noindex
+    kurs-oplachen.astro           — страница после оплаты курса в один шаг (urlSuccess quick-checkout, `?course=<slug>`; Продамус добавляет `_payform_order_id`). Пока заказ не `paid` (webhook ещё не пришёл) – «Оплата прошла, открываем доступ» и опрос `GET /api/orders/{id}/status` каждые 3 с; через 45 с – «Подтверждение задерживается» с кнопкой в Телеграм, опрос продолжается. Когда `paid` и заказ оформлен в этом браузере (`can_enter`) – «Сейчас откроем уроки» и через 2,5 с переход на `/api/orders/{id}/enter` (вход без почты). Иначе – на какую почту ушло письмо с кнопкой входа и паролем (маска), кнопки «Войти по коду из письма» и «Войти с паролем»; залогиненному – «Перейти к урокам». noindex
     consultation.astro            — только 301-редирект на /start: услуга «Консультация» закрыта, старые ссылки живут
     (components/SourceCapture.astro — в <head> обоих лейаутов: ?from= / ?utm_source= или referrer → кука `src` на 30 дней, см. docs/02-database.md «Источник трафика»)
     course.astro                  — 301-редирект на /courses/myagkiy-start (с 2026-09-30; старый адрес живёт в рекламе и письмах). Форма «Начните сегодня» (`components/QuickSignupForm.astro`, `#quick-signup-form`, на /courses/myagkiy-start для неавторизованных) подсказывает опечатки в домене почты («gmial.com → gmail.com?», один раз останавливает отправку) и шлёт `POST /api/auth/quick-signup` → если email уже есть, редирект на `/auth/login?email=...`; иначе аккаунт создан, cookies стоят – ведём сразу в `/cabinet/myagkiy-start`. Там для новичка (`can_fix_email`) плашка «Письмо ушло на … · Исправить» → `POST /api/auth/fix-email`.
@@ -54,7 +54,8 @@ web/src/
     unsubscribed.astro            — старая страница «Вы отписаны» (новые письма сюда не ведут)
     subscribed.astro              — куда ведёт кнопка «Хочу получать письма» (noindex; ?error=1 — битая ссылка)
     auth/
-      login.astro                 — вход; `?email=` подставляет почту. При неверном пароле – «Неверная почта или пароль. Если вы купили курс и ещё не задавали пароль – получите ссылку для входа» (ссылка на /auth/forgot?email=…)
+      login.astro                 — вход: по паролю или «Войти по коду из письма» (`POST /api/auth/code` → поле кода → `/api/auth/code/verify`); `?email=` подставляет почту, `?mode=code` открывает сразу вход по коду, `?next=` – только относительный путь. При неверном пароле – подсказка «пароль есть в письме о доступе, или войдите по коду»
+      link.astro                  — кнопка «Перейти к урокам» из письма о доступе: страница сама делает `POST /api/auth/link` (не GET – почтовые сканеры открывают ссылки) и ведёт к курсу; просрочена – «войти по коду» / «с паролем»
       register.astro
       verify.astro
       forgot.astro                — «Ссылка для входа»: письмо со ссылкой задать пароль и войти (для забывших пароль и купивших курс в один шаг); `?email=` подставляет почту
@@ -118,6 +119,8 @@ web/src/
 - Каждый запрос → `apiJson('/api/me', { cookie })` → кладёт user в `Astro.locals.user`.
 - Каждый запрос → `getSiteSettings()` (`web/src/lib/settings.ts`, кеш в памяти процесса на 10 с) → кладёт флаги в `Astro.locals.settings`.
 - `/cabinet/*` без auth → редирект на `/auth/login?next=...`.
+- `components/SubscribeInvite.astro` – плашка «Присылать вам полезные письма? Да, присылайте / Не сейчас» в кабинете и на страницах уроков (`/cabinet`, `/cabinet/myagkiy-start|zdorovaya-spina|zhonglirovanie`). Показывается по флагу `subscribe_offer` из `/api/me` (нет согласия и человек не отписывался); «Да» – `PATCH /api/me {consent_marketing:true}`, «Не сейчас» прячет в этом браузере (localStorage). В настройках галочка рассылки отправляется, только если её поменяли (иначе «Сохранить имя» отписывало бы).
+- Форма покупки жонглирования: галочка «Присылать полезные письма» (по умолчанию отмечена, как в форме «Мягкого старта») → `consent_marketing` в quick-checkout.
 - `/admin/*` без `role=admin` → 404 (намеренно, чтобы не палить наличие).
 
 API-проверки на бэкенде дублируют — middleware фронта это только UX, не security.

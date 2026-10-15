@@ -17,6 +17,9 @@ type DripRecipient struct {
 	UserID uuid.UUID
 	Email  string
 	Name   string
+	// Subscribed – есть согласие на рассылку. Без него человеку уходят только
+	// письма про сам курс (без предложений) с кнопкой «Да, присылайте».
+	Subscribed bool
 }
 
 // DripStartAt – момент запуска цепочки (из миграции 017). Люди,
@@ -31,21 +34,28 @@ func (r *Repo) DripStartAt(ctx context.Context) (time.Time, error) {
 }
 
 // NextDripRecipient – один человек, которому пора отправить шаг step:
-//   - есть доступ к «Мягкому старту» и согласие на рассылку;
+//   - есть доступ к «Мягкому старту»;
+//   - письмо с предложением (offer) – только при согласии на рассылку;
+//     письма про сам курс – всем, кроме отписавшихся (без согласия – только
+//     зарегистрированным после drip_nosub_start_at, см. миграцию 024);
 //   - зарегистрирован после запуска цепочки;
 //   - с регистрации прошло не меньше day календарных дней (по Москве);
 //   - этот шаг ещё не обработан (или не ушёл из-за почты: тогда повтор не чаще
 //     раза в 30 минут, до 8 попыток), предыдущий – обработан (идём по порядку);
 //   - за последние 20 часов ему не уходило письмо цепочки (не чаще раза в день).
-func (r *Repo) NextDripRecipient(ctx context.Context, step, day int, startAt, now time.Time) (*DripRecipient, error) {
+func (r *Repo) NextDripRecipient(ctx context.Context, step, day int, offer bool, startAt, now time.Time) (*DripRecipient, error) {
 	rec := &DripRecipient{}
 	err := r.Pool.QueryRow(ctx, `
-		SELECT u.id, u.email, COALESCE(u.name, '')
+		SELECT u.id, u.email, COALESCE(u.name, ''), u.consent_marketing_at IS NOT NULL
 		  FROM users u
 		  JOIN enrollments e ON e.user_id = u.id
 		  JOIN courses c ON c.id = e.course_id AND c.slug = 'myagkiy-start'
 		 WHERE u.role = 'user'
-		   AND u.consent_marketing_at IS NOT NULL
+		   AND u.unsubscribed_at IS NULL
+		   AND (u.consent_marketing_at IS NOT NULL
+		        OR (NOT $5::bool
+		            AND u.created_at >= COALESCE((SELECT value::timestamptz FROM site_settings
+		                                           WHERE key = 'drip_nosub_start_at'), 'infinity')))
 		   AND u.created_at >= $3
 		   AND ($4::timestamptz AT TIME ZONE 'Europe/Moscow')::date
 		       - (u.created_at AT TIME ZONE 'Europe/Moscow')::date >= $2
@@ -57,7 +67,7 @@ func (r *Repo) NextDripRecipient(ctx context.Context, step, day int, startAt, no
 		   AND NOT EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.status = 'sent'
 		                     AND d.sent_at > $4::timestamptz - interval '20 hours')
 		 ORDER BY u.created_at
-		 LIMIT 1`, step, day, startAt, now).Scan(&rec.UserID, &rec.Email, &rec.Name)
+		 LIMIT 1`, step, day, startAt, now, offer).Scan(&rec.UserID, &rec.Email, &rec.Name, &rec.Subscribed)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}

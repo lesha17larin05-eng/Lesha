@@ -38,6 +38,8 @@ var Segments = []Segment{
 	// и рекламы. В интерфейсе рядом с ней стоит предупреждение.
 	{Key: "service_paid", Title: "Есть платный курс, но не подписаны", ServiceOnly: true,
 		Hint: "ТОЛЬКО сервисные письма про их курс: рекламу слать нельзя"},
+	{Key: "service_all", Title: "Есть любой курс, но не подписаны", ServiceOnly: true,
+		Hint: "ТОЛЬКО сервисные письма про их курсы (в т.ч. «Мягкий старт»): рекламу слать нельзя"},
 }
 
 // SegmentIsServiceOnly – в группе люди без согласия на рассылку
@@ -83,10 +85,21 @@ const segmentSleeping = segmentBase + `
 const segmentServicePaid = `
 	FROM users u
 	WHERE u.consent_marketing_at IS NULL
+	  AND u.unsubscribed_at IS NULL
 	  AND u.email_verified_at IS NOT NULL
 	  AND EXISTS (SELECT 1 FROM enrollments e
 	                JOIN courses c ON c.id = e.course_id
 	               WHERE e.user_id = u.id AND c.kind = 'paid')`
+
+// Все, у кого открыт хоть один курс (платный или бесплатный), но нет
+// согласия на рассылку и кто от писем не отписывался. Тоже только сервисные
+// письма – про курс, к которому у человека доступ.
+const segmentServiceAll = `
+	FROM users u
+	WHERE u.consent_marketing_at IS NULL
+	  AND u.unsubscribed_at IS NULL
+	  AND u.role = 'user'
+	  AND EXISTS (SELECT 1 FROM enrollments e WHERE e.user_id = u.id)`
 
 func segmentWhere(key string) string {
 	switch key {
@@ -98,6 +111,8 @@ func segmentWhere(key string) string {
 		return segmentSleeping
 	case "service_paid":
 		return segmentServicePaid
+	case "service_all":
+		return segmentServiceAll
 	default:
 		return segmentBase
 	}
@@ -108,7 +123,7 @@ func (r *Repo) SegmentsWithCounts(ctx context.Context) ([]Segment, error) {
 	out := make([]Segment, 0, len(Segments))
 	for _, s := range Segments {
 		var n int
-		// segmentWhere возвращает одну из четырёх констант, пользовательский
+		// segmentWhere возвращает одну из констант выше, пользовательский
 		// ввод в запрос не попадает.
 		if err := r.Pool.QueryRow(ctx, `SELECT count(*) `+segmentWhere(s.Key)).Scan(&n); err != nil {
 			return nil, err
@@ -261,32 +276,33 @@ func (r *Repo) NextCampaignToSend(ctx context.Context) (*Campaign, error) {
 // NextRecipient – следующий адресат рассылки, у которого согласие ещё в силе.
 // Отписавшихся помечает skipped и переходит дальше.
 //
-// Исключение – сервисная группа (service_paid): там согласия нет по условию,
-// письмо касается курса человека, поэтому проверка не применяется.
+// Исключение – сервисные группы (service_paid, service_all): там согласия нет
+// по условию, письмо касается курса человека, поэтому проверка не применяется –
+// пропускаем только тех, кто от писем отписался.
 func (r *Repo) NextRecipient(ctx context.Context, campaignID uuid.UUID) (*CampaignRecipient, error) {
 	var serviceOnly bool
 	if err := r.Pool.QueryRow(ctx,
-		`SELECT segment = 'service_paid' FROM campaigns WHERE id = $1`, campaignID).Scan(&serviceOnly); err != nil {
+		`SELECT segment IN ('service_paid', 'service_all') FROM campaigns WHERE id = $1`, campaignID).Scan(&serviceOnly); err != nil {
 		return nil, err
 	}
 	for i := 0; i < 50; i++ {
 		rec := &CampaignRecipient{}
-		var stillSubscribed bool
+		var stillSubscribed, optedOut bool
 		err := r.Pool.QueryRow(ctx,
 			`SELECT r.id, r.campaign_id, r.user_id, r.email, r.name,
-			        (u.consent_marketing_at IS NOT NULL)
+			        (u.consent_marketing_at IS NOT NULL), (u.unsubscribed_at IS NOT NULL)
 			   FROM campaign_recipients r
 			   JOIN users u ON u.id = r.user_id
 			  WHERE r.campaign_id = $1 AND r.status = 'pending'
 			  ORDER BY r.id LIMIT 1`, campaignID).Scan(
-			&rec.ID, &rec.CampaignID, &rec.UserID, &rec.Email, &rec.Name, &stillSubscribed)
+			&rec.ID, &rec.CampaignID, &rec.UserID, &rec.Email, &rec.Name, &stillSubscribed, &optedOut)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
 		if err != nil {
 			return nil, err
 		}
-		if stillSubscribed || serviceOnly {
+		if stillSubscribed || (serviceOnly && !optedOut) {
 			rec.Subscribed = stillSubscribed
 			return rec, nil
 		}

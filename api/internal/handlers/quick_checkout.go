@@ -25,6 +25,9 @@ func (a *App) QuickCheckout(w http.ResponseWriter, r *http.Request) {
 		Name      string `json:"name"`
 		Tariff    string `json:"tariff"`
 		ConsentPD bool   `json:"consent_pd"`
+		// Галочка «присылать полезные письма» в форме. Не отмечена – ничего
+		// не меняем (это не отписка).
+		ConsentMarketing bool `json:"consent_marketing"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2048)).Decode(&in); err != nil {
 		writeErr(w, 400, "bad_json")
@@ -82,6 +85,11 @@ func (a *App) QuickCheckout(w http.ResponseWriter, r *http.Request) {
 		if err := a.Repo.SaveConsentPD(r.Context(), uid); err != nil {
 			slog.Warn("quick checkout consent", "err", err)
 		}
+		if in.ConsentMarketing {
+			if err := a.Repo.SetMarketingConsent(r.Context(), uid); err != nil {
+				slog.Warn("quick checkout marketing consent", "err", err)
+			}
+		}
 		a.tagUser(r.Context(), r, uid)
 	}
 	u, err := a.Repo.GetUser(r.Context(), uid)
@@ -104,6 +112,10 @@ func (a *App) QuickCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.tagOrder(r.Context(), r, o.ID)
+	if !authed {
+		// После оплаты этот браузер войдёт к урокам сразу (OrderEnter).
+		a.setBuyerCookie(w, r, o.ID)
+	}
 	payURL, err := a.coursePaymentURL(o, u.Email, u.Name, u.Phone, title, price,
 		a.Cfg.AppHost+"/courses/"+c.Slug, a.Cfg.AppHost+"/kurs-oplachen?course="+c.Slug)
 	if err != nil {

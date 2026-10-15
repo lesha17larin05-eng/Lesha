@@ -118,6 +118,9 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/resend-verification", app.ResendVerification)
 		r.Post("/forgot-password", app.ForgotPassword)
 		r.Post("/reset-password", app.ResetPassword)
+		r.Post("/link", app.LoginByLink)
+		r.Post("/code", app.RequestLoginCode)
+		r.Post("/code/verify", app.VerifyLoginCode)
 	})
 	r.Get("/api/courses", app.ListCourses)
 	r.Get("/api/courses/{slug}", app.GetCourse)
@@ -129,6 +132,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Post("/api/checkout/service", app.ServiceCheckout)
 	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/orders/{id}/status", app.OrderStatus)
+	r.Get("/api/orders/{id}/enter", app.OrderEnter)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
@@ -189,6 +193,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/admin/article-stats", app.AdminArticleStats)
 		r.Get("/api/admin/orders", app.AdminOrders)
 		r.Post("/api/admin/orders/{id}/refund", app.AdminRefundOrder)
+		r.Post("/api/admin/courses/{slug}/grant-by-email", app.AdminGrantByEmail)
 	})
 	srv := httptest.NewServer(r)
 	t.Cleanup(srv.Close)
@@ -2532,6 +2537,9 @@ func TestDripChain(t *testing.T) {
 	if err := repo.SetSetting(ctx, "drip_start_at", "2026-09-30T00:00:00Z"); err != nil {
 		t.Fatal(err)
 	}
+	if err := repo.SetSetting(ctx, "drip_nosub_start_at", "2026-09-30T00:00:00Z"); err != nil {
+		t.Fatal(err)
+	}
 	// Регистрация 1 октября 12:00 по Москве.
 	reg := time.Date(2026, 10, 1, 9, 0, 0, 0, time.UTC)
 	mk := func(email string, consent bool, created time.Time) uuid.UUID {
@@ -2547,16 +2555,29 @@ func TestDripChain(t *testing.T) {
 		return id
 	}
 	a := mk("a@b.ru", true, reg)
-	mk("nomail@b.ru", false, reg)                // без согласия на рассылку
+	nomail := mk("nomail@b.ru", false, reg)      // без согласия: только письма 1–3
+	unsub := mk("unsub@b.ru", true, reg)         // отписался: ничего
 	mk("old@b.ru", true, reg.AddDate(0, 0, -30)) // до запуска цепочки
+	if err := repo.ClearMarketingConsent(ctx, unsub); err != nil {
+		t.Fatal(err)
+	}
 
 	msk := func(day, hour int) time.Time { // день после регистрации, час по Москве
 		return time.Date(2026, 10, 1+day, hour-3, 0, 0, 0, time.UTC)
 	}
-	status := func(step int) string {
+	statusOf := func(id uuid.UUID, step int) string {
 		var s string
-		_ = repo.Pool.QueryRow(ctx, `SELECT status FROM drip_sends WHERE user_id=$1 AND step=$2`, a, step).Scan(&s)
+		_ = repo.Pool.QueryRow(ctx, `SELECT status FROM drip_sends WHERE user_id=$1 AND step=$2`, id, step).Scan(&s)
 		return s
+	}
+	status := func(step int) string { return statusOf(a, step) }
+	// sendAll – отправщик шлёт по одному письму за тик: прогоняем, пока есть кому.
+	sendAll := func(now time.Time) {
+		for i := 0; i < 10; i++ {
+			if err := app.SendOneDripEmailForTest(ctx, now); err != nil {
+				return
+			}
+		}
 	}
 	total := func() int {
 		var n int
@@ -2573,12 +2594,11 @@ func TestDripChain(t *testing.T) {
 	if total() != 0 {
 		t.Fatalf("must not send before 9:00 MSK")
 	}
-	// День 1, 10:00 – письмо 1 только подписанному новичку.
-	if err := app.SendOneDripEmailForTest(ctx, msk(1, 10)); err != nil {
-		t.Fatalf("day 1: %v", err)
-	}
-	if status(1) != "sent" || total() != 1 {
-		t.Fatalf("step 1 must be sent to a@ only, total=%d", total())
+	// День 1, 10:00 – письмо 1 новичкам: подписанному и без согласия
+	// (это подсказка по курсу), но не отписавшемуся.
+	sendAll(msk(1, 10))
+	if status(1) != "sent" || statusOf(nomail, 1) != "sent" || statusOf(unsub, 1) != "" || total() != 2 {
+		t.Fatalf("step 1 must be sent to a@ and nomail@ only, total=%d", total())
 	}
 	if err := app.SendOneDripEmailForTest(ctx, msk(1, 11)); err != db.ErrNotFound {
 		t.Fatalf("second send same day: %v", err)
@@ -2592,13 +2612,13 @@ func TestDripChain(t *testing.T) {
 	// «не чаще раза в день» – независимо от того, когда запускают тест).
 	back := func() { _, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = $1`, reg) }
 	back()
-	_ = app.SendOneDripEmailForTest(ctx, msk(3, 10))
-	if status(2) != "sent" {
+	sendAll(msk(3, 10))
+	if status(2) != "sent" || statusOf(nomail, 2) != "sent" {
 		t.Fatalf("step 2 must be sent on day 3")
 	}
 	back()
-	_ = app.SendOneDripEmailForTest(ctx, msk(5, 10))
-	if status(3) != "sent" {
+	sendAll(msk(5, 10))
+	if status(3) != "sent" || statusOf(nomail, 3) != "sent" {
 		t.Fatalf("step 3 must be sent on day 5")
 	}
 	// Купила «Здоровую спину» – письма с предложением пропускаются.
@@ -2607,6 +2627,19 @@ func TestDripChain(t *testing.T) {
 	_ = app.SendOneDripEmailForTest(ctx, msk(7, 10))
 	if status(4) != "skipped" {
 		t.Fatalf("step 4 must be skipped for a buyer, got %q", status(4))
+	}
+	// Письма с предложением без согласия не уходят.
+	back()
+	sendAll(msk(7, 12))
+	if statusOf(nomail, 4) != "" {
+		t.Fatalf("offer must not go without consent, got %q", statusOf(nomail, 4))
+	}
+	// Нажал «Да, присылайте» – предложение уходит.
+	_ = repo.SetMarketingConsent(ctx, nomail)
+	back()
+	sendAll(msk(7, 13))
+	if statusOf(nomail, 4) != "sent" {
+		t.Fatalf("offer must go after consent, got %q", statusOf(nomail, 4))
 	}
 	// Выключили в админке – ничего не уходит.
 	_ = repo.SetSetting(ctx, "drip_enabled", "false")
@@ -3177,5 +3210,292 @@ func TestAbandonedPaymentAlert(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	if count("@buyer.ru") != before {
 		t.Fatal("old orders must not be alerted")
+	}
+}
+
+// Вход по коду из письма: код приходит только на существующий адрес, не чаще
+// раза в минуту, неверный код не пускает, после 5 ошибок код сгорает.
+func TestLoginByCode(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	if _, err := repo.CreateUser(ctx, "code@user.ru", "!unusable!x", "Ира", "user"); err != nil {
+		t.Fatal(err)
+	}
+	c := newClient(srv)
+	// Неизвестный адрес – тот же ответ, кода нет.
+	r, body := c.do("POST", "/api/auth/code", map[string]any{"email": "nobody@user.ru"})
+	if r.StatusCode != 200 || strings.Contains(string(body), "code_dev") {
+		t.Fatalf("unknown email: %d %s", r.StatusCode, body)
+	}
+	r, body = c.do("POST", "/api/auth/code", map[string]any{"email": "Code@User.ru "})
+	var resp struct {
+		Code string `json:"code_dev"`
+	}
+	_ = json.Unmarshal(body, &resp)
+	if r.StatusCode != 200 || len(resp.Code) != 6 {
+		t.Fatalf("request code: %d %s", r.StatusCode, body)
+	}
+	// Повтор в течение минуты – новый код не создаётся.
+	_, body = c.do("POST", "/api/auth/code", map[string]any{"email": "code@user.ru"})
+	if strings.Contains(string(body), "code_dev") {
+		t.Fatalf("second code within a minute: %s", body)
+	}
+	wrong := "000000"
+	if resp.Code == wrong {
+		wrong = "111111"
+	}
+	if r, _ := c.do("POST", "/api/auth/code/verify", map[string]any{"email": "code@user.ru", "code": wrong}); r.StatusCode != 400 {
+		t.Fatalf("wrong code: %d", r.StatusCode)
+	}
+	if r, _ := c.do("GET", "/api/me", nil); r.StatusCode != 401 {
+		t.Fatalf("must not be logged in after wrong code: %d", r.StatusCode)
+	}
+	r, body = c.do("POST", "/api/auth/code/verify", map[string]any{"email": "code@user.ru", "code": resp.Code[:3] + " " + resp.Code[3:]})
+	if r.StatusCode != 200 {
+		t.Fatalf("right code: %d %s", r.StatusCode, body)
+	}
+	if r, _ := c.do("GET", "/api/me", nil); r.StatusCode != 200 {
+		t.Fatalf("me after code login: %d", r.StatusCode)
+	}
+	// Использованный код второй раз не работает.
+	c2 := newClient(srv)
+	if r, _ := c2.do("POST", "/api/auth/code/verify", map[string]any{"email": "code@user.ru", "code": resp.Code}); r.StatusCode != 400 {
+		t.Fatalf("reused code: %d", r.StatusCode)
+	}
+	// Пять неверных попыток – код сгорает, даже верный больше не пускает.
+	if _, err := repo.Pool.Exec(ctx, `UPDATE login_codes SET created_at = now() - interval '2 minutes'`); err != nil {
+		t.Fatal(err)
+	}
+	_, body = c2.do("POST", "/api/auth/code", map[string]any{"email": "code@user.ru"})
+	_ = json.Unmarshal(body, &resp)
+	wrong = "000000"
+	if resp.Code == wrong {
+		wrong = "111111"
+	}
+	for i := 0; i < 5; i++ {
+		c2.do("POST", "/api/auth/code/verify", map[string]any{"email": "code@user.ru", "code": wrong})
+	}
+	r, body = c2.do("POST", "/api/auth/code/verify", map[string]any{"email": "code@user.ru", "code": resp.Code})
+	if r.StatusCode != 400 || !strings.Contains(string(body), "too_many_attempts") {
+		t.Fatalf("after 5 wrong attempts: %d %s", r.StatusCode, body)
+	}
+	// Без CSRF – отказ.
+	if r, _ := c2.doNoCSRF("POST", "/api/auth/code", map[string]any{"email": "code@user.ru"}); r.StatusCode != 403 {
+		t.Fatalf("no csrf: %d", r.StatusCode)
+	}
+}
+
+// Письмо о доступе: человеку, который не знает пароль, генерируется пароль
+// и кнопка входа без пароля (многоразовая, ведёт к курсу). Тому, кто уже
+// входил, пароль не меняем.
+func TestAccessEmailPasswordAndLink(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", "")}
+	uid, err := repo.CreateUser(ctx, "buyer@mail.ru", "!unusable!x", "Оля", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, pwd, err := app.BuildAccessEmailForTest(ctx, uid, "zhonglirovanie")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pwd) != 10 || !strings.Contains(body, pwd) || !strings.Contains(body, "buyer@mail.ru") {
+		t.Fatalf("password must be generated and shown: %q", pwd)
+	}
+	if !strings.Contains(body, "Хочу получать") && !strings.Contains(body, "Да, присылайте") {
+		t.Fatal("no subscribe offer for a person without consent")
+	}
+	i := strings.Index(body, "/auth/link?token=")
+	if i < 0 {
+		t.Fatal("no login link")
+	}
+	token := body[i+len("/auth/link?token="):]
+	token = token[:strings.IndexByte(token, '"')]
+
+	// Пароль из письма подходит.
+	c := newClient(srv)
+	if r, b := c.do("POST", "/api/auth/login", map[string]any{"email": "buyer@mail.ru", "password": pwd}); r.StatusCode != 200 {
+		t.Fatalf("login with emailed password: %d %s", r.StatusCode, b)
+	}
+	// Кнопка из письма входит и ведёт к курсу – и не один раз.
+	for k := 0; k < 2; k++ {
+		c2 := newClient(srv)
+		r, b := c2.do("POST", "/api/auth/link", map[string]any{"token": token})
+		if r.StatusCode != 200 || !strings.Contains(string(b), `"/cabinet/zhonglirovanie"`) {
+			t.Fatalf("link login #%d: %d %s", k, r.StatusCode, b)
+		}
+		if r, _ := c2.do("GET", "/api/me", nil); r.StatusCode != 200 {
+			t.Fatalf("me after link: %d", r.StatusCode)
+		}
+	}
+	if r, _ := newClient(srv).do("POST", "/api/auth/link", map[string]any{"token": "deadbeef"}); r.StatusCode != 400 {
+		t.Fatalf("bad token: %d", r.StatusCode)
+	}
+	// Просроченная ссылка не работает.
+	_, _ = repo.Pool.Exec(ctx, `UPDATE login_links SET expires_at = now() - interval '1 minute'`)
+	if r, _ := newClient(srv).do("POST", "/api/auth/link", map[string]any{"token": token}); r.StatusCode != 400 {
+		t.Fatalf("expired link: %d", r.StatusCode)
+	}
+	// Человек уже входил – второе письмо пароль не меняет.
+	body, pwd2, _ := app.BuildAccessEmailForTest(ctx, uid, "zhonglirovanie")
+	if pwd2 != "" || strings.Contains(body, pwd) {
+		t.Fatalf("password must not change for a person who logged in: %q", pwd2)
+	}
+	if r, _ := newClient(srv).do("POST", "/api/auth/login", map[string]any{"email": "buyer@mail.ru", "password": pwd}); r.StatusCode != 200 {
+		t.Fatalf("old password must still work: %d", r.StatusCode)
+	}
+}
+
+// Вход сразу после оплаты: браузер, оформивший заказ, попадает к урокам без
+// почты; чужой браузер и аккаунт, в который уже входили, – нет.
+func TestBuyerEntersAfterPayment(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	price := 1490
+	if _, err := repo.CreateCourse(ctx, db.CourseInput{
+		Slug: "zhonglirovanie", Title: "Жонглирование", Kind: "paid",
+		PriceRub: &price, IsPublished: true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	buyer := newClient(srv)
+	r, body := buyer.do("POST", "/api/courses/zhonglirovanie/quick-checkout",
+		map[string]any{"email": "enter@buyer.ru", "name": "Анна", "tariff": "self", "consent_pd": true, "consent_marketing": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("checkout: %d %s", r.StatusCode, body)
+	}
+	var resp struct {
+		OrderID string `json:"order_id"`
+	}
+	_ = json.Unmarshal(body, &resp)
+	u, _ := repo.GetUserByEmail(ctx, "enter@buyer.ru")
+	if ok, _ := repo.HasMarketingConsent(ctx, u.ID); !ok {
+		t.Fatal("checkbox in the checkout form must save marketing consent")
+	}
+	noRedirect := func(c *client) *http.Client {
+		h := c.http()
+		h.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+		return h
+	}
+	enter := func(c *client) string {
+		t.Helper()
+		res, err := noRedirect(c).Get(srv.URL + "/api/orders/" + resp.OrderID + "/enter")
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		return res.Header.Get("Location")
+	}
+	canEnter := func(c *client) bool {
+		_, b := c.do("GET", "/api/orders/"+resp.OrderID+"/status", nil)
+		return strings.Contains(string(b), `"can_enter":true`)
+	}
+	// Не оплачено – никуда не пускаем.
+	if loc := enter(buyer); !strings.HasPrefix(loc, "/auth/login") {
+		t.Fatalf("unpaid: %q", loc)
+	}
+	// Подтверждение оплаты.
+	wh := map[string]any{"order_id": resp.OrderID, "payment_status": "success"}
+	sig, _ := prodamus.Sign(cfg.ProdamusSecret, wh)
+	form := url.Values{}
+	for k, v := range wh {
+		form.Set(k, v.(string))
+	}
+	form.Set("signature", sig)
+	req, _ := http.NewRequest("POST", srv.URL+"/api/webhooks/prodamus", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sign", sig)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res.Body.Close()
+
+	other := newClient(srv)
+	if canEnter(other) || !canEnter(buyer) {
+		t.Fatal("can_enter must be true only in the buyer's browser")
+	}
+	if loc := enter(other); !strings.HasPrefix(loc, "/auth/login?email=enter%40buyer.ru") {
+		t.Fatalf("other browser: %q", loc)
+	}
+	if loc := enter(buyer); loc != "/cabinet/zhonglirovanie" {
+		t.Fatalf("buyer: %q", loc)
+	}
+	if r, _ := buyer.do("GET", "/api/me", nil); r.StatusCode != 200 {
+		t.Fatalf("buyer must be logged in: %d", r.StatusCode)
+	}
+	// Подделанная кука не пускает.
+	forged := newClient(srv)
+	su, _ := url.Parse(srv.URL)
+	forged.jar.SetCookies(su, []*http.Cookie{{Name: "buyer_order", Value: resp.OrderID + ".00ff", Path: "/"}})
+	if loc := enter(forged); !strings.HasPrefix(loc, "/auth/login") {
+		t.Fatalf("forged cookie: %q", loc)
+	}
+}
+
+// Отписка запоминается: отписавшемуся не предлагаем подписаться и не шлём
+// сервисных рассылок; кнопка «Да, присылайте» возвращает всё как было.
+func TestUnsubscribedIsRemembered(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	freeID, _ := repo.CreateCourse(ctx, db.CourseInput{Slug: "myagkiy-start", Title: "MS", Kind: "free", IsPublished: true})
+	mk := func(email string, consent bool) uuid.UUID {
+		id, err := repo.CreateUser(ctx, email, "x", "", "user")
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = repo.SaveConsent(ctx, id, true, consent)
+		_ = repo.Grant(ctx, id, freeID, "free", nil)
+		return id
+	}
+	never := mk("never@b.ru", false)
+	left := mk("left@b.ru", true)
+	_ = repo.ClearMarketingConsent(ctx, left)
+	if ok, _ := repo.SubscribeOfferAllowed(ctx, never); !ok {
+		t.Fatal("never-subscribed person must get the offer")
+	}
+	if ok, _ := repo.SubscribeOfferAllowed(ctx, left); ok {
+		t.Fatal("unsubscribed person must not get the offer")
+	}
+	admin := adminClient(t, srv, repo)
+	_, body := admin.do("GET", "/api/admin/segments", nil)
+	var segs struct {
+		Segments []db.Segment `json:"segments"`
+	}
+	_ = json.Unmarshal(body, &segs)
+	found := false
+	for _, s := range segs.Segments {
+		if s.Key == "service_all" {
+			found = true
+			if s.Count != 1 || !s.ServiceOnly {
+				t.Fatalf("service_all must hold only never@: %+v", s)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("no service_all segment")
+	}
+	_ = repo.SetMarketingConsent(ctx, left)
+	var unsub *time.Time
+	_ = repo.Pool.QueryRow(ctx, `SELECT unsubscribed_at FROM users WHERE id=$1`, left).Scan(&unsub)
+	if unsub != nil {
+		t.Fatal("subscribing again must clear unsubscribed_at")
+	}
+}
+
+// Письма цепочки 1–3 без согласия: без рекламных блоков, с кнопкой подписки.
+func TestDripLetterWithoutConsent(t *testing.T) {
+	app := &handlers.App{Cfg: &config.Config{AppHost: "http://test", JWTSecret: "s"}}
+	sub := app.DripHTMLForTest(3, true)
+	nosub := app.DripHTMLForTest(3, false)
+	if !strings.Contains(sub, "/results") || strings.Contains(sub, "[[promo]]") {
+		t.Fatal("subscribed letter must keep the reviews block")
+	}
+	if strings.Contains(nosub, "/results") || !strings.Contains(nosub, "/api/subscribe?u=") {
+		t.Fatal("letter without consent: no promo, with subscribe button")
+	}
+	if strings.Contains(sub, "/api/subscribe?u=") {
+		t.Fatal("subscribed letter must not offer subscribing")
 	}
 }

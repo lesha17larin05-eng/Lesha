@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import SubscribeInvite from '../../components/SubscribeInvite.astro';
 import { apiJson } from '../../lib/api';
 
 // Кабинет курса «Жонглирование: у вас получится» – по образцу кабинета
@@ -262,6 +263,8 @@ const maxHref = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_W
 
     <h1 class="zs-cab-title">Жонглирование: <em>у вас получится</em></h1>
     <p class="zs-cab-subtitle">Продолжайте практиковать, это единственный путь</p>
+
+    <SubscribeInvite />
 
     <div class="zs-cab-intro">
       <strong>Как проходить.</strong> Уроки идут по порядку. В каждом упражнении есть критерий – выполнили его, переходите к следующему. Не получается – вернитесь на шаг назад, это тоже часть пути.

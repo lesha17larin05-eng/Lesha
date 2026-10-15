@@ -9,6 +9,9 @@ import { apiJson } from '../lib/api';
 // не обещает «курс открыт», пока заказ не стал paid: берёт id заказа из
 // параметра _payform_order_id (его добавляет Продамус) и опрашивает
 // GET /api/orders/{id}/status.
+//
+// Когда оплата подтверждена и заказ оформлен в этом же браузере (can_enter),
+// страница сама ведёт к урокам через GET /api/orders/{id}/enter – без почты.
 const user = (Astro.locals as any).user;
 const slug = (Astro.url.searchParams.get('course') || '').replace(/[^a-z0-9-]/g, '');
 const cabinet = slug ? `/cabinet/${slug}` : '/cabinet';
@@ -17,6 +20,7 @@ const orderId = (Astro.url.searchParams.get('_payform_order_id') || Astro.url.se
 
 let status = '';
 let emailHint = '';
+let canEnter = false;
 if (orderId) {
   const cookie = Astro.request.headers.get('cookie') || '';
   // Продамус вернул с отметкой «успешно» – запоминаем момент возврата:
@@ -26,11 +30,15 @@ if (orderId) {
   if (code === 200) {
     status = data?.status || '';
     emailHint = data?.email_hint || '';
+    // Заказ оформлен в этом браузере – после оплаты пускаем к урокам сразу.
+    canEnter = data?.can_enter === true;
   }
 }
 // Без id заказа (старые ссылки) показываем прежний текст про письмо.
 const paid = status === 'paid' || !orderId;
 const tg = 'https://t.me/larin_lesha';
+const enterHref = orderId ? `/api/orders/${orderId}/enter` : '';
+const autoEnter = paid && !user && canEnter && !!orderId;
 ---
 <SiteLayout title="Оплата курса – Алексей Ларин" padTop={true} noindex={true}>
   <section class="container paid" data-order={orderId} data-status={status} data-logged={user ? '1' : ''} data-cabinet={cabinet}>
@@ -42,13 +50,18 @@ const tg = 'https://t.me/larin_lesha';
           <p>Спасибо! Уроки уже ждут вас в личном кабинете.</p>
           <div class="paid-actions"><a class="btn-primary" href={cabinet}>Перейти к урокам →</a></div>
         </>
+      ) : autoEnter ? (
+        <>
+          <p>Спасибо! Сейчас откроем уроки. Письмо с данными для входа{emailHint ? <> ушло на <b class="hint">{emailHint}</b></> : ' уже в пути'} – сохраните его, чтобы возвращаться к курсу.</p>
+          <div class="paid-actions"><a class="btn-primary" href={enterHref} id="enter">Перейти к урокам →</a></div>
+        </>
       ) : (
         <>
-          <p>Спасибо! Мы отправили письмо со ссылкой для входа{emailHint ? <> на <b class="hint">{emailHint}</b></> : ''}. По ней вы зададите пароль и сразу попадёте к урокам. Логин – этот адрес почты.</p>
-          <p class="paid-note">Письма нет через 5 минут? Загляните в «Спам» и «Рассылки» или отправьте ссылку ещё раз.</p>
+          <p>Спасибо! Мы отправили письмо{emailHint ? <> на <b class="hint">{emailHint}</b></> : ''}: в нём кнопка «Перейти к урокам» и данные для входа – логин и пароль.</p>
+          <p class="paid-note">Письма нет через 5 минут? Загляните в «Спам» и «Рассылки» – или войдите по коду: пришлю его на почту.</p>
           <div class="paid-actions">
-            <a class="btn-primary" href="/auth/forgot">Отправить ссылку ещё раз</a>
-            <a class="paid-link" href={`/auth/login?next=${encodeURIComponent(cabinet)}`}>У меня есть пароль – войти</a>
+            <a class="btn-primary" href={`/auth/login?mode=code&next=${encodeURIComponent(cabinet)}`}>Войти по коду из письма</a>
+            <a class="paid-link" href={`/auth/login?next=${encodeURIComponent(cabinet)}`}>Войти с паролем</a>
           </div>
         </>
       )}
@@ -71,6 +84,10 @@ const tg = 'https://t.me/larin_lesha';
   </section>
 
   <script>
+    // Оплатили в этом браузере – через пару секунд сами ведём к урокам.
+    const enter = document.getElementById('enter') as HTMLAnchorElement | null;
+    if (enter) setTimeout(() => { location.href = enter.href; }, 2500);
+
     const root = document.querySelector('.paid') as HTMLElement | null;
     const order = root?.dataset.order;
     if (root && order && root.dataset.status !== 'paid') {

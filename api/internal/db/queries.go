@@ -993,11 +993,15 @@ func (r *Repo) SetSetting(ctx context.Context, key, value string) error {
 }
 
 // ClearMarketingConsent снимает согласие на маркетинговые письма
-// (отписка по ссылке из письма). Идемпотентна: повторный вызов – no-op.
+// (отписка по ссылке из письма или галочка в настройках) и ставит отметку
+// unsubscribed_at: отписавшимся не шлём ни цепочку, ни предложений
+// подписаться. Идемпотентна: повторный вызов – no-op.
 // Согласие на обработку ПД (consent_pd_at) не трогаем – оно про другое.
 func (r *Repo) ClearMarketingConsent(ctx context.Context, userID uuid.UUID) error {
 	_, err := r.Pool.Exec(ctx,
-		`UPDATE users SET consent_marketing_at = NULL, updated_at = now() WHERE id = $1`,
+		`UPDATE users SET consent_marketing_at = NULL,
+		                  unsubscribed_at = coalesce(unsubscribed_at, now()), updated_at = now()
+		  WHERE id = $1`,
 		userID)
 	return err
 }
@@ -1053,7 +1057,7 @@ func (r *Repo) EmailOpenStats(ctx context.Context) ([]map[string]any, error) {
 func (r *Repo) SetMarketingConsent(ctx context.Context, userID uuid.UUID) error {
 	_, err := r.Pool.Exec(ctx,
 		`UPDATE users SET consent_marketing_at = coalesce(consent_marketing_at, now()),
-		                  updated_at = now()
+		                  unsubscribed_at = NULL, updated_at = now()
 		  WHERE id = $1`, userID)
 	return err
 }

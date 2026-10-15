@@ -1,0 +1,80 @@
+---
+// Предложение получать письма – в кабинете и на страницах уроков.
+// Показываем, только если согласия нет и человек от писем не отписывался
+// (subscribe_offer из /api/me). «Не сейчас» прячет блок в этом браузере.
+// Нажатие «Да, присылайте» и есть согласие на рассылку (PATCH /api/me).
+const user = (Astro.locals as any).user;
+const show = user ? (user.subscribe_offer ?? user.consent_marketing !== true) === true : false;
+---
+{show && (
+  <div class="sub-invite" id="sub-invite" hidden>
+    <div class="sub-text">
+      <b>Присылать вам полезные письма?</b>
+      <span>Нечасто и по делу: короткие практики, разборы, как не бросить занятия –
+        и первым рассказываю о новых курсах и скидках. Отписаться можно в любой момент.</span>
+    </div>
+    <div class="sub-actions">
+      <button class="sub-yes" id="sub-yes" type="button">Да, присылайте</button>
+      <button class="sub-later" id="sub-later" type="button">Не сейчас</button>
+    </div>
+  </div>
+)}
+
+<style>
+  .sub-invite {
+    display: flex; gap: 18px 24px; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; margin: 22px 0; padding: 18px 22px;
+    background: #fdf3e8; border: 1px solid rgba(232,101,42,.25); border-radius: 14px;
+    text-align: left;
+  }
+  .sub-invite[hidden] { display: none; }
+  .sub-text { flex: 1; min-width: 240px; font-size: 15px; line-height: 1.55; color: #555; }
+  .sub-text b { display: block; color: var(--navy, #1f2a44); font-size: 16px; margin-bottom: 4px; }
+  .sub-actions { display: flex; gap: 16px; align-items: center; flex-shrink: 0; }
+  .sub-yes {
+    background: #e8652a; color: #fff; border: none; border-radius: 100px; cursor: pointer;
+    padding: 11px 22px; font: inherit; font-size: 15px; font-weight: 600;
+    transition: background .2s ease, transform .2s ease;
+  }
+  @media (hover: hover) { .sub-yes:hover { background: #d4561f; transform: translateY(-1px); } }
+  .sub-yes:focus-visible, .sub-later:focus-visible { outline: 2px solid #e8652a; outline-offset: 3px; }
+  .sub-yes:disabled { opacity: .7; cursor: default; }
+  .sub-later {
+    background: none; border: none; cursor: pointer; font: inherit; font-size: 15px;
+    color: #777; text-decoration: underline; text-underline-offset: 3px; transition: color .2s ease;
+  }
+  @media (hover: hover) { .sub-later:hover { color: var(--navy, #1f2a44); } }
+  .sub-done { color: #0a6040 !important; }
+</style>
+
+<script>
+  const box = document.getElementById('sub-invite');
+  if (box) {
+    let hidden = false;
+    try { hidden = localStorage.getItem('sub-invite-hidden') === '1'; } catch {}
+    box.hidden = hidden;
+
+    document.getElementById('sub-later')?.addEventListener('click', () => {
+      try { localStorage.setItem('sub-invite-hidden', '1'); } catch {}
+      box.hidden = true;
+    });
+
+    document.getElementById('sub-yes')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.disabled = true; btn.textContent = 'Сохраняю…';
+      try {
+        const r = await fetch('/api/me', {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ consent_marketing: true }),
+        });
+        if (!r.ok) throw new Error('fail');
+        box.innerHTML = '<div class="sub-text"><b class="sub-done">Готово, спасибо!</b>' +
+          'Буду присылать письма по делу. Передумаете – галочка в настройках профиля.</div>';
+        try { localStorage.setItem('sub-invite-hidden', '1'); } catch {}
+      } catch {
+        btn.disabled = false; btn.textContent = 'Да, присылайте';
+      }
+    });
+  }
+</script>

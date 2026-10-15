@@ -155,13 +155,17 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
         <div class="zs-modal-card" role="dialog" aria-modal="true" aria-labelledby="zs-modal-title">
           <button class="zs-modal-close" data-close aria-label="Закрыть">×</button>
           <h3 id="zs-modal-title">${label}</h3>
-          <p class="zs-modal-switch">${priceText}. Доступ к урокам откроется сразу после оплаты, ссылка для входа придёт на почту.</p>
+          <p class="zs-modal-switch">${priceText}. Доступ к урокам откроется сразу после оплаты, данные для входа придут на почту.</p>
           <form class="zs-form" novalidate>
             <label><span class="zs-lbl">Имя <i class="zs-req">*</i></span><input name="name" required autocomplete="name" /></label>
             <label><span class="zs-lbl">Почта <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" inputmode="email" /></label>
             <label class="zs-check">
               <input type="checkbox" name="consent_pd" required />
               <span>Даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/legal/offer" target="_blank">оферту</a>.</span>
+            </label>
+            <label class="zs-check">
+              <input type="checkbox" name="consent_marketing" checked />
+              <span>Присылать полезные письма: практики, разборы, новости о курсах. Отписаться можно в любой момент.</span>
             </label>
             <button class="zs-submit" type="submit">Перейти к оплате</button>
             <div class="zs-msg" hidden></div>
@@ -189,7 +193,7 @@ const faqJsonLd = faqMatches.length ? JSON.stringify({
         if (!fd.get('consent_pd')) return say(ERRORS.consent_pd_required);
         btn.disabled = true; btn.textContent = 'Открываю оплату…';
         try {
-          const res = await quickCheckout({ tariff, name, email, consent_pd: true });
+          const res = await quickCheckout({ tariff, name, email, consent_pd: true, consent_marketing: !!fd.get('consent_marketing') });
           if (res.ok) return goPay(res.data.payment_url);
           if (res.data.error === 'already_enrolled') {
             say('У этого адреса уже есть доступ к курсу. <a href="/auth/login?next=/cabinet/zhonglirovanie">Войдите</a>, чтобы перейти к урокам.');

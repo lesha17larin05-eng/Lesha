@@ -1,5 +1,6 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import SubscribeInvite from '../../components/SubscribeInvite.astro';
 import { apiJson } from '../../lib/api';
 
 const user = (Astro.locals as any).user;
@@ -371,6 +372,8 @@ const materials = [
 
     <h1 class="zs-cab-title">Здоровая <em>спина</em></h1>
     <p class="zs-cab-subtitle">Продолжайте практиковать, это единственный путь</p>
+
+    <SubscribeInvite />
 
     <div class="zs-cab-materials">
       <div class="zs-cab-materials-head">

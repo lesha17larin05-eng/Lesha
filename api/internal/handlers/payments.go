@@ -392,33 +392,23 @@ func (a *App) ProdamusWebhook(w http.ResponseWriter, r *http.Request) {
 			u, _ := a.Repo.GetUser(r.Context(), o.UserID)
 			c, _ := a.Repo.GetCourseByID(r.Context(), o.CourseID)
 			if u != nil && c != nil {
-				cabinetURL := a.Cfg.AppHost + "/cabinet/" + c.Slug
-				// Покупка в один шаг (QuickCheckout) создаёт аккаунт без известного
-				// человеку пароля – даём ссылку «задать пароль и войти» (7 дней).
-				// Тем, у кого пароль есть, она не мешает.
-				loginHTML := ""
-				if raw, hash, err := auth.RandomToken(32); err == nil {
-					if err := a.Repo.CreatePasswordResetToken(r.Context(), u.ID, hash, 7*24*time.Hour); err == nil {
-						link := a.Cfg.AppHost + "/auth/reset?token=" + raw
-						loginHTML = "<p><b>Первый вход:</b> если вы ещё не заходили на сайт или не помните пароль – " +
-							"<a href=\"" + link + "\">задайте пароль по этой ссылке</a> (действует 7 дней). " +
-							"Логин – этот адрес почты.</p>"
-					}
-				}
 				late := ""
 				if a.Repo.WasStuckAlerted(r.Context(), o.ID) {
 					late = "\n✅ Подтверждение пришло с опозданием – доступ открылся сам, письмо покупателю ушло. Вручную ничего делать не нужно."
 				}
 				a.TG.Async("💰 Оплачен курс «" + c.Title + "»\n" + strings.TrimSpace(u.Name+" "+u.Email) +
 					"\nСумма: " + strconv.Itoa(o.AmountRub) + " ₽, заказ №" + strconv.FormatInt(o.OrderNum, 10) + late)
-				a.Mail.Async(u.Email, "Оплата получена – курс «"+c.Title+"» открыт",
-					"<p>Здравствуйте! Спасибо за оплату – доступ к курсу «"+c.Title+"» уже открыт.</p>"+
-						"<p><b>Начать заниматься:</b> <a href=\""+cabinetURL+"\">"+cabinetURL+"</a><br>"+
-						"Уроки открываются в личном кабинете, доступ действует год, темп выбираете сами.</p>"+
-						loginHTML+
-						"<p>Если возникнут вопросы по курсу или оплате – просто ответьте на это письмо "+
-						"или напишите в Телеграм: <a href=\"https://t.me/larin_lesha\">@larin_lesha</a>.</p>"+
-						"<p>Хорошей практики!<br>Алексей Ларин</p>")
+				// Письмо о доступе: кнопка «Перейти к урокам» (вход без пароля,
+				// 7 дней) и данные для входа. Покупка в один шаг заводит аккаунт
+				// без известного человеку пароля – тогда пароль генерируется.
+				body, _ := a.buildAccessEmail(r.Context(), u, c.Slug, accessEmail{
+					Intro: "<p style=\"margin:0 0 16px;\">Спасибо за оплату! Доступ к курсу <b>«" + html.EscapeString(c.Title) +
+						"»</b> уже открыт. Уроки – в личном кабинете, доступ действует год, темп выбираете сами.</p>",
+					Outro: "<p style=\"margin:0 0 16px;\">Вопросы по курсу или оплате – просто ответьте на это письмо " +
+						"или напишите в Телеграм: <a href=\"https://t.me/larin_lesha\" style=\"" + dripLinkStyle + "\">@larin_lesha</a>.</p>" +
+						"<p style=\"margin:0 0 16px;\">Хорошей практики!<br>Алексей Ларин</p>",
+				})
+				a.Mail.Async(u.Email, "Оплата получена – курс «"+c.Title+"» открыт", body)
 			}
 		}
 	}

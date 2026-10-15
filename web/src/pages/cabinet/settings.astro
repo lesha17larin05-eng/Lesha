@@ -11,8 +11,10 @@ const subscribed = user?.consent_marketing === true;
       <div><label class="label">Email (нельзя изменить)</label><input class="input" value={user.email} disabled /></div>
       <div><label class="label">Имя</label><input class="input" name="name" value={user.name || ''} /></div>
       <hr/>
-      <div><label class="label">Текущий пароль</label><input class="input" type="password" name="old_password" /></div>
-      <div><label class="label">Новый пароль</label><input class="input" type="password" name="new_password" /></div>
+      <div><label class="label">Текущий пароль</label><input class="input" type="password" name="old_password" autocomplete="current-password" /></div>
+      <div><label class="label">Новый пароль</label><input class="input" type="password" name="new_password" autocomplete="new-password" minlength="8" /></div>
+      <p class="muted pwd-hint">Текущий пароль – из письма о доступе к курсу. Не помните его?
+        <a href={`/auth/forgot?email=${encodeURIComponent(user.email)}`}>Задайте новый по ссылке из письма</a>.</p>
       <hr/>
       <div class="consent">
         <label class="consent-row">
@@ -33,25 +35,33 @@ const subscribed = user?.consent_marketing === true;
     .consent-row { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
     .consent-row input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--orange); }
     .consent-hint { display: block; margin-top: 4px; line-height: 1.55; }
+    .pwd-hint { font-size: 14px; line-height: 1.55; margin: -4px 0 0; }
   </style>
 
   <script>
     const f = document.getElementById('f'), m = document.getElementById('msg');
+    // Галочку отправляем, только если её поменяли: снятие галочки – это
+    // отписка, и простое «Сохранить имя» не должно отписывать человека.
+    const consentBox = f.querySelector('input[name="consent_marketing"]');
+    let consentWas = consentBox.checked;
     f.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(f);
+      const consentNow = fd.get('consent_marketing') === 'on';
       const r = await fetch('/api/me', {
         method: 'PATCH', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           name: fd.get('name'),
           old_password: fd.get('old_password') || undefined,
           new_password: fd.get('new_password') || undefined,
-          consent_marketing: fd.get('consent_marketing') === 'on',
+          consent_marketing: consentNow !== consentWas ? consentNow : undefined,
         })
       });
       const j = await r.json();
+      if (r.ok) consentWas = consentNow;
+      const errors = { wrong_password: 'Текущий пароль не подошёл', weak_password: 'Новый пароль – минимум 8 символов' };
       m.className = r.ok ? 'alert ok' : 'alert';
-      m.textContent = r.ok ? 'Сохранено' : (j.error || 'Ошибка');
+      m.textContent = r.ok ? 'Сохранено' : (errors[j.error] || 'Не получилось сохранить');
       m.hidden = false;
     });
   </script>

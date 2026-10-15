@@ -89,7 +89,7 @@ func (a *App) sendOneDripEmail(ctx context.Context, now time.Time) error {
 	}
 
 	for _, st := range dripSteps {
-		rec, err := a.Repo.NextDripRecipient(ctx, st.Step, st.Day, startAt, now)
+		rec, err := a.Repo.NextDripRecipient(ctx, st.Step, st.Day, st.Offer, startAt, now)
 		if err == db.ErrNotFound {
 			continue
 		}
@@ -107,7 +107,7 @@ func (a *App) sendOneDripEmail(ctx context.Context, now time.Time) error {
 				return a.Repo.RecordDrip(ctx, rec.UserID, st.Step, "skipped", "")
 			}
 		}
-		body := a.dripHTML(st, rec.Name, rec.UserID)
+		body := a.dripHTML(st, rec.Name, rec.UserID, rec.Subscribed)
 		headers := map[string]string{
 			"List-Unsubscribe":      "<" + a.unsubscribeURL(rec.UserID) + ">",
 			"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -205,20 +205,40 @@ func renderDripBody(body string) string {
 	return sb.String()
 }
 
+// dripPromoRe – блок [[promo]]…[[/promo]] в тексте письма: рекламная часть
+// (отзывы, ссылки на платное). Людям без согласия на рассылку его вырезаем.
+var dripPromoRe = regexp.MustCompile(`(?s)\[\[promo\]\]\n?(.*?)\n?\[\[/promo\]\]`)
+
+func dripBodyFor(body string, subscribed bool) string {
+	if subscribed {
+		return dripPromoRe.ReplaceAllString(body, "$1")
+	}
+	return dripPromoRe.ReplaceAllString(body, "")
+}
+
 // dripHTML – письмо целиком: тело, подвал с отпиской и счётчик открытий.
 // Подпись уже есть в тексте, поэтому отдельно её не добавляем.
-func (a *App) dripHTML(st dripStep, name string, userID uuid.UUID) string {
+// subscribed=false – у человека нет согласия на рассылку: рекламные блоки
+// вырезаем, после текста предлагаем подписаться.
+func (a *App) dripHTML(st dripStep, name string, userID uuid.UUID, subscribed bool) string {
 	var sb strings.Builder
 	sb.WriteString(`<!doctype html><html lang="ru"><head><meta charset="utf-8"></head>` +
 		`<body style="margin:0;padding:0;background:#fdfaf5;">` +
 		`<div style="max-width:560px;margin:0 auto;padding:28px 22px;` +
 		`font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;` +
 		`font-size:16px;line-height:1.65;color:#1a1a1a;">`)
-	sb.WriteString(renderDripBody(dripGreeting(st.Body, name)))
+	sb.WriteString(renderDripBody(dripGreeting(dripBodyFor(st.Body, subscribed), name)))
+	if !subscribed {
+		sb.WriteString(subscribeOfferBlock(a.subscribeURL(userID)))
+	}
 	sb.WriteString(`<hr style="border:none;border-top:1px solid #ece8e0;margin:26px 0 14px;">`)
-	sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` +
-		`Вы получили это письмо, потому что записались на бесплатный курс «Мягкий старт» на leshalarin.ru ` +
-		`и согласились получать материалы. <a href="` + a.unsubscribePageURL(userID) + `" style="color:#777;">Отписаться</a> – ` +
+	why := `Вы получили это письмо, потому что записались на бесплатный курс «Мягкий старт» на leshalarin.ru ` +
+		`и согласились получать материалы.`
+	if !subscribed {
+		why = `Это письмо про ваш курс «Мягкий старт» на leshalarin.ru – подсказки, как его пройти.`
+	}
+	sb.WriteString(`<p style="font-size:13px;color:#777;line-height:1.6;margin:0;">` + why +
+		` <a href="` + a.unsubscribePageURL(userID) + `" style="color:#777;">Отписаться</a> – ` +
 		`доступ к урокам при этом останется.</p>`)
 	sb.WriteString(`<img src="` + a.pixelURL("drip-"+strconv.Itoa(st.Step), userID) +
 		`" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;">`)
@@ -272,7 +292,7 @@ func (a *App) AdminDripTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, st := range dripSteps {
-		body := a.dripHTML(st, u.Name, u.ID)
+		body := a.dripHTML(st, u.Name, u.ID, true)
 		if err := a.Mail.Send(to, "[ТЕСТ "+strconv.Itoa(st.Step)+"/"+strconv.Itoa(len(dripSteps))+"] "+st.Subject, body); err != nil {
 			slog.Warn("drip test send failed", "to", to, "err", err)
 			writeErr(w, 500, "smtp")

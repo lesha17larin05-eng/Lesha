@@ -83,7 +83,9 @@ func (a *App) freeAccessEmailWithLink(ctx context.Context, uid uuid.UUID, to, pa
 		"Сайт: leshalarin.ru<br>" +
 		"Логин: " + html.EscapeString(to) + "<br>" +
 		"Пароль: " + password + "</p>" +
-		"<p>Сохраните это письмо – пригодится, чтобы вернуться к урокам.</p>"
+		"<p>Сохраните это письмо – пригодится, чтобы вернуться к урокам.</p>" +
+		// Не поставил галочку «присылать письма» – предлагаем ещё раз.
+		a.subscribeOfferHTML(ctx, uid)
 	return "Доступ к курсу «Мягкий старт» открыт", body, link
 }
 

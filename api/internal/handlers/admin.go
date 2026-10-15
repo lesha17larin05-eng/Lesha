@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
+	"html"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/leshalarin/api/internal/auth"
 	"github.com/leshalarin/api/internal/db"
 	"github.com/leshalarin/api/internal/middleware"
 )
@@ -688,37 +688,28 @@ func (a *App) AdminGrantByEmail(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Письмо отправляем ВСЕГДА – пользователь должен узнать о доступе.
-		// Если пароль не установлен (новый юзер или ранее созданный через SQL/массовый
-		// импорт) – добавляем reset-ссылку, иначе только уведомление.
-		var body string
+		// В нём кнопка «Перейти к урокам» (вход без пароля, 7 дней), данные
+		// для входа (новый пароль, если свой человек не знает) и – тем, кто
+		// не подписан и не отписывался, – предложение получать письма.
 		subject := "Доступ к курсу «" + c.Title + "» открыт"
+		u2, err := a.Repo.GetUser(r.Context(), uid)
+		if err != nil {
+			res.Status = "error"
+			res.Error = "lookup_failed"
+			out = append(out, res)
+			continue
+		}
 		if needsInvite {
-			raw, hash, _ := auth.RandomToken(32)
-			_ = a.Repo.CreatePasswordResetToken(r.Context(), uid, hash, 7*24*time.Hour)
-			inviteURL := a.Cfg.AppHost + "/auth/reset?token=" + raw
-			res.InviteURL = inviteURL
-			body = "<p>Здравствуйте!</p>" +
-				"<p>Алексей Ларин открыл вам доступ к курсу <b>«" + c.Title + "»</b> на сайте leshalarin.ru.</p>" +
-				"<p>Установите пароль по ссылке (живёт 7 дней):<br><a href=\"" + inviteURL + "\">" + inviteURL + "</a></p>" +
-				"<p>Логин – этот email. После установки пароля курс будет доступен в кабинете: " +
-				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
-		} else {
-			body = "<p>Здравствуйте!</p>" +
-				"<p>Алексей Ларин открыл вам доступ к курсу <b>«" + c.Title + "»</b>.</p>" +
-				"<p>Курс уже доступен в вашем кабинете: " +
-				"<a href=\"" + a.Cfg.AppHost + "/cabinet/courses\">" + a.Cfg.AppHost + "/cabinet/courses</a></p>"
+			// Запасная ссылка входа – админ может переслать её сам.
+			if link, err := a.loginLinkURL(r.Context(), uid, "/cabinet/"+c.Slug); err == nil {
+				res.InviteURL = link
+			}
 		}
-		// Предложение подписаться – для тех, у кого согласия ещё нет.
-		// Само нажатие и будет согласием (см. handlers/subscribe.go).
-		if subscribed, _ := a.Repo.HasMarketingConsent(r.Context(), uid); !subscribed {
-			sub := a.subscribeURL(uid)
-			body += "<hr style=\"border:none;border-top:1px solid #ece8e0;margin:24px 0 14px;\">" +
-				"<p style=\"font-size:14px;color:#555;\">Хотите получать от меня письма с новыми " +
-				"материалами и разборами? Это отдельное решение и на доступ к курсу никак не влияет.</p>" +
-				"<p><a href=\"" + sub + "\" style=\"display:inline-block;background:#e8652a;color:#fff;" +
-				"text-decoration:none;padding:10px 20px;border-radius:100px;font-size:14px;font-weight:600;\">" +
-				"Хочу получать письма</a></p>"
-		}
+		body, _ := a.buildAccessEmail(r.Context(), u2, c.Slug, accessEmail{
+			Intro: "<p style=\"margin:0 0 16px;\">Алексей Ларин открыл вам доступ к курсу <b>«" + html.EscapeString(c.Title) +
+				"»</b> на сайте leshalarin.ru. Уроки уже ждут вас в личном кабинете.</p>",
+			Outro: "<p style=\"margin:0 0 16px;\">Вопросы – просто ответьте на это письмо.<br>Алексей Ларин</p>",
+		})
 		a.Mail.Async(email, subject, body)
 		out = append(out, res)
 	}

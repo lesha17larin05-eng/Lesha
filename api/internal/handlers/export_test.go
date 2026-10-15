@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // SendOneDripEmailForTest открывает отправщик цепочки для интеграционных тестов.
@@ -31,4 +33,19 @@ func (a *App) CheckStuckPaymentsForTest(ctx context.Context, now time.Time) erro
 // CheckAbandonedPaymentsForTest – один проход поиска брошенных оплат.
 func (a *App) CheckAbandonedPaymentsForTest(ctx context.Context, now time.Time) error {
 	return a.checkAbandonedPayments(ctx, now)
+}
+
+// BuildAccessEmailForTest – письмо о доступе (тело и сгенерированный пароль).
+func (a *App) BuildAccessEmailForTest(ctx context.Context, userID uuid.UUID, slug string) (string, string, error) {
+	u, err := a.Repo.GetUser(ctx, userID)
+	if err != nil {
+		return "", "", err
+	}
+	body, pwd := a.buildAccessEmail(ctx, u, slug, accessEmail{Intro: "<p>intro</p>"})
+	return body, pwd, nil
+}
+
+// DripHTMLForTest – письмо цепочки шага step для подписанного или нет.
+func (a *App) DripHTMLForTest(step int, subscribed bool) string {
+	return a.dripHTML(dripSteps[step-1], "Анна", uuid.New(), subscribed)
 }
