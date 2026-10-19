@@ -192,6 +192,11 @@ const maxHref = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_W
       font-size: 16px; color: var(--text-mid); line-height: 1.75;
     }
     .zs-cab-intro strong { color: var(--navy); }
+    .zs-cab-intro p { margin: 0 0 12px; }
+    .zs-cab-intro p:last-child { margin-bottom: 0; }
+    .zs-cab-intro ul { margin: 0 0 14px; padding-left: 20px; }
+    .zs-cab-intro li { margin-bottom: 6px; }
+    .zs-cab-intro li::marker { color: var(--orange); }
     .zs-cab-intro a { color: var(--orange); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(232,101,42,0.3); transition: border-color .2s; }
     .zs-cab-intro a:hover, .zs-cab-intro a:focus-visible { border-bottom-color: var(--orange); outline: none; }
 
@@ -267,8 +272,13 @@ const maxHref = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_W
     <SubscribeInvite />
 
     <div class="zs-cab-intro">
-      <strong>Как проходить.</strong> Уроки идут по порядку. В каждом упражнении есть критерий – выполнили его, переходите к следующему. Не получается – вернитесь на шаг назад, это тоже часть пути.
-      <br><strong>Тариф «С разбором».</strong> 30 дней присылайте мне видео и вопросы <a href={tgHref} target="_blank" rel="noopener">в Телеграм</a> или <a href={maxHref} target="_blank" rel="noopener">в Max</a> – разберу столько, сколько нужно. Там же договоримся о времени личной онлайн-консультации (30 минут).
+      <p><strong>Как проходить.</strong> Уроки идут по порядку. В каждом упражнении есть критерий – выполнили его, переходите к следующему. Не получается – вернитесь на шаг назад, это тоже часть пути.</p>
+      <p><strong>Какой мяч взять.</strong> Для старта подойдёт тот, что есть дома и помещается в ладонь: мяч для большого тенниса (зелёный), детский мячик, мяч-антистресс. Только, пожалуйста, не еда 🙂</p>
+      <ul>
+        <li>Хотите заниматься всерьёз – закажите на маркетплейсе мячи для жонглирования с мелким песком внутри, 6–7 см. Они не прыгают и не укатываются, когда падают.</li>
+        <li>Три мяча сразу не нужны: на старте вы всё равно работаете с одним. Можно начинать с тем, что есть, пока остальные едут.</li>
+      </ul>
+      <p><strong>Тариф «С разбором».</strong> 30 дней присылайте мне видео и вопросы <a href={tgHref} target="_blank" rel="noopener">в Телеграм</a> или <a href={maxHref} target="_blank" rel="noopener">в Max</a> – разберу столько, сколько нужно. Там же договоримся о времени личной онлайн-консультации (30 минут).</p>
     </div>
 
     <div class="zs-cab-module">
