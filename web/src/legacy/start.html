@@ -144,7 +144,7 @@ nav {
 .section-title em { font-style: italic; }
 .section-desc { font-size: 18px; color: var(--text-muted); line-height: 1.85; max-width: 560px; margin-bottom: 56px; }
 
-.stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 56px; }
+.stages { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 56px; }
 .stage-card {
   background: var(--cream); border-radius: 20px; padding: 32px 28px;
   border: 1px solid var(--border); position: relative; overflow: hidden;
@@ -153,6 +153,7 @@ nav {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   background: var(--navy);
 }
+.stage-when { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
 .stage-num { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 400; color: var(--orange); opacity: 0.75; line-height: 1; margin-bottom: 16px; }
 .stage-card h3 { font-size: 19px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
 .stage-card p { font-size: 16px; color: var(--text-muted); line-height: 1.75; }
@@ -209,6 +210,8 @@ nav {
 .cta-step { display: flex; align-items: flex-start; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--border); }
 .cta-step:last-child { border-bottom: none; }
 .cta-step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: white; flex-shrink: 0; }
+.cta-step-text { font-size: 16px; color: var(--text-muted); line-height: 1.65; }
+.cta-step-text strong { display: block; font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
 .cta-step-text h4 { font-size: 17px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
 .cta-step-text p { font-size: 16px; color: var(--text-muted); line-height: 1.65; }
 .btn-cta-center {
@@ -246,7 +249,7 @@ footer { background: #0f1520; padding: 36px 80px; display: flex; align-items: ce
 
 /* ─── Планшеты 701–1200: промежуточные сетки ─── */
 @media(max-width:1200px){
-  .for-whom-cards,.stages,.reassurance-grid{grid-template-columns:repeat(2,1fr);}
+  .for-whom-cards,.reassurance-grid{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:1000px){
   .hero{grid-template-columns:1fr;}
@@ -377,13 +380,13 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 .pay-input {
   flex: 1 1 200px; min-width: 0; font-family: inherit; font-size: 16px;
   padding: 15px 18px; border-radius: 12px; background: white;
-  border: 1px solid rgba(255,255,255,0.25); color: var(--text);
+  border: 1.5px solid var(--border); color: var(--text);
 }
 .pay-input:focus { outline: none; border-color: var(--orange); }
 .pay-input:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
-.pay-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.75); }
-.pay-consent input { margin-top: 3px; flex-shrink: 0; }
-.pay-consent a { color: rgba(255,255,255,0.92); text-decoration: underline; text-underline-offset: 3px; }
+.pay-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 1.5; color: var(--text-mid); cursor: pointer; }
+.pay-consent input { margin-top: 2px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
+.pay-consent a { color: var(--orange); text-decoration: underline; text-underline-offset: 3px; }
 .pay-btn {
   width: 100%; margin-top: 18px; font-family: inherit; font-size: 18px; font-weight: 600;
   padding: 18px 28px; border: none; border-radius: 100px; cursor: pointer;
@@ -393,11 +396,16 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 .pay-btn[disabled] { opacity: 0.65; cursor: default; }
 .pay-btn:focus-visible { outline: 2px solid white; outline-offset: 3px; }
 @media (hover: hover) { .pay-btn:not([disabled]):hover { background: var(--orange-warm); transform: translateY(-2px); } }
-.pay-note { margin-top: 14px; font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.7); text-align: center; }
-.pay-note.is-error { color: #ffb4a0; }
-.pay-ask { margin-top: 22px; text-align: center; font-size: 15px; color: rgba(255,255,255,0.72); }
-.pay-ask a { color: white; text-decoration: underline; text-underline-offset: 3px; }
-.pay-safe { margin-top: 10px; text-align: center; font-size: 14px; color: rgba(255,255,255,0.6); }
+.pay-note { margin-top: 14px; font-size: 14px; line-height: 1.6; color: var(--text-light); text-align: center; }
+.pay-note.is-error { color: #c53030; }
+.ask-box { max-width: 560px; margin: 36px auto 0; text-align: center; }
+.ask-box > summary { list-style: none; cursor: pointer; display: inline-block; font-size: 16px; color: var(--text-mid); padding: 8px 14px; border-radius: 100px; transition: color .2s, background .2s; }
+.ask-box > summary::-webkit-details-marker { display: none; }
+.ask-box > summary span { color: var(--orange); text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) { .ask-box > summary:hover { background: var(--cream); color: var(--navy); } }
+.ask-box > summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.ask-box[open] > summary { margin-bottom: 20px; }
+.pay-safe { margin-top: 10px; text-align: center; font-size: 14px; color: var(--text-light); }
 @media (max-width: 700px) { .pay-input { flex: 1 1 100%; } }
 </style>
 </head>
@@ -425,10 +433,10 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       <div class="eyebrow-dot"></div>
       <span class="eyebrow-text">Точка перемен · занятие 55 минут и неделя рядом</span>
     </div>
-    <h1>Поймёте, что вам можно&nbsp;–<br>и начнёте <em>на этой неделе</em></h1>
-    <p class="hero-sub">Занятие-разбор, план под вас и я на связи всю неделю</p>
+    <h1>Начните тренироваться<br><em>на этой неделе</em></h1>
+    <p class="hero-sub">С того уровня, где вы сейчас: занятие-разбор, план под вас и я на связи всю неделю</p>
     <div class="hero-promise">
-      <p>Начинали много раз и бросали? Не понимаете, с чего начать и что подойдёт именно вам? <strong>За 55 минут посмотрю, что можно именно вам</strong>, соберу неделю под вашу жизнь – и всю неделю буду рядом, пока вы её проходите.</p>
+      <p>Начинали много раз и бросали? Не знаете, с чего начать и что подойдёт именно вам? <strong>За 55 минут разберёмся в вашей ситуации и подберём нагрузку</strong>, я соберу неделю под вашу жизнь – и буду рядом, пока вы её проходите.</p>
     </div>
     <div class="hero-notice">
       <div class="hero-notice-icon">🌿</div>
@@ -439,7 +447,6 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </div>
     <div class="hero-cta">
       <a href="#zayavka" class="btn-hero">Записаться ↓</a>
-      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-hero-alt" target="_blank" rel="noopener">Нет Телеграма – написать в Max</a>
       <div class="hero-safety">Не подойдёт – верну деньги без объяснений</div>
     </div>
     <div class="hero-params">
@@ -479,7 +486,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       <div class="fwl-card">
         <div class="fwl-icon-box">🌙</div>
         <h3>Нет времени и сил</h3>
-        <p>Работа, недосып, вечером не хочется вообще ничего. Нужен не идеальный режим, а минимум, который реально влезет в ваш день и не отнимет последнее.</p>
+        <p>Работа, недосып, вечером не хочется вообще ничего. Нужен минимум, который реально влезет в ваш день и не отнимет последние силы.</p>
       </div>
     </div>
   </div>
@@ -494,8 +501,9 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="stages">
     <div class="stage-card">
       <div class="stage-num">01</div>
-      <h3>Анкета до занятия</h3>
-      <p>Присылаю несколько вопросов заранее – чтобы не тратить занятие на расспросы и прийти уже подготовленным.</p>
+      <div class="stage-when">Сразу после оплаты</div>
+      <h3>Короткая анкета</h3>
+      <p>Придёт на почту. Несколько вопросов о вас – чтобы на занятии сразу перейти к делу.</p>
       <div class="stage-topics">
         <div class="stage-topic"><div class="st-dot"></div>Что беспокоит и как давно</div>
         <div class="stage-topic"><div class="st-dot"></div>Что уже пробовали</div>
@@ -504,8 +512,9 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </div>
     <div class="stage-card">
       <div class="stage-num">02</div>
+      <div class="stage-when">В удобный вам день</div>
       <h3>Занятие-разбор, 55 минут онлайн</h3>
-      <p>Сначала погружаемся в вашу ситуацию: что беспокоит, как устроен ваш день, сколько вы спите и что уже пробовали. Потом смотрю, как вы двигаетесь, и разбираем базовые упражнения. Здесь и решается, что вам можно, а что пока рано.</p>
+      <p>Говорим о вашей ситуации: что беспокоит, как устроен день, как вы спите. Потом смотрю, как вы двигаетесь, и вместе разбираем базовые упражнения.</p>
       <div class="stage-topics">
         <div class="stage-topic"><div class="st-dot"></div>Погружаемся в вашу ситуацию</div>
         <div class="stage-topic"><div class="st-dot"></div>Смотрю, как вы двигаетесь</div>
@@ -514,8 +523,9 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </div>
     <div class="stage-card">
       <div class="stage-num">03</div>
+      <div class="stage-when">Следующие 7 дней</div>
       <h3>Ваша неделя</h3>
-      <p>Простой план: две самостоятельные тренировки, понятно в какие дни и сколько. Всю неделю я на связи – не получается или появился вопрос, пишете.</p>
+      <p>Простой план: две самостоятельные тренировки – понятно, в какие дни и сколько. Я на связи: не получается или появился вопрос – пишете.</p>
       <div class="stage-topics">
         <div class="stage-topic"><div class="st-dot"></div>Что делать и в какие дни</div>
         <div class="stage-topic"><div class="st-dot"></div>Сколько – чтобы не перегрузиться</div>
@@ -524,8 +534,9 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </div>
     <div class="stage-card">
       <div class="stage-num">04</div>
-      <h3>Разбор в конце</h3>
-      <p>Списываемся и смотрим, что получилось, а что нет. Вы уходите с пониманием, как продолжать дальше – самостоятельно.</p>
+      <div class="stage-when">В конце недели</div>
+      <h3>Разбор итогов</h3>
+      <p>Списываемся и смотрим, что получилось, а что нет. У вас остаётся понимание, как продолжать дальше.</p>
       <div class="stage-topics">
         <div class="stage-topic"><div class="st-dot"></div>Что сработало именно у вас</div>
         <div class="stage-topic"><div class="st-dot"></div>Где было тяжело и почему</div>
@@ -591,7 +602,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     <div class="section-label">Кто проводит</div>
     <h2 class="section-title" style="color:white;">Алексей Ларин&nbsp;–<br>тренер который <em>слушает</em></h2>
     <div class="author-pull">У каждого своя ситуация. Задача – найти то, что подойдёт именно вам.</div>
-    <p class="author-text">8 лет практики, более 8 000 человек через проекты. Работаю с детьми, взрослыми и старшим поколением. Сам прошёл через серьёзную травму позвоночника в детстве – поэтому знаю, что значит начинать осторожно.</p>
+    <p class="author-text">Больше 10 лет практики – за это время со мной занимались больше 8 000 человек: на курсах, в лагерях, на групповых и личных занятиях. Работаю с детьми, взрослыми и старшим поколением. Сам прошёл через серьёзную травму позвоночника в детстве – поэтому знаю, что значит начинать осторожно.</p>
     <p class="author-text">На занятии разговариваем живо – про ваше тело, ваш сон, вашу нагрузку и вашу жизнь. Неделю иду рядом, и к концу у вас есть с чем продолжать.</p>
   </div>
 </section>
@@ -659,7 +670,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </details>
     <details class="faq-item">
       <summary>Когда начнём?</summary>
-      <div class="faq-answer">Оставляете заявку, я отвечаю в течение 1‑2 дней, присылаю анкету и предлагаю время. Обычно занятие получается провести на той же неделе – зависит от того, остались ли места.</div>
+      <div class="faq-answer">После оплаты сразу придёт анкета, а в течение 1‑2 дней я напишу вам и предложу время. Обычно занятие получается провести на той же неделе – зависит от того, остались ли места.</div>
     </details>
     <details class="faq-item">
       <summary>Я живу не в России, это подойдёт?</summary>
@@ -671,7 +682,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </details>
     <details class="faq-item">
       <summary>Как оплатить?</summary>
-      <div class="faq-answer">После того как договоримся о времени, я пришлю ссылку на оплату. Если после занятия решите, что это не ваше, верну деньги полностью – объяснять ничего не нужно.</div>
+      <div class="faq-answer">Онлайн картой, внизу страницы – достаточно имени и почты, регистрироваться не нужно. Если после занятия решите, что это не ваше, верну деньги полностью – объяснять ничего не нужно.</div>
     </details>
   </div>
 </section>
@@ -681,21 +692,21 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
   <div class="cta-inner">
     <div class="section-label">Как записаться</div>
     <h2 class="section-title">Записаться на «Точку перемен»</h2>
-    <p class="section-desc">Пять человек в неделю. Оплатите – сразу придёт письмо с короткой анкетой, а в течение 1&#8209;2 дней я напишу вам и предложу время.</p>
+    <p class="section-desc">Пять человек в неделю. Не подойдёт – верну деньги без объяснений.</p>
 
     <div class="cta-steps">
       <div class="cta-step">
         <div class="cta-step-num">1</div>
         <div class="cta-step-text">
-          <strong>Оставляете заявку</strong>
-          Пара слов о том, что беспокоит – этого достаточно.
+          <strong>Оплачиваете онлайн</strong>
+          Нужны только имя и почта – регистрироваться не нужно.
         </div>
       </div>
       <div class="cta-step">
         <div class="cta-step-num">2</div>
         <div class="cta-step-text">
-          <strong>Договариваемся о времени</strong>
-          Отвечу в течение 1&#8209;2 дней, пришлю анкету и ссылку на оплату – 2 990 ₽.
+          <strong>Заполняете анкету и выбираем время</strong>
+          Анкета придёт на почту сразу, а я напишу в течение 1&#8209;2 дней.
         </div>
       </div>
       <div class="cta-step">
@@ -721,10 +732,9 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
         <p class="pay-note" id="pay-note"></p>
       </form>
       <p class="pay-safe">После оплаты сразу придёт письмо с анкетой, а я предложу время занятия.</p>
-      <p class="pay-ask">Хотите сначала задать вопрос? <a href="#zayavka-form">Напишите мне</a> – отвечу и ничего не буду навязывать.</p>
-    </div>
-
-    <div id="zayavka-form" style="margin-top:48px;">
+      </div>
+    <details class="ask-box" id="zayavka-form">
+      <summary>Хотите сначала задать вопрос? <span>Напишите мне</span></summary>
       <form id="lead-form" class="lead-form" data-source="start" novalidate>
       <div class="lead-row">
         <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
@@ -738,12 +748,11 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       <button type="submit" class="btn-cta-center lead-submit">Оставить заявку →</button>
       <p class="lead-note" id="lead-note"></p>
     </form>
-    </div>
-
     <div class="cta-buttons">
       <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Телеграм</a>
       <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Max</a>
     </div>
+    </details>
     <p class="cta-note">2 990 ₽ · пять человек в неделю · отвечаю в течение 1&#8209;2 дней</p>
   </div>
 </section>
