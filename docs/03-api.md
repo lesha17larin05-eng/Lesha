@@ -143,6 +143,7 @@ JSON `{"error": "<code>"}`:
 
 | Эндпоинт | Описание |
 |---|---|
+| `GET /api/c?u=<uuid>&c=<кампания>&l=<ссылка>&t=<hex>` | Публичный. Переход по ссылке из письма (цепочка и рассылки): при валидной подписи пишет строку в `email_clicks` и открытие в `email_opens`, затем 302 на `l`. Подпись: `hex(HMAC_SHA256(JWT_SECRET, "click:" + campaign + ":" + user_id + ":" + link))` (`handlers.ClickToken`), поэтому как открытый редирект не используется: неверная подпись или не http(s) → 302 на `/` без записи. `GET /api/admin/drip` отдаёт по шагам `clicked` и `links:[{url, people}]`, `GET /api/admin/campaigns/{id}` – `campaign.clicked`, `links`, у адресатов `clicked` (админы не считаются). |
 | `GET /api/pixel.gif?u=<uuid>&c=<кампания>&t=<hex>` | Публичный. Отдаёт прозрачный GIF 1×1 **всегда** (с `Cache-Control: no-store`), но строку в `email_opens` пишет только при валидной подписи. Подпись: `hex(HMAC_SHA256(JWT_SECRET, "pixel:" + campaign + ":" + user_id))`, функция `handlers.PixelToken`. |
 | `GET /api/admin/email-opens` | Admin. Сводка по рассылкам: `campaign`, `people` (уникальные), `opens` (всего), `first_open`, `last_open`. Показывается на дашборде админки. |
 

@@ -135,6 +135,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/orders/{id}/enter", app.OrderEnter)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
+	r.Get("/api/c", app.EmailClick)
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Get("/api/unsubscribe/status", app.UnsubscribeStatus)
@@ -2585,23 +2586,25 @@ func TestDripChain(t *testing.T) {
 		return n
 	}
 
-	// В день регистрации ничего.
-	if err := app.SendOneDripEmailForTest(ctx, msk(0, 15)); err != db.ErrNotFound {
-		t.Fatalf("day 0: expected nothing, got %v", err)
+	// Сразу после регистрации ничего: письмо 1 – не раньше чем через 2 часа.
+	if err := app.SendOneDripEmailForTest(ctx, msk(0, 13)); err != db.ErrNotFound {
+		t.Fatalf("day 0, 1h after signup: expected nothing, got %v", err)
 	}
-	// Ночью не шлём даже когда пора.
-	_ = app.SendOneDripEmailForTest(ctx, msk(1, 7))
-	if total() != 0 {
-		t.Fatalf("must not send before 9:00 MSK")
-	}
-	// День 1, 10:00 – письмо 1 новичкам: подписанному и без согласия
+	// День 0, 15:00 – письмо 1 новичкам: подписанному и без согласия
 	// (это подсказка по курсу), но не отписавшемуся.
-	sendAll(msk(1, 10))
+	sendAll(msk(0, 15))
 	if status(1) != "sent" || statusOf(nomail, 1) != "sent" || statusOf(unsub, 1) != "" || total() != 2 {
 		t.Fatalf("step 1 must be sent to a@ and nomail@ only, total=%d", total())
 	}
-	if err := app.SendOneDripEmailForTest(ctx, msk(1, 11)); err != db.ErrNotFound {
+	if err := app.SendOneDripEmailForTest(ctx, msk(0, 16)); err != db.ErrNotFound {
 		t.Fatalf("second send same day: %v", err)
+	}
+	// Ночью не шлём даже когда пора.
+	back0 := total()
+	_, _ = repo.Pool.Exec(ctx, `UPDATE drip_sends SET sent_at = $1`, reg)
+	_ = app.SendOneDripEmailForTest(ctx, msk(3, 7))
+	if total() != back0 {
+		t.Fatalf("must not send before 9:00 MSK")
 	}
 	// День 2 – ещё рано для письма 2.
 	if err := app.SendOneDripEmailForTest(ctx, msk(2, 10)); err != db.ErrNotFound {
@@ -3094,7 +3097,7 @@ func TestStuckPaymentAlert(t *testing.T) {
 		}
 	}
 	msg := waitRelay(t, "Оплата без подтверждения")
-	if !strings.Contains(msg, "stuck@buyer.ru") || !strings.Contains(msg, "Жонглирование") || !strings.Contains(msg, "990 ₽") {
+	if !strings.Contains(msg, "stuck@buyer.ru") || !strings.Contains(msg, "Жонглирование") || !strings.Contains(msg, "0 ₽") {
 		t.Fatalf("stuck message: %q", msg)
 	}
 	relayMu.Lock()
@@ -3190,7 +3193,7 @@ func TestAbandonedPaymentAlert(t *testing.T) {
 		}
 	}
 	msg := waitRelay(t, "gone@buyer.ru")
-	if !strings.Contains(msg, "Жонглирование") || !strings.Contains(msg, "990 ₽") {
+	if !strings.Contains(msg, "Жонглирование") || !strings.Contains(msg, "0 ₽") {
 		t.Fatalf("abandoned message: %q", msg)
 	}
 	waitRelay(t, "retry@buyer.ru")
@@ -3489,13 +3492,68 @@ func TestDripLetterWithoutConsent(t *testing.T) {
 	app := &handlers.App{Cfg: &config.Config{AppHost: "http://test", JWTSecret: "s"}}
 	sub := app.DripHTMLForTest(3, true)
 	nosub := app.DripHTMLForTest(3, false)
-	if !strings.Contains(sub, "/results") || strings.Contains(sub, "[[promo]]") {
+	if !strings.Contains(sub, "%2Fresults") || strings.Contains(sub, "[[promo]]") {
 		t.Fatal("subscribed letter must keep the reviews block")
 	}
-	if strings.Contains(nosub, "/results") || !strings.Contains(nosub, "/api/subscribe?u=") {
+	if strings.Contains(nosub, "results") || !strings.Contains(nosub, "/api/subscribe?u=") {
 		t.Fatal("letter without consent: no promo, with subscribe button")
 	}
 	if strings.Contains(sub, "/api/subscribe?u=") {
 		t.Fatal("subscribed letter must not offer subscribing")
+	}
+}
+
+// Переходы по ссылкам из писем: подписанная ссылка записывает переход (и
+// открытие) и ведёт на страницу; с чужой подписью – на главную, без записи.
+func TestEmailClick(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", "")}
+	uid, err := repo.CreateUser(ctx, "click@b.ru", "x", "", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	h := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	get := func(u string) string {
+		t.Helper()
+		res, err := h.Get(u)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		if res.StatusCode != 302 {
+			t.Fatalf("want 302, got %d", res.StatusCode)
+		}
+		return res.Header.Get("Location")
+	}
+	count := func(table string) int {
+		var n int
+		_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM `+table+` WHERE user_id=$1 AND campaign='drip-1'`, uid).Scan(&n)
+		return n
+	}
+	link := "https://leshalarin.ru/cabinet/myagkiy-start#itogovyy"
+	tracked := app.TrackURLForTest("drip-1", uid, link)
+	path := strings.TrimPrefix(tracked, cfg.AppHost)
+	if loc := get(srv.URL + path); loc != link {
+		t.Fatalf("redirect: %q", loc)
+	}
+	if count("email_clicks") != 1 || count("email_opens") != 1 {
+		t.Fatal("click and open must be logged")
+	}
+	// Подменили ссылку – подпись не сходится: на главную, без записи.
+	evil := strings.Replace(path, url.QueryEscape(link), url.QueryEscape("https://evil.example/"), 1)
+	if loc := get(srv.URL + evil); loc != "/" {
+		t.Fatalf("forged link: %q", loc)
+	}
+	if count("email_clicks") != 1 {
+		t.Fatal("forged click must not be logged")
+	}
+	// Ссылки в письме цепочки ведут через счётчик и подписаны для человека.
+	body := app.DripHTMLForUserTest(1, uid)
+	if !strings.Contains(body, "/api/c?u="+uid.String()+"&amp;c=drip-1&amp;l=https%3A%2F%2Fleshalarin.ru%2Fcabinet%2Fmyagkiy-start") {
+		t.Fatal("drip letter links must be tracked")
+	}
+	if strings.Contains(body, `href="https://leshalarin.ru/cabinet/myagkiy-start"`) {
+		t.Fatal("untracked link left in the letter")
 	}
 }

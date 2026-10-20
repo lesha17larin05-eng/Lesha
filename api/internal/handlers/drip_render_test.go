@@ -30,7 +30,7 @@ func TestDripStepsRender(t *testing.T) {
 	if len(dripSteps) != 5 {
 		t.Fatalf("expected 5 steps, got %d", len(dripSteps))
 	}
-	prevDay := 0
+	prevDay := -1
 	for i, st := range dripSteps {
 		if st.Step != i+1 || st.Day <= prevDay || st.Subject == "" {
 			t.Fatalf("bad step %+v", st)

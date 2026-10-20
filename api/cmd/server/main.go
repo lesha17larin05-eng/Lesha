@@ -116,6 +116,7 @@ func main() {
 	r.Get("/api/courses/{slug}/lessons/{lesson}", app.GetLesson)
 	r.Get("/api/settings", app.PublicSettings)
 	r.Get("/api/pixel.gif", app.EmailPixel)
+	r.Get("/api/c", app.EmailClick) // переход по ссылке из письма
 	r.Get("/api/unsubscribe", app.Unsubscribe)
 	r.Post("/api/unsubscribe", app.Unsubscribe)
 	r.Get("/api/unsubscribe/status", app.UnsubscribeStatus)

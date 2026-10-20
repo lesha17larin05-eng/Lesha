@@ -8,6 +8,8 @@ const { status, data } = await apiJson<any>(`/api/admin/campaigns/${id}`, { cook
 if (status === 404) return Astro.redirect('/admin/mailing');
 const c = data?.campaign;
 const recipients = data?.recipients || [];
+const links: any[] = data?.links || [];
+const shortUrl = (u: string) => { try { const x = new URL(u); return (x.host.replace('www.', '') === 'leshalarin.ru' ? '' : x.host) + x.pathname + x.hash; } catch { return u; } };
 const testEmailDefault = data?.test_email_default || '';
 const user = (Astro.locals as any).user;
 const statusLabel: Record<string, string> = {
@@ -53,6 +55,7 @@ const fmtPause = (sec: number) => {
       <div class="kpi"><div class="kpi-num">{c?.total}</div><div class="kpi-label">получателей</div></div>
       <div class="kpi"><div class="kpi-num">{c?.sent}</div><div class="kpi-label">отправлено</div></div>
       <div class="kpi"><div class="kpi-num">{c?.opened}</div><div class="kpi-label">открыли</div></div>
+      <div class="kpi"><div class="kpi-num">{c?.clicked ?? 0}</div><div class="kpi-label">перешли по ссылке</div></div>
       <div class="kpi"><div class="kpi-num">{c?.sent_today}</div><div class="kpi-label">за сутки</div></div>
       {c?.failed > 0 && (
         <div class="kpi kpi-bad"><div class="kpi-num">{c?.failed}</div><div class="kpi-label">с ошибкой</div></div>
@@ -61,6 +64,11 @@ const fmtPause = (sec: number) => {
 
     <div class="progress"><i style={`width:${pct}%`}></i></div>
     <p class="muted small">Отправлено {c?.sent} из {c?.total}. Осталось {c?.pending}.</p>
+    {links.length > 0 && (
+      <p class="muted small camp-links">Переходы по ссылкам:
+        {links.map((l: any) => <span class="camp-link">{shortUrl(l.url)} – {l.people}</span>)}
+      </p>
+    )}
 
     <div class="actions">
       <input class="input test-email" id="test-email" type="email" value={testEmailDefault}
@@ -83,7 +91,7 @@ const fmtPause = (sec: number) => {
       <p class="muted">Список пуст — в выбранной группе нет людей с согласием на рассылку.</p>
     ) : (
       <table>
-        <thead><tr><th>Почта</th><th>Имя</th><th>Статус</th><th>Открыл</th><th>Когда</th></tr></thead>
+        <thead><tr><th>Почта</th><th>Имя</th><th>Статус</th><th>Открыл</th><th>Перешёл</th><th>Когда</th></tr></thead>
         <tbody>
           {recipients.map((r: any) => (
             <tr>
@@ -94,6 +102,7 @@ const fmtPause = (sec: number) => {
                   : r.status === 'skipped' ? 'пропущен (отписался)'
                   : 'ошибка: ' + r.error}</td>
               <td>{r.opened ? 'да' : '—'}</td>
+              <td>{r.clicked ? 'да' : '—'}</td>
               <td class="muted">{fmtDate(r.sent_at)}</td>
             </tr>
           ))}
@@ -115,6 +124,8 @@ const fmtPause = (sec: number) => {
     .kpis { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
     .kpi { flex: 1; min-width: 120px; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
     .kpi-bad { border-color: rgba(220,38,38,.3); }
+    .camp-links { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+    .camp-link { background: var(--cream, #fdfaf5); border: 1px solid var(--border); border-radius: 8px; padding: 1px 8px; color: var(--text-mid); }
     .kpi-num { font-family: 'Cormorant Garamond', serif; font-size: 30px; color: var(--navy); line-height: 1; }
     .kpi-label { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
     .small { font-size: 14px; margin-top: 8px; }

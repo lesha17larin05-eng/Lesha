@@ -155,6 +155,7 @@ type Campaign struct {
 	Pending  int `json:"pending"`
 	SentToday int `json:"sent_today"`
 	Opened   int `json:"opened"`
+	Clicked  int `json:"clicked"` // людей, перешедших по ссылке из письма
 }
 
 // CreateCampaign создаёт рассылку и фиксирует список получателей по группе.
@@ -181,7 +182,7 @@ func scanCampaign(row pgx.Row) (*Campaign, error) {
 	c := &Campaign{}
 	err := row.Scan(&c.ID, &c.Name, &c.Subject, &c.Body, &c.Segment, &c.DailyLimit, &c.PauseSec,
 		&c.Status, &c.CreatedAt, &c.StartedAt, &c.FinishedAt,
-		&c.Total, &c.Sent, &c.Failed, &c.Pending, &c.SentToday, &c.Opened)
+		&c.Total, &c.Sent, &c.Failed, &c.Pending, &c.SentToday, &c.Opened, &c.Clicked)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -196,7 +197,9 @@ const campaignSelect = `
 	       (SELECT count(*) FROM campaign_recipients r WHERE r.campaign_id = c.id AND r.status = 'failed'),
 	       (SELECT count(*) FROM campaign_recipients r WHERE r.campaign_id = c.id AND r.status = 'pending'),
 	       (SELECT count(*) FROM campaign_recipients r WHERE r.campaign_id = c.id AND r.sent_at > now() - interval '24 hours'),
-	       (SELECT count(DISTINCT o.user_id) FROM email_opens o WHERE o.campaign = c.id::text)
+	       (SELECT count(DISTINCT o.user_id) FROM email_opens o WHERE o.campaign = c.id::text),
+	       (SELECT count(DISTINCT k.user_id) FROM email_clicks k JOIN users u ON u.id = k.user_id AND u.role = 'user'
+	         WHERE k.campaign = c.id::text)
 	  FROM campaigns c`
 
 func (r *Repo) GetCampaign(ctx context.Context, id uuid.UUID) (*Campaign, error) {
@@ -214,7 +217,7 @@ func (r *Repo) ListCampaigns(ctx context.Context) ([]Campaign, error) {
 		c := Campaign{}
 		if err := rows.Scan(&c.ID, &c.Name, &c.Subject, &c.Body, &c.Segment, &c.DailyLimit, &c.PauseSec,
 			&c.Status, &c.CreatedAt, &c.StartedAt, &c.FinishedAt,
-			&c.Total, &c.Sent, &c.Failed, &c.Pending, &c.SentToday, &c.Opened); err != nil {
+			&c.Total, &c.Sent, &c.Failed, &c.Pending, &c.SentToday, &c.Opened, &c.Clicked); err != nil {
 			return nil, err
 		}
 		out = append(out, c)
@@ -333,7 +336,9 @@ func (r *Repo) CampaignRecipientRows(ctx context.Context, campaignID uuid.UUID, 
 	rows, err := r.Pool.Query(ctx,
 		`SELECT r.email, r.name, r.status, r.sent_at, coalesce(r.error,''),
 		        EXISTS (SELECT 1 FROM email_opens o
-		                 WHERE o.user_id = r.user_id AND o.campaign = r.campaign_id::text)
+		                 WHERE o.user_id = r.user_id AND o.campaign = r.campaign_id::text),
+		        EXISTS (SELECT 1 FROM email_clicks k
+		                 WHERE k.user_id = r.user_id AND k.campaign = r.campaign_id::text)
 		   FROM campaign_recipients r
 		  WHERE r.campaign_id = $1
 		  ORDER BY r.sent_at DESC NULLS LAST, r.email
@@ -346,13 +351,13 @@ func (r *Repo) CampaignRecipientRows(ctx context.Context, campaignID uuid.UUID, 
 	for rows.Next() {
 		var email, name, status, errText string
 		var sentAt *time.Time
-		var opened bool
-		if err := rows.Scan(&email, &name, &status, &sentAt, &errText, &opened); err != nil {
+		var opened, clicked bool
+		if err := rows.Scan(&email, &name, &status, &sentAt, &errText, &opened, &clicked); err != nil {
 			return nil, err
 		}
 		out = append(out, map[string]any{
 			"email": email, "name": name, "status": status,
-			"sent_at": sentAt, "error": errText, "opened": opened,
+			"sent_at": sentAt, "error": errText, "opened": opened, "clicked": clicked,
 		})
 	}
 	return out, rows.Err()

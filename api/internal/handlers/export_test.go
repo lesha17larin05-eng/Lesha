@@ -49,3 +49,13 @@ func (a *App) BuildAccessEmailForTest(ctx context.Context, userID uuid.UUID, slu
 func (a *App) DripHTMLForTest(step int, subscribed bool) string {
 	return a.dripHTML(dripSteps[step-1], "Анна", uuid.New(), subscribed)
 }
+
+// TrackURLForTest – ссылка письма с учётом перехода.
+func (a *App) TrackURLForTest(campaign string, userID uuid.UUID, link string) string {
+	return a.trackURL(campaign, userID, link)
+}
+
+// DripHTMLForUserTest – письмо цепочки конкретному человеку.
+func (a *App) DripHTMLForUserTest(step int, userID uuid.UUID) string {
+	return a.dripHTML(dripSteps[step-1], "Анна", userID, true)
+}

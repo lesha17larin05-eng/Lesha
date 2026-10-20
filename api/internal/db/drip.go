@@ -39,7 +39,9 @@ func (r *Repo) DripStartAt(ctx context.Context) (time.Time, error) {
 //     письма про сам курс – всем, кроме отписавшихся (без согласия – только
 //     зарегистрированным после drip_nosub_start_at, см. миграцию 024);
 //   - зарегистрирован после запуска цепочки;
-//   - с регистрации прошло не меньше day календарных дней (по Москве);
+//   - с регистрации прошло не меньше day календарных дней (по Москве) и не
+//     меньше 2 часов (первое письмо уходит в день регистрации, но не вдогонку
+//     письму о доступе);
 //   - этот шаг ещё не обработан (или не ушёл из-за почты: тогда повтор не чаще
 //     раза в 30 минут, до 8 попыток), предыдущий – обработан (идём по порядку);
 //   - за последние 20 часов ему не уходило письмо цепочки (не чаще раза в день).
@@ -57,6 +59,7 @@ func (r *Repo) NextDripRecipient(ctx context.Context, step, day int, offer bool,
 		            AND u.created_at >= COALESCE((SELECT value::timestamptz FROM site_settings
 		                                           WHERE key = 'drip_nosub_start_at'), 'infinity')))
 		   AND u.created_at >= $3
+		   AND u.created_at <= $4::timestamptz - interval '2 hours'
 		   AND ($4::timestamptz AT TIME ZONE 'Europe/Moscow')::date
 		       - (u.created_at AT TIME ZONE 'Europe/Moscow')::date >= $2
 		   AND NOT EXISTS (SELECT 1 FROM drip_sends d WHERE d.user_id = u.id AND d.step = $1
@@ -114,7 +117,8 @@ type DripStepStats struct {
 	Sent    int `json:"sent"`
 	Skipped int `json:"skipped"`
 	Failed  int `json:"failed"`
-	Opened  int `json:"opened"` // людей, открывших письмо (по пикселю)
+	Opened  int `json:"opened"`  // людей, открывших письмо (по пикселю или клику)
+	Clicked int `json:"clicked"` // людей, перешедших по ссылке (без админов)
 }
 
 func (r *Repo) DripStats(ctx context.Context, steps int) ([]DripStepStats, error) {
@@ -123,7 +127,9 @@ func (r *Repo) DripStats(ctx context.Context, steps int) ([]DripStepStats, error
 		       count(d.*) FILTER (WHERE d.status = 'sent'),
 		       count(d.*) FILTER (WHERE d.status = 'skipped'),
 		       count(d.*) FILTER (WHERE d.status = 'failed'),
-		       (SELECT count(DISTINCT o.user_id) FROM email_opens o WHERE o.campaign = 'drip-' || s.step)
+		       (SELECT count(DISTINCT o.user_id) FROM email_opens o WHERE o.campaign = 'drip-' || s.step),
+		       (SELECT count(DISTINCT k.user_id) FROM email_clicks k JOIN users u ON u.id = k.user_id AND u.role = 'user'
+		         WHERE k.campaign = 'drip-' || s.step)
 		  FROM generate_series(1, $1) AS s(step)
 		  LEFT JOIN drip_sends d ON d.step = s.step
 		 GROUP BY s.step ORDER BY s.step`, steps)
@@ -134,7 +140,7 @@ func (r *Repo) DripStats(ctx context.Context, steps int) ([]DripStepStats, error
 	var out []DripStepStats
 	for rows.Next() {
 		var s DripStepStats
-		if err := rows.Scan(&s.Step, &s.Sent, &s.Skipped, &s.Failed, &s.Opened); err != nil {
+		if err := rows.Scan(&s.Step, &s.Sent, &s.Skipped, &s.Failed, &s.Opened, &s.Clicked); err != nil {
 			return nil, err
 		}
 		out = append(out, s)

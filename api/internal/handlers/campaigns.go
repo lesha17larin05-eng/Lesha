@@ -139,8 +139,9 @@ func (a *App) AdminGetCampaign(w http.ResponseWriter, r *http.Request) {
 	if rows == nil {
 		rows = []map[string]any{}
 	}
+	links, _ := a.Repo.CampaignLinkClicks(r.Context(), c.ID.String())
 	writeJSON(w, 200, map[string]any{
-		"campaign": c, "recipients": rows,
+		"campaign": c, "recipients": rows, "links": links,
 		"test_email_default": a.Cfg.LeadNotifyEmail,
 	})
 }
@@ -253,7 +254,14 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 		}
 		esc := html.EscapeString(para)
 		esc = urlRe.ReplaceAllStringFunc(esc, func(u string) string {
-			return `<a href="` + u + `" style="color:#e8652a;">` + u + `</a>`
+			// Точка или скобка в конце предложения – не часть ссылки.
+			tail := ""
+			for len(u) > 0 && strings.ContainsRune(".,;:!?)", rune(u[len(u)-1])) {
+				tail = u[len(u)-1:] + tail
+				u = u[:len(u)-1]
+			}
+			href := html.EscapeString(a.trackURL(c.ID.String(), userID, html.UnescapeString(u)))
+			return `<a href="` + href + `" style="color:#e8652a;">` + u + `</a>` + tail
 		})
 		esc = strings.ReplaceAll(esc, "\n", "<br>")
 		sb.WriteString(`<p>` + esc + `</p>`)

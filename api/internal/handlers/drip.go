@@ -138,9 +138,23 @@ const (
 		`text-align:center;line-height:1.35;max-width:100%;box-sizing:border-box;`
 )
 
-func dripInline(s string) string {
+// linkWrap превращает ссылку из текста в ссылку письма (с учётом переходов).
+// nil – ссылка как есть.
+type linkWrap func(string) string
+
+func (w linkWrap) href(escaped string) string {
+	if w == nil {
+		return escaped
+	}
+	return html.EscapeString(w(html.UnescapeString(escaped)))
+}
+
+func dripInline(s string, wrap linkWrap) string {
 	s = html.EscapeString(s)
-	s = dripLinkRe.ReplaceAllString(s, `<a href="$2" style="`+dripLinkStyle+`">$1</a>`)
+	s = dripLinkRe.ReplaceAllStringFunc(s, func(m string) string {
+		p := dripLinkRe.FindStringSubmatch(m)
+		return `<a href="` + wrap.href(p[2]) + `" style="` + dripLinkStyle + `">` + p[1] + `</a>`
+	})
 	s = dripBoldRe.ReplaceAllString(s, `<b>$1</b>`)
 	return s
 }
@@ -159,7 +173,10 @@ func dripGreeting(body, name string) string {
 }
 
 // renderDripBody – разметка из drip_texts.go в HTML.
-func renderDripBody(body string) string {
+func renderDripBody(body string) string { return renderDripBodyWith(body, nil) }
+
+// renderDripBodyWith – то же, ссылки пропускаются через wrap (учёт переходов).
+func renderDripBodyWith(body string, wrap linkWrap) string {
 	var sb strings.Builder
 	for _, block := range strings.Split(strings.ReplaceAll(body, "\r\n", "\n"), "\n\n") {
 		block = strings.TrimSpace(block)
@@ -173,31 +190,31 @@ func renderDripBody(body string) string {
 			// Стрелку приклеиваем к последнему слову неразрывным пробелом:
 			// на узком экране кнопка переносится, а «→» не должна уезжать одна.
 			label := strings.ReplaceAll(html.EscapeString(m[1]), " →", "&nbsp;→")
-			sb.WriteString(`<p style="margin:22px 0;"><a href="` + html.EscapeString(m[2]) + `" style="` + dripBtnStyle + `">` +
+			sb.WriteString(`<p style="margin:22px 0;"><a href="` + wrap.href(html.EscapeString(m[2])) + `" style="` + dripBtnStyle + `">` +
 				label + `</a></p>`)
 		case strings.HasPrefix(lines[0], "- "):
 			sb.WriteString(`<ul style="padding-left:22px;margin:0 0 16px;">`)
 			for _, l := range lines {
-				sb.WriteString(`<li style="margin:0 0 8px;">` + dripInline(strings.TrimPrefix(l, "- ")) + `</li>`)
+				sb.WriteString(`<li style="margin:0 0 8px;">` + dripInline(strings.TrimPrefix(l, "- "), wrap) + `</li>`)
 			}
 			sb.WriteString(`</ul>`)
 		case dripOLRe.MatchString(lines[0]):
 			sb.WriteString(`<ol style="padding-left:22px;margin:0 0 16px;">`)
 			for _, l := range lines {
-				sb.WriteString(`<li style="margin:0 0 8px;">` + dripInline(dripOLRe.ReplaceAllString(l, "")) + `</li>`)
+				sb.WriteString(`<li style="margin:0 0 8px;">` + dripInline(dripOLRe.ReplaceAllString(l, ""), wrap) + `</li>`)
 			}
 			sb.WriteString(`</ol>`)
 		case strings.HasPrefix(lines[0], "> "):
 			var q []string
 			for _, l := range lines {
-				q = append(q, dripInline(strings.TrimPrefix(strings.TrimPrefix(l, ">"), " ")))
+				q = append(q, dripInline(strings.TrimPrefix(strings.TrimPrefix(l, ">"), " "), wrap))
 			}
 			sb.WriteString(`<blockquote style="margin:0 0 16px;padding:12px 18px;border-left:3px solid #e8652a;` +
 				`background:#fdf3e8;border-radius:0 10px 10px 0;font-style:italic;">` + strings.Join(q, "<br>") + `</blockquote>`)
 		default:
 			var ls []string
 			for _, l := range lines {
-				ls = append(ls, dripInline(l))
+				ls = append(ls, dripInline(l, wrap))
 			}
 			sb.WriteString(`<p style="margin:0 0 16px;">` + strings.Join(ls, "<br>") + `</p>`)
 		}
@@ -227,7 +244,9 @@ func (a *App) dripHTML(st dripStep, name string, userID uuid.UUID, subscribed bo
 		`<div style="max-width:560px;margin:0 auto;padding:28px 22px;` +
 		`font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;` +
 		`font-size:16px;line-height:1.65;color:#1a1a1a;">`)
-	sb.WriteString(renderDripBody(dripGreeting(dripBodyFor(st.Body, subscribed), name)))
+	campaign := "drip-" + strconv.Itoa(st.Step)
+	sb.WriteString(renderDripBodyWith(dripGreeting(dripBodyFor(st.Body, subscribed), name),
+		func(link string) string { return a.trackURL(campaign, userID, link) }))
 	if !subscribed {
 		sb.WriteString(subscribeOfferBlock(a.subscribeURL(userID)))
 	}
@@ -260,9 +279,12 @@ func (a *App) AdminDrip(w http.ResponseWriter, r *http.Request) {
 	for i, st := range dripSteps {
 		row := map[string]any{"step": st.Step, "day": st.Day, "subject": st.Subject, "offer": st.Offer}
 		if i < len(stats) {
-			row["sent"], row["skipped"], row["failed"], row["opened"] =
-				stats[i].Sent, stats[i].Skipped, stats[i].Failed, stats[i].Opened
+			row["sent"], row["skipped"], row["failed"], row["opened"], row["clicked"] =
+				stats[i].Sent, stats[i].Skipped, stats[i].Failed, stats[i].Opened, stats[i].Clicked
 		}
+		// По каким ссылкам письма переходили.
+		links, _ := a.Repo.CampaignLinkClicks(r.Context(), "drip-"+strconv.Itoa(st.Step))
+		row["links"] = links
 		steps = append(steps, row)
 	}
 	writeJSON(w, 200, map[string]any{

@@ -108,7 +108,7 @@ const fmtDate = (s: any) => {
             </div>
             <div class={`camp-status st-${c.status}`}>{statusLabel[c.status] || c.status}</div>
             <div class="camp-num"><b>{c.sent}</b> из {c.total}</div>
-            <div class="camp-num muted">{c.opened} открыли</div>
+            <div class="camp-num muted">{c.opened} открыли · {c.clicked ?? 0} перешли</div>
             <div class="camp-date muted">{fmtDate(c.created_at)}</div>
           </a>
         ))}
