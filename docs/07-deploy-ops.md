@@ -40,6 +40,8 @@ make deploy
 
 Под капотом — `git pull && docker compose build && up -d` + smoke-проверка `/api/health`. Миграции и сидер запускаются автоматически (compose-сервис `migrate` + сам api при старте — идемпотентно).
 
+После успешного smoke-теста deploy.sh убирает мусор: `docker builder prune --keep-storage 5gb` (кэш сборок сверх 5 ГБ) и `docker image prune` (только образы без тега). Без этого каждый деплой добавлял 2–3 ГБ кэша, к октябрю 2026 он дорос до 34 ГБ из 60. Тома и `/root/data` не трогаются. Журнал systemd на сервере ограничен 300 МБ (`/etc/systemd/journald.conf.d/size.conf`).
+
 Соседние таргеты: `make prod-logs`, `make prod-ps`, `make deploy-shell`, `make tls-init` (повторный запуск тоже безопасен — certbot ничего не делает, если серт ещё валиден).
 
 ### TLS (HTTPS)
