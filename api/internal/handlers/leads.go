@@ -60,7 +60,7 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 	// Уведомление Алексею. html.EscapeString – пользовательский ввод в письме.
 	sourceTitle := map[string]string{
 		"coaching":     "Личное ведение",
-		"start":        "Точка старта",
+		"start":        "Точка перемен",
 		"consultation": "Консультация (старая страница)",
 		"other":        "Сайт",
 	}[in.Source]
@@ -73,6 +73,14 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 					return ""
 				}
 				return "<p><b>Сообщение:</b><br>" + html.EscapeString(in.Message) + "</p>"
+			})()+
+			(func() string {
+				// «Точка перемен»: сначала переписка, потом Алексей пересылает ссылку
+				// на оплату – она открывает скрытый блок оплаты на странице.
+				if in.Source != "start" {
+					return ""
+				}
+				return "<p><b>Ссылка на оплату для человека:</b> " + a.Cfg.AppHost + "/start#oplata</p>"
 			})()+
 			"<p>Все заявки: <a href=\""+a.Cfg.AppHost+"/admin/leads\">"+a.Cfg.AppHost+"/admin/leads</a></p>")
 	writeJSON(w, 201, map[string]any{"ok": 1, "id": id})

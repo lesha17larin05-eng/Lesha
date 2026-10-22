@@ -406,6 +406,11 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
 .ask-box > summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
 .ask-box[open] > summary { margin-bottom: 20px; }
 .pay-safe { margin-top: 10px; text-align: center; font-size: 14px; color: var(--text-light); }
+.lead-wrap { max-width: 560px; margin: 0 auto; }
+.ask-alt { margin: 28px 0 6px; font-size: 15px; color: var(--text-light); }
+.pay-box[hidden] { display: none; }
+#oplata { margin-top: 40px; padding: 28px 24px; background: var(--cream); border: 1px solid var(--border); border-radius: 18px; scroll-margin-top: 90px; }
+.pay-title { font-size: 21px; font-weight: 600; color: var(--navy); margin: 0 0 16px; text-align: center; }
 @media (max-width: 700px) { .pay-input { flex: 1 1 100%; } }
 </style>
 </head>
@@ -441,7 +446,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     <div class="hero-notice">
       <div class="hero-notice-icon">🌿</div>
       <div class="hero-notice-content">
-        <p><strong>Пять человек в неделю.</strong> После оплаты сразу придёт письмо с короткой анкетой, а я напишу вам и предложу удобное время.</p>
+        <p><strong>Пять человек в неделю.</strong> Оставьте заявку – я напишу вам, отвечу на вопросы и предложу удобное время.</p>
         <p>Есть вопрос до записи? <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D0%B5%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%3A%20" target="_blank" rel="noopener">Напишите мне в личные сообщения</a>.</p>
       </div>
     </div>
@@ -670,7 +675,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </details>
     <details class="faq-item">
       <summary>Когда начнём?</summary>
-      <div class="faq-answer">После оплаты сразу придёт анкета, а в течение 1‑2 дней я напишу вам и предложу время. Обычно занятие получается провести на той же неделе – зависит от того, остались ли места.</div>
+      <div class="faq-answer">После заявки я напишу вам в течение 1‑2 дней, отвечу на вопросы и предложу время. После оплаты сразу придёт короткая анкета. Обычно занятие получается провести на той же неделе – зависит от того, остались ли места.</div>
     </details>
     <details class="faq-item">
       <summary>Я живу не в России, это подойдёт?</summary>
@@ -682,7 +687,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
     </details>
     <details class="faq-item">
       <summary>Как оплатить?</summary>
-      <div class="faq-answer">Онлайн картой, внизу страницы – достаточно имени и почты, регистрироваться не нужно. Если после занятия решите, что это не ваше, верну деньги полностью – объяснять ничего не нужно.</div>
+      <div class="faq-answer">Онлайн картой. Ссылку на оплату пришлю, когда спишемся после заявки, – достаточно имени и почты, регистрироваться не нужно. Если после занятия решите, что это не ваше, верну деньги полностью – объяснять ничего не нужно.</div>
     </details>
   </div>
 </section>
@@ -698,15 +703,15 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
       <div class="cta-step">
         <div class="cta-step-num">1</div>
         <div class="cta-step-text">
-          <strong>Оплачиваете онлайн</strong>
-          Нужны только имя и почта – регистрироваться не нужно.
+          <strong>Оставляете заявку</strong>
+          Имя, как с вами связаться и коротко ваш запрос.
         </div>
       </div>
       <div class="cta-step">
         <div class="cta-step-num">2</div>
         <div class="cta-step-text">
-          <strong>Заполняете анкету и выбираем время</strong>
-          Анкета придёт на почту сразу, а я напишу в течение 1&#8209;2 дней.
+          <strong>Я пишу вам</strong>
+          В течение 1&#8209;2 дней: отвечу на вопросы, предложу время и пришлю ссылку на оплату. После оплаты придёт короткая анкета.
         </div>
       </div>
       <div class="cta-step">
@@ -717,8 +722,30 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
         </div>
       </div>
     </div>
+    <div class="lead-wrap">
+      <form id="lead-form" class="lead-form" data-source="start" novalidate>
+      <div class="lead-row">
+        <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
+        <input class="lead-input" name="contact" placeholder="@телеграм, телефон или почта *" required>
+      </div>
+      <textarea class="lead-input" name="message" rows="3" placeholder="Ваш запрос: что беспокоит, чего хотите добиться *" required></textarea>
+      <label class="lead-consent">
+        <input type="checkbox" name="consent_pd" value="1" required>
+        <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
+      </label>
+      <button type="submit" class="btn-cta-center lead-submit">Записаться →</button>
+      <p class="lead-note" id="lead-note"></p>
+    </form>
+    </div>
+    <p class="ask-alt">Удобнее написать самому?</p>
+    <div class="cta-buttons">
+      <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Телеграм</a>
+      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Max</a>
+    </div>
 
-    <div class="pay-box">
+    <!-- Оплата: скрыта, открывается по ссылке /start#oplata, которую Алексей присылает после переписки -->
+    <div class="pay-box" id="oplata" hidden>
+      <h3 class="pay-title">Оплата «Точки перемен» – 2 990 ₽</h3>
       <form id="pay-form" novalidate>
         <div class="pay-row">
           <input class="pay-input" name="name" placeholder="Ваше имя" autocomplete="name" required>
@@ -732,27 +759,7 @@ textarea.lead-input { resize: vertical; min-height: 76px; }
         <p class="pay-note" id="pay-note"></p>
       </form>
       <p class="pay-safe">После оплаты сразу придёт письмо с анкетой, а я предложу время занятия.</p>
-      </div>
-    <details class="ask-box" id="zayavka-form">
-      <summary>Хотите сначала задать вопрос? <span>Напишите мне</span></summary>
-      <form id="lead-form" class="lead-form" data-source="start" novalidate>
-      <div class="lead-row">
-        <input class="lead-input" name="name" placeholder="Ваше имя *" autocomplete="name" required>
-        <input class="lead-input" name="contact" placeholder="Email, телефон или @телеграм *" required>
-      </div>
-      <textarea class="lead-input" name="message" rows="3" placeholder="Коротко о вашей ситуации (по желанию)"></textarea>
-      <label class="lead-consent">
-        <input type="checkbox" name="consent_pd" value="1" required>
-        <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
-      </label>
-      <button type="submit" class="btn-cta-center lead-submit">Оставить заявку →</button>
-      <p class="lead-note" id="lead-note"></p>
-    </form>
-    <div class="cta-buttons">
-      <a href="https://t.me/larin_lesha?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Телеграм</a>
-      <a href="https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%2C%20%D0%90%D0%BB%D0%B5%D0%BA%D1%81%D0%B5%D0%B9%21%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C%D1%81%D1%8F%20%D0%BD%D0%B0%20%C2%AB%D0%A2%D0%BE%D1%87%D0%BA%D1%83%20%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%C2%BB%20%282%20990%20%E2%82%BD%29.%20%D0%9A%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%BE%20%D0%BE%20%D0%BC%D0%BE%D0%B5%D0%B9%20%D1%81%D0%B8%D1%82%D1%83%D0%B0%D1%86%D0%B8%D0%B8%3A%20" class="btn-cta-alt" target="_blank" rel="noopener">Написать в Max</a>
     </div>
-    </details>
     <p class="cta-note">2 990 ₽ · пять человек в неделю · отвечаю в течение 1&#8209;2 дней</p>
   </div>
 </section>
