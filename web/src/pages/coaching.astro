@@ -1,60 +1,345 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
-import { extractLegacy } from '../lib/legacy';
-import rawHtml from '../legacy/index.html?raw';
-const { styles, body } = extractLegacy(rawHtml);
+import ReviewsCarousel from '../components/ReviewsCarousel.astro';
+import '../styles/landing.css';
+// Личное ведение: раз в неделю тренировка с Алексеем (онлайн или на дому),
+// план на каждую неделю и связь в рабочие часы; месяц = 3 недели + неделя
+// восстановления с созвоном. Помесячно; советуем 3 месяца и месяц отдыха.
+// Вход – первое занятие (оплата после него, засчитывается в первый месяц).
+// Запись – Telegram / Max или заявка (source=coaching).
+const HELLO = 'Здравствуйте, Алексей! Хочу в личное ведение. Формат (онлайн или дома): \nМоя цель: ';
+const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent(HELLO);
+const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent(HELLO);
+const reviews = [
+  { v: 41, name: 'Ксения', text: '−11 кг за 3 месяца и совсем другое внутреннее состояние' },
+  { v: 35, name: 'Анна', text: 'Регулярные тренировки, больше энергии, занимаемся всей семьёй' },
+  { v: 65, name: 'Анна', text: '«Ты привил привычку – семья занимается три раза в неделю»' },
+  { v: 64, name: 'Анна', text: 'Встроила спорт в жизнь, ушли зажимы в плечах и спине' },
+  { v: 40, name: 'Ксения', text: 'Ушли боли в тазобедренных суставах, влезла в старые джинсы' },
+  { v: 54, name: 'Елена', text: 'Выстроила тренировки под сложный посменный график' },
+  { v: 50, name: 'Екатерина', text: 'Оформились мышцы, укрепились суставы, выросла выносливость' },
+  { v: 58, name: 'Дарья', text: 'Взяла себя в руки, вернула энергию и начала бегать' },
+  { v: 17, name: 'Марина', text: 'Стала вставать без опоры, спина стала гибче' },
+  { v: 12, name: 'Варвара', text: 'Укрепление без изнурения, сон стал крепче' },
+  { v: 39, name: 'Елисей', text: 'Стал сильнее, увереннее на физкультуре, ушла зажатость' },
+  { v: 48, name: 'Маргарита', text: 'Привела тело в тонус и вернула вдохновение' },
+  { v: 14, name: 'Мария', text: 'Прилив сил после каждого занятия, спина гибкая и лёгкая' },
+  { v: 53, name: 'Сергей', text: 'Укрепил «спящие» мышцы, тело работает цельнее' },
+];
 ---
-<SiteLayout title="Личное ведение – Алексей Ларин" description="Личное ведение с тренером: персональная тренировка раз в неделю, план под вас и поддержка всю неделю. 16 000 ₽ в месяц, онлайн." active="home" pageStyles={styles}>
-  <Fragment set:html={body} />
+<SiteLayout
+  title="Личное ведение – Алексей Ларин"
+  description="Личное ведение с тренером Алексеем Лариным: тренировка раз в неделю, план на каждую неделю и поддержка между тренировками. Онлайн или у вас дома в Москве."
+  active="home">
+
+  <!-- ПЕРВЫЙ ЭКРАН -->
+  <section class="gp-hero">
+    <div class="gp-hero-text">
+      <p class="gp-eyebrow"><span class="dot"></span>Личное ведение · онлайн и на дому</p>
+      <h1>Тренер рядом – <em>всю неделю</em></h1>
+      <p class="gp-sub">Раз в неделю тренируемся вместе, остальные дни – по вашему плану, а я на связи. Подтянутое тело, больше сил и хорошее самочувствие – в вашем ритме.</p>
+      <div class="gp-params">
+        <div><b>1 раз</b><span>в неделю тренируемся вместе</span></div>
+        <div><b>план</b><span>на каждую неделю</span></div>
+        <div><b>на связи</b><span>между тренировками</span></div>
+      </div>
+      <div class="gp-cta">
+        <a href="#zapis" class="btn-main">Записаться на первое занятие ↓</a>
+      </div>
+    </div>
+    <div class="gp-hero-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_3979.webp 1x, /img/IMG_3979@2x.webp 2x" />
+        <img src="/img/IMG_3979.jpg" srcset="/img/IMG_3979.jpg 1x, /img/IMG_3979@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="eager" fetchpriority="high" />
+      </picture>
+    </div>
+  </section>
+
+  <!-- ДЛЯ КОГО -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Для кого</p>
+      <h2>Если вам <em>знакомо</em></h2>
+      <div class="gp-cards3">
+        <div class="gp-card">
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 20a13 13 0 0 1 23-6l3 3"/><path d="M38 9v8h-8"/><path d="M36 28a13 13 0 0 1-23 6l-3-3"/><path d="M10 39v-8h8"/></svg></div>
+          <h3>Начинали много раз</h3>
+          <p>Абонемент, марафон, приложение – и через пару недель всё сходит на нет. Когда раз в неделю мы встречаемся, а между встречами я рядом, бросить гораздо сложнее.</p>
+        </div>
+        <div class="gp-card">
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="9" r="4"/><path d="M12 18l12 3 12-3"/><path d="M24 21v10"/><path d="M24 31l-6 11"/><path d="M24 31l6 11"/><path d="M6 15v6M42 15v6M4 18h4M40 18h4"/></svg></div>
+          <h3>Хочется выглядеть и чувствовать себя лучше</h3>
+          <p>Подтянутое тело, больше сил, хороший сон и настроение. Без жёстких диет и тренировок «через не могу».</p>
+        </div>
+        <div class="gp-card">
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="10" width="34" height="31" rx="4"/><path d="M7 19h34"/><path d="M16 6v8M32 6v8"/><path d="M15 27h5M23 27h5M31 27h3M15 34h5M23 34h5"/></svg></div>
+          <h3>Нужен план под вашу жизнь</h3>
+          <p>Работа, семья, свой график. Собираю неделю так, чтобы её реально выполнить, и подстраиваю, когда что-то меняется.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- КАК УСТРОЕНО -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner">
+      <p class="gp-label">Как это устроено</p>
+      <h2>Вы тренируетесь, <em>я веду</em></h2>
+      <div class="gp-steps">
+        <div class="gp-step">
+          <div class="gp-num">1</div>
+          <div>
+            <h3>Анкета и первое занятие</h3>
+            <p>Узнаю вашу цель, самочувствие и график. На первом занятии смотрю, как вы двигаетесь, и сразу тренируемся.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">2</div>
+          <div>
+            <h3>Тренировка со мной раз в неделю</h3>
+            <p>55 минут, онлайн или у вас дома. Слежу за техникой, подбираю нагрузку и показываю, что делать в остальные дни.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">3</div>
+          <div>
+            <h3>План на неделю и я на связи</h3>
+            <p>Понятный план на самостоятельные дни – всё разобрано на тренировке. Вопрос по упражнению или хочется поделиться – пишите, отвечаю в рабочие часы.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">4</div>
+          <div>
+            <h3>Четвёртая неделя – отдых и созвон</h3>
+            <p>Тело восстанавливается, а мы созваниваемся и смотрим на всю картину: тренировки, сон, питание, стресс. Решаем, что менять в следующем месяце.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- МЕСЯЦ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Ритм</p>
+      <h2>Месяц – это <em>3 + 1</em></h2>
+      <p class="gp-desc">Три недели тренируемся, неделю восстанавливаемся. Отдых – часть системы: в это время тело и становится сильнее.</p>
+      <div class="gp-timeline">
+        <div class="gp-tl">
+          <p class="gp-tl-date">Неделя 1</p>
+          <h3>Тренировка + план</h3>
+          <p>Начинаем с нагрузки по вашему уровню.</p>
+        </div>
+        <div class="gp-tl">
+          <p class="gp-tl-date">Неделя 2</p>
+          <h3>Тренировка + план</h3>
+          <p>Добавляем понемногу – смотрю, как отзывается тело.</p>
+        </div>
+        <div class="gp-tl">
+          <p class="gp-tl-date">Неделя 3</p>
+          <h3>Тренировка + план</h3>
+          <p>Самая насыщенная неделя цикла.</p>
+        </div>
+        <div class="gp-tl gp-tl-rest">
+          <p class="gp-tl-date">Неделя 4</p>
+          <h3>Отдых и созвон</h3>
+          <p>Восстанавливаемся, подводим итоги, планируем следующий месяц.</p>
+        </div>
+      </div>
+      <p class="gp-desc gp-desc-after">Оплата помесячно. Советую идти три месяца подряд, а четвёртый – отдохнуть и позаниматься самостоятельно. Потом можно продолжить.</p>
+    </div>
+  </section>
+
+  <!-- ЧЕГО ЖДАТЬ + ЦЕНА -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner gp-offer">
+      <div class="gp-expect">
+        <p class="gp-label">Чего ждать</p>
+        <h2>Честно <em>о результате</em></h2>
+        <ul class="gp-checks">
+          <li><b>Первый месяц</b> – появляется режим, который держится. Больше сил, лучше сон и настроение.</li>
+          <li><b>Через 2–3 месяца</b> – тело крепче и подтянутее, одежда сидит иначе. Замеры это покажут.</li>
+          <li><b>Главное</b> – тренировки становятся частью жизни, и хочется продолжать.</li>
+        </ul>
+      </div>
+      <div class="gp-price">
+        <p class="gp-price-label">Что входит</p>
+        <ul>
+          <li>Тренировка со мной раз в неделю – 3 в месяц</li>
+          <li>План на каждую неделю</li>
+          <li>Я на связи между тренировками</li>
+          <li>Неделя отдыха и созвон-разбор месяца</li>
+          <li>Замеры, чтобы видеть прогресс</li>
+        </ul>
+        <div class="gp-price-rows">
+          <p><span>Онлайн</span><b>16 000 ₽</b></p>
+          <p><span>У вас дома, Москва</span><b>26 700 ₽</b></p>
+        </div>
+        <p class="gp-price-note">в месяц</p>
+        <a href="#zapis" class="btn-main btn-full">Записаться</a>
+        <p class="gp-price-refund">Первое занятие – 3 000 ₽ онлайн или 5 000 ₽ дома, оплата после него. Если продолжаем, засчитываю его в первый месяц.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ФОРМАТЫ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Форматы</p>
+      <h2>Чем ведение <em>отличается</em></h2>
+      <div class="gp-compare">
+        <a href="/personal" class="gp-cmp">
+          <h3>Персональные тренировки</h3>
+          <p>Каждое занятие – вместе со мной, сколько раз в неделю удобно. Без плана и поддержки между занятиями.</p>
+          <p class="gp-cmp-price">от 2 700 ₽ за занятие</p>
+          <span class="gp-cmp-go">Подробнее →</span>
+        </a>
+        <div class="gp-cmp gp-cmp-here">
+          <p class="gp-cmp-tag">Вы здесь</p>
+          <h3>Личное ведение</h3>
+          <p>Тренировка со мной раз в неделю, план на остальные дни и я на связи. Для тех, кому важен результат и поддержка всю неделю.</p>
+          <p class="gp-cmp-price">16 000 ₽ в месяц</p>
+        </div>
+        <a href="/gruppa" class="gp-cmp">
+          <h3>Групповое ведение</h3>
+          <p>Свой план, разбор по субботам и чат группы. Дешевле и в компании, но без тренировок один на один.</p>
+          <p class="gp-cmp-price">9 900 ₽ за 8 недель</p>
+          <span class="gp-cmp-go">Подробнее →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- КТО ВЕДЁТ -->
+  <section class="gp-author">
+    <div class="gp-author-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_4046.webp 1x, /img/IMG_4046@2x.webp 2x" />
+        <img src="/img/IMG_4046.jpg" srcset="/img/IMG_4046.jpg 1x, /img/IMG_4046@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy" />
+      </picture>
+    </div>
+    <div class="gp-author-text">
+      <p class="gp-label">Кто ведёт</p>
+      <h2>Алексей Ларин</h2>
+      <p class="gp-quote">Тренировки, после которых хочется жить.</p>
+      <p>В 9 лет я сломал три позвонка, и восстановился через движение. С тех пор знаю, как много может дать правильная, посильная нагрузка.</p>
+      <p>Больше 10 лет тренирую детей и взрослых, магистр университета спорта «ГЦОЛИФК». За это время со мной занимались больше 8 000 человек – на курсах, в лагерях, на групповых и личных занятиях.</p>
+      <p>Работаю с людьми любого возраста и уровня – от тех, кто начинает с нуля, до тех, кто давно тренируется. В тренировках соединяю силовые, бег и йогу – и обязательно отдых.</p>
+    </div>
+  </section>
+
+  <!-- ОТЗЫВЫ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label gp-center">Отзывы</p>
+      <h2 class="gp-center">Люди, которые <em>начали</em></h2>
+      <div class="gp-reviews-wrap"><ReviewsCarousel reviews={reviews} /></div>
+      <p class="gp-center gp-more"><a href="/results">Все отзывы →</a></p>
+    </div>
+  </section>
+
+  <!-- ВОПРОСЫ -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner gp-faq">
+      <p class="gp-label gp-center">Вопросы</p>
+      <h2 class="gp-center">Что обычно <em>спрашивают</em></h2>
+      <details><summary>Я совсем без формы – справлюсь?</summary><p>Да. Начинаем с вашего уровня, у каждого упражнения есть вариант полегче. Нагрузку добавляем постепенно, когда тело готово.</p></details>
+      <details><summary>Сколько длится ведение?</summary><p>Оплата помесячно, без обязательств. Советую три месяца подряд, а четвёртый – отдохнуть и позаниматься самостоятельно. Потом можно продолжить.</p></details>
+      <details><summary>Чем отличается от персональных тренировок?</summary><p>На персональных мы просто тренируемся вместе. В ведении между тренировками у вас есть план на каждый день, я на связи и раз в месяц мы разбираем всю картину – сон, питание, стресс.</p></details>
+      <details><summary>Можно ли ребёнку или пожилым родителям?</summary><p>Да, работаю с людьми любого возраста. Формат тот же, нагрузку подбираю под человека.</p></details>
+      <details><summary>У меня болит спина или суставы – можно?</summary><p>Расскажите об этом в анкете – подберу упражнения с учётом самочувствия. Если боль острая или недавно была операция, сначала нужно разрешение врача.</p></details>
+      <details><summary>Что если пропущу тренировку?</summary><p>Предупредите хотя бы за 12 часов – перенесём на другой день.</p></details>
+      <details><summary>Как оплатить?</summary><p>Первое занятие – после него, я пришлю ссылку на оплату. Дальше – помесячно, а первое занятие засчитываю в первый месяц.</p></details>
+    </div>
+  </section>
+
+  <!-- ЗАПИСЬ -->
+  <section class="gp-section" id="zapis">
+    <div class="gp-inner gp-form-wrap">
+      <p class="gp-label gp-center">Запись</p>
+      <h2 class="gp-center">Напишите – <em>начнём с первого занятия</em></h2>
+      <ol class="gp-how">
+        <li><b>Напишите мне в Telegram</b> (или в Max) – формат и пару слов о своей цели</li>
+        <li><b>Договоримся</b> о дне первого занятия, перед ним пришлю короткую анкету</li>
+        <li><b>Тренируемся</b> – оплату за первое занятие пришлю после него</li>
+      </ol>
+      <a href={TG} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
+      <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Нет Telegram – написать в Max</a>
+      <p class="gp-alt">Обычно отвечаю в течение дня</p>
+
+      <details class="gp-leave">
+        <summary>Нет мессенджеров? <span>Оставьте контакт</span> – я напишу сам</summary>
+        <form id="lead-form" class="gp-form" data-source="coaching" novalidate>
+          <div class="gp-row">
+            <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
+            <input class="gp-input" name="contact" placeholder="Телефон или почта" required />
+          </div>
+          <textarea class="gp-input" name="message" rows="3" placeholder="Онлайн или дома, и чего хотите добиться (по желанию)"></textarea>
+          <label class="gp-consent">
+            <input type="checkbox" name="consent_pd" value="1" required />
+            <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
+          </label>
+          <button type="submit" class="btn-main btn-full">Отправить</button>
+          <p class="gp-note" id="lead-note"></p>
+        </form>
+      </details>
+    </div>
+  </section>
+
+  <style>
+    .gp-desc-after { margin: 28px 0 0; }
+    .gp-price-rows { margin: 0 0 4px; }
+    .gp-price-rows p { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 6px; font-size: 17px; color: rgba(255,255,255,.85); }
+    .gp-price-rows b { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 40px; line-height: 1.1; color: white; white-space: nowrap; }
+    .gp-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
+    .gp-cmp { display: flex; flex-direction: column; background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 28px 26px; text-decoration: none; color: inherit; transition: transform .2s, box-shadow .2s, border-color .2s; }
+    a.gp-cmp:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,39,68,.07); border-color: rgba(232,101,42,.4); }
+    a.gp-cmp:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .gp-cmp h3 { font-size: 20px; font-weight: 600; color: var(--navy); margin: 0 0 10px; }
+    .gp-cmp p { font-size: 17px; line-height: 1.65; color: var(--text-muted, #555); margin: 0 0 14px; }
+    .gp-cmp .gp-cmp-price { font-weight: 700; color: var(--navy); margin: auto 0 0; }
+    .gp-cmp-go { margin-top: 12px; font-weight: 600; color: var(--orange); }
+    .gp-cmp-here { background: white; border: 1.5px solid var(--orange); }
+    .gp-cmp .gp-cmp-tag { font-size: 15px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--orange); margin: 0 0 8px; }
+    @media (max-width: 1000px) { .gp-compare { grid-template-columns: 1fr; } .gp-cmp-here { order: -1; } }
+  </style>
+
   <script>
-    // Форма заявки → POST /api/leads.
-    // CSRF подставляет fetch-обёртка из SiteLayout.
-    const form = document.getElementById('lead-form') as HTMLFormElement | null;
-    if (form) {
-      const note = document.getElementById('lead-note') as HTMLElement | null;
-      const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
-      const setNote = (msg: string, isErr = false) => {
-        if (!note) return;
-        note.textContent = msg;
-        note.style.color = isErr ? '#ff8a8a' : '';
-      };
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fd = new FormData(form);
-        const name = String(fd.get('name') || '').trim();
-        const contact = String(fd.get('contact') || '').trim();
-        if (!name) { setNote('Укажите имя', true); return; }
-        if (contact.length < 5) { setNote('Укажите email, телефон или @телеграм – как с вами связаться', true); return; }
-        if (!fd.get('consent_pd')) { setNote('Чтобы продолжить, нужно согласиться с обработкой персональных данных', true); return; }
-        const orig = btn?.textContent || '';
-        if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
-        try {
-          const r = await fetch('/api/leads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              name, contact,
-              message: String(fd.get('message') || '').trim(),
-              source: form.dataset.source || 'coaching',
-              consent_pd: true,
-            }),
-          });
-          if (r.ok) {
-            (window as any).reachGoal?.('lead_submit');
-            const box = document.createElement('div');
-            box.className = 'lead-success';
-            box.innerHTML = '<h3>Заявка отправлена</h3><p>Отвечу в течение 1\u20112 дней: пришлю анкету и договоримся о времени первой тренировки. Если вопрос срочный – напишите в Телеграм по кнопке ниже.</p>';
-            form.replaceWith(box);
-            return;
-          }
-          setNote('Не получилось отправить – попробуйте ещё раз или напишите в Телеграм', true);
-        } catch {
-          setNote('Ошибка сети – попробуйте ещё раз', true);
-        } finally {
-          if (btn) { btn.disabled = false; btn.textContent = orig; }
+    // Нажатия на «Написать в Telegram / Max» – цель Метрики messenger_click.
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+
+    // Заявка → POST /api/leads (CSRF подставляет обёртка fetch из SiteLayout).
+    const lead = document.getElementById('lead-form') as HTMLFormElement | null;
+    lead?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const note = document.getElementById('lead-note') as HTMLElement;
+      const btn = lead.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const say = (m: string, err = false) => { note.textContent = m; note.classList.toggle('is-error', err); };
+      const fd = new FormData(lead);
+      const name = String(fd.get('name') || '').trim();
+      const contact = String(fd.get('contact') || '').trim();
+      if (!name) return say('Укажите имя', true);
+      if (contact.length < 5) return say('Укажите телефон или почту – как с вами связаться', true);
+      if (!fd.get('consent_pd')) return say('Чтобы продолжить, отметьте согласие', true);
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Отправляем…';
+      try {
+        const r = await fetch('/api/leads', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ name, contact, message: String(fd.get('message') || '').trim(), source: 'coaching', consent_pd: true }),
+        });
+        if (r.ok) {
+          (window as any).reachGoal?.('lead_submit');
+          const box = document.createElement('div');
+          box.className = 'gp-success';
+          box.innerHTML = '<h3>Получил 🙌</h3><p>Напишу вам в течение дня – договоримся о времени первого занятия.</p>';
+          lead.replaceWith(box);
+          return;
         }
-      });
-    }
+        say('Не получилось отправить – попробуйте ещё раз или напишите в Telegram', true);
+      } catch { say('Ошибка сети – попробуйте ещё раз', true); }
+      finally { btn.disabled = false; btn.textContent = orig; }
+    });
+
   </script>
 </SiteLayout>

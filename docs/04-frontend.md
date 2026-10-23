@@ -8,7 +8,7 @@
 web/src/
   pages/
     index.astro                   — главная (новый дизайн: hero, услуги/курсы 2×2, обо мне, статьи)
-    coaching.astro                — «Личное ведение» (legacy import index.html) + форма заявки (#lead-form → POST /api/leads, source=coaching)
+    coaching.astro                — «Личное ведение» (не legacy, стили landing.css) + форма заявки (#lead-form → POST /api/leads, source=coaching); legacy/index.html больше не используется
     courses/index.astro           — витрина курсов (карточки из GET /api/courses). Все курсы, включая бесплатный, ведут на /courses/<slug>
     start.astro                   — «Точка перемен» (legacy import): занятие 55 мин + неделя сопровождения, 2 990 ₽. Запись – через заявку (#lead-form → POST /api/leads, source=start; имя, контакт и запрос обязательны), в уведомлении Алексею – ссылка на оплату. Блок оплаты (#oplata → POST /api/checkout/service) скрыт и открывается только по ссылке `/start#oplata`, которую Алексей присылает после переписки (с 2026-10-22). Анкета приходит после оплаты автоматически.
     kurs-oplachen.astro           — страница после оплаты курса в один шаг (urlSuccess quick-checkout, `?course=<slug>`; Продамус добавляет `_payform_order_id`). Пока заказ не `paid` (webhook ещё не пришёл) – «Оплата прошла, открываем доступ» и опрос `GET /api/orders/{id}/status` каждые 3 с; через 45 с – «Подтверждение задерживается» с кнопкой в Телеграм, опрос продолжается. Когда `paid` и заказ оформлен в этом браузере (`can_enter`) – «Сейчас откроем уроки» и через 2,5 с переход на `/api/orders/{id}/enter` (вход без почты). Иначе – на какую почту ушло письмо с кнопкой входа и паролем (маска), кнопки «Войти по коду из письма» и «Войти с паролем»; залогиненному – «Перейти к урокам». noindex
@@ -146,7 +146,7 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 ## Аналитика (Яндекс.Метрика)
 
-Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/start), `quick_signup` (форма на /courses/myagkiy-start), `checkout_start` (переход к оплате «Здоровой спины»).
+Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/start/gruppa/personal), `messenger_click` (кнопки Telegram/Max на лендингах), `quick_signup` (форма на /courses/myagkiy-start), `checkout_start` (переход к оплате «Здоровой спины»).
 
 ## Блог: даты, похожие статьи, JSON-LD
 
@@ -229,6 +229,6 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 Первый экран у лендингов (`/gruppa`, `/personal`, `/coaching`, `/start`): текст прижат к верху, первая строка – в 80px под меню на десктопе.
 
-Общие стили лендингов – `web/src/styles/landing.css` (классы `gp-*`, подключается импортом в странице). Минимальный размер текста – 15px, основной – 17px. `/coaching-preview` – черновик новой страницы личного ведения в этих стилях (noindex, canonical на `/coaching`); после утверждения заменит `coaching.astro`.
+Общие стили лендингов – `web/src/styles/landing.css` (классы `gp-*`, подключается импортом в странице). Минимальный размер текста – 15px, основной – 17px. `/coaching-preview` (черновик новой страницы) – 301 на `/coaching`.
 
 Карусель отзывов – `web/src/components/ReviewsCarousel.astro`: бесконечная лента (у края крайняя карточка переносится на другую сторону), видео грузится по клику, обложки – когда лента рядом с экраном.
