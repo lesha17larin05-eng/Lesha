@@ -29,6 +29,7 @@ services:
       - ./api/migrations/024_login_codes_optout.up.sql:/docker-entrypoint-initdb.d/024_login_codes_optout.up.sql:ro
       - ./api/migrations/025_email_clicks.up.sql:/docker-entrypoint-initdb.d/025_email_clicks.up.sql:ro
       - ./api/migrations/026_questionnaire_kind.up.sql:/docker-entrypoint-initdb.d/026_questionnaire_kind.up.sql:ro
+      - ./api/migrations/027_course_texts_2026_10.up.sql:/docker-entrypoint-initdb.d/027_course_texts_2026_10.up.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d test"]
       interval: 2s

@@ -1,8 +1,12 @@
 ---
+// Лендинг бесплатного курса «Мягкий старт» (стили – landing.css, классы gp-*).
+// Уроки и описания – из API (таблица lessons), здесь только оформление.
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { apiJson } from '../../lib/api';
 import ResponsiveImage from '../../components/ResponsiveImage.astro';
 import QuickSignupForm from '../../components/QuickSignupForm.astro';
+import ReviewsCarousel from '../../components/ReviewsCarousel.astro';
+import '../../styles/landing.css';
 
 const cookie = Astro.request.headers.get('cookie') || '';
 const user = (Astro.locals as any).user;
@@ -20,14 +24,14 @@ const isFreeCourse = course?.kind === 'free';
 
 // UI-only metadata keyed by lesson slug (colours/tags – not content)
 const slugMeta: Record<string, { tag: string; tagBg: string; tagColor: string }> = {
-  'vvodnyy':               { tag: 'Введение',  tagBg: '#dbeeff', tagColor: '#1060a0' },
-  'sustavnaya-gimnastika': { tag: 'Всё тело',  tagBg: '#d4f0e4', tagColor: '#0a6040' },
-  'sheya':                 { tag: 'Шея',       tagBg: '#fdefd4', tagColor: '#8a5010' },
-  'zdorovaya-spina':       { tag: 'Спина',     tagBg: '#fdefd4', tagColor: '#8a5010' },
-  'stopy':                 { tag: 'Стопы',     tagBg: '#e8e0f8', tagColor: '#5020a0' },
-  'tazobedrennyye-sustavy':{ tag: 'Суставы',   tagBg: '#d4f0e4', tagColor: '#0a6040' },
-  'meditatsiya':           { tag: 'Медитация', tagBg: '#e0f0ff', tagColor: '#1060a0' },
-  'itogovyy':              { tag: 'Итог',      tagBg: '#f0f0f0', tagColor: '#444'    },
+  'vvodnyy':               { tag: 'Введение',  tagBg: '', tagColor: '' },
+  'sustavnaya-gimnastika': { tag: 'Всё тело',  tagBg: '', tagColor: '' },
+  'sheya':                 { tag: 'Шея',       tagBg: '', tagColor: '' },
+  'zdorovaya-spina':       { tag: 'Спина',     tagBg: '', tagColor: '' },
+  'stopy':                 { tag: 'Стопы',     tagBg: '', tagColor: '' },
+  'tazobedrennyye-sustavy':{ tag: 'Таз и бёдра', tagBg: '', tagColor: '' },
+  'meditatsiya':           { tag: 'Медитация', tagBg: '', tagColor: '' },
+  'itogovyy':              { tag: 'Итог',      tagBg: '', tagColor: '' },
 };
 
 // Ссылки на YouTube и ВК для каждого урока – кнопки под видео.
@@ -59,514 +63,96 @@ const lessons = rawLessons.map((l: any, i: number) => {
     video,
   };
 });
+const reviews = [
+  { v: 36, name: 'Алёна', text: 'Позвоночник «кайфанул» уже после первой тренировки' },
+  { v: 61, name: 'Мария', text: 'Десятиминутные зарядки каждый день преображают весь день' },
+  { v: 11, name: 'Александр', text: 'Бодрость и спокойствие одновременно' },
+  { v: 64, name: 'Анна', text: 'Встроила спорт в жизнь, ушли зажимы в плечах и спине' },
+  { v: 14, name: 'Мария', text: 'Прилив сил после каждого занятия, спина гибкая и лёгкая' },
+  { v: 12, name: 'Варвара', text: 'Укрепление без изнурения, сон стал крепче' },
+  { v: 10, name: 'Елена', text: 'Ушла скованность в шее и плечах' },
+  { v: 62, name: 'Елизавета', text: 'Мягкость, поддержка и желание продолжать' },
+  { v: 20, name: 'Елена', text: 'Засыпает быстрее – проблема со сном почти ушла' },
+  { v: 58, name: 'Дарья', text: 'Взяла себя в руки, вернула энергию и начала бегать' },
+];
 ---
-<SiteLayout title="Мягкий старт – бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 видеоуроков – суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="courses" padTop={false}>
-  <style>
-    /* ───── HERO ───── */
-    .ms-hero {
-      display: grid;
-      grid-template-columns: 55% 45%;
-      min-height: 100vh;
-      min-height: 100svh;
-      padding-top: 64px;
-    }
-    .ms-hero-left {
-      background: var(--navy);
-      padding: 80px 72px 80px 80px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .ms-hero-left::before {
-      content: '';
-      position: absolute;
-      top: -80px; right: -80px;
-      width: 480px; height: 480px;
-      background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .ms-hero-left::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
-    }
-    .ms-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
-    .ms-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
-    .ms-eyebrow-text { font-size: 14px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.82); }
+<SiteLayout title="Мягкий старт – бесплатный курс Алексея Ларина" description="Бесплатный курс «Мягкий старт»: 8 коротких практик – суставная гимнастика, шея, спина, стопы, медитация. Доступ сразу после регистрации." active="courses">
 
-    .ms-hero-left h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(44px, 4.5vw, 68px);
-      font-weight: 400;
-      line-height: 1.05;
-      color: white;
-      margin-bottom: 12px;
-      letter-spacing: -0.01em;
-    }
-    .ms-hero-left h1 em { font-style: italic; color: #8bb8f0; }
-
-    .ms-hero-sub {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 23px;
-      font-weight: 400;
-      font-style: italic;
-      color: rgba(255,255,255,0.92);
-      margin-bottom: 32px;
-      line-height: 1.5;
-    }
-    .ms-hero-promise {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 36px;
-    }
-    .ms-hero-promise p { font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.75); }
-    .ms-hero-promise strong { color: white; font-weight: 600; }
-
-    .ms-hero-cta { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
-    .ms-btn-hero {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--orange); color: white; text-decoration: none; border: none; cursor: pointer;
-      padding: 18px 36px; border-radius: 100px; font-size: 18px; font-weight: 600; font-family: 'Manrope', sans-serif;
-      transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.35);
-    }
-    .ms-btn-hero:hover, .ms-btn-hero:focus-visible {
-      background: var(--orange-warm); transform: translateY(-2px);
-      outline: none;
-    }
-    .ms-hero-safety { font-size: 16px; color: rgba(255,255,255,0.82); display: flex; align-items: center; gap: 6px; }
-    .ms-hero-safety::before { content: '✓'; color: rgba(255,255,255,0.9); }
-
-    .ms-hero-stats { display: flex; gap: 36px; margin-top: 52px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); }
-    .ms-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; color: white; line-height: 1; display: block; }
-    .ms-stat-label { font-size: 15px; color: rgba(255,255,255,0.75); margin-top: 4px; display: block; }
-
-    /* Hero right: lesson preview list */
-    .ms-hero-right {
-      background: var(--cream);
-      padding: 80px 64px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .ms-hero-right::before {
-      content: '';
-      position: absolute; bottom: -60px; right: -60px;
-      width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(232,101,42,0.06) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .ms-free-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3);
-      color: #16a34a; font-size: 14px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 8px 16px; border-radius: 100px; margin-bottom: 24px;
-    }
-    .ms-hero-right-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 26px; font-weight: 400; color: var(--navy);
-      margin-bottom: 20px; line-height: 1.3;
-    }
-
-    .ms-lesson-list { display: flex; flex-direction: column; gap: 10px; }
-    .ms-lesson-item {
-      display: flex; align-items: flex-start; gap: 14px;
-      padding: 12px 14px; background: white; border-radius: 12px;
-      border: 1px solid var(--border);
-      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
-      color: inherit; text-decoration: none;
-    }
-    .ms-lesson-item.is-link { cursor: pointer; }
-    .ms-lesson-arrow {
-      margin-left: auto; align-self: center;
-      font-size: 19px; color: var(--text-light);
-      transition: color 0.2s, transform 0.2s;
-      flex-shrink: 0;
-    }
-    @media (hover: hover) {
-      .ms-lesson-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-      .ms-lesson-item.is-link:hover {
-        border-color: var(--orange);
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(232,101,42,0.12);
-      }
-      .ms-lesson-item.is-link:hover .ms-lesson-arrow {
-        color: var(--orange);
-        transform: translateX(3px);
-      }
-      .ms-lesson-item.is-link:hover .ms-lesson-text strong { color: var(--orange); }
-    }
-    .ms-lesson-item.is-link:focus-visible {
-      outline: 2px solid var(--orange); outline-offset: 2px;
-    }
-    .ms-lesson-num {
-      width: 28px; height: 28px; border-radius: 50%; background: var(--navy);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; margin-top: 1px;
-    }
-    .ms-lesson-num.free { background: var(--orange); }
-    .ms-lesson-text strong { font-size: 15px; font-weight: 600; color: var(--navy); display: block; margin-bottom: 2px; }
-    .ms-lesson-text span { font-size: 14px; color: var(--text-muted); }
-
-    /* ───── COURSE SECTION ───── */
-    .ms-course { padding: 100px 80px; background: white; }
-    .ms-section-label { font-size: 14px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
-    .ms-section-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(36px, 3.5vw, 52px);
-      font-weight: 400; line-height: 1.15; color: var(--navy); margin-bottom: 16px;
-    }
-    .ms-section-title em { font-style: italic; }
-    .ms-section-desc { font-size: 18px; color: var(--text-muted); line-height: 1.85; max-width: 600px; margin-bottom: 56px; }
-
-    /* VIDEO GRID */
-    .ms-video-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-    }
-    .ms-video-card {
-      background: var(--cream);
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .ms-video-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); }
-
-    /* Video stub */
-    .ms-video-stub {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      background: linear-gradient(135deg, #e8e4dc 0%, #dcd8cf 100%);
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
-    }
-    /* Обложка урока (кадр из видео) */
-    /* picture/img рендерит ResponsiveImage – это дочерний компонент, поэтому :global */
-    .ms-video-stub :global(picture) { position: absolute; inset: 0; }
-    .ms-video-stub :global(.ms-video-cover) {
-      width: 100%; height: 100%; display: block;
-      object-fit: cover;
-      transition: transform 250ms ease;
-    }
-    .ms-video-stub::after {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background: linear-gradient(180deg, rgba(26,39,68,0) 55%, rgba(26,39,68,0.28) 100%);
-    }
-    .ms-video-stub .ms-video-play { box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
-    .ms-video-stub .ms-video-duration { z-index: 1; color: var(--navy); background: rgba(255,255,255,0.85); }
-    @media (hover: hover) {
-      .ms-video-card:hover :global(.ms-video-cover) { transform: scale(1.03); }
-    }
-    .ms-video-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
-    .ms-video-stub.locked {
-      background: linear-gradient(135deg, #e0dcd4 0%, #d4d0c8 100%);
-    }
-    .ms-video-play {
-      width: 60px; height: 60px; border-radius: 50%;
-      background: var(--navy); display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 1;
-      transition: transform 0.2s, background 0.2s;
-    }
-    .ms-video-card:hover .ms-video-play { transform: scale(1.08); background: var(--orange); }
-    .ms-video-play svg { width: 22px; height: 22px; fill: white; margin-left: 3px; }
-    .ms-video-stub.locked .ms-video-play { background: rgba(26,39,68,0.35); }
-    .ms-video-card:hover .ms-video-stub.locked .ms-video-play { transform: none; background: rgba(26,39,68,0.35); }
-
-    .ms-video-lock {
-      position: absolute; top: 14px; right: 14px;
-      width: 32px; height: 32px; border-radius: 8px;
-      background: rgba(255,255,255,0.75); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ms-video-lock svg { width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0; }
-
-    .ms-video-num {
-      position: absolute; bottom: 14px; left: 14px;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 52px; font-weight: 300; line-height: 1;
-      color: rgba(26,39,68,0.12);
-      pointer-events: none; user-select: none;
-    }
-    .ms-video-duration {
-      position: absolute; bottom: 12px; right: 14px;
-      font-size: 13px; font-weight: 600; color: var(--text-muted);
-      background: rgba(255,255,255,0.7); backdrop-filter: blur(4px);
-      padding: 4px 10px; border-radius: 100px;
-    }
-
-    /* Inline video player (replaces stub when accessible) */
-    .ms-video-player {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      background: #000;
-      overflow: hidden;
-    }
-    .ms-video-player video {
-      width: 100%; height: 100%;
-      display: block;
-      object-fit: contain;
-    }
-    .ms-video-player .ms-video-num { color: rgba(255,255,255,0.18); }
-    .ms-video-player .ms-video-duration {
-      background: rgba(0,0,0,0.55); color: white;
-      backdrop-filter: blur(4px);
-    }
-
-    /* YouTube / VK platform buttons */
-    .ms-video-platforms {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      margin: 16px 0 4px;
-    }
-    .ms-platform {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 14px; border-radius: 100px;
-      font-size: 14px; font-weight: 600;
-      text-decoration: none;
-      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-    }
-    .ms-platform:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-    .ms-platform--yt { background: #ff0033; color: #fff; }
-    .ms-platform--yt:hover { background: #cc0028; }
-    .ms-platform--vk { background: #0077ff; color: #fff; }
-    .ms-platform--vk:hover { background: #0066d9; }
-    .ms-platform svg { flex-shrink: 0; }
-
-    /* Card body */
-    .ms-video-body { padding: 22px 24px 24px; }
-    .ms-video-tag {
-      display: inline-block; font-size: 12px; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 4px 12px; border-radius: 100px; margin-bottom: 12px;
-    }
-    .ms-video-title { font-size: 19px; font-weight: 600; color: var(--navy); margin-bottom: 8px; line-height: 1.3; }
-    .ms-video-desc { font-size: 16px; color: var(--text-muted); line-height: 1.75; margin-bottom: 16px; }
-    .ms-video-footer { display: flex; align-items: center; justify-content: space-between; }
-    .ms-video-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 15px; font-weight: 600; color: var(--orange);
-      text-decoration: none; transition: gap 0.2s;
-    }
-    .ms-video-link:hover, .ms-video-link:focus-visible { gap: 10px; outline: none; }
-    .ms-video-link-locked {
-      font-size: 15px; color: var(--text-light);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .ms-video-link-locked svg { width: 14px; height: 14px; }
-
-    /* ───── BENEFITS ───── */
-    .ms-benefits { padding: 100px 80px; background: var(--cream); }
-    .ms-benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .ms-benefit-card {
-      background: white; border-radius: 20px; padding: 32px 28px;
-      border: 1px solid var(--border); position: relative; overflow: hidden;
-    }
-    .ms-benefit-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--navy); }
-    .ms-benefit-num {
-      font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300;
-      color: var(--border); line-height: 1; margin-bottom: 16px;
-    }
-    .ms-benefit-card h3 { font-size: 19px; font-weight: 600; color: var(--navy); margin-bottom: 10px; }
-    .ms-benefit-card p { font-size: 16px; color: var(--text-muted); line-height: 1.75; }
-
-    /* ───── ABOUT ───── */
-    .ms-about {
-      padding: 100px 80px; background: var(--navy);
-      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
-      position: relative; overflow: hidden;
-    }
-    .ms-about::before {
-      content: '"'; position: absolute; top: -20px; left: 60px;
-      font-family: 'Cormorant Garamond', serif; font-size: 320px; color: rgba(255,255,255,0.03);
-      line-height: 1; pointer-events: none;
-    }
-    .ms-about-photo {
-      border-radius: 24px; overflow: hidden; aspect-ratio: 3/4;
-      background: linear-gradient(160deg, #2e3d6b 0%, #1a2744 100%);
-    }
-    .ms-about-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
-    .ms-about .ms-section-label { color: #7ab0f0; }
-    .ms-about .ms-section-title { color: white; }
-    .ms-about-pull {
-      background: rgba(255,255,255,0.05); border-left: 3px solid var(--orange);
-      padding: 20px 24px; border-radius: 0 12px 12px 0; margin: 28px 0;
-      font-family: 'Cormorant Garamond', serif; font-size: 23px; font-style: italic;
-      font-weight: 400; color: rgba(255,255,255,0.92); line-height: 1.6;
-    }
-    .ms-about-text { font-size: 17px; color: rgba(255,255,255,0.85); line-height: 1.85; margin-bottom: 16px; }
-
-    /* ───── CTA (enroll / not enrolled) ───── */
-    .ms-enroll { padding: 100px 80px; background: var(--navy); }
-    .ms-enroll-inner { max-width: 600px; margin: 0 auto; text-align: center; }
-    .ms-enroll .ms-section-label { text-align: center; }
-    .ms-enroll .ms-section-title { color: white; }
-    .ms-enroll .ms-section-desc { color: rgba(255,255,255,0.82); margin: 0 auto 40px; max-width: none; }
-    .ms-enroll-box {
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 24px; padding: 40px;
-    }
-    .ms-enroll-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; text-align: left; }
-    .ms-enroll-feat { display: flex; align-items: flex-start; gap: 10px; font-size: 17px; color: rgba(255,255,255,0.7); line-height: 1.6; }
-    .ms-enroll-feat-check { color: #4ade80; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
-    .ms-enroll-btn-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
-    .ms-enroll-btn {
-      width: 100%; padding: 18px; background: var(--orange); color: white; border: none; cursor: pointer;
-      border-radius: 100px; font-size: 18px; font-weight: 600; font-family: 'Manrope', sans-serif;
-      transition: all 0.25s; box-shadow: 0 8px 32px rgba(232,101,42,0.3); text-align: center;
-      text-decoration: none; display: block;
-    }
-    .ms-enroll-btn:hover, .ms-enroll-btn:focus-visible { background: var(--orange-warm); transform: translateY(-2px); outline: none; }
-    .ms-enroll-note { font-size: 15px; color: rgba(255,255,255,0.78); text-align: center; }
-
-    /* ───── ENROLLED BANNER ───── */
-    .ms-enrolled-banner {
-      background: linear-gradient(135deg, rgba(74,222,128,0.1) 0%, rgba(26,39,68,0.05) 100%);
-      border: 1px solid rgba(74,222,128,0.25);
-      border-radius: 16px; padding: 20px 28px;
-      display: flex; align-items: center; gap: 16px;
-      margin-bottom: 56px;
-    }
-    .ms-enrolled-icon { font-size: 24px; flex-shrink: 0; }
-    .ms-enrolled-text strong { font-size: 17px; font-weight: 600; color: var(--navy); display: block; }
-    .ms-enrolled-text span { font-size: 15px; color: var(--text-muted); }
-
-    /* ANIMATIONS */
-    @keyframes msfadeUp { from{opacity:0;transform:translateY(24px);} to{opacity:1;transform:translateY(0);} }
-    .ms-eyebrow { animation: msfadeUp 0.6s 0.1s both; }
-    .ms-hero-left h1 { animation: msfadeUp 0.6s 0.2s both; }
-    .ms-hero-sub { animation: msfadeUp 0.6s 0.3s both; }
-    .ms-hero-promise { animation: msfadeUp 0.6s 0.4s both; }
-    .ms-hero-cta { animation: msfadeUp 0.6s 0.5s both; }
-    .ms-hero-stats { animation: msfadeUp 0.6s 0.6s both; }
-
-    /* ───── MOBILE ───── */
-    @media (max-width: 900px) {
-      .ms-video-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 700px) {
-      .ms-hero { grid-template-columns: 1fr; min-height: unset; }
-      .ms-hero-left { padding: 60px 24px 48px; }
-      .ms-hero-right { padding: 48px 24px; }
-      .ms-course, .ms-benefits, .ms-about, .ms-enroll { padding: 60px 24px; }
-      .ms-about { grid-template-columns: 1fr; gap: 40px; }
-      .ms-about-photo { aspect-ratio: 4/3; max-height: 280px; }
-      .ms-benefits-grid { grid-template-columns: 1fr; gap: 16px; }
-      .ms-hero-stats { flex-wrap: wrap; gap: 24px; }
-      .ms-tg-alt { padding: 28px 24px; }
-    }
-    .ms-tg-alt { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 32px 80px; background: var(--cream); border-top: 1px solid var(--border); flex-wrap: wrap; }
-    .ms-tg-alt span { font-size: 16px; color: var(--text-muted); }
-    .ms-tg-alt-btn { display: inline-flex; align-items: center; gap: 8px; color: #2aabee; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.15s; }
-    @media (hover: hover) { .ms-tg-alt-btn:hover { color: #229ed9; } }
-    .ms-tg-alt-btn:focus-visible { outline: 2px solid #2aabee; outline-offset: 3px; border-radius: 4px; }
-  </style>
-
-  <!-- ═══════ HERO ═══════ -->
-  <section class="ms-hero">
-    <div class="ms-hero-left">
-      <div class="ms-eyebrow">
-        <div class="ms-eyebrow-dot"></div>
-        <span class="ms-eyebrow-text">Бесплатный курс · 8 уроков · онлайн</span>
-      </div>
+  <!-- ПЕРВЫЙ ЭКРАН -->
+  <section class="gp-hero">
+    <div class="gp-hero-text">
+      <p class="gp-eyebrow"><span class="dot"></span>Бесплатный курс · онлайн</p>
       <h1>Мягкий <em>старт</em></h1>
-      <p class="ms-hero-sub">Восемь практик для тех, кто давно хотел начать</p>
-      <div class="ms-hero-promise">
-        <p>Болит спина, нет энергии или просто давно не занимались? <strong>Курс создан для мягкого старта</strong> – в своём темпе, без изнурения и сложных программ.</p>
+      <p class="gp-sub">Восемь коротких практик для тех, кто давно хотел начать: суставная гимнастика, шея, спина, стопы, медитация. В своём темпе, с любого урока.</p>
+      <div class="gp-params">
+        <div><b>8</b><span>практик</span></div>
+        <div><b>3–36 мин</b><span>каждая</span></div>
+        <div><b>0 ₽</b><span>доступ навсегда</span></div>
       </div>
-      <div class="ms-hero-cta">
+      <div class="gp-cta">
         {enrolled
-          ? <a href="/cabinet/myagkiy-start" class="ms-btn-hero">Перейти к урокам →</a>
+          ? <a href="/cabinet/myagkiy-start" class="btn-main">Перейти к урокам →</a>
           : user
-            ? <button id="enroll-btn" class="ms-btn-hero">Получить доступ бесплатно →</button>
-            : <a href="#get-access" class="ms-btn-hero">Получить доступ бесплатно →</a>
-        }
-        <div class="ms-hero-safety">Бесплатно – навсегда</div>
-      </div>
-      <div class="ms-hero-stats">
-        <div><span class="ms-stat-num">6+2</span><span class="ms-stat-label">урока в курсе</span></div>
-        <div><span class="ms-stat-num">8000+</span><span class="ms-stat-label">человек через проекты</span></div>
-        <div><span class="ms-stat-num">8 лет</span><span class="ms-stat-label">практики</span></div>
+            ? <button type="button" id="enroll-btn" class="btn-main">Получить доступ бесплатно</button>
+            : <a href="#get-access" class="btn-main">Получить доступ бесплатно ↓</a>}
       </div>
     </div>
-    <div class="ms-hero-right">
-      <div class="ms-free-badge">✓ Бесплатно</div>
-      <div class="ms-hero-right-title">Что внутри курса</div>
-      <div class="ms-lesson-list">
-        {lessons.map(l => {
-          // Курс бесплатный – клик ведёт на конкретный урок в кабинете всегда.
-          // Для платного курса клик активен только если есть enrollment.
-          const canClick = isFreeCourse || enrolled;
-          // Ведём прямо в кабинет, чтобы открывался свой плеер и описание.
-          // Если не авторизован – middleware кабинета вернёт на /auth/login,
-          // что для общего бесплатного курса допустимо (логин – короткий шаг).
-          const lessonUrl = `/cabinet/${slug}#${l.slug}`;
-          if (canClick) {
-            return (
-              <a href={lessonUrl} class="ms-lesson-item is-link">
-                <div class={`ms-lesson-num${l.isFree ? ' free' : ''}`}>{l.num}</div>
-                <div class="ms-lesson-text">
-                  <strong>{l.title}</strong>
-                  <span>{l.desc.split('.')[0]}.</span>
-                </div>
-                <div class="ms-lesson-arrow" aria-hidden="true">→</div>
-              </a>
-            );
-          }
-          return (
-            <div class="ms-lesson-item">
-              <div class={`ms-lesson-num${l.isFree ? ' free' : ''}`}>{l.num}</div>
-              <div class="ms-lesson-text">
-                <strong>{l.title}</strong>
-                <span>{l.desc.split('.')[0]}.</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+    <div class="gp-hero-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_3990.webp 1x, /img/IMG_3990@2x.webp 2x" />
+        <img src="/img/IMG_3990.jpg" srcset="/img/IMG_3990.jpg 1x, /img/IMG_3990@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="eager" fetchpriority="high" />
+      </picture>
     </div>
   </section>
 
-  {/* ═══════ VIDEO GRID – витрина уроков для тех, кто ещё не записан.
-       Обложки – кадры из видео (web/public/img/myagkiy-start/<slug>.*).
-       Клик ведёт к блоку регистрации (#get-access). Записанным блок не показываем:
-       у них есть «Перейти к урокам» и список уроков в hero. ═══════ */}
+  {/* ДЛЯ КОГО */}
   {!enrolled && (
-  <section class="ms-course" id="lessons">
-    <div class="container" style="max-width:1180px; margin:0 auto; padding:0;">
-      <div class="ms-section-label">Уроки курса</div>
-      <h2 class="ms-section-title">Восемь практик&nbsp;–<br><em>один мягкий старт</em></h2>
-      <p class="ms-section-desc">Каждый урок самостоятельный – можно начать с любого, который сейчас актуален. После регистрации все видео доступны прямо в кабинете, в максимальном качестве – на YouTube и ВКонтакте.</p>
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Для кого</p>
+      <h2>Если вам <em>знакомо</em></h2>
+      <div class="gp-cards3">
+        <div class="gp-card">
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 20a13 13 0 0 1 23-6l3 3"/><path d="M38 9v8h-8"/><path d="M36 28a13 13 0 0 1-23 6l-3-3"/><path d="M10 39v-8h8"/></svg></div>
+          <h3>Давно собираетесь начать</h3>
+          <p>Хочется двигаться, но непонятно, с чего начать и сколько нужно. Здесь – короткие практики: выбираете одну и делаете.</p>
+        </div>
+        <div class="gp-card">
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="10" width="32" height="22" rx="3"/><path d="M18 40h12M24 32v8"/></svg></div>
+          <h3>Много сидите</h3>
+          <p>К вечеру тяжелеют шея, плечи и спина. Есть практики, которые можно сделать прямо после рабочего дня.</p>
+        </div>
+        <div class="gp-card">
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 40s-14-8.5-14-19a8 8 0 0 1 14-5.3A8 8 0 0 1 38 21c0 10.5-14 19-14 19z"/></svg></div>
+          <h3>Хочется мягко, без перегруза</h3>
+          <p>Без изнурения и сложных программ. Движения в комфортной амплитуде – тело само подскажет, когда можно больше.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  )}
 
-      <div class="ms-video-grid">
-        {lessons.map(l => {
+  <!-- УРОКИ -->
+  <section class={`gp-section${enrolled ? '' : ' gp-cream'}`} id="lessons">
+    <div class="gp-inner">
+      <p class="gp-label">Уроки курса</p>
+      <h2>Восемь практик – <em>начните с любой</em></h2>
+      <p class="gp-desc">Каждый урок самостоятельный: выберите тот, что сейчас актуален. После регистрации все видео открываются в личном кабинете.</p>
+      <div class="ms-grid">
+        {lessons.map((l) => {
+          const href = enrolled ? `/cabinet/${slug}#${l.slug}` : '#get-access';
           return (
-            <a href="#get-access" class="ms-video-card" style="text-decoration:none;">
-              <div class="ms-video-stub">
-                <ResponsiveImage base={`/img/myagkiy-start/${l.slug}`} ext="jpg" width="640" height="360" alt={`Урок «${l.title}»`} class="ms-video-cover" loading="lazy" />
-                <div class="ms-video-play" aria-hidden="true">
-                  <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="5,3 19,12 5,21" fill="white"/></svg>
-                </div>
-                <div class="ms-video-duration">{l.duration}</div>
+            <a href={href} class="ms-card">
+              <div class="ms-cover">
+                <ResponsiveImage base={`/img/myagkiy-start/${l.slug}`} ext="jpg" width="640" height="360" alt={`Урок «${l.title}»`} class="ms-cover-img" loading="lazy" />
+                <span class="ms-play" aria-hidden="true"><svg viewBox="0 0 24 24"><polygon points="7,4 20,12 7,20" /></svg></span>
+                {l.duration && <span class="ms-dur">{l.duration}</span>}
               </div>
-              <div class="ms-video-body">
-                <div class="ms-video-tag" style={`background:${l.tagBg}; color:${l.tagColor};`}>{l.tag}</div>
-                <div class="ms-video-title">{l.title}</div>
-                <div class="ms-video-desc">{l.desc}</div>
-                <div class="ms-video-footer">
-                  <span class="ms-video-link">
-                    Записаться и смотреть
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                  </span>
-                </div>
+              <div class="ms-body">
+                {l.tag && <span class="ms-tag">{l.tag}</span>}
+                <h3>{l.title}</h3>
+                <p>{l.desc}</p>
+                <span class="ms-go">{enrolled ? 'Смотреть урок →' : 'Получить доступ →'}</span>
               </div>
             </a>
           );
@@ -574,74 +160,63 @@ const lessons = rawLessons.map((l: any, i: number) => {
       </div>
     </div>
   </section>
+
+  {/* КАК НАЧАТЬ */}
+  {!enrolled && (
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Как это устроено</p>
+      <h2>Три шага <em>до первой практики</em></h2>
+      <div class="gp-steps ms-steps">
+        <div class="gp-step"><div class="gp-num">1</div><div><h3>Оставьте имя и почту</h3><p>Пароль придумывать не нужно – доступ открывается сразу.</p></div></div>
+        <div class="gp-step"><div class="gp-num">2</div><div><h3>Выберите урок</h3><p>Под то, что беспокоит сейчас: шея, спина, всё тело или голова, которая не выключается.</p></div></div>
+        <div class="gp-step"><div class="gp-num">3</div><div><h3>Сделайте одну практику</h3><p>Сегодня или завтра. А в следующие дни пришлю пару писем – подскажу, как продолжить.</p></div></div>
+      </div>
+    </div>
+  </section>
   )}
 
-  <!-- ═══════ BENEFITS ═══════ -->
-  <section class="ms-benefits">
-    <div class="ms-section-label">Что вы получите</div>
-    <h2 class="ms-section-title">Простые практики&nbsp;–<br><em>понятный результат</em></h2>
-    <p class="ms-section-desc">Каждый урок короткий, самостоятельный и работающий. Можно начать с любого, который сейчас актуален.</p>
-    <div class="ms-benefits-grid">
-      <div class="ms-benefit-card">
-        <div class="ms-benefit-num">01</div>
-        <h3>Тело без боли</h3>
-        <p>Простые упражнения, которые убирают напряжение со спины, шеи и суставов. Без изнурения и резких нагрузок.</p>
-      </div>
-      <div class="ms-benefit-card">
-        <div class="ms-benefit-num">02</div>
-        <h3>Первый шаг в регулярность</h3>
-        <p>Курс построен так, чтобы тело привыкало постепенно. После него хочется продолжать – не потому что надо, а потому что приятно.</p>
-      </div>
-      <div class="ms-benefit-card">
-        <div class="ms-benefit-num">03</div>
-        <h3>Больше энергии</h3>
-        <p>Осознанное движение возвращает ощущение тела и заряжает. Многие говорят, что после занятий голова становится яснее.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════ ABOUT ═══════ -->
-  <section class="ms-about">
-    <div class="ms-about-photo">
+  <!-- КТО ВЕДЁТ -->
+  <section class="gp-author">
+    <div class="gp-author-photo">
       <picture>
         <source type="image/webp" srcset="/img/IMG_4046.webp 1x, /img/IMG_4046@2x.webp 2x" />
-        <img src="/img/IMG_4046.jpg" srcset="/img/IMG_4046.jpg 1x, /img/IMG_4046@2x.jpg 2x" alt="Алексей Ларин" loading="lazy" />
+        <img src="/img/IMG_4046.jpg" srcset="/img/IMG_4046.jpg 1x, /img/IMG_4046@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy" />
       </picture>
     </div>
-    <div>
-      <div class="ms-section-label">Кто ведёт курс</div>
-      <h2 class="ms-section-title">Алексей Ларин</h2>
-      <div class="ms-about-pull">В 9 лет – перелом трёх позвонков. Именно через движение восстановился. С тех пор помогаю другим.</div>
-      <p class="ms-about-text">С 2017 года работаю с детьми, взрослыми и людьми старшего возраста. Магистр с отличием – Российский университет спорта. Более 8000 человек через проекты.</p>
-      <p class="ms-about-text">Этот курс – лучшее из того, что я умею, собранное в простой и понятный формат.</p>
+    <div class="gp-author-text">
+      <p class="gp-label">Кто ведёт</p>
+      <h2>Алексей Ларин</h2>
+      <p class="gp-quote">Тренировки, после которых хочется жить.</p>
+      <p>В 9 лет – перелом трёх позвонков. Именно через движение я восстановился. С тех пор помогаю другим.</p>
+      <p>Больше 10 лет тренирую детей и взрослых, магистр университета спорта «ГЦОЛИФК». За это время со мной занимались больше 8 000 человек – на курсах, в лагерях, на групповых и личных занятиях.</p>
+      <p>Этот курс – лучшее из того, что я умею, собранное в простой и понятный формат.</p>
     </div>
   </section>
 
-  <!-- ═══════ ENROLL / CTA ═══════ -->
+  <!-- ОТЗЫВЫ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label gp-center">Отзывы</p>
+      <h2 class="gp-center">Люди, которые <em>начали</em></h2>
+      <div class="gp-reviews-wrap"><ReviewsCarousel reviews={reviews} /></div>
+      <p class="gp-center gp-more"><a href="/results">Все отзывы →</a></p>
+    </div>
+  </section>
+
   {!enrolled && (
     <section class="ms-enroll" id="get-access">
       <div class="ms-enroll-inner">
-        <div class="ms-section-label">Получить доступ</div>
-        <h2 class="ms-section-title">Начните сегодня&nbsp;–<br><em>это бесплатно</em></h2>
+        <p class="gp-label gp-center">Получить доступ</p>
+        <h2 class="gp-center">Начните сегодня – <em>это бесплатно</em></h2>
         {user ? (
           <>
-            <p class="ms-section-desc">Нажмите кнопку – и сразу получите доступ ко всем 8 урокам.</p>
-        <div class="ms-enroll-box">
-          <div class="ms-enroll-features">
-            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>8 видео-уроков с практиками</div>
-            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Доступ навсегда – в удобное время</div>
-            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Можно начать с любого урока</div>
-            <div class="ms-enroll-feat"><span class="ms-enroll-feat-check">✓</span>Без подписок и скрытых платежей</div>
-          </div>
-          <div class="ms-enroll-btn-wrap">
-            <button id="enroll-btn-bottom" class="ms-enroll-btn">Записаться бесплатно →</button>
-          </div>
-          <p class="ms-enroll-note" style="margin-top:14px;">Бесплатно · без спама · отписаться в любой момент</p>
-        </div>
+            <p class="ms-enroll-desc">Нажмите кнопку – и сразу получите доступ ко всем 8 урокам.</p>
+            <button type="button" id="enroll-btn-bottom" class="btn-main btn-full">Получить доступ бесплатно</button>
           </>
         ) : (
           <>
-            <p class="ms-section-desc">Оставьте имя и почту – и сразу получите доступ ко всем 8 урокам.</p>
+            <p class="ms-enroll-desc">Оставьте имя и почту – и сразу получите доступ ко всем 8 урокам.</p>
             <QuickSignupForm />
           </>
         )}
@@ -649,13 +224,53 @@ const lessons = rawLessons.map((l: any, i: number) => {
     </section>
   )}
 
-  <div class="ms-tg-alt">
-    <span>Ещё не готовы записаться? Советы о здоровье выходят бесплатно</span>
-    <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="ms-tg-alt-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.88 13.617l-2.967-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.943.969z"/></svg>
-      Подписаться на канал →
-    </a>
-  </div>
+  <!-- ДАЛЬШЕ -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner ms-next">
+      <div>
+        <h2>Захочется <em>больше</em></h2>
+        <p class="gp-desc">Программа на три недели – <a href="/courses/zdorovaya-spina">«Здоровая спина»</a>. А если хочется тренироваться с тренером – <a href="/#so-mnoy">персональные тренировки, группа или личное ведение</a>.</p>
+      </div>
+      <a href="https://t.me/lesha_larin" target="_blank" rel="noopener" class="ms-tg">Telegram-канал: короткие практики и разборы →</a>
+    </div>
+  </section>
+
+  <style>
+    .ms-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .ms-card { display: flex; flex-direction: column; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 20px; overflow: hidden; text-decoration: none; color: inherit; transition: transform .2s, box-shadow .2s; }
+    @media (hover: hover) { .ms-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(26,39,68,.09); } .ms-card:hover .ms-play { background: var(--orange); } }
+    .ms-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .ms-cover { position: relative; aspect-ratio: 16 / 9; background: #e8e4dc; overflow: hidden; }
+    .ms-cover :global(picture) { position: absolute; inset: 0; }
+    .ms-cover :global(.ms-cover-img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ms-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 24px rgba(0,0,0,.25); transition: background .2s; }
+    .ms-play svg { width: 22px; height: 22px; fill: white; margin-left: 3px; }
+    .ms-dur { position: absolute; right: 12px; bottom: 12px; background: rgba(255,255,255,.9); color: var(--navy); font-size: 15px; font-weight: 600; padding: 4px 12px; border-radius: 100px; }
+    .ms-body { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; }
+    .ms-tag { font-size: 15px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+    .ms-body h3 { font-size: 20px; font-weight: 600; color: var(--navy); margin: 0 0 8px; line-height: 1.3; }
+    .ms-body p { font-size: 17px; line-height: 1.7; color: var(--text-muted, #555); margin: 0 0 14px; flex: 1; }
+    .ms-go { font-size: 16px; font-weight: 600; color: var(--orange); }
+    .ms-steps { grid-template-columns: repeat(3, 1fr); }
+
+    .ms-enroll { padding: 96px 24px; background: var(--navy); }
+    .ms-enroll-inner { max-width: 600px; margin: 0 auto; }
+    .ms-enroll h2 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(34px, 3.4vw, 50px); line-height: 1.12; color: white; margin: 0 0 14px; }
+    .ms-enroll h2 em { font-style: italic; color: #8bb8f0; }
+    .ms-enroll-desc { text-align: center; font-size: 18px; line-height: 1.6; color: rgba(255,255,255,.85); margin: 0 0 30px; }
+
+    .ms-next { display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+    .ms-next .gp-desc { margin: 0; }
+    .ms-next .gp-desc a { color: var(--navy); font-weight: 600; text-decoration: underline; text-decoration-color: var(--orange); text-underline-offset: 4px; transition: color .2s; }
+    .ms-next .gp-desc a:hover { color: var(--orange); }
+    .ms-tg { flex-shrink: 0; font-size: 17px; font-weight: 600; color: #229ed9; text-decoration: none; transition: color .2s; }
+    .ms-tg:hover { color: var(--navy); }
+    .ms-tg:focus-visible { outline: 2px solid #229ed9; outline-offset: 3px; border-radius: 4px; }
+
+    @media (max-width: 1000px) { .ms-steps { grid-template-columns: 1fr; } .ms-next { flex-direction: column; align-items: flex-start; } }
+    @media (max-width: 800px) { .ms-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { .ms-enroll { padding: 64px 20px; } }
+  </style>
 
   <script define:vars={{ slug }}>
     async function enrollFree() {

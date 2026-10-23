@@ -1,516 +1,308 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { extractLegacy } from '../../lib/legacy';
-import rawHtml from '../../legacy/zdorovaya-spina.html?raw';
+import ReviewsCarousel from '../../components/ReviewsCarousel.astro';
+import CourseBuy from '../../components/CourseBuy.astro';
 import { apiJson } from '../../lib/api';
+import '../../styles/landing.css';
 
+// Лендинг курса «Здоровая спина» (стили – landing.css, классы gp-*).
+// Покупка в один шаг – компонент CourseBuy (quick-checkout, без пароля).
+// Цены тарифов – из API (tariffs, с учётом акции со сроком).
 const cookie = Astro.request.headers.get('cookie') || '';
-const user = (Astro.locals as any).user;
+const { data } = await apiJson<any>('/api/courses/zdorovaya-spina', { cookie });
+const enrolled = !!data?.enrolled;
+const fmtRub = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+type T = { price: number; base_price: number; promo_until?: string };
+const tariffs: Record<string, T> = data?.tariffs || {};
+const self: T = tariffs.self || { price: 3990, base_price: 3990 };
+const support: T = tariffs.support || { price: 12990, base_price: 12990 };
+const promoUntil = self.promo_until || support.promo_until || null;
+const promoLastDay = promoUntil
+  ? new Date(new Date(promoUntil).getTime() - 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' })
+  : '';
 
-// Fetch enrollment status only for logged-in users
-let enrolled = false;
-if (user) {
-  const { data, status } = await apiJson<any>('/api/courses/zdorovaya-spina', { cookie });
-  if (status === 200) enrolled = !!data.enrolled;
-}
+const ASK = 'Здравствуйте, Алексей! Есть вопрос по курсу «Здоровая спина»: ';
+const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent(ASK);
+const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent(ASK);
 
-const { styles, body: rawBody } = extractLegacy(rawHtml);
-// Strip anchor-nav (second <nav>) and edit bar
-const reSecondNav = /<nav[\s\S]*?<\/nav>/i;
-const reEditBar  = /<div\s+id=["']edit-bar["'][\s\S]*?<\/div>/i;
-const body = rawBody.replace(reSecondNav, '').replace(reEditBar, '');
+const reviews = [
+  { v: 4, name: 'Яна', text: 'Протрузии ушли по МРТ, перекос таза уменьшился' },
+  { v: 32, name: 'Кристина', text: 'Прошла курс целиком, поясница перестала болеть' },
+  { v: 9, name: 'Анастасия', text: 'Перестали болеть спина, поясница, шея и плечи' },
+  { v: 3, name: 'Давидбек', text: 'Спина перестала болеть' },
+  { v: 2, name: 'Анастасия', text: 'Прострелы ушли после первой же тренировки' },
+  { v: 7, name: 'Ольга', text: 'Боль ушла на 1–2 неделе, энергии прибавилось' },
+  { v: 34, name: 'Яна', text: 'Боль в пояснице ушла, семья тренируется вместе' },
+  { v: 15, name: 'Яна', text: 'Боли при сколиозе уменьшились, появилась уверенность' },
+  { v: 10, name: 'Елена', text: 'Ушла скованность в шее и плечах' },
+  { v: 33, name: 'Анна', text: 'Мама с малышом: боли в спине уменьшились' },
+  { v: 43, name: 'Рузана', text: 'Страх после переломов прошёл, начала доверять телу' },
+  { v: 42, name: 'Татьяна', text: 'Комплекс подошёл при кифозе, сколиозе и переломах' },
+  { v: 52, name: 'Сергей', text: 'Почувствовал улучшение после травмы через системную работу' },
+  { v: 17, name: 'Марина', text: 'Стала вставать без опоры, спина стала гибче' },
+  { v: 44, name: 'Ирина', text: 'При протрузиях тело стало ощущаться целостно' },
+  { v: 64, name: 'Анна', text: 'Встроила спорт в жизнь, ушли зажимы в плечах и спине' },
+  { v: 36, name: 'Алёна', text: 'Позвоночник «кайфанул» уже после первой тренировки' },
+  { v: 59, name: 'Кирилл', text: 'Начал системно работать со спиной' },
+  { v: 6, name: 'Марина', text: 'Ушли боли в шее и ступне' },
+  { v: 5, name: 'Диля', text: '58 лет: боли в суставах уменьшились' },
+  { v: 40, name: 'Ксения', text: 'Ушли боли в тазобедренных суставах' },
+];
 
-// FAQPage JSON-LD – собирается из FAQ прямо на странице (rich snippet в поиске).
-const stripTags = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const faqMatches = [...rawHtml.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<div class="faq-content">([\s\S]*?)<\/div>/g)];
-const faqJsonLd = faqMatches.length ? JSON.stringify({
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqMatches.map((m) => ({
-    '@type': 'Question',
-    name: stripTags(m[1]),
-    acceptedAnswer: { '@type': 'Answer', text: stripTags(m[2]) },
-  })),
-}) : '';
+const faq = [
+  { q: 'А если у меня грыжа или большая протрузия?', a: 'Я не врач, и курс не лечит грыжи. Но мой опыт и опыт клиентов показывают: при разумной нагрузке люди с диагнозами чувствуют себя лучше. Тело становится крепче, мышечный корсет работает, симптомы часто уменьшаются. Если у вас крупная грыжа, операция в анамнезе или неврологические симптомы – сначала покажитесь врачу и спросите его про лёгкую регулярную нагрузку. Если врач даёт «зелёный свет» – курс ваш.' },
+  { q: 'У меня сейчас острая боль – могу заниматься?', a: 'При острой стреляющей боли, онемении в ногах или после недавней травмы – не начинайте курс прямо сейчас. Сначала разберитесь с острым состоянием у врача. Курс – для устойчивого состояния: хронической скованности, периодических ноющих ощущений, профилактики. Дождитесь, когда острая фаза пройдёт – и начнём мягко.' },
+  { q: 'Я давно не занимался – справлюсь?', a: 'Да, курс специально устроен так, чтобы был доступен и тем, кто давно не двигался. Первая неделя идёт с минимальной нагрузкой: возвращаем подвижность, без перегрузок. Короткие практики можно выполнять от 2 раз в неделю – этого достаточно для старта.' },
+  { q: 'Что делать, если после занятия что-то болит?', a: 'Лёгкая мышечная усталость – нормально, это значит, тело начало работать. А вот резкая боль, прострелы или ухудшение – сигнал остановиться и отдохнуть. В методичке курса есть отдельный блок «Если что-то болит»: как отличить полезный дискомфорт от сигнала остановиться и как выбрать интенсивность под себя. На тарифе «С поддержкой» – пишите мне в чат, разберём вместе.' },
+  { q: 'Нужно ли оборудование?', a: 'Минимум – коврик. Всё остальное по желанию: подушка или валик под спину, плотный плед. Никаких тренажёров, гантелей, фитболов.' },
+  { q: 'Что, если у меня не получится регулярно заниматься?', a: 'Доступ к курсу – на 1 год. Можно растянуть прохождение на 6 недель вместо 3, сделать перерыв и вернуться через месяц. В методичке есть раздел «Как не сорваться», в календаре – готовая сетка на 3 недели, а бонус-аудио расслабления – лёгкий вход, когда нет сил на полноценную тренировку.' },
+  { q: 'Есть ли возрастные ограничения?', a: 'Со мной занимаются и подростки, и люди старше 70. Каждый идёт в своём темпе. В первом уроке я подробно объясняю, как выбрать интенсивность под свою ситуацию.' },
+  { q: 'Как я получу доступ?', a: 'Регистрироваться заранее не нужно: укажите имя и почту и оплатите. Уроки откроются в личном кабинете сразу после оплаты, а ссылка для входа придёт на почту.' },
+  { q: 'А если курс мне всё-таки не подойдёт?', a: 'В первые 7 дней – верну деньги без вопросов. Просто напишите мне в Телеграм @larin_lesha. Это работает и для тарифа «Самостоятельный», и для «С поддержкой».' },
+];
+const faqJsonLd = JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+});
 ---
-<SiteLayout title="Здоровая спина – курс Алексея Ларина" active="courses" pageStyles={styles}>
-  {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
-  <Fragment set:html={body} />
-  <script define:vars={{ enrolled, isLoggedIn: !!user }}>
-    if (enrolled) {
-      // Eyebrow
-      const eyebrow = document.querySelector('.eyebrow-text');
-      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 12 уроков · онлайн';
+<SiteLayout title="Здоровая спина – курс Алексея Ларина" description="Курс «Здоровая спина»: 12 уроков за 3 недели – тренировки, короткие лекции и аудио-практика расслабления. Доступ на год, старт в любой день, гарантия 7 дней." active="courses">
+  <script type="application/ld+json" set:html={faqJsonLd} />
 
-      // Promise
-      const promise = document.querySelector('.hero-promise p');
-      if (promise) promise.innerHTML = '<strong>Все 12 уроков открыты</strong> – переходите к занятиям и практикуйте. Это единственный путь.';
+  <!-- ПЕРВЫЙ ЭКРАН -->
+  <section class="gp-hero">
+    <div class="gp-hero-text">
+      <p class="gp-eyebrow"><span class="dot"></span>{enrolled ? 'Доступ открыт · 12 уроков' : 'Курс · 3 недели · доступ на год'}</p>
+      <h1>Здоровая <em>спина</em></h1>
+      <p class="gp-sub">Спина любит регулярность: короткие посильные тренировки дают больше, чем редкие подвиги. 12 уроков за 3 недели – тренировки, короткие лекции и аудио-практика расслабления.</p>
+      <div class="gp-params">
+        <div><b>12</b><span>уроков</span></div>
+        <div><b>3 недели</b><span>по готовому плану</span></div>
+        <div><b>1 год</b><span>доступа в кабинете</span></div>
+      </div>
+      <div class="gp-cta">
+        {enrolled
+          ? <a href="/cabinet/zdorovaya-spina" class="btn-main">Перейти к урокам →</a>
+          : <a href="#tariffs" class="btn-main">Выбрать тариф ↓</a>}
+      </div>
+      {!enrolled && <p class="gp-safe">{promoUntil ? `Цена со скидкой до ${promoLastDay} · ` : ''}Старт в любой день · гарантия 7 дней</p>}
+    </div>
+    <div class="gp-hero-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/spina/hero.webp 1x, /img/spina/hero@2x.webp 2x" />
+        <img src="/img/spina/hero.jpg" srcset="/img/spina/hero.jpg 1x, /img/spina/hero@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="eager" fetchpriority="high" />
+      </picture>
+    </div>
+  </section>
 
-      // CTA button
-      const btn = document.querySelector('.btn-hero');
-      if (btn) {
-        btn.textContent = 'Перейти к урокам →';
-        btn.setAttribute('href', '/cabinet/zdorovaya-spina');
-        btn.removeAttribute('onclick');
-      }
+  <!-- ДЛЯ КОГО -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Кому подойдёт</p>
+      <h2>Узнаёте <em>себя?</em></h2>
+      <p class="gp-desc">Курс для тех, кто хочет выстроить со спиной нормальные рабочие отношения – через регулярное движение, без надрыва и медицинских обещаний.</p>
+      <div class="zs-who">
+        <div class="gp-card"><h3>Спина даёт о себе знать к вечеру</h3><p>К концу рабочего дня появляется усталость, тяжесть, желание лечь. Хочется, чтобы тело не было обузой.</p></div>
+        <div class="gp-card"><h3>Утром тяжело разогнуться</h3><p>Просыпаетесь со скованностью, нужно 15–30 минут, чтобы тело «включилось». Хочется, чтобы утро начиналось легко.</p></div>
+        <div class="gp-card"><h3>Сидячая работа</h3><p>8–10 часов за столом каждый день. Пока ничего не болит, но понимаете – пора что-то делать, чтобы и не начало.</p></div>
+        <div class="gp-card"><h3>Был неприятный опыт с нагрузкой</h3><p>Когда-то перестарались, защемило, испугались. С тех пор страшно нагружать спину – но и не двигаться тоже страшно.</p></div>
+        <div class="gp-card"><h3>Начинали много раз и бросали</h3><p>Знаете, что нужно регулярно. Но энергии хватает на пару недель, потом – снова диван. Хочется ритм, который держится.</p></div>
+        <div class="gp-card"><h3>Уже занимаетесь</h3><p>Бегаете, ходите в зал или на йогу. Хочется отдельный фокус именно на спине – короткие, точечные практики.</p></div>
+      </div>
+    </div>
+  </section>
 
-      // Hide safety text and start-pill
-      const safety = document.querySelector('.hero-safety');
-      if (safety) safety.style.display = 'none';
+  <!-- ПРОГРАММА -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner">
+      <p class="gp-label">Программа</p>
+      <h2>Три недели – <em>каждая со своей задачей</em></h2>
+      <p class="gp-desc">В каждой неделе – основная тренировка на выходные, короткая на будни и одна лекция о том, как устроена спина. Воскресенье – всегда отдых.</p>
+      <div class="zs-program">
+        <div class="gp-tl gp-tl-rest">
+          <p class="gp-tl-date">Перед стартом</p>
+          <h3>Вводный урок</h3>
+          <p>Как пройти курс с пользой: в каком порядке заниматься, как не переусердствовать в первые дни и что делать, если пропустили тренировку.</p>
+        </div>
+        <div class="gp-tl">
+          <p class="gp-tl-date">Неделя 1</p>
+          <h3>База: учимся двигаться правильно</h3>
+          <p>Мостики, кошка-корова, дыхание. Лекция – почему грыжи редкая причина боли в спине и при чём здесь малоподвижный образ жизни.</p>
+        </div>
+        <div class="gp-tl">
+          <p class="gp-tl-date">Неделя 2</p>
+          <h3>Нагрузка аккуратно растёт</h3>
+          <p>Боковые мостики, длиннее удержания. Лекция про осанку: лёгкое усилие на раскрытие грудной клетки работает лучше, чем лопатки, сведённые назад.</p>
+        </div>
+        <div class="gp-tl">
+          <p class="gp-tl-date">Неделя 3</p>
+          <h3>Техника закрепляется</h3>
+          <p>Закрепляем технику. Лекция про стресс: почему плечи закрывают шею и как из этого состояния выходить.</p>
+        </div>
+        <div class="gp-tl gp-tl-rest">
+          <p class="gp-tl-date">После курса</p>
+          <h3>Бонус и план дальше</h3>
+          <p>Аудио-практика расслабления на 30 минут и финальный урок: как заниматься дальше по схеме «три недели тренируемся, четвёртая – отдых».</p>
+        </div>
+      </div>
+      <div class="zs-rhythm">
+        <p><b>Основная тренировка</b>45–48 минут. Подробно разбираю детали. Раз в неделю – рекомендую субботу с утра.</p>
+        <p><b>Короткая тренировка</b>28–34 минуты. Та же база, но динамичнее – для будних дней, от 2 до 5 раз в неделю.</p>
+        <p><b>Воскресенье – отдых</b>Тело восстанавливается, формируется привычка к недельному ритму.</p>
+      </div>
+    </div>
+  </section>
 
-      // Hide tariffs, FAQ, final-cta sections
-      ['#tariffs', '.final-cta', '.guarantee-faq'].forEach(sel => {
-        const el = document.querySelector(sel);
-        if (el) el.style.display = 'none';
-      });
-    }
+  <!-- ЧТО ВНУТРИ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Что внутри</p>
+      <h2>Что получаете <em>сразу после оплаты</em></h2>
+      <p class="gp-desc">Все уроки открываются в личном кабинете – без потоков и дедлайнов. Пройдите за три недели или растяните: доступ остаётся на год.</p>
+      <div class="gp-steps">
+        <div class="gp-step"><div class="gp-num">6</div><div><h3>Тренировок в записи</h3><p>Основные по 45–48 минут для выходных и короткие по 28–34 для будней. Из инвентаря – только коврик.</p></div></div>
+        <div class="gp-step"><div class="gp-num">3</div><div><h3>Лекции о спине</h3><p>Грыжи и протрузии, осанка, стресс. Коротко и без запугивания – чтобы понимать, что происходит в теле и почему упражнения работают.</p></div></div>
+        <div class="gp-step"><div class="gp-num">+</div><div><h3>Аудио-практика расслабления</h3><p>30 минут йога-нидры бонусом. Слушать в кровати, в транспорте или в обед – там, где не до коврика. Только не за рулём.</p></div></div>
+        <div class="gp-step"><div class="gp-num">1</div><div><h3>Год доступа в кабинете</h3><p>Видео открываются с телефона и компьютера, прогресс сохраняется. Можно уйти и вернуться через месяц.</p></div></div>
+      </div>
+    </div>
+  </section>
 
-    // ─── Inline auth modal: регистрация/вход без перехода на /auth/* ─────
-    let _pendingTariff = null;
+  <!-- КТО ВЕДЁТ -->
+  <section class="gp-author">
+    <div class="gp-author-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/spina/story.webp 1x, /img/spina/story@2x.webp 2x" />
+        <img src="/img/spina/story.jpg" srcset="/img/spina/story.jpg 1x, /img/spina/story@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy" />
+      </picture>
+    </div>
+    <div class="gp-author-text">
+      <p class="gp-label">Почему именно я</p>
+      <h2>Я делал этот курс из своего опыта</h2>
+      <p class="gp-quote">Тренировки, после которых хочется жить.</p>
+      <p>В 9 лет – перелом трёх позвонков. Месяц в больнице, полгода нельзя было сидеть, год в медицинском корсете. Именно через движение я восстановился. Поэтому знаю: правильная, мягкая, регулярная нагрузка возвращает телу нормальную жизнь – важно найти подходящий способ.</p>
+      <p>После той травмы я несколько лет проходил курсы консервативного лечения. Каждый длился три недели, в основе – лечебная физкультура. Мне это помогло и сделало сильнее.</p>
+      <p>Больше 10 лет тренирую детей и взрослых, магистр университета спорта «ГЦОЛИФК». Этот курс – структурированная версия того, что я даю в личной работе.</p>
+    </div>
+  </section>
 
-    function openAuthModal(tariff, mode) {
-      _pendingTariff = tariff;
-      if (document.getElementById('zs-auth-modal')) {
-        switchAuthMode(mode || 'register');
-        return;
-      }
-      const wrap = document.createElement('div');
-      wrap.id = 'zs-auth-modal';
-      wrap.innerHTML = `
-        <div class="zs-modal-back" data-close></div>
-        <div class="zs-modal-card" role="dialog" aria-modal="true" aria-labelledby="zs-modal-title">
-          <button class="zs-modal-close" data-close aria-label="Закрыть">×</button>
+  <!-- ОТЗЫВЫ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label gp-center">Истории</p>
+      <h2 class="gp-center">Что говорят те, кто <em>занимался со мной</em></h2>
+      <p class="gp-desc gp-center">Истории из моих программ разных лет. У каждого свой запрос и свой темп. Курс – структурированная версия того, что им помогло.</p>
+      <div class="gp-reviews-wrap"><ReviewsCarousel reviews={reviews} /></div>
+      <p class="gp-center gp-more"><a href="/results">Все отзывы →</a></p>
+    </div>
+  </section>
 
-          <div data-mode="register">
-            <h3 id="zs-modal-title">Регистрация</h3>
-            <p class="zs-modal-switch">Уже есть аккаунт? <a href="#" data-switch="login">Войти</a></p>
-            <form class="zs-form" data-form="register" novalidate>
-              <label><span class="zs-lbl">Имя <i class="zs-req">*</i></span><input name="name" required autocomplete="name" /></label>
-              <label><span class="zs-lbl">Email <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" /></label>
-              <label><span class="zs-lbl">Телефон</span><input name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" /></label>
-              <label><span class="zs-lbl">Пароль <em class="zs-opt">минимум 8 символов</em> <i class="zs-req">*</i></span><input name="password" type="password" required minlength="8" autocomplete="new-password" /></label>
-              <label class="zs-check">
-                <input type="checkbox" name="consent_pd" required checked />
-                <span>Я ознакомлен(а) с <a href="/legal/privacy" target="_blank">Политикой конфиденциальности</a> и даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
-              </label>
-              <label class="zs-check">
-                <input type="checkbox" name="consent_marketing" checked />
-                <span>Получать материалы и анонсы Алексея на почту. Без спама, отписаться можно одним кликом.</span>
-              </label>
-              <button class="zs-submit" type="submit">Создать аккаунт</button>
-              <div class="zs-msg" hidden></div>
-            </form>
+  {!enrolled && (
+    <section class="gp-section gp-cream" id="tariffs">
+      <div class="gp-inner">
+        <p class="gp-label gp-center">Тарифы</p>
+        <h2 class="gp-center">Один курс – <em>два варианта</em></h2>
+        <p class="gp-desc gp-center">Самостоятельный – пройти курс в своём темпе. С поддержкой – если важно моё внимание, разбор замеров и личный созвон в конце.</p>
+        <div class="zs-tariffs">
+          <div class="zs-tariff">
+            <h3>Самостоятельный</h3>
+            <p class="zs-price">{self.price !== self.base_price && <s>{fmtRub(self.base_price)} ₽</s>}{fmtRub(self.price)} ₽</p>
+            {self.promo_until && <p class="zs-promo">Цена до {promoLastDay} · осталось <b data-countdown>…</b></p>}
+            <ul class="zs-list">
+              <li>12 уроков: 6 тренировок, 3 лекции, вводный и финальный</li>
+              <li>Аудио-практика расслабления (30 мин)</li>
+              <li>Методичка курса – как заниматься без срывов (PDF)</li>
+              <li>Календарь занятий на 3 недели (PDF)</li>
+              <li>Чек-лист замеров до и после (PDF)</li>
+              <li>Доступ в кабинете на 1 год, старт в любой день</li>
+            </ul>
+            <a href="#" class="btn-main btn-full" data-tariff="self" data-label="Самостоятельный" data-price={`${fmtRub(self.price)} ₽`}>Купить за {fmtRub(self.price)} ₽</a>
           </div>
-
-          <div data-mode="login" hidden>
-            <h3>Вход</h3>
-            <p class="zs-modal-switch">Нет аккаунта? <a href="#" data-switch="register">Зарегистрироваться</a></p>
-            <form class="zs-form" data-form="login" novalidate>
-              <label><span class="zs-lbl">Email <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" /></label>
-              <label><span class="zs-lbl">Пароль <i class="zs-req">*</i></span><input name="password" type="password" required autocomplete="current-password" /></label>
-              <button class="zs-submit" type="submit">Войти и продолжить</button>
-              <p class="zs-forgot"><a href="/auth/forgot">Забыли пароль?</a></p>
-              <div class="zs-msg" hidden></div>
-            </form>
+          <div class="zs-tariff zs-tariff-main">
+            <p class="zs-rec">Рекомендую</p>
+            <h3>С поддержкой</h3>
+            <p class="zs-price">{support.price !== support.base_price && <s>{fmtRub(support.base_price)} ₽</s>}{fmtRub(support.price)} ₽</p>
+            {support.promo_until && <p class="zs-promo">Цена до {promoLastDay} · осталось <b data-countdown>…</b></p>}
+            <ul class="zs-list">
+              <li>Всё из «Самостоятельного»</li>
+              <li>Личный чат со мной в Телеграме все 3 недели</li>
+              <li>Разбор ваших замеров «до и после»</li>
+              <li>Видео-созвон 45–60 минут в конце курса</li>
+              <li>Созвон засчитаю как первое занятие: если продолжите в личном ведении, первый месяц – на 3 000 ₽ дешевле</li>
+            </ul>
+            <a href="#" class="btn-main btn-full" data-tariff="support" data-label="С поддержкой" data-price={`${fmtRub(support.price)} ₽`}>Купить за {fmtRub(support.price)} ₽</a>
           </div>
         </div>
-      `;
-      document.body.appendChild(wrap);
-      document.body.style.overflow = 'hidden';
+        <p class="zs-note">Регистрироваться заранее не нужно: имя, почта – и оплата. Уроки откроются сразу.</p>
+      </div>
+    </section>
+  )}
 
-      const close = () => {
-        wrap.remove();
-        document.body.style.overflow = '';
-        _pendingTariff = null;
-      };
-      wrap.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close));
-      wrap.querySelectorAll('[data-switch]').forEach(el => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          switchAuthMode(el.getAttribute('data-switch'));
-        });
-      });
-      document.addEventListener('keydown', function onEsc(e) {
-        if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
-      });
+  {!enrolled && (
+    <section class="gp-section">
+      <div class="gp-inner gp-faq">
+        <p class="gp-label gp-center">Гарантия и вопросы</p>
+        <h2 class="gp-center">Покупайте <em>без риска</em></h2>
+        <div class="zs-guarantee">
+          <h3>Гарантия 7 дней</h3>
+          <p>Если в первые 7 дней после оплаты поймёте, что курс не подходит, – напишите мне, и я верну деньги полностью. Без анкет и объяснений. Хочу, чтобы курс работал в вашей жизни, а если не работает – давайте честно расстанемся.</p>
+        </div>
+        {faq.map((f) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
+      </div>
+    </section>
+  )}
 
-      wrap.querySelector('[data-form="register"]').addEventListener('submit', handleRegister);
-      wrap.querySelector('[data-form="login"]').addEventListener('submit', handleLogin);
+  {!enrolled && (
+    <section class="gp-section gp-cream">
+      <div class="gp-inner gp-form-wrap">
+        <p class="gp-label gp-center">Начать</p>
+        <h2 class="gp-center">Три недели практики – <em>начните сегодня</em></h2>
+        <p class="gp-desc gp-center">Старт в любой день после оплаты. Доступ – на 1 год. Гарантия возврата 7 дней.</p>
+        <a href="#tariffs" class="btn-main btn-full">Выбрать тариф</a>
+        <a href={TG} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Задать вопрос в Телеграме</a>
+        <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Нет Телеграма – написать в Max</a>
+      </div>
+    </section>
+  )}
 
-      switchAuthMode(mode || 'register');
-      setTimeout(() => {
-        const firstInput = wrap.querySelector('[data-mode="register"]:not([hidden]) input[name="email"], [data-mode="login"]:not([hidden]) input[name="email"]');
-        if (firstInput) firstInput.focus();
-      }, 50);
-    }
+  <CourseBuy slug="zdorovaya-spina" promoUntil={promoUntil} />
 
-    function switchAuthMode(mode) {
-      const wrap = document.getElementById('zs-auth-modal');
-      if (!wrap) return;
-      wrap.querySelectorAll('[data-mode]').forEach(el => {
-        el.hidden = el.getAttribute('data-mode') !== mode;
-      });
-      const titleEl = wrap.querySelector('#zs-modal-title');
-      if (titleEl) titleEl.textContent = mode === 'login' ? 'Вход' : 'Регистрация';
-      const focusInput = wrap.querySelector(`[data-mode="${mode}"] input[name="email"]`);
-      if (focusInput) focusInput.focus();
-    }
-
-    function setSubmitState(form, busy, busyLabel) {
-      const btn = form.querySelector('.zs-submit');
-      if (!btn) return;
-      if (busy) {
-        btn.dataset.orig = btn.textContent;
-        btn.textContent = busyLabel || 'Подождите…';
-        btn.disabled = true;
-      } else {
-        if (btn.dataset.orig) btn.textContent = btn.dataset.orig;
-        btn.disabled = false;
-      }
-    }
-
-    function showMsg(form, text, ok) {
-      const m = form.querySelector('.zs-msg');
-      if (!m) return;
-      m.textContent = text;
-      m.className = 'zs-msg ' + (ok ? 'is-ok' : 'is-err');
-      m.hidden = false;
-    }
-
-    async function handleRegister(e) {
-      e.preventDefault();
-      const form = e.target;
-      const fd = new FormData(form);
-      if (!String(fd.get('name') || '').trim()) {
-        showMsg(form, 'Укажите имя – обращаемся к вам в кабинете и в письмах.', false);
-        return;
-      }
-      if (!fd.get('consent_pd')) {
-        showMsg(form, 'Чтобы продолжить, нужно согласиться с обработкой персональных данных.', false);
-        return;
-      }
-      setSubmitState(form, true, 'Создаём аккаунт…');
-      try {
-        const r = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            email: fd.get('email'),
-            password: fd.get('password'),
-            name: fd.get('name'),
-            phone: fd.get('phone'),
-            consent_pd: true,
-            consent_marketing: !!fd.get('consent_marketing'),
-          }),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok) {
-          showMsg(form, 'Аккаунт создан. Мы отправили письмо на ' + fd.get('email') + ' – подтвердите email по ссылке в письме, и оплата откроется автоматически.', true);
-          form.querySelector('.zs-submit').style.display = 'none';
-        } else {
-          showMsg(form, j.error === 'email_taken'
-            ? 'Этот email уже зарегистрирован. Войдите по ссылке выше.'
-            : (j.error || 'Не удалось создать аккаунт.'), false);
-        }
-      } catch {
-        showMsg(form, 'Ошибка соединения. Попробуйте ещё раз.', false);
-      } finally {
-        setSubmitState(form, false);
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const form = e.target;
-      const fd = new FormData(form);
-      setSubmitState(form, true, 'Входим…');
-      try {
-        const r = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok) {
-          // Перезагружаем страницу с tariff=… – autoTariff-логика ниже сама запустит checkout
-          const tariff = _pendingTariff;
-          if (tariff) {
-            location.href = '/courses/zdorovaya-spina?tariff=' + encodeURIComponent(tariff);
-          } else {
-            location.reload();
-          }
-        } else if (j.error === 'email_not_verified') {
-          showMsg(form, 'Email не подтверждён. Проверьте почту и пройдите по ссылке из письма.', false);
-        } else {
-          showMsg(form, j.error === 'invalid_credentials' || j.error === 'bad_credentials'
-            ? 'Неверный email или пароль.' : (j.error || 'Не удалось войти.'), false);
-        }
-      } catch {
-        showMsg(form, 'Ошибка соединения. Попробуйте ещё раз.', false);
-      } finally {
-        setSubmitState(form, false);
-      }
-    }
-
-    // ─── Tariff buttons → POST /checkout → редирект на Продамус ─────────
-    async function startCheckout(tariff) {
-      // незалогиненный юзер: открываем inline-форму регистрации (с переключением на вход)
-      if (!isLoggedIn) {
-        openAuthModal(tariff, 'register');
-        return;
-      }
-      const r = await fetch('/api/courses/zdorovaya-spina/checkout?tariff=' + encodeURIComponent(tariff), {
-        method: 'POST',
-      });
-      const data = await r.json().catch(() => ({}));
-      if (r.ok && data.payment_url) {
-        window.reachGoal?.('checkout_start');
-        window.location.href = data.payment_url;
-        return;
-      }
-      switch (data.error) {
-        case 'email_not_verified':
-          alert('Перед оплатой подтвердите email – ссылка отправлена в письме после регистрации.');
-          break;
-        case 'already_enrolled':
-          window.location.href = '/cabinet/zdorovaya-spina';
-          break;
-        case 'bad_tariff':
-        case 'tariff_required':
-          alert('Неизвестный тариф. Обновите страницу и попробуйте снова.');
-          break;
-        default:
-          alert('Не удалось создать платёж. Попробуйте позже или напишите в Telegram @larin_lesha.');
-      }
-    }
-
-    document.querySelectorAll('[data-tariff]').forEach((el) => {
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        const key = el.getAttribute('data-tariff');
-        if (key !== 'self' && key !== 'support') return;
-        const origLabel = el.textContent;
-        el.style.pointerEvents = 'none';
-        el.textContent = 'Открываю оплату…';
-        startCheckout(key)
-          .catch(() => alert('Ошибка соединения. Попробуйте ещё раз.'))
-          .finally(() => {
-            el.style.pointerEvents = '';
-            el.textContent = origLabel;
-          });
-      });
-    });
-
-    // Если страница открыта с ?tariff=... и юзер залогинен – автозапуск чекаута.
-    // Это срабатывает после регистрации (мы редиректим обратно на эту URL).
-    const _q = new URLSearchParams(window.location.search);
-    const _autoTariff = _q.get('tariff');
-    if (_autoTariff && isLoggedIn && !enrolled) {
-      history.replaceState({}, '', window.location.pathname);
-      // Ждём DOMContentLoaded: к этому моменту выполнен модульный скрипт
-      // SiteLayout с fetch-обёрткой, которая ставит X-CSRF-Token. Без ожидания
-      // inline-скрипт стрелял раньше обёртки → 403 и «Не удалось создать платёж».
-      const _run = () => startCheckout(_autoTariff).catch(() => alert('Ошибка соединения. Попробуйте ещё раз.'));
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _run, { once: true });
-      else _run();
-    }
-
-    // Видеоотзывы: клик по play-кнопке запускает видео, активное видео ставит
-    // на паузу остальные.
-    let _activeVresVideo = null;
-    document.querySelectorAll('[data-vres]').forEach((card) => {
-      const video = card.querySelector('video');
-      const btn = card.querySelector('.zs-vres-play');
-      if (!video || !btn) return;
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (_activeVresVideo && _activeVresVideo !== video) _activeVresVideo.pause();
-        _activeVresVideo = video;
-        video.play();
-      });
-      video.addEventListener('play',  () => { card.classList.add('is-playing'); _activeVresVideo = video; });
-      video.addEventListener('pause', () => card.classList.remove('is-playing'));
-      video.addEventListener('ended', () => card.classList.remove('is-playing'));
-    });
-
-    // Слайдер видеоотзывов: стрелки prev/next прокручивают ленту на ширину
-    // одной карточки плюс gap. На краях стрелки блокируются.
-    (() => {
-      const track = document.getElementById('zs-vres-track');
-      const prev  = document.getElementById('zs-vres-prev');
-      const next  = document.getElementById('zs-vres-next');
-      if (!track || !prev || !next) return;
-
-      const step = () => {
-        const card = track.querySelector('.zs-vres-card');
-        if (!card) return 320;
-        const styles = window.getComputedStyle(track);
-        const gap = parseFloat(styles.columnGap || styles.gap || '20');
-        return card.getBoundingClientRect().width + gap;
-      };
-
-      const updateButtons = () => {
-        const max = track.scrollWidth - track.clientWidth - 2;
-        prev.toggleAttribute('disabled', track.scrollLeft <= 1);
-        next.toggleAttribute('disabled', track.scrollLeft >= max);
-      };
-
-      prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
-      next.addEventListener('click', () => track.scrollBy({ left:  step(), behavior: 'smooth' }));
-      track.addEventListener('scroll', updateButtons, { passive: true });
-      window.addEventListener('resize', updateButtons);
-      updateButtons();
-    })();
-  </script>
-  <style is:global>
-    #zs-auth-modal {
-      position: fixed; inset: 0; z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-      animation: zs-modal-fade .18s ease-out;
-    }
-    @keyframes zs-modal-fade { from { opacity: 0; } to { opacity: 1; } }
-    .zs-modal-back {
-      position: absolute; inset: 0;
-      background: rgba(15, 21, 32, 0.55);
-      backdrop-filter: blur(4px);
-      cursor: pointer;
-    }
-    .zs-modal-card {
-      position: relative;
-      background: var(--warm-white, #fdfaf5);
-      border-radius: 20px;
-      padding: 36px 32px 28px;
-      max-width: 460px; width: 100%;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      box-shadow: 0 24px 64px rgba(15, 21, 32, 0.25);
-      animation: zs-modal-pop .22s cubic-bezier(.2,.9,.3,1.2);
-    }
-    @keyframes zs-modal-pop { from { transform: translateY(12px) scale(.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    .zs-modal-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 32px; height: 32px; border: none; border-radius: 50%;
-      background: transparent; color: var(--text-muted, #777);
-      font-size: 23px; line-height: 1; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s, color .15s;
-    }
-    .zs-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--text, #1a1a1a); }
-    .zs-modal-card h3 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 28px; font-weight: 500;
-      color: var(--navy, #1a2744);
-      margin: 0 0 6px;
-      letter-spacing: -0.01em;
-    }
-    .zs-modal-switch {
-      font-size: 15px;
-      color: var(--text-mid, #444);
-      margin: 0 0 18px;
-    }
-    .zs-modal-switch a {
-      color: var(--orange, #e8652a);
-      text-decoration: none;
-      font-weight: 600;
-      border-bottom: 1px solid transparent;
-      transition: border-color .2s;
-    }
-    @media (hover: hover) {
-      .zs-modal-switch a:hover { border-bottom-color: var(--orange, #e8652a); }
-    }
-    .zs-form {
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .zs-form label {
-      display: flex; flex-direction: column; gap: 6px;
-      font-size: 14px; color: var(--text-mid, #444);
-      font-weight: 500;
-    }
-    .zs-lbl { display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-    .zs-req {
-      display: inline-block; color: var(--orange, #e8652a);
-      font-style: normal; font-weight: 700; font-size: 14px; line-height: 1;
-    }
-    .zs-opt {
-      display: inline-block; color: var(--text-muted, #777);
-      font-style: normal; font-weight: 400; font-size: 13px; line-height: 1;
-    }
-    .zs-form input[type="email"],
-    .zs-form input[type="password"],
-    .zs-form input[type="tel"],
-    .zs-form input[type="text"],
-    .zs-form input:not([type]) {
-      padding: 12px 14px;
-      border: 1.5px solid var(--border, #ece8e0);
-      border-radius: 10px;
-      font-size: 16px;
-      font-family: inherit;
-      background: white;
-      color: var(--text, #1a1a1a);
-      transition: border-color .15s, box-shadow .15s;
-      width: 100%;
-    }
-    .zs-form input:focus {
-      outline: none;
-      border-color: var(--orange, #e8652a);
-      box-shadow: 0 0 0 3px rgba(232,101,42,0.12);
-    }
-    .zs-check {
-      flex-direction: row !important;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 14px; line-height: 1.5;
-      cursor: pointer;
-      font-weight: 400 !important;
-      margin-top: 4px;
-    }
-    .zs-check input[type="checkbox"] {
-      margin-top: 2px;
-      flex-shrink: 0;
-      accent-color: var(--orange, #e8652a);
-      width: 16px; height: 16px;
-      cursor: pointer;
-    }
-    .zs-check a {
-      color: var(--orange, #e8652a);
-      text-decoration: underline;
-    }
-    .zs-submit {
-      margin-top: 8px;
-      padding: 14px 22px;
-      border-radius: 100px;
-      border: none;
-      background: var(--orange, #e8652a);
-      color: white;
-      font-size: 16px; font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(232, 101, 42, 0.32);
-      transition: background .2s, transform .15s, box-shadow .2s;
-    }
-    @media (hover: hover) {
-      .zs-submit:hover:not(:disabled) {
-        background: var(--orange-warm, #f07530);
-        transform: translateY(-1px);
-        box-shadow: 0 10px 24px rgba(232,101,42,0.38);
-      }
-    }
-    .zs-submit:disabled { opacity: 0.7; cursor: progress; }
-    .zs-forgot { font-size: 14px; text-align: center; margin: 0; }
-    .zs-forgot a { color: var(--text-muted, #777); text-decoration: none; border-bottom: 1px dashed currentColor; }
-    .zs-forgot a:hover { color: var(--navy, #1a2744); }
-    .zs-msg {
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 15px; line-height: 1.45;
-    }
-    .zs-msg.is-err { background: rgba(220, 38, 38, 0.08); color: #b91c1c; border: 1px solid rgba(220,38,38,0.18); }
-    .zs-msg.is-ok  { background: rgba(34, 139, 84, 0.08); color: #1b6e3e; border: 1px solid rgba(34,139,84,0.18); }
-    @media (max-width: 480px) {
-      .zs-modal-card { padding: 28px 22px 22px; border-radius: 16px; }
-      .zs-modal-card h3 { font-size: 24px; }
-      .zs-form input { font-size: 17px; /* iOS не зумит при 16px+ */ }
-    }
+  <style>
+    .zs-who { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .zs-program { display: flex; flex-direction: column; gap: 12px; }
+    .zs-program .gp-tl { display: grid; grid-template-columns: 260px 1fr; grid-template-areas: "d p" "h p"; column-gap: 28px; align-items: start; border-top: none; border-left: 3px solid var(--navy); border-radius: 0 16px 16px 0; padding: 20px 26px; }
+    .zs-program .gp-tl-rest { border-left-color: var(--orange); }
+    .zs-program .gp-tl-date { grid-area: d; }
+    .zs-program h3 { grid-area: h; margin: 0; }
+    .zs-program .gp-tl > p:last-child { grid-area: p; }
+    .zs-rhythm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 30px; }
+    .zs-rhythm p { margin: 0; border-left: 3px solid var(--orange); padding: 4px 0 4px 16px; font-size: 17px; line-height: 1.65; color: var(--text-mid, #3a3a3a); }
+    .zs-rhythm b { display: block; color: var(--navy); }
+    .zs-tariffs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 920px; margin: 36px auto 0; }
+    .zs-tariff { display: flex; flex-direction: column; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 22px; padding: 32px 30px 30px; }
+    .zs-tariff-main { background: var(--navy); color: white; border-color: var(--navy); }
+    .zs-tariff h3 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 32px; color: var(--navy); margin: 0 0 4px; }
+    .zs-tariff-main h3 { color: white; }
+    .zs-rec { font-size: 15px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #ffb48a; margin: 0 0 6px; }
+    .zs-price { font-family: 'Cormorant Garamond', serif; font-size: 46px; line-height: 1.1; color: var(--navy); margin: 0 0 6px; }
+    .zs-tariff-main .zs-price { color: white; }
+    .zs-price s { font-family: 'Manrope', sans-serif; font-size: 20px; opacity: .55; margin-right: 12px; vertical-align: middle; }
+    .zs-promo { display: inline-block; align-self: flex-start; margin: 0 0 10px; padding: 6px 12px; border-radius: 100px; background: rgba(232,101,42,.14); color: var(--orange); font-size: 15px; font-weight: 600; }
+    .zs-promo b { font-variant-numeric: tabular-nums; }
+    .zs-list { list-style: none; padding: 0; margin: 14px 0 24px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .zs-list li { position: relative; padding-left: 26px; font-size: 17px; line-height: 1.55; color: var(--text-mid, #3a3a3a); }
+    .zs-tariff-main .zs-list li { color: rgba(255,255,255,.88); }
+    .zs-list li::before { content: '✓'; position: absolute; left: 0; color: #2e9e63; font-weight: 700; }
+    .zs-tariff-main .zs-list li::before { color: #7fd4a4; }
+    .zs-note { text-align: center; font-size: 16px; color: var(--text-light, #6e6e6e); margin: 22px 0 0; }
+    .zs-guarantee { background: var(--cream, #f8f5ef); border: 1.5px solid var(--orange); border-radius: 18px; padding: 24px 26px; margin: 0 0 24px; }
+    .zs-guarantee h3 { font-size: 20px; color: var(--navy); margin: 0 0 8px; }
+    .zs-guarantee p { font-size: 17px; line-height: 1.7; color: var(--text-mid, #3a3a3a); margin: 0; }
+    .gp-form-wrap .gp-max + .gp-max { margin-top: 10px; }
+    @media (max-width: 1000px) { .zs-who, .zs-rhythm { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .zs-tariffs { grid-template-columns: 1fr; } .zs-program .gp-tl { grid-template-columns: 1fr; grid-template-areas: "d" "h" "p"; row-gap: 6px; } .zs-tariff { padding: 26px 22px; } }
   </style>
+  <script>
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+  </script>
 </SiteLayout>

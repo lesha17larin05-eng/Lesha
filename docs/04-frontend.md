@@ -20,8 +20,10 @@ web/src/
       index.astro                 — список статей (fetch /api/articles, дизайн как в сайт/blog.html)
       [slug].astro                — статья (fetch /api/articles/{slug}, content_html через set:html)
     courses/
-      index.astro                 — каталог (SiteLayout, маркетинговые карточки с фото/ценой/CTA; обложки – мапа covers)
-      zhonglirovanie.astro        — лендинг «Жонглирование: у вас получится» (legacy/zhonglirovanie.html через extractLegacy; фото в /img/zhonglirovanie/: juggling – первый экран, hero – блок «Что понадобится» про мячи; author (у знака «Я ❤ Салют») – блок «Как это было в лагере»; в «Почему именно я» вместо фото – плеер рилсов из лагеря с миниатюрами (`.reel-thumb` переключают ролик, скрипт в zhonglirovanie.astro); схема бросков fontan.svg). Порядок блоков: первый экран → «Для кого» (4 карточки) → видео «Как устроен курс» → программа-путь `#program` (8 уроков вертикальной лесенкой, слева схема бросков, урок 6 – «Вершина») → «Почему именно я» с рилсами → лагерь → «Что останется» → мячи → тарифы → FAQ → финальный призыв (строка `.fc-promo` с акционной ценой подставляется на SSR). Пока действует акция (и курс не куплен), внизу экрана появляется липкая плашка `#promo-bar` с ценой, таймером и кнопкой «Купить»: показывается после первого экрана и прячется, когда в зоне видимости блок тарифов. Таймер `[data-countdown]` есть также на первом экране и в карточке тарифа. Тарифы self/support; покупка в один шаг – модалка «имя + почта + согласие» → `POST quick-checkout` → оплата (залогиненный – сразу на оплату). Цены берутся из `tariffs` API: при акции – зачёркнутая старая цена, акционная и таймер `[data-countdown]` до `promo_until` (по окончании страница перезагружается). Блок `#video` – бесплатное видео знакомства (`/lesson-videos/promo/zhonglirovanie-znakomstvo.mp4`, постер `/img/zhonglirovanie/intro-poster.jpg`). Если курс снять с публикации (API 404) – страница 404 для всех, кроме админа (у админа жёлтая плашка «Черновик» и noindex)
+      index.astro                 — каталог (landing.css, карточки из GET /api/courses: подпись – courses.subtitle, обложки – мапа covers)
+      myagkiy-start.astro         — лендинг бесплатного курса (landing.css): уроки и описания из API, форма QuickSignupForm (незалогиненным) или кнопка enroll-free; записанным – ссылки на уроки в кабинете
+      zdorovaya-spina.astro       — лендинг «Здоровой спины» (landing.css). Покупка в один шаг через компонент CourseBuy (quick-checkout, без пароля и подтверждения почты), цены и акция – из `tariffs` API. Отзывы – ReviewsCarousel, FAQ + JSON-LD из массива в странице
+      zhonglirovanie.astro        — лендинг «Жонглирование: у вас получится» (landing.css). Покупка – CourseBuy; видео знакомства, рилсы из лагеря (миниатюры переключают ролик), FAQ + JSON-LD. Если курс снят с публикации (API 404) – 404 для всех, кроме админа (плашка «Черновик», noindex). legacy/zhonglirovanie.html и legacy/zdorovaya-spina.html больше не используются
       [slug].astro                — страница курса
       [slug]/lessons/[lesson].astro — урок (HLS-плеер, прогресс)
     cabinet/
@@ -230,5 +232,7 @@ API-проверки на бэкенде дублируют — middleware фр�
 Первый экран у лендингов (`/gruppa`, `/personal`, `/coaching`, `/start`): текст прижат к верху, первая строка – в 80px под меню на десктопе.
 
 Общие стили лендингов – `web/src/styles/landing.css` (классы `gp-*`, подключается импортом в странице). Минимальный размер текста – 15px, основной – 17px. `/coaching-preview` (черновик новой страницы) – 301 на `/coaching`.
+
+Покупка курса в один шаг – `web/src/components/CourseBuy.astro` (кнопки `[data-tariff][data-label][data-price]`, окно «имя + почта» → `POST /api/courses/{slug}/quick-checkout`, отсчёт акции `[data-countdown]`).
 
 Карусель отзывов – `web/src/components/ReviewsCarousel.astro`: бесконечная лента (у края крайняя карточка переносится на другую сторону), видео грузится по клику, обложки – когда лента рядом с экраном.

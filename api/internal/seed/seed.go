@@ -73,7 +73,7 @@ func ensureMyagkiyStart(ctx context.Context, repo *db.Repo) (uuid.UUID, error) {
 	courseID, err := ensureCourse(ctx, repo, db.CourseInput{
 		Slug:        "myagkiy-start",
 		Title:       "Мягкий старт",
-		Subtitle:    "Бесплатный вводный курс суставной гимнастики",
+		Subtitle:    "8 коротких практик: суставная гимнастика, шея, спина, медитация",
 		Description: "Восемь практик для тех, кто давно хотел начать – в своём темпе, без изнурения и сложных программ.",
 		Kind:        "free",
 		IsPublished: true,
@@ -114,7 +114,7 @@ func ensureMyagkiyStart(ctx context.Context, repo *db.Repo) (uuid.UUID, error) {
 		},
 		{
 			Title: "Здоровье таза", Slug: "tazobedrennyye-sustavy",
-			ContentMD:   "Силовые упражнения для области таза – приседания, вращения ногами на четвереньках, мягкое растяжение сидя. Они разгоняют кровь и питание там, где сидячая жизнь почти не пускает. В уроке Алексей рассказывает истории своих учениц: одна забеременела после диагноза «функциональное бесплодие», другая восстановилась после четвёртых родов.",
+			ContentMD:   "Силовые упражнения для области таза – приседания, вращения ногами на четвереньках, мягкое растяжение сидя. Они разгоняют кровь и питание там, где сидячая жизнь почти не пускает.",
 			DurationSec: 1020, SortOrder: 6,
 		},
 		{
@@ -142,7 +142,7 @@ func ensureZdorovayaSpina(ctx context.Context, repo *db.Repo) (uuid.UUID, error)
 	courseID, err := ensureCourse(ctx, repo, db.CourseInput{
 		Slug:        "zdorovaya-spina",
 		Title:       "Здоровая спина",
-		Subtitle:    "Курс на 3 недели – от мягкого старта к привычке",
+		Subtitle:    "3 недели тренировок для сильной и подвижной спины",
 		Description: "12 уроков в 5 модулях, аудио-практика расслабления в подарок и год доступа в кабинете. Начинаете в любой день, идёте в своём темпе.",
 		Kind:        "paid",
 		PriceRub:    &price,

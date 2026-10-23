@@ -1,21 +1,16 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { extractLegacy } from '../../lib/legacy';
-import rawHtml from '../../legacy/zhonglirovanie.html?raw';
+import CourseBuy from '../../components/CourseBuy.astro';
 import { apiJson } from '../../lib/api';
+import '../../styles/landing.css';
 
-// Лендинг курса «Жонглирование: у вас получится».
-// Покупка в один шаг: кнопка тарифа → окно «имя + почта + согласие» →
-// POST /api/courses/zhonglirovanie/quick-checkout → Продамус (без пароля и
-// подтверждения почты; залогиненный покупает сразу). Стартовая цена тарифа
-// приходит из API (поле tariffs) и подставляется в разметку здесь, на SSR.
-
+// Лендинг курса «Жонглирование: у вас получится» (стили – landing.css, gp-*).
+// Покупка в один шаг – компонент CourseBuy (quick-checkout). Цены – из API
+// (tariffs, с учётом стартовой цены со сроком). Если курс снят с публикации
+// в /admin/courses, API отвечает 404 – страницу видит только админ.
 const cookie = Astro.request.headers.get('cookie') || '';
 const user = (Astro.locals as any).user;
 const isAdmin = user?.role === 'admin';
-
-// Если курс снять с публикации в /admin/courses, API отвечает 404 –
-// страницу видит только админ (с плашкой «Черновик»).
 const { data, status } = await apiJson<any>('/api/courses/zhonglirovanie', { cookie });
 if (status !== 200 && !isAdmin) {
   return new Response(null, { status: 404 });
@@ -23,419 +18,324 @@ if (status !== 200 && !isAdmin) {
 const enrolled = status === 200 && !!data?.enrolled;
 const isDraft = status !== 200;
 
-const { styles, body: rawBody } = extractLegacy(rawHtml);
-
-// ─── Стартовая цена (акция со сроком) ─────────────────────────────
-const fmtRub = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-const tariffs: Record<string, { price: number; base_price: number; promo_until?: string }> = data?.tariffs || {};
-const self = tariffs.self;
-const promoUntil = self?.promo_until || null;
-// Последний день акции по Москве (promo_until – полночь следующего дня).
+const fmtRub = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+type T = { price: number; base_price: number; promo_until?: string };
+const tariffs: Record<string, T> = data?.tariffs || {};
+const self: T = tariffs.self || { price: 1490, base_price: 1490 };
+const support: T = tariffs.support || { price: 3990, base_price: 3990 };
+const promoUntil = self.promo_until || support.promo_until || null;
 const promoLastDay = promoUntil
   ? new Date(new Date(promoUntil).getTime() - 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'Europe/Moscow' })
   : '';
-let body = rawBody;
-if (self && promoUntil) {
-  const base = fmtRub(self.base_price), now = fmtRub(self.price);
-  body = body
-    .replace(`<div class="tariff-price">${base}<small>₽</small></div>`,
-      `<div class="tariff-price"><span class="tp-old">${base} ₽</span>${now}<small>₽</small></div>` +
-      `<div class="tp-promo">Стартовая цена до ${promoLastDay} · осталось <b data-countdown>…</b></div>`)
-    .replace(`Купить за ${base} ₽`, `Купить за ${now} ₽`)
-    .replace('<span class="hero-safety">',
-      `<span class="hero-promo">Старт продаж: <b>${now} ₽</b> вместо ${base} ₽ до ${promoLastDay} · осталось <b data-countdown>…</b></span><span class="hero-safety">`)
-    .replace('<p class="fc-promo"></p>',
-      `<p class="fc-promo">Стартовая цена – <b>${now} ₽</b> вместо ${base} ₽, только до ${promoLastDay}</p>`);
-}
 
-// FAQPage JSON-LD – собирается из FAQ прямо на странице (rich snippet в поиске).
-const stripTags = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const faqMatches = [...rawHtml.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<div class="faq-content">([\s\S]*?)<\/div><\/details>/g)];
-const faqJsonLd = faqMatches.length ? JSON.stringify({
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqMatches.map((m) => ({
-    '@type': 'Question',
-    name: stripTags(m[1]),
-    acceptedAnswer: { '@type': 'Answer', text: stripTags(m[2]) },
-  })),
-}) : '';
+const ASK = 'Здравствуйте, Алексей! Есть вопрос по курсу «Жонглирование»: ';
+const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent(ASK);
+const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent(ASK);
+
+const program = [
+  { n: 0, t: 'Знакомство с курсом', d: 'Как устроена методика и как по ней заниматься.', free: true },
+  { n: 1, t: 'Фундамент – один мяч', d: 'Бросок «ковшом» через центр по дуге и 4 частые ошибки.' },
+  { n: 2, t: 'Два мяча', d: 'Оба броска вверх, в обе стороны – и почему нельзя передавать мяч внизу.' },
+  { n: 3, t: 'Два мяча в одной руке', d: 'Хват, который готовит руку к третьему мячу. И интервью с вожатой Катей.' },
+  { n: 4, t: 'Три броска', d: 'Раз, два, три – поймали. Что делать, если третий мяч «не отпускается».' },
+  { n: 5, t: 'Без остановки', d: 'Четвёртый, пятый бросок и дальше. Однажды случится магия – как первый шаг ребёнка.' },
+  { n: 6, t: 'Вершина – 30 секунд', d: 'Подходы, отдых, секундомер – и подарок себе, который вы придумаете заранее.' },
+  { n: 7, t: 'Что дальше', d: 'Жонглирование как медитация на 3–5 минут, следующий трюк и как научить близкого.' },
+];
+
+const faq = [
+  { q: 'Мне кажется, у меня совсем нет координации. Получится?', a: 'Курс сделан в первую очередь для вас. Мы начинаем с одного мяча, и на каждом шаге есть понятный критерий. Уметь заранее ничего не нужно – нужно пройти шаги по порядку и практиковать.' },
+  { q: 'Сколько времени нужно, чтобы научиться?', a: 'Индивидуально. В лагере кому-то на первый шаг хватало 15 минут, кому-то – нескольких дней. Хватит коротких подходов с отдыхом, например по 10–15 минут в день. Отдых тоже важен: в это время нервная система усваивает навык.' },
+  { q: 'С какого возраста можно?', a: 'Методику проходили дети, подростки, вожатые и взрослые. Если ребёнок может удержать внимание на объяснении и повторить за видео – ему подойдёт. Верхнего предела по возрасту нет.' },
+  { q: 'Какие мячи нужны и где их взять?', a: 'Для начала – любой мяч, который есть дома, например теннисный: первые уроки вы всё равно занимаетесь с одним мячом. И сразу закажите на маркетплейсе набор «мячи для жонглирования» – с мелким песком внутри, они не отскакивают и лучше слушаются руки.' },
+  { q: 'Сколько нужно места?', a: 'Немного свободного пространства перед собой и над головой. Удобнее всего стоять перед кроватью или диваном – упавшие мячи будет проще поднимать.' },
+  { q: 'Что делать, если застрял на каком-то шаге?', a: 'Вернуться на шаг назад – это нормально и работает. Пересмотреть урок и сверить технику. Снять себя на телефон – со стороны ошибки видно сразу. А в тарифе «С разбором» я посмотрю ваши видео и подскажу сам.' },
+  { q: 'Можно заниматься вместе с ребёнком по одной покупке?', a: 'Да, смотрите уроки вместе. Разборы видео в тарифе «С разбором» – для одного человека.' },
+  { q: 'Как я получу доступ?', a: 'Регистрироваться заранее не нужно: укажите имя и почту и оплатите. Уроки откроются в личном кабинете сразу после оплаты, а ссылка для входа придёт на почту. Доступ – на 1 год, смотреть можно с телефона и компьютера.' },
+];
+const faqJsonLd = JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+});
 ---
 <SiteLayout
   title="Жонглирование: у вас получится – курс Алексея Ларина"
   description="Онлайн-курс жонглирования для новичков: научитесь жонглировать тремя мячами с нуля. 8 видеоуроков, 6 шагов и понятный критерий перехода в каждом упражнении."
   active="courses"
-  pageStyles={styles}
   ogImage="/img/zhonglirovanie/juggling@2x.jpg"
-  noindex={isDraft}
->
-  {isDraft && <div class="tm-draft-bar">Черновик: курс не опубликован – страницу видите только вы (админ). Опубликовать – в /admin/courses.</div>}
-  {faqJsonLd && <script type="application/ld+json" set:html={faqJsonLd} />}
-  <Fragment set:html={body} />
-  {promoUntil && !enrolled && self && (
-    <div class="promo-bar" id="promo-bar" aria-hidden="true">
-      <div class="pb-text"><span class="pb-label">Стартовая цена</span> <b>{fmtRub(self.price)} ₽</b> <s>{fmtRub(self.base_price)} ₽</s><span class="pb-left"> · <span class="pb-word">осталось </span><b data-countdown>…</b></span></div>
-      <a href="#tariffs" class="pb-btn" tabindex="-1">Купить</a>
+  noindex={isDraft}>
+  {isDraft && <div class="zh-draft">Черновик: курс не опубликован – страницу видите только вы (админ). Опубликовать – в /admin/courses.</div>}
+  <script type="application/ld+json" set:html={faqJsonLd} />
+
+  <!-- ПЕРВЫЙ ЭКРАН -->
+  <section class="gp-hero">
+    <div class="gp-hero-text">
+      <p class="gp-eyebrow"><span class="dot"></span>{enrolled ? 'Доступ открыт · 8 видеоуроков' : 'Онлайн-курс · 8 видеоуроков'}</p>
+      <h1>Жонглирование: <em>у вас получится</em></h1>
+      <p class="gp-sub">Научитесь жонглировать тремя мячами с нуля – шаг за шагом. По этой методике я научил жонглировать больше 50 детей и взрослых.</p>
+      <div class="gp-params">
+        <div><b>8</b><span>видеоуроков</span></div>
+        <div><b>6 шагов</b><span>до трёх мячей</span></div>
+        <div><b>30 сек</b><span>цель курса</span></div>
+      </div>
+      <div class="gp-cta">
+        {enrolled
+          ? <a href="/cabinet/zhonglirovanie" class="btn-main">Перейти к урокам →</a>
+          : <a href="#tariffs" class="btn-main">Выбрать тариф ↓</a>}
+      </div>
+      {!enrolled && <p class="gp-safe">{promoUntil ? `Стартовая цена до ${promoLastDay} · ` : ''}Первые броски – сегодня, для начала хватит одного мяча</p>}
     </div>
+    <div class="gp-hero-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/zhonglirovanie/hero.webp 1x, /img/zhonglirovanie/hero@2x.webp 2x" />
+        <img src="/img/zhonglirovanie/hero.jpg" srcset="/img/zhonglirovanie/hero.jpg 1x, /img/zhonglirovanie/hero@2x.jpg 2x" alt="Алексей Ларин жонглирует" width="859" height="1289" loading="eager" fetchpriority="high" />
+      </picture>
+    </div>
+  </section>
+
+  <!-- ДЛЯ КОГО -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Для кого</p>
+      <h2>Если вы хоть раз подумали <em>«я бы тоже так хотел»</em></h2>
+      <p class="gp-desc">Я предлагаю этот курс в первую очередь тем, кто заранее решил, что у него не получится. Именно у таких людей самые яркие истории.</p>
+      <div class="zh-who">
+        <div class="gp-card"><h3>«У меня плохая координация»</h3><p>Особый талант не нужен. Начинаем с одного мяча и идём маленькими шагами – каждый следующий опирается на предыдущий.</p></div>
+        <div class="gp-card"><h3>Давно не учились чему-то новому</h3><p>Кажется, что про себя уже всё понятно. Жонглирование – быстрый и честный способ снова почувствовать: «я могу больше, чем думал».</p></div>
+        <div class="gp-card"><h3>Хотите заниматься с ребёнком</h3><p>Методика выросла в детском лагере. Учиться вместе и видеть глаза ребёнка, когда у него получилось, – отдельное удовольствие.</p></div>
+        <div class="gp-card"><h3>Пробовали по роликам – и бросили</h3><p>В роликах обычно показывают результат, путь к нему остаётся за кадром. Здесь – последовательные упражнения, разбор частых ошибок и понятно, когда идти дальше.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЗНАКОМСТВО -->
+  <section class="gp-section gp-cream" id="video">
+    <div class="gp-inner zh-intro">
+      <div>
+        <p class="gp-label">Первый урок – бесплатно</p>
+        <h2>Как устроен <em>курс</em></h2>
+        <p class="gp-desc">Первое видео курса – знакомство, 3,5 минуты. Как устроена методика, как по ней заниматься и почему она подходит тем, кто сомневается, что у него получится.</p>
+        {!enrolled && <a href="#tariffs" class="btn-main">Выбрать тариф ↓</a>}
+      </div>
+      <div class="zh-video">
+        <video controls preload="none" playsinline poster="/img/zhonglirovanie/intro-poster.jpg" src="/lesson-videos/promo/zhonglirovanie-znakomstvo.mp4"></video>
+      </div>
+    </div>
+  </section>
+
+  <!-- ПРОГРАММА -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Программа</p>
+      <h2>8 уроков – <em>шаг за шагом к трём мячам</em></h2>
+      <p class="gp-desc">Вы не прыгаете сразу к трём мячам. Каждый урок – одно упражнение: получилось – идёте дальше. В каждом – разбор ошибок, которые встречались почти у всех.</p>
+      <div class="zh-program">
+        {program.map((l) => (
+          <div class="gp-step">
+            <div class="gp-num">{l.n}</div>
+            <div><h3>{l.t}{l.free && <span class="zh-free">бесплатно</span>}</h3><p>{l.d}</p></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ПОЧЕМУ Я -->
+  <section class="gp-author">
+    <div class="gp-author-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/zhonglirovanie/author.webp 1x, /img/zhonglirovanie/author@2x.webp 2x" />
+        <img src="/img/zhonglirovanie/author.jpg" srcset="/img/zhonglirovanie/author.jpg 1x, /img/zhonglirovanie/author@2x.jpg 2x" alt="Алексей Ларин с мячами в детском лагере" width="1200" height="800" loading="lazy" style="object-position: 45% 40%" />
+      </picture>
+    </div>
+    <div class="gp-author-text">
+      <p class="gp-label">Почему именно я</p>
+      <h2>Методика родилась в детском лагере</h2>
+      <p class="gp-quote">От простого к сложному, с понятным критерием на каждом шаге.</p>
+      <p>Работая тренером в лагере, я предлагал научиться жонглировать всем желающим – и уже сбился со счёта: больше 50 детей, вожатых и взрослых. Так сложилась методика: последовательные шаги, понятные критерии и разбор ошибок, которые встречаются почти у всех.</p>
+      <p>Меня больше всего вдохновляют люди, которые заранее решили, что у них не получится. Они доверяются, делают первый шаг, практикуют – и у них получается. Этот опыт потом помогает пробовать новое и в других сферах жизни.</p>
+      <p>Магистр университета спорта «ГЦОЛИФК», больше 10 лет работаю с детьми и взрослыми.</p>
+    </div>
+  </section>
+
+  <!-- В ЛАГЕРЕ -->
+  <section class="gp-section">
+    <div class="gp-inner zh-camp">
+      <div class="zh-reels">
+        <div class="zh-reel-main"><video controls preload="none" playsinline poster="/img/zhonglirovanie/reel-1.jpg" src="/lesson-videos/promo/zh-reel-1.mp4" aria-label="Ролик из лагеря"></video></div>
+        <div class="zh-thumbs">
+          {[1, 2, 3, 4].map((n) => (
+            <button type="button" class={`zh-thumb${n === 1 ? ' is-active' : ''}`} data-reel={n} aria-label={`Ролик ${n}`}><img src={`/img/zhonglirovanie/reel-${n}.jpg`} alt="" width="90" height="160" loading="lazy" /></button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p class="gp-label">Как это было в лагере</p>
+        <h2>Учились <em>между делом</em> – и получалось</h2>
+        <blockquote class="zh-quote">«Меня очень веселит сам процесс. Первые 2–3 минутки ещё никакие, а потом входишь в кураж – и какое-то веселье, и даже физическая активность, хотя, казалось бы, только мячи. А потом можно хвастаться: смотрите, что умею!»<cite>Катя, вожатая – забегала на жонглирование в перерывах. Её интервью есть в третьем уроке</cite></blockquote>
+        <div class="zh-facts">
+          <p><b>3 мяча</b>дарили в лагере тем, кто продержался 30 секунд – чтобы дома оставалось напоминание: «я не умел, продолжал – и у меня получилось».</p>
+          <p><b>15 минут – 5 дней</b>столько в лагере уходило на первый шаг, а кому-то и больше. У каждого свой темп, критерий один для всех.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЧТО ОСТАНЕТСЯ -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner">
+      <p class="gp-label">Больше, чем три мяча</p>
+      <h2>Что останется с вами <em>после курса</em></h2>
+      <div class="gp-cards3">
+        <div class="gp-card"><h3>Опыт «я могу больше»</h3><p>Вы берётесь за то, что казалось «для циркачей», идёте по шагам – и получается. Этот опыт переносится на музыку, спорт, работу – куда угодно.</p></div>
+        <div class="gp-card"><h3>Перезагрузка за 5 минут</h3><p>Взяли мячи – и мысли отпустили. Внимание на броске, тело включилось. А если добавить внимание к дыханию, получается настоящая медитация.</p></div>
+        <div class="gp-card"><h3>Навык, который впечатляет</h3><p>«Ого, ты умеешь жонглировать!» – и, возможно, вы вдохновите кого-то пройти этот путь. А научить его сможете уже сами.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- МЯЧИ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Что понадобится</p>
+      <h2>Мячи: <em>начните с того, что есть</em></h2>
+      <p class="gp-desc">Покупать что-то заранее и ждать доставку не нужно – начать можно уже сегодня.</p>
+      <ol class="gp-how zh-balls">
+        <li><b>Возьмите мяч, который есть дома.</b> Подойдёт теннисный или любой другой примерно такого размера, чтобы удобно лежал в ладони. Если мяча нет – найдите что-то похожее. Только, пожалуйста, не еду :)</li>
+        <li><b>Сразу закажите мячи для жонглирования</b> на маркетплейсе – они так и называются. Внутри у них мелкий песок: мяч не отскакивает и лучше слушается руки. Берите набор из трёх одинаковых.</li>
+        <li><b>Первое время вы всё равно работаете с одним мячом.</b> Пока едут хорошие мячи, вы отработаете точный бросок. А когда они приедут – закрепите опыт и пойдёте дальше.</li>
+      </ol>
+      <p class="zh-tip"><b>Лайфхак для первых недель:</b> практикуйтесь, стоя перед кроватью или диваном. Мячи будут падать – это часть пути, – и поднимать их с кровати гораздо проще, чем с пола.</p>
+    </div>
+  </section>
+
+  {!enrolled && (
+    <section class="gp-section gp-cream" id="tariffs">
+      <div class="gp-inner">
+        <p class="gp-label gp-center">Тарифы</p>
+        <h2 class="gp-center">Выберите, <em>как пройти курс</em></h2>
+        <p class="gp-desc gp-center">Без регистрации: имя, почта – и оплата. Уроки откроются сразу, можно начать сегодня.</p>
+        <div class="zs-tariffs">
+          <div class="zs-tariff">
+            <h3>Самостоятельный</h3>
+            <p class="zs-price">{self.price !== self.base_price && <s>{fmtRub(self.base_price)} ₽</s>}{fmtRub(self.price)} ₽</p>
+            {self.promo_until && <p class="zs-promo">Стартовая цена до {promoLastDay} · осталось <b data-countdown>…</b></p>}
+            <ul class="zs-list">
+              <li>8 видеоуроков</li>
+              <li>6 шагов с понятным критерием перехода</li>
+              <li>Разбор частых ошибок в каждом уроке</li>
+              <li>Доступ в личном кабинете на 1 год</li>
+            </ul>
+            <a href="#" class="btn-main btn-full" data-tariff="self" data-label="Самостоятельный" data-price={`${fmtRub(self.price)} ₽`}>Купить за {fmtRub(self.price)} ₽</a>
+          </div>
+          <div class="zs-tariff zs-tariff-main">
+            <p class="zs-rec">Быстрее к результату</p>
+            <h3>С разбором</h3>
+            <p class="zs-price">{support.price !== support.base_price && <s>{fmtRub(support.base_price)} ₽</s>}{fmtRub(support.price)} ₽</p>
+            {support.promo_until && <p class="zs-promo">Стартовая цена до {promoLastDay} · осталось <b data-countdown>…</b></p>}
+            <ul class="zs-list">
+              <li>Всё из тарифа «Самостоятельный»</li>
+              <li>30 дней на связи в Телеграме или Max: присылайте видео и вопросы – разберу столько, сколько нужно</li>
+              <li>Отвечаю текстом, голосом или коротким видео с показом</li>
+              <li>Личная онлайн-консультация 30 минут: посмотрю ваши броски вживую</li>
+            </ul>
+            <a href="#" class="btn-main btn-full" data-tariff="support" data-label="С разбором" data-price={`${fmtRub(support.price)} ₽`}>Купить за {fmtRub(support.price)} ₽</a>
+          </div>
+        </div>
+      </div>
+    </section>
   )}
-  <script define:vars={{ enrolled, isLoggedIn: !!user, promoUntil }}>
-    if (enrolled) {
-      const eyebrow = document.querySelector('.eyebrow-text');
-      if (eyebrow) eyebrow.textContent = 'Доступ открыт · 8 видеоуроков · онлайн';
 
-      const promise = document.querySelector('.hero-promise p');
-      if (promise) promise.innerHTML = '<strong>Все уроки открыты</strong> – берите мячи и практикуйте. Это единственный путь.';
+  {!enrolled && (
+    <section class="gp-section">
+      <div class="gp-inner gp-faq">
+        <p class="gp-label gp-center">Вопросы</p>
+        <h2 class="gp-center">Частые <em>вопросы</em></h2>
+        <div class="zs-guarantee">
+          <h3>Гарантия 7 дней</h3>
+          <p>Если курс по любой причине не подойдёт в первые 7 дней – верну деньги без вопросов. Напишите мне в Телеграм @larin_lesha – оформлю возврат.</p>
+        </div>
+        {faq.map((f) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
+      </div>
+    </section>
+  )}
 
-      const btn = document.querySelector('.btn-hero');
-      if (btn) {
-        btn.textContent = 'Перейти к урокам →';
-        btn.setAttribute('href', '/cabinet/zhonglirovanie');
-      }
+  {!enrolled && (
+    <section class="gp-section gp-cream">
+      <div class="gp-inner gp-form-wrap">
+        <p class="gp-label gp-center">Первый шаг</p>
+        <h2 class="gp-center">Пусть этот курс будет <em>не только про жонглирование</em></h2>
+        <p class="gp-desc gp-center">А про то, что новому можно учиться в любом возрасте. Возьмите мяч – и сделайте первый бросок уже сегодня.</p>
+        <a href="#tariffs" class="btn-main btn-full">Выбрать тариф</a>
+        <a href={TG} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Задать вопрос в Телеграме</a>
+        <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Нет Телеграма – написать в Max</a>
+      </div>
+    </section>
+  )}
 
-      ['.hero-safety', '.hero-promo', '.fc-promo'].forEach(sel => {
-        const el = document.querySelector(sel);
-        if (el) el.style.display = 'none';
-      });
-      ['#tariffs', '.final-cta', '.guarantee-faq'].forEach(sel => {
-        const el = document.querySelector(sel);
-        if (el) el.style.display = 'none';
-      });
-    }
+  <CourseBuy slug="zhonglirovanie" promoUntil={promoUntil} />
 
-    // ─── Отсчёт до конца стартовой цены ───────────────────────────
-    if (promoUntil) {
-      const end = new Date(promoUntil).getTime();
-      const els = document.querySelectorAll('[data-countdown]');
-      const pad = (n) => String(n).padStart(2, '0');
-      const tick = () => {
-        const left = Math.max(0, end - Date.now());
-        if (left === 0) { location.reload(); return; }
-        const d = Math.floor(left / 86400000);
-        const h = Math.floor(left / 3600000) % 24;
-        const m = Math.floor(left / 60000) % 60;
-        const s = Math.floor(left / 1000) % 60;
-        const text = (d > 0 ? d + ' дн ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s);
-        els.forEach((el) => { el.textContent = text; });
-      };
-      tick();
-      setInterval(tick, 1000);
-    }
-
-    // ─── Покупка в один шаг ───────────────────────────────────────
-    // Залогиненный – сразу на оплату. Остальным – окно «имя + почта».
-    const ERRORS = {
-      bad_email: 'Проверьте адрес почты.',
-      name_required: 'Укажите имя.',
-      consent_pd_required: 'Чтобы продолжить, отметьте согласие.',
-      bad_tariff: 'Неизвестный тариф. Обновите страницу.',
-    };
-
-    async function quickCheckout(payload) {
-      const r = await fetch('/api/courses/zhonglirovanie/quick-checkout', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-      const j = await r.json().catch(() => ({}));
-      return { ok: r.ok && !!j.payment_url, status: r.status, data: j };
-    }
-
-    function goPay(url) {
-      window.reachGoal?.('checkout_start');
-      window.location.href = url;
-    }
-
-    function openBuyModal(tariff, label, priceText) {
-      document.getElementById('zs-auth-modal')?.remove();
-      const wrap = document.createElement('div');
-      wrap.id = 'zs-auth-modal';
-      wrap.innerHTML = `
-        <div class="zs-modal-back" data-close></div>
-        <div class="zs-modal-card" role="dialog" aria-modal="true" aria-labelledby="zs-modal-title">
-          <button class="zs-modal-close" data-close aria-label="Закрыть">×</button>
-          <h3 id="zs-modal-title">${label}</h3>
-          <p class="zs-modal-switch">${priceText}. Доступ к урокам откроется сразу после оплаты, данные для входа придут на почту.</p>
-          <form class="zs-form" novalidate>
-            <label><span class="zs-lbl">Имя <i class="zs-req">*</i></span><input name="name" required autocomplete="name" /></label>
-            <label><span class="zs-lbl">Почта <i class="zs-req">*</i></span><input name="email" type="email" required autocomplete="email" inputmode="email" /></label>
-            <label class="zs-check">
-              <input type="checkbox" name="consent_pd" required />
-              <span>Даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/legal/offer" target="_blank">оферту</a>.</span>
-            </label>
-            <label class="zs-check">
-              <input type="checkbox" name="consent_marketing" checked />
-              <span>Присылать полезные письма: практики, разборы, новости о курсах. Отписаться можно в любой момент.</span>
-            </label>
-            <button class="zs-submit" type="submit">Перейти к оплате</button>
-            <div class="zs-msg" hidden></div>
-          </form>
-        </div>`;
-      document.body.appendChild(wrap);
-      document.body.style.overflow = 'hidden';
-      const close = () => { wrap.remove(); document.body.style.overflow = ''; };
-      wrap.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
-      document.addEventListener('keydown', function onEsc(e) {
-        if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
-      });
-      const form = wrap.querySelector('form');
-      const msg = wrap.querySelector('.zs-msg');
-      const btn = wrap.querySelector('.zs-submit');
-      const say = (html, ok) => { msg.innerHTML = html; msg.className = 'zs-msg ' + (ok ? 'is-ok' : 'is-err'); msg.hidden = false; };
-      setTimeout(() => wrap.querySelector('input[name="name"]')?.focus(), 50);
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fd = new FormData(form);
-        const name = String(fd.get('name') || '').trim();
-        const email = String(fd.get('email') || '').trim();
-        if (!name) return say(ERRORS.name_required);
-        if (!email.includes('@') || !email.includes('.')) return say(ERRORS.bad_email);
-        if (!fd.get('consent_pd')) return say(ERRORS.consent_pd_required);
-        btn.disabled = true; btn.textContent = 'Открываю оплату…';
-        try {
-          const res = await quickCheckout({ tariff, name, email, consent_pd: true, consent_marketing: !!fd.get('consent_marketing') });
-          if (res.ok) return goPay(res.data.payment_url);
-          if (res.data.error === 'already_enrolled') {
-            say('У этого адреса уже есть доступ к курсу. <a href="/auth/login?next=/cabinet/zhonglirovanie">Войдите</a>, чтобы перейти к урокам.');
-          } else {
-            say(ERRORS[res.data.error] || 'Не получилось открыть оплату. Напишите мне в Телеграм @larin_lesha – разберёмся.');
-          }
-        } catch {
-          say('Ошибка соединения. Попробуйте ещё раз.');
-        }
-        btn.disabled = false; btn.textContent = 'Перейти к оплате';
-      });
-    }
-
-    document.querySelectorAll('[data-tariff]').forEach((el) => {
-      el.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const tariff = el.getAttribute('data-tariff');
-        const card = el.closest('.tariff-card');
-        const label = card?.querySelector('.tariff-name')?.textContent?.trim() || 'Курс';
-        const priceText = (el.textContent || '').replace('Купить за', 'Стоимость').trim();
-        if (!isLoggedIn) { openBuyModal(tariff, 'Тариф «' + label.charAt(0) + label.slice(1).toLowerCase() + '»', priceText); return; }
-        const orig = el.textContent;
-        el.style.pointerEvents = 'none';
-        el.textContent = 'Открываю оплату…';
-        try {
-          const res = await quickCheckout({ tariff });
-          if (res.ok) return goPay(res.data.payment_url);
-          if (res.data.error === 'already_enrolled') { window.location.href = '/cabinet/zhonglirovanie'; return; }
-          alert('Не получилось открыть оплату. Напишите мне в Телеграм @larin_lesha – разберёмся.');
-        } catch {
-          alert('Ошибка соединения. Попробуйте ещё раз.');
-        }
-        el.style.pointerEvents = '';
-        el.textContent = orig;
-      });
-    });
-
-    // Липкая плашка со стартовой ценой: появляется после первого экрана,
-    // прячется, когда на экране тарифы (там своя цена и таймер).
-    (function () {
-      const bar = document.getElementById('promo-bar');
-      const tariffs = document.getElementById('tariffs');
-      if (!bar) return;
-      let tariffsVisible = false;
-      const update = () => {
-        const show = window.scrollY > window.innerHeight * 0.8 && !tariffsVisible;
-        bar.classList.toggle('is-on', show);
-        bar.setAttribute('aria-hidden', show ? 'false' : 'true');
-        bar.querySelector('.pb-btn').tabIndex = show ? 0 : -1;
-      };
-      if (tariffs && 'IntersectionObserver' in window) {
-        new IntersectionObserver(([e]) => { tariffsVisible = e.isIntersecting; update(); }, { threshold: 0.15 }).observe(tariffs);
-      }
-      window.addEventListener('scroll', update, { passive: true });
-      update();
-    })();
-
-    // Рилсы из лагеря в блоке «Почему именно я»: миниатюры переключают ролик.
-    (function () {
-      const main = document.querySelector('.reel-main video');
-      const thumbs = document.querySelectorAll('.reel-thumb');
-      if (!main || !thumbs.length) return;
-      thumbs.forEach((t) => t.addEventListener('click', () => {
-        const n = t.dataset.reel;
-        thumbs.forEach((x) => x.classList.toggle('is-active', x === t));
-        main.poster = `/img/zhonglirovanie/reel-${n}.jpg`;
-        main.src = `/lesson-videos/promo/zh-reel-${n}.mp4`;
-        main.play().catch(() => {});
-      }));
-    })();
-  </script>
-  <style is:global>
-    .promo-bar { position: fixed; left: 50%; bottom: 20px; z-index: 50; transform: translate(-50%, 140%); display: flex; align-items: center; gap: 18px; padding: 10px 10px 10px 22px; border-radius: 100px; background: #1a2744; color: #fff; box-shadow: 0 16px 40px rgba(10,20,40,0.35); font-size: 15px; white-space: nowrap; transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
-    .promo-bar.is-on { transform: translate(-50%, 0); opacity: 1; }
-    .promo-bar .pb-label { color: rgba(255,255,255,0.7); }
-    .promo-bar s { color: rgba(255,255,255,0.5); margin-left: 4px; }
-    .promo-bar .pb-left { color: #ffb48a; }
-    .promo-bar .pb-left b { color: #fff; font-variant-numeric: tabular-nums; }
-    .pb-btn { background: #e8652a; color: #fff; text-decoration: none; font-weight: 700; padding: 10px 22px; border-radius: 100px; transition: background 0.2s ease, transform 0.2s ease; }
-    @media (hover: hover) { .pb-btn:hover { background: #f07a3f; transform: translateY(-1px); } }
-    .pb-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-    @media (max-width: 600px) {
-      .promo-bar { left: 12px; right: 12px; bottom: 12px; transform: translateY(140%); gap: 10px; padding: 8px 8px 8px 16px; font-size: 13.5px; justify-content: space-between; white-space: normal; }
-      .promo-bar.is-on { transform: translateY(0); }
-      .promo-bar .pb-label { display: none; }
-      .promo-bar .pb-word { display: none; }
-      .promo-bar .pb-text { white-space: nowrap; }
-    }
-    .tp-old { font-family: 'Manrope', sans-serif; font-size: 22px; color: rgba(255,255,255,0.55); text-decoration: line-through; margin-right: 12px; vertical-align: middle; }
-    .tp-promo { display: inline-block; margin: 4px 0 18px; padding: 6px 12px; border-radius: 100px; background: rgba(232,101,42,0.18); color: #ffb48a; font-size: 14px; font-weight: 600; }
-    .tp-promo b { color: #fff; font-variant-numeric: tabular-nums; }
-    .hero-promo { display: inline-block; font-size: 16px; color: #ffb48a; }
-    .hero-promo b { color: #fff; }
-    .tm-draft-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 200; background: #fff3cd; color: #6b4e00; border-top: 1px solid #f0d98a; padding: 10px 20px; font-size: 14px; text-align: center; }
-    #zs-auth-modal {
-      position: fixed; inset: 0; z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-      animation: zs-modal-fade .18s ease-out;
-    }
-    @keyframes zs-modal-fade { from { opacity: 0; } to { opacity: 1; } }
-    .zs-modal-back {
-      position: absolute; inset: 0;
-      background: rgba(15, 21, 32, 0.55);
-      backdrop-filter: blur(4px);
-      cursor: pointer;
-    }
-    .zs-modal-card {
-      position: relative;
-      background: var(--warm-white, #fdfaf5);
-      border-radius: 20px;
-      padding: 36px 32px 28px;
-      max-width: 460px; width: 100%;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      box-shadow: 0 24px 64px rgba(15, 21, 32, 0.25);
-      animation: zs-modal-pop .22s cubic-bezier(.2,.9,.3,1.2);
-    }
-    @keyframes zs-modal-pop { from { transform: translateY(12px) scale(.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    .zs-modal-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 32px; height: 32px; border: none; border-radius: 50%;
-      background: transparent; color: var(--text-muted, #777);
-      font-size: 23px; line-height: 1; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s, color .15s;
-    }
-    .zs-modal-close:hover { background: rgba(0,0,0,0.06); color: var(--text, #1a1a1a); }
-    .zs-modal-card h3 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 28px; font-weight: 500;
-      color: var(--navy, #1a2744);
-      margin: 0 0 6px;
-      letter-spacing: -0.01em;
-    }
-    .zs-modal-switch {
-      font-size: 15px;
-      color: var(--text-mid, #444);
-      margin: 0 0 18px;
-    }
-    .zs-modal-switch a {
-      color: var(--orange, #e8652a);
-      text-decoration: none;
-      font-weight: 600;
-      border-bottom: 1px solid transparent;
-      transition: border-color .2s;
-    }
-    @media (hover: hover) {
-      .zs-modal-switch a:hover { border-bottom-color: var(--orange, #e8652a); }
-    }
-    .zs-form {
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .zs-form label {
-      display: flex; flex-direction: column; gap: 6px;
-      font-size: 14px; color: var(--text-mid, #444);
-      font-weight: 500;
-    }
-    .zs-lbl { display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-    .zs-req {
-      display: inline-block; color: var(--orange, #e8652a);
-      font-style: normal; font-weight: 700; font-size: 14px; line-height: 1;
-    }
-    .zs-opt {
-      display: inline-block; color: var(--text-muted, #777);
-      font-style: normal; font-weight: 400; font-size: 13px; line-height: 1;
-    }
-    .zs-form input[type="email"],
-    .zs-form input[type="password"],
-    .zs-form input[type="tel"],
-    .zs-form input[type="text"],
-    .zs-form input:not([type]) {
-      padding: 12px 14px;
-      border: 1.5px solid var(--border, #ece8e0);
-      border-radius: 10px;
-      font-size: 16px;
-      font-family: inherit;
-      background: white;
-      color: var(--text, #1a1a1a);
-      transition: border-color .15s, box-shadow .15s;
-      width: 100%;
-    }
-    .zs-form input:focus {
-      outline: none;
-      border-color: var(--orange, #e8652a);
-      box-shadow: 0 0 0 3px rgba(232,101,42,0.12);
-    }
-    .zs-check {
-      flex-direction: row !important;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 14px; line-height: 1.5;
-      cursor: pointer;
-      font-weight: 400 !important;
-      margin-top: 4px;
-    }
-    .zs-check input[type="checkbox"] {
-      margin-top: 2px;
-      flex-shrink: 0;
-      accent-color: var(--orange, #e8652a);
-      width: 16px; height: 16px;
-      cursor: pointer;
-    }
-    .zs-check a {
-      color: var(--orange, #e8652a);
-      text-decoration: underline;
-    }
-    .zs-submit {
-      margin-top: 8px;
-      padding: 14px 22px;
-      border-radius: 100px;
-      border: none;
-      background: var(--orange, #e8652a);
-      color: white;
-      font-size: 16px; font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(232, 101, 42, 0.32);
-      transition: background .2s, transform .15s, box-shadow .2s;
-    }
-    @media (hover: hover) {
-      .zs-submit:hover:not(:disabled) {
-        background: var(--orange-warm, #f07530);
-        transform: translateY(-1px);
-        box-shadow: 0 10px 24px rgba(232,101,42,0.38);
-      }
-    }
-    .zs-submit:disabled { opacity: 0.7; cursor: progress; }
-    .zs-forgot { font-size: 14px; text-align: center; margin: 0; }
-    .zs-forgot a { color: var(--text-muted, #777); text-decoration: none; border-bottom: 1px dashed currentColor; }
-    .zs-forgot a:hover { color: var(--navy, #1a2744); }
-    .zs-msg {
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 15px; line-height: 1.45;
-    }
-    .zs-msg.is-err { background: rgba(220, 38, 38, 0.08); color: #b91c1c; border: 1px solid rgba(220,38,38,0.18); }
-    .zs-msg.is-ok  { background: rgba(34, 139, 84, 0.08); color: #1b6e3e; border: 1px solid rgba(34,139,84,0.18); }
-    @media (max-width: 480px) {
-      .zs-modal-card { padding: 28px 22px 22px; border-radius: 16px; }
-      .zs-modal-card h3 { font-size: 24px; }
-      .zs-form input { font-size: 17px; /* iOS не зумит при 16px+ */ }
-    }
+  <style>
+    .zh-draft { position: fixed; left: 0; right: 0; bottom: 0; z-index: 200; background: #fff3cd; color: #6b4e00; border-top: 1px solid #f0d98a; padding: 10px 20px; font-size: 15px; text-align: center; }
+    .zh-who { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .zh-intro { display: grid; grid-template-columns: 1fr 1.3fr; gap: 56px; align-items: center; }
+    .zh-video { border-radius: 20px; overflow: hidden; background: #000; aspect-ratio: 16 / 9; }
+    .zh-video video { width: 100%; height: 100%; display: block; }
+    .zh-program { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .zh-free { margin-left: 10px; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #2e9e63; vertical-align: middle; }
+    .zh-camp { display: grid; grid-template-columns: .8fr 1.2fr; gap: 56px; align-items: center; }
+    .zh-reel-main { border-radius: 20px; overflow: hidden; background: #000; aspect-ratio: 9 / 16; max-width: 340px; }
+    .zh-reel-main video { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .zh-thumbs { display: flex; gap: 10px; margin-top: 12px; }
+    .zh-thumb { padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; cursor: pointer; background: none; width: 64px; transition: border-color .2s, transform .2s; }
+    .zh-thumb img { width: 100%; height: auto; display: block; }
+    .zh-thumb.is-active { border-color: var(--orange); }
+    @media (hover: hover) { .zh-thumb:hover { transform: translateY(-2px); } }
+    .zh-thumb:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .zh-quote { margin: 8px 0 24px; padding: 22px 26px; border-left: 3px solid var(--orange); background: var(--cream, #f8f5ef); border-radius: 0 16px 16px 0; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 24px; line-height: 1.45; color: var(--navy); }
+    .zh-quote cite { display: block; margin-top: 12px; font-family: 'Manrope', sans-serif; font-style: normal; font-size: 15px; color: var(--text-light, #6e6e6e); }
+    .zh-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .zh-facts p { margin: 0; font-size: 17px; line-height: 1.6; color: var(--text-mid, #3a3a3a); }
+    .zh-facts b { display: block; font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 30px; color: var(--navy); }
+    .zh-balls { max-width: 780px; }
+    .zh-tip { max-width: 780px; background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 16px; padding: 18px 22px; font-size: 17px; line-height: 1.65; color: var(--text-mid, #3a3a3a); margin: 0; }
+    .zh-tip b { color: var(--navy); }
+    .zs-tariffs { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 920px; margin: 36px auto 0; }
+    .zs-tariff { display: flex; flex-direction: column; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 22px; padding: 32px 30px 30px; }
+    .zs-tariff-main { background: var(--navy); color: white; border-color: var(--navy); }
+    .zs-tariff h3 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 32px; color: var(--navy); margin: 0 0 4px; }
+    .zs-tariff-main h3 { color: white; }
+    .zs-rec { font-size: 15px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #ffb48a; margin: 0 0 6px; }
+    .zs-price { font-family: 'Cormorant Garamond', serif; font-size: 46px; line-height: 1.1; color: var(--navy); margin: 0 0 6px; }
+    .zs-tariff-main .zs-price { color: white; }
+    .zs-price s { font-family: 'Manrope', sans-serif; font-size: 20px; opacity: .55; margin-right: 12px; vertical-align: middle; }
+    .zs-promo { display: inline-block; align-self: flex-start; margin: 0 0 10px; padding: 6px 12px; border-radius: 100px; background: rgba(232,101,42,.14); color: var(--orange); font-size: 15px; font-weight: 600; }
+    .zs-promo b { font-variant-numeric: tabular-nums; }
+    .zs-list { list-style: none; padding: 0; margin: 14px 0 24px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .zs-list li { position: relative; padding-left: 26px; font-size: 17px; line-height: 1.55; color: var(--text-mid, #3a3a3a); }
+    .zs-tariff-main .zs-list li { color: rgba(255,255,255,.88); }
+    .zs-list li::before { content: '✓'; position: absolute; left: 0; color: #2e9e63; font-weight: 700; }
+    .zs-tariff-main .zs-list li::before { color: #7fd4a4; }
+    .zs-guarantee { background: var(--cream, #f8f5ef); border: 1.5px solid var(--orange); border-radius: 18px; padding: 24px 26px; margin: 0 0 24px; }
+    .zs-guarantee h3 { font-size: 20px; color: var(--navy); margin: 0 0 8px; }
+    .zs-guarantee p { font-size: 17px; line-height: 1.7; color: var(--text-mid, #3a3a3a); margin: 0; }
+    .gp-form-wrap .gp-max + .gp-max { margin-top: 10px; }
+    @media (max-width: 1000px) { .zh-intro, .zh-camp { grid-template-columns: 1fr; gap: 32px; } .zh-reel-main { margin: 0 auto; } .zh-thumbs { justify-content: center; } }
+    @media (max-width: 760px) { .zh-who, .zh-program, .zs-tariffs, .zh-facts { grid-template-columns: 1fr; } .zs-tariff { padding: 26px 22px; } }
   </style>
+  <script>
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+    // Ролики из лагеря: миниатюры переключают основной ролик.
+    const main = document.querySelector<HTMLVideoElement>('.zh-reel-main video');
+    const thumbs = document.querySelectorAll<HTMLButtonElement>('.zh-thumb');
+    thumbs.forEach((t) => t.addEventListener('click', () => {
+      if (!main) return;
+      const n = t.dataset.reel;
+      thumbs.forEach((x) => x.classList.toggle('is-active', x === t));
+      main.poster = `/img/zhonglirovanie/reel-${n}.jpg`;
+      main.src = `/lesson-videos/promo/zh-reel-${n}.mp4`;
+      main.play().catch(() => {});
+    }));
+  </script>
 </SiteLayout>

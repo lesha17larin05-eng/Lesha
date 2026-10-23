@@ -1,0 +1,161 @@
+---
+// Покупка курса в один шаг для лендингов курсов.
+// Кнопки на странице: <a href="#" data-tariff="self" data-label="Самостоятельный"
+// data-price="3 990 ₽">…</a>. Залогиненный – сразу на оплату; остальным –
+// окно «имя + почта + согласие» → POST /api/courses/{slug}/quick-checkout →
+// Продамус → /kurs-oplachen?course={slug}. Без пароля и подтверждения почты.
+// promoUntil – если идёт акция: элементы [data-countdown] показывают остаток.
+interface Props { slug: string; promoUntil?: string | null }
+const { slug, promoUntil = null } = Astro.props as Props;
+const isLoggedIn = !!(Astro.locals as any).user;
+---
+<script define:vars={{ slug, isLoggedIn, promoUntil }}>
+  const ERRORS = {
+    bad_email: 'Проверьте адрес почты.',
+    name_required: 'Укажите имя.',
+    consent_pd_required: 'Чтобы продолжить, отметьте согласие.',
+    bad_tariff: 'Неизвестный тариф. Обновите страницу.',
+  };
+  const cabinet = '/cabinet/' + slug;
+
+  async function quickCheckout(payload) {
+    const r = await fetch('/api/courses/' + slug + '/quick-checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+    const j = await r.json().catch(() => ({}));
+    return { ok: r.ok && !!j.payment_url, data: j };
+  }
+  function goPay(url) {
+    window.reachGoal?.('checkout_start');
+    window.location.href = url;
+  }
+
+  function openBuyModal(tariff, label, price) {
+    document.getElementById('cb-modal')?.remove();
+    const wrap = document.createElement('div');
+    wrap.id = 'cb-modal';
+    wrap.innerHTML = `
+      <div class="cb-back" data-close></div>
+      <div class="cb-card" role="dialog" aria-modal="true" aria-labelledby="cb-title">
+        <button class="cb-close" data-close aria-label="Закрыть">×</button>
+        <h3 id="cb-title">Тариф «${label}»</h3>
+        <p class="cb-lead">${price}. Доступ к урокам откроется сразу после оплаты, данные для входа придут на почту.</p>
+        <form class="cb-form" novalidate>
+          <label><span>Имя</span><input name="name" required autocomplete="name" /></label>
+          <label><span>Почта</span><input name="email" type="email" required autocomplete="email" inputmode="email" /></label>
+          <label class="cb-check">
+            <input type="checkbox" name="consent_pd" required />
+            <span>Даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/legal/offer" target="_blank">оферту</a>.</span>
+          </label>
+          <label class="cb-check">
+            <input type="checkbox" name="consent_marketing" checked />
+            <span>Присылать полезные письма: практики, разборы, новости о курсах. Отписаться можно в любой момент.</span>
+          </label>
+          <button class="cb-submit" type="submit">Перейти к оплате</button>
+          <div class="cb-msg" hidden></div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    document.body.style.overflow = 'hidden';
+    const close = () => { wrap.remove(); document.body.style.overflow = ''; };
+    wrap.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
+    document.addEventListener('keydown', function onEsc(e) {
+      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onEsc); }
+    });
+    const form = wrap.querySelector('form');
+    const msg = wrap.querySelector('.cb-msg');
+    const btn = wrap.querySelector('.cb-submit');
+    const say = (html) => { msg.innerHTML = html; msg.hidden = false; };
+    setTimeout(() => wrap.querySelector('input[name="name"]')?.focus(), 50);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const name = String(fd.get('name') || '').trim();
+      const email = String(fd.get('email') || '').trim();
+      if (!name) return say(ERRORS.name_required);
+      if (!email.includes('@') || !email.includes('.')) return say(ERRORS.bad_email);
+      if (!fd.get('consent_pd')) return say(ERRORS.consent_pd_required);
+      btn.disabled = true; btn.textContent = 'Открываю оплату…';
+      try {
+        const res = await quickCheckout({ tariff, name, email, consent_pd: true, consent_marketing: !!fd.get('consent_marketing') });
+        if (res.ok) return goPay(res.data.payment_url);
+        if (res.data.error === 'already_enrolled') {
+          say('У этого адреса уже есть доступ к курсу. <a href="/auth/login?next=' + cabinet + '">Войдите</a>, чтобы перейти к урокам.');
+        } else {
+          say(ERRORS[res.data.error] || 'Не получилось открыть оплату. Напишите мне в Телеграм @larin_lesha – разберёмся.');
+        }
+      } catch {
+        say('Ошибка соединения. Попробуйте ещё раз.');
+      }
+      btn.disabled = false; btn.textContent = 'Перейти к оплате';
+    });
+  }
+
+  document.querySelectorAll('[data-tariff]').forEach((el) => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const tariff = el.getAttribute('data-tariff');
+      const label = el.getAttribute('data-label') || 'Курс';
+      const price = el.getAttribute('data-price') || '';
+      if (!isLoggedIn) { openBuyModal(tariff, label, 'Стоимость – ' + price); return; }
+      const orig = el.textContent;
+      el.style.pointerEvents = 'none';
+      el.textContent = 'Открываю оплату…';
+      try {
+        const res = await quickCheckout({ tariff });
+        if (res.ok) return goPay(res.data.payment_url);
+        if (res.data.error === 'already_enrolled') { window.location.href = cabinet; return; }
+        alert('Не получилось открыть оплату. Напишите мне в Телеграм @larin_lesha – разберёмся.');
+      } catch {
+        alert('Ошибка соединения. Попробуйте ещё раз.');
+      }
+      el.style.pointerEvents = '';
+      el.textContent = orig;
+    });
+  });
+
+  // Отсчёт до конца акции.
+  if (promoUntil) {
+    const end = new Date(promoUntil).getTime();
+    const els = document.querySelectorAll('[data-countdown]');
+    const pad = (n) => String(n).padStart(2, '0');
+    const tick = () => {
+      const left = Math.max(0, end - Date.now());
+      if (left === 0) { location.reload(); return; }
+      const d = Math.floor(left / 86400000);
+      const h = Math.floor(left / 3600000) % 24;
+      const m = Math.floor(left / 60000) % 60;
+      const s = Math.floor(left / 1000) % 60;
+      const text = (d > 0 ? d + ' дн ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s);
+      els.forEach((el) => { el.textContent = text; });
+    };
+    tick();
+    setInterval(tick, 1000);
+  }
+</script>
+<style is:global>
+  #cb-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .cb-back { position: absolute; inset: 0; background: rgba(15,21,32,.55); backdrop-filter: blur(4px); cursor: pointer; }
+  .cb-card { position: relative; background: var(--warm-white, #fdfaf5); border-radius: 20px; padding: 36px 32px 28px; max-width: 460px; width: 100%; max-height: calc(100vh - 40px); overflow-y: auto; box-shadow: 0 24px 64px rgba(15,21,32,.25); }
+  .cb-close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border: none; border-radius: 50%; background: transparent; color: var(--text-muted, #777); font-size: 26px; line-height: 1; cursor: pointer; transition: background .15s, color .15s; }
+  .cb-close:hover { background: rgba(0,0,0,.06); color: var(--text, #1a1a1a); }
+  .cb-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--navy, #1a2744); margin: 0 0 8px; }
+  .cb-lead { font-size: 16px; line-height: 1.6; color: var(--text-mid, #444); margin: 0 0 18px; }
+  .cb-form { display: flex; flex-direction: column; gap: 12px; }
+  .cb-form label { display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--text-mid, #444); font-weight: 500; }
+  .cb-form input[name="name"], .cb-form input[name="email"] { padding: 13px 14px; border: 1.5px solid var(--border, #ece8e0); border-radius: 10px; font-size: 17px; font-family: inherit; background: white; color: var(--text, #1a1a1a); width: 100%; box-sizing: border-box; transition: border-color .15s, box-shadow .15s; }
+  .cb-form input:focus { outline: none; border-color: var(--orange, #e8652a); box-shadow: 0 0 0 3px rgba(232,101,42,.12); }
+  .cb-check { flex-direction: row !important; align-items: flex-start; gap: 10px !important; font-weight: 400 !important; line-height: 1.5; cursor: pointer; }
+  .cb-check input { margin-top: 3px; flex-shrink: 0; accent-color: var(--orange, #e8652a); width: 16px; height: 16px; cursor: pointer; }
+  .cb-check a { color: var(--orange, #e8652a); }
+  .cb-submit { margin-top: 8px; padding: 15px 22px; border-radius: 100px; border: none; background: var(--orange, #e8652a); color: white; font-size: 17px; font-weight: 600; font-family: inherit; cursor: pointer; box-shadow: 0 6px 20px rgba(232,101,42,.32); transition: background .2s, transform .15s; }
+  @media (hover: hover) { .cb-submit:hover:not(:disabled) { background: var(--orange-warm, #f07530); transform: translateY(-1px); } }
+  .cb-submit:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
+  .cb-submit:disabled { opacity: .7; cursor: progress; }
+  .cb-msg { padding: 12px 14px; border-radius: 10px; font-size: 15px; line-height: 1.45; background: rgba(220,38,38,.08); color: #b91c1c; border: 1px solid rgba(220,38,38,.18); }
+  .cb-msg a { color: inherit; font-weight: 600; }
+  @media (max-width: 480px) { .cb-card { padding: 28px 22px 22px; border-radius: 16px; } .cb-card h3 { font-size: 26px; } }
+</style>

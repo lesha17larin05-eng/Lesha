@@ -1,106 +1,91 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { apiJson } from '../../lib/api';
+import '../../styles/landing.css';
 
+// Каталог курсов (стили – landing.css). Список и подписи – из API (/api/courses).
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data: courses } = await apiJson<any[]>('/api/courses', { cookie });
 
-// Фото курсов – те же, что в карточках на главной (web/public/img/).
+// Фото курсов (web/public/img/).
 const covers: Record<string, { base: string; pos: string }> = {
   'myagkiy-start':   { base: '/img/IMG_4002', pos: '60% 30%' },
   'zdorovaya-spina': { base: '/img/IMG_4029', pos: '70% 25%' },
-  'zhonglirovanie':  { base: '/img/IMG_4035', pos: '50% 35%' },
+  'zhonglirovanie':  { base: '/img/zhonglirovanie/juggling', pos: '50% 40%' },
 };
-
-const pageStyles = `
-.courses-header { padding: 120px 80px 60px; background: var(--navy); position: relative; overflow: hidden; }
-.courses-header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 480px; height: 480px; background: radial-gradient(circle, rgba(46,61,107,0.6) 0%, transparent 65%); pointer-events: none; }
-.courses-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--orange) 0%, transparent 60%); }
-.courses-header .header-label { font-size: 14px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 16px; position: relative; }
-.courses-header h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(40px,4vw,60px); font-weight: 400; color: white; line-height: 1.1; margin-bottom: 12px; position: relative; }
-.courses-header h1 em { font-style: italic; color: #8bb8f0; }
-.courses-header p { font-size: 18px; color: rgba(255,255,255,0.82); max-width: 540px; line-height: 1.75; position: relative; }
-
-.courses-grid { padding: 60px 80px 100px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; max-width: 1240px; margin: 0 auto; }
-.course-card {
-  background: white; border-radius: 20px; border: 1px solid var(--border);
-  overflow: hidden; text-decoration: none; color: inherit;
-  display: flex; flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-}
-@media (hover: hover) {
-  .course-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.08); border-color: rgba(232,101,42,0.35); }
-  .course-card:hover .cc-cta::after { transform: translateX(4px); }
-  .course-card:hover .cc-img img { transform: scale(1.03); }
-}
-.course-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
-.cc-img { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: linear-gradient(160deg, #e8edf5 0%, #d4dce8 100%); }
-.cc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
-.cc-body { padding: 26px 28px 28px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
-.cc-badges { display: flex; gap: 8px; align-items: center; }
-.cc-badge { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; }
-.cc-badge--free { background: #d4f0e4; color: #0a6040; }
-.cc-badge--paid { background: #fff0e6; color: var(--orange); }
-.cc-badge--owned { background: #dbeeff; color: #1060a0; }
-.cc-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; color: var(--navy); line-height: 1.2; }
-.cc-sub { font-size: 16px; color: var(--text-muted); line-height: 1.7; flex: 1; }
-.cc-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--orange); margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
-.cc-cta::after { content: '→'; transition: transform 0.2s; }
-
-.courses-empty { padding: 100px 24px; text-align: center; color: var(--text-muted); }
-
-@media (max-width: 1000px) {
-  .courses-header { padding: 110px 48px 48px; }
-  .courses-grid { padding: 48px 48px 80px; }
-}
-@media (max-width: 760px) {
-  .courses-header { padding: 100px 24px 44px; }
-  .courses-grid { grid-template-columns: 1fr; padding: 40px 24px 64px; gap: 20px; }
-  .cc-title { font-size: 24px; }
-}
-`;
+const fmtRub = (n: number) => String(n ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 ---
 <SiteLayout
   title="Курсы – Алексей Ларин"
   description="Онлайн-курсы Алексея Ларина: бесплатный «Мягкий старт», «Здоровая спина» и «Жонглирование: у вас получится» – три мяча с нуля. Видеоуроки, доступ в личном кабинете."
-  active="courses"
-  pageStyles={pageStyles}
->
-  <div class="courses-header">
-    <div class="header-label">Курсы</div>
-    <h1>Онлайн-курсы – <em>в своём темпе</em></h1>
-    <p>Видеоуроки в личном кабинете. Начните с бесплатного «Мягкого старта» – он короткий и сразу даёт пользу.</p>
-  </div>
+  active="courses">
 
-  {(!courses || courses.length === 0)
-    ? <div class="courses-empty">Курсы скоро появятся. Загляните позже.</div>
-    : <div class="courses-grid">
-        {courses.map((c: any) => {
-          const cover = covers[c.slug];
-          return (
-            <a href={`/courses/${c.slug}`} class="course-card">
-              <div class="cc-img">
-                {cover && (
-                  <picture>
-                    <source type="image/webp" srcset={`${cover.base}.webp 1x, ${cover.base}@2x.webp 2x`} />
-                    <img src={`${cover.base}.jpg`} srcset={`${cover.base}.jpg 1x, ${cover.base}@2x.jpg 2x`} alt={c.title} loading="lazy" style={`object-position:${cover.pos}`} />
-                  </picture>
-                )}
-              </div>
-              <div class="cc-body">
-                <div class="cc-badges">
-                  <span class={`cc-badge ${c.kind === 'free' ? 'cc-badge--free' : 'cc-badge--paid'}`}>
-                    {c.kind === 'free' ? 'Бесплатно' : `${String(c.price_rub ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`}
-                  </span>
-                  {c.enrolled && <span class="cc-badge cc-badge--owned">Доступ открыт</span>}
-                </div>
-                <div class="cc-title">{c.title}</div>
-                {c.subtitle && <p class="cc-sub">{c.subtitle}</p>}
-                <span class="cc-cta">{c.enrolled ? 'Продолжить' : c.kind === 'free' ? 'Получить доступ' : 'Посмотреть программу'}</span>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-  }
+  <section class="cr-head">
+    <div class="gp-inner">
+      <p class="gp-eyebrow"><span class="dot"></span>Курсы</p>
+      <h1>Онлайн-курсы – <em>в своём темпе</em></h1>
+      <p class="cr-lead">Видеоуроки в личном кабинете, начать можно в любой день. Если не знаете, с чего начать, – возьмите бесплатный «Мягкий старт».</p>
+    </div>
+  </section>
+
+  <section class="gp-section">
+    <div class="gp-inner">
+      {(!courses || courses.length === 0)
+        ? <p class="gp-desc gp-center">Курсы скоро появятся. Загляните позже.</p>
+        : <div class="cr-grid">
+            {courses.map((c: any) => {
+              const cover = covers[c.slug];
+              return (
+                <a href={`/courses/${c.slug}`} class="cr-card">
+                  <div class="cr-img">
+                    {cover && (
+                      <picture>
+                        <source type="image/webp" srcset={`${cover.base}.webp 1x, ${cover.base}@2x.webp 2x`} />
+                        <img src={`${cover.base}.jpg`} srcset={`${cover.base}.jpg 1x, ${cover.base}@2x.jpg 2x`} alt="" loading="lazy" style={`object-position:${cover.pos}`} />
+                      </picture>
+                    )}
+                  </div>
+                  <div class="cr-body">
+                    <p class="cr-badges">
+                      <span class={c.kind === 'free' ? 'cr-free' : 'cr-paid'}>{c.kind === 'free' ? 'Бесплатно' : `от ${fmtRub(c.price_rub)} ₽`}</span>
+                      {c.enrolled && <span class="cr-owned">Доступ открыт</span>}
+                    </p>
+                    <h2>{c.title}</h2>
+                    {c.subtitle && <p class="cr-sub">{c.subtitle}</p>}
+                    <span class="cr-go">{c.enrolled ? 'Продолжить →' : c.kind === 'free' ? 'Получить доступ →' : 'Посмотреть программу →'}</span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>}
+      <p class="cr-more">Хотите заниматься с тренером? <a href="/#so-mnoy">Персональные тренировки, группа или личное ведение →</a></p>
+    </div>
+  </section>
+
+  <style>
+    .cr-head { background: var(--navy); padding: 140px 24px 72px; color: white; }
+    .cr-head h1 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(42px, 4.6vw, 66px); line-height: 1.05; color: white; margin: 0 0 18px; }
+    .cr-head h1 em { font-style: italic; color: #8bb8f0; }
+    .cr-lead { font-size: 20px; line-height: 1.6; color: rgba(255,255,255,.85); max-width: 640px; margin: 0; }
+    .cr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .cr-card { display: flex; flex-direction: column; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 22px; overflow: hidden; text-decoration: none; color: inherit; transition: transform .2s, box-shadow .2s; }
+    @media (hover: hover) { .cr-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(26,39,68,.09); } }
+    .cr-card:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .cr-img { aspect-ratio: 4 / 3; background: #d9dde3; overflow: hidden; }
+    .cr-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cr-body { padding: 24px 26px 26px; display: flex; flex-direction: column; flex: 1; }
+    .cr-badges { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+    .cr-badges span { font-size: 15px; font-weight: 700; padding: 4px 12px; border-radius: 100px; }
+    .cr-free { background: #d4f0e4; color: #0a6040; }
+    .cr-paid { background: #fff0e6; color: #b5441a; }
+    .cr-owned { background: #dbeeff; color: #1060a0; }
+    .cr-body h2 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 30px; line-height: 1.15; color: var(--navy); margin: 0 0 10px; }
+    .cr-sub { font-size: 17px; line-height: 1.65; color: var(--text-muted, #555); margin: 0 0 14px; flex: 1; }
+    .cr-go { font-size: 16px; font-weight: 600; color: var(--orange); margin-top: auto; }
+    .cr-more { text-align: center; font-size: 17px; color: var(--text-mid, #3a3a3a); margin: 48px 0 0; }
+    .cr-more a { color: var(--navy); font-weight: 600; text-decoration: underline; text-decoration-color: var(--orange); text-underline-offset: 4px; transition: color .2s; }
+    .cr-more a:hover { color: var(--orange); }
+    @media (max-width: 1000px) { .cr-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 700px) { .cr-head { padding: 110px 20px 52px; } .cr-grid { grid-template-columns: 1fr; } }
+  </style>
 </SiteLayout>
