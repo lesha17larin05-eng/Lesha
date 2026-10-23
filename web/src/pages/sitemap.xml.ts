@@ -13,7 +13,8 @@ type Entry = { path: string; changefreq: string; priority: string };
 const BASE: Entry[] = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
   { path: '/coaching', changefreq: 'weekly', priority: '0.9' },
-  { path: '/start', changefreq: 'weekly', priority: '0.9' },
+  { path: '/personal', changefreq: 'weekly', priority: '0.9' },
+  { path: '/gruppa', changefreq: 'weekly', priority: '0.9' },
   { path: '/courses/myagkiy-start', changefreq: 'weekly', priority: '0.9' },
   { path: '/courses/zdorovaya-spina', changefreq: 'weekly', priority: '0.8' },
   { path: '/results', changefreq: 'monthly', priority: '0.7' },

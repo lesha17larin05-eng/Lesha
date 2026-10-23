@@ -4,13 +4,20 @@ const { active = '', user = (Astro.locals as any).user } = Astro.props as { acti
 // Подменю «Курсы»: опубликованные курсы из API (кеш 60 с).
 const navCourses = await getNavCourses();
 const currentPath = Astro.url.pathname;
-const links = [
-  { href: '/start', key: 'start', label: 'Точка перемен' },
-  { href: '/coaching', key: 'home', label: 'Личное ведение' },
-  { href: '/courses', key: 'courses', label: 'Курсы' },
+// Подменю «Тренировки со мной»: форматы работы с Алексеем.
+const trainLinks = [
+  { href: '/personal', title: 'Персональные тренировки' },
+  { href: '/gruppa', title: 'Групповое ведение' },
+  { href: '/coaching', title: 'Личное ведение' },
+];
+type NavLink = { href: string; key: string; label: string; keys?: string[]; children?: { href: string; title: string }[]; all?: { href: string; label: string } };
+const links: NavLink[] = [
+  { href: '/#so-mnoy', key: 'train', keys: ['train', 'home', 'personal', 'gruppa'], label: 'Тренировки со мной', children: trainLinks },
+  { href: '/courses', key: 'courses', label: 'Курсы', children: navCourses, all: { href: '/courses', label: 'Все курсы →' } },
   { href: '/blog', key: 'blog', label: 'Статьи' },
   { href: '/results', key: 'results', label: 'Отзывы' },
 ];
+const isActive = (l: NavLink) => (l.keys ?? [l.key]).includes(active);
 const isSalyut = active === 'salyut';
 // Кнопка «Здоровая спина в Салюте» показывается только в сезон –
 // переключатель в админке (/admin/settings → salut_visible).
@@ -55,13 +62,13 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
   .site-nav-links .snl-panel a {
     display: block; min-height: 0; padding: 10px 14px; border-radius: 9px; border-bottom: none;
     text-align: left; white-space: nowrap;
-    font-size: 14px; font-weight: 500; color: var(--navy);
+    font-size: 15px; font-weight: 500; color: var(--navy);
     transition: background 0.15s ease, color 0.15s ease;
   }
   .site-nav-links .snl-panel a:hover { background: rgba(26,39,68,0.05); color: var(--navy); }
   .site-nav-links .snl-panel a.is-current { color: var(--orange); font-weight: 600; }
   .snl-all { margin-top: 4px; border-top: 1px solid var(--border); padding-top: 4px; }
-  .site-nav-links .snl-all a { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .site-nav-links .snl-all a { font-size: 15px; font-weight: 600; color: var(--text-muted); }
   .site-nav-links .snl-all a:hover { color: var(--navy); }
 
   /* ─── Кнопка «Здоровая спина в Салюте» в шапке (десктоп) ─────────── */
@@ -171,22 +178,22 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
     <a href="/salut-2026" class={`site-nav-salyut${isSalyut ? ' is-active' : ''}`} aria-current={isSalyut ? 'page' : undefined}>Здоровая спина<br>в Салюте</a>
   )}
   <div class="site-nav-links">
-    {links.map(l => (l.key === 'courses' && navCourses.length > 0)
+    {links.map(l => (l.children && l.children.length > 0)
       ? (
         <div class="snl-dd">
-          <a href={l.href} class={l.key === active ? 'active' : ''} aria-haspopup="true">
+          <a href={l.href} class={isActive(l) ? 'active' : ''} aria-haspopup="true">
             {l.label}
             <svg class="snl-caret" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg>
           </a>
           <div class="snl-panel">
-            {navCourses.map(c => (
+            {l.children.map(c => (
               <a href={c.href} class={currentPath === c.href ? 'is-current' : ''}>{c.title}</a>
             ))}
-            <div class="snl-all"><a href="/courses">Все курсы →</a></div>
+            {l.all && <div class="snl-all"><a href={l.all.href}>{l.all.label}</a></div>}
           </div>
         </div>
       )
-      : <a href={l.href} class={l.key === active ? 'active' : ''}>{l.label}</a>
+      : <a href={l.href} class={isActive(l) ? 'active' : ''}>{l.label}</a>
     )}
   </div>
   <div class="site-nav-right">
@@ -215,10 +222,10 @@ const showSalyut = ((Astro.locals as any).settings?.salut_visible ?? false) === 
     )}
     {links.map(l => (
       <>
-        <a href={l.href} class={`smm-link${l.key === active ? ' is-active' : ''}`}>{l.label}</a>
-        {l.key === 'courses' && navCourses.length > 0 && (
+        <a href={l.href} class={`smm-link${isActive(l) ? ' is-active' : ''}`}>{l.label}</a>
+        {l.children && l.children.length > 0 && (
           <div class="smm-group">
-            {navCourses.map(c => (
+            {l.children.map(c => (
               <a href={c.href} class={`smm-sub${currentPath === c.href ? ' is-active' : ''}`}>{c.title}</a>
             ))}
           </div>

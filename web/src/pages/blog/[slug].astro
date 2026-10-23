@@ -130,8 +130,8 @@ const articleStyles = `
     )}
 
     <div class="article-cta-final">
-      <p><strong>Хотите начать на этой неделе?</strong><br/>«Точка перемен» – занятие-разбор на 55 минут, план под вас и я на связи всю неделю. Беру пять человек.</p>
-      <a href="/start">Записаться – 2 990 ₽ →</a>
+      <p><strong>Хотите тренироваться со мной?</strong><br/>Персональные тренировки, групповое или личное ведение – онлайн или у вас дома в Москве.</p>
+      <a href="/#so-mnoy">Выбрать формат →</a>
       <p class="cta-soft">Пока присматриваетесь – <a href="/courses/myagkiy-start">начните с бесплатного курса</a></p>
     </div>
     <div class="tg-inline">
@@ -210,7 +210,7 @@ const articleStyles = `
     // Переход из статьи к любому продукту: «Точка перемен», личное ведение,
     // бесплатный курс, страницы курсов. Именно это показывает, работает ли
     // статья как вход в воронку, а не просто как чтение.
-    document.querySelectorAll('a[href^="/start"], a[href^="/coaching"], a[href^="/course"]')
+    document.querySelectorAll('a[href^="/#so-mnoy"], a[href^="/personal"], a[href^="/gruppa"], a[href^="/start"], a[href^="/coaching"], a[href^="/course"]')
       .forEach(a => a.addEventListener('click', () => track('cta'), { once: true }));
   </script>
 </SiteLayout>
