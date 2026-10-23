@@ -130,6 +130,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Post("/api/articles/{slug}/view", app.TrackArticleView)
 	r.Post("/api/newsletter", app.NewsletterSignup)
 	r.Post("/api/checkout/service", app.ServiceCheckout)
+	r.Get("/api/services/{service}/seats", app.ServiceSeats)
 	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/orders/{id}/status", app.OrderStatus)
 	r.Get("/api/orders/{id}/enter", app.OrderEnter)
@@ -3607,7 +3608,7 @@ func TestEmailClick(t *testing.T) {
 }
 
 // TestGruppa – групповое ведение: анкета со своими вопросами и замерами,
-// оплата до 5 мест, заявка с ссылкой на оплату.
+// оплата до 7 мест, счётчик свободных мест, заявка с ссылкой на оплату.
 func TestGruppa(t *testing.T) {
 	srv, repo, cfg := setup(t)
 	ctx := context.Background()
@@ -3652,7 +3653,14 @@ func TestGruppa(t *testing.T) {
 		t.Fatalf("admin card: %s", body)
 	}
 
-	// Оплата: заказ на 9 900, пока есть места; 5 оплаченных – мест нет
+	// Счётчик мест: пока никто не оплатил – 7 из 7; у услуги без мест – 404
+	if _, body := c.do("GET", "/api/services/gruppa/seats", nil); !strings.Contains(string(body), `"left":7`) || !strings.Contains(string(body), `"seats":7`) {
+		t.Fatalf("seats: %s", body)
+	}
+	if r, _ := c.do("GET", "/api/services/start/seats", nil); r.StatusCode != 404 {
+		t.Fatalf("seats for start: %d", r.StatusCode)
+	}
+	// Оплата: заказ на 9 900, пока есть места; 7 оплаченных – мест нет
 	r, body = c.do("POST", "/api/checkout/service", map[string]any{"service": "gruppa", "email": "g2@b.ru", "name": "Анна", "consent_pd": true})
 	if r.StatusCode != 200 {
 		t.Fatalf("checkout: %d %s", r.StatusCode, body)
@@ -3661,7 +3669,7 @@ func TestGruppa(t *testing.T) {
 	if len(orders) != 1 || orders[0].Service != "gruppa" || orders[0].AmountRub != 9900 {
 		t.Fatalf("order: %+v", orders)
 	}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 7; i++ {
 		o, err := repo.CreateServiceOrder(ctx, uid, "gruppa", 9900)
 		if err != nil {
 			t.Fatal(err)
@@ -3673,6 +3681,9 @@ func TestGruppa(t *testing.T) {
 	if r, body := c.do("POST", "/api/checkout/service", map[string]any{"service": "gruppa", "email": "g3@b.ru", "name": "Ира", "consent_pd": true}); r.StatusCode != 409 ||
 		!strings.Contains(string(body), "sold_out") {
 		t.Fatalf("sold out: %d %s", r.StatusCode, body)
+	}
+	if _, body := c.do("GET", "/api/services/gruppa/seats", nil); !strings.Contains(string(body), `"left":0`) {
+		t.Fatalf("seats after sold out: %s", body)
 	}
 
 	// Заявка со страницы группы – в Telegram приходит ссылка на оплату

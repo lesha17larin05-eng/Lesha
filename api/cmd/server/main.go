@@ -129,6 +129,7 @@ func main() {
 	r.Post("/api/newsletter", app.NewsletterSignup)
 	// Оплата услуги без регистрации: «Точка перемен».
 	r.Post("/api/checkout/service", app.ServiceCheckout)
+	r.Get("/api/services/{service}/seats", app.ServiceSeats)
 	// Покупка курса в один шаг (имя + почта → оплата), без регистрации.
 	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/orders/{id}/status", app.OrderStatus)

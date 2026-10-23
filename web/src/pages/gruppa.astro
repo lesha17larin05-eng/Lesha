@@ -1,12 +1,28 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ReviewsCarousel from '../components/ReviewsCarousel.astro';
-// Групповое ведение: 8 недель, до 5 человек. Запись – через заявку (имя,
+import { apiJson } from '../lib/api';
+// Групповое ведение: 8 недель, до 7 человек. Запись – через заявку (имя,
 // контакт, цель); Алексей пишет человеку и присылает ссылку /gruppa#oplata,
 // по ней открывается скрытый блок оплаты (POST /api/checkout/service,
 // service=gruppa). После оплаты – письмо с анкетой и замерами (anketa ?k=gruppa).
 const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
 const TG_JOIN = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
+// Свободные места – по оплаченным заказам (GET /api/services/gruppa/seats).
+let seats = 7, left = 7;
+try {
+  const { status, data } = await apiJson<{ seats: number; left: number }>('/api/services/gruppa/seats');
+  if (status === 200 && data) { seats = data.seats; left = data.left; }
+} catch {}
+const plural = (n: number, one: string, few: string, many: string) => {
+  const m10 = n % 10, m100 = n % 100;
+  return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
+};
+const seatsText = left <= 0
+  ? 'Мест нет – запишу в следующий поток'
+  : left === seats
+    ? `${seats} мест · набор до 6 ноября`
+    : `Осталось ${left} ${plural(left, 'место', 'места', 'мест')} из ${seats} · набор до 6 ноября`;
 const reviews = [
   { v: 50, name: 'Екатерина', text: 'Оформились мышцы, укрепились суставы, выросла выносливость' },
   { v: 41, name: 'Ксения', text: '−11 кг за 3 месяца и совсем другое внутреннее состояние' },
@@ -31,7 +47,7 @@ const reviews = [
 ---
 <SiteLayout
   title="Групповое ведение – Алексей Ларин"
-  description="8 недель тренировок дома в группе до 5 человек: свой план, разбор каждую субботу и поддержка в чате. Старт 7 ноября, 9 900 ₽."
+  description="8 недель тренировок дома в группе до 7 человек: свой план, разбор каждую субботу и поддержка в чате. Старт 7 ноября, 9 900 ₽."
   active="gruppa">
 
   <!-- ПЕРВЫЙ ЭКРАН -->
@@ -42,13 +58,13 @@ const reviews = [
       <p class="gp-sub">8 недель тренировок дома – по своему плану, с разбором каждую субботу и поддержкой в чате</p>
       <div class="gp-params">
         <div><b>8</b><span>недель</span></div>
-        <div><b>5</b><span>человек в группе</span></div>
+        <div><b>до {seats}</b><span>человек в группе</span></div>
         <div><b>9 900 ₽</b><span>за всё время</span></div>
       </div>
       <div class="gp-cta">
         <a href="#zapis" class="btn-main">Записаться в группу ↓</a>
       </div>
-      <p class="gp-safe">5 мест · набор до 6 ноября</p>
+      <p class="gp-safe">{seatsText}</p>
     </div>
     <div class="gp-hero-photo">
       <picture>
@@ -100,7 +116,7 @@ const reviews = [
           <div class="gp-num">2</div>
           <div>
             <h3>Созвон по субботам в 10:15</h3>
-            <p>Каждый рассказывает, как прошла неделя, а я разбираю и подстраиваю нагрузку. Время на каждого – по таймеру, без внимания никто не останется. Не получилось прийти – будет запись.</p>
+            <p>Каждый рассказывает, как прошла неделя, а я разбираю и подстраиваю нагрузку. В группе не больше {seats} человек – так я успеваю уделить внимание каждому. Не получилось прийти – будет запись.</p>
           </div>
         </div>
         <div class="gp-step">
@@ -176,7 +192,8 @@ const reviews = [
         <div class="gp-price-sum">9 900 ₽</div>
         <p class="gp-price-note">за 8 недель – около 1 240 ₽ в неделю<br>цена первого потока</p>
         <a href="#zapis" class="btn-main btn-full">Записаться</a>
-        <p class="gp-price-seats">5 мест · набор до 6 ноября</p>
+        <p class="gp-price-seats">{seatsText}</p>
+        <p class="gp-price-refund">Не подойдёт после первой недели – верну деньги полностью</p>
       </div>
     </div>
   </section>
@@ -185,8 +202,8 @@ const reviews = [
   <section class="gp-author">
     <div class="gp-author-photo">
       <picture>
-        <source type="image/webp" srcset="/img/IMG_4046.webp 1x, /img/IMG_4046@2x.webp 2x" />
-        <img src="/img/IMG_4046.jpg" srcset="/img/IMG_4046.jpg 1x, /img/IMG_4046@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy" />
+        <source type="image/webp" srcset="/img/gruppa-trenirovka@2x.webp" />
+        <img src="/img/gruppa-trenirovka@2x.jpg" alt="Алексей Ларин поправляет упражнение на тренировке" width="590" height="690" loading="lazy" />
       </picture>
     </div>
     <div class="gp-author-text">
@@ -256,9 +273,9 @@ const reviews = [
         <li><b>Отвечу на вопросы</b>, забронирую место и пришлю ссылку на оплату</li>
         <li><b>После оплаты</b> придёт анкета и замеры, а 7 ноября – первый созвон</li>
       </ol>
-      <a href={TG_JOIN} class="btn-main btn-full" target="_blank" rel="noopener">Написать в Telegram</a>
-      <a href={MAX} class="gp-max" target="_blank" rel="noopener">Нет Telegram – написать в Max</a>
-      <p class="gp-alt">Обычно отвечаю в течение дня · 5 мест · набор до 6 ноября</p>
+      <a href={TG_JOIN} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
+      <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Нет Telegram – написать в Max</a>
+      <p class="gp-alt">Обычно отвечаю в течение дня · {seatsText}</p>
 
       <details class="gp-leave">
         <summary>Нет мессенджеров? <span>Оставьте контакт</span> – я напишу сам</summary>
@@ -361,10 +378,11 @@ const reviews = [
     .gp-price-sum { font-family: 'Cormorant Garamond', serif; font-size: 52px; line-height: 1; margin: 0 0 6px; }
     .gp-price-note { font-size: 15px; color: rgba(255,255,255,.75); margin: 0 0 22px; line-height: 1.6; }
     .gp-price-seats { text-align: center; font-size: 14px; color: rgba(255,255,255,.75); margin: 14px 0 0; }
+    .gp-price-refund { text-align: center; font-size: 14px; color: rgba(255,255,255,.75); margin: 6px 0 0; }
 
     .gp-author { display: grid; grid-template-columns: 0.8fr 1.2fr; background: var(--navy); color: white; }
     .gp-author-photo { position: relative; min-height: 480px; overflow: hidden; background: #d9dde3; }
-    .gp-author-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+    .gp-author-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 40% 30%; }
     .gp-author-text { padding: 80px 72px; }
     .gp-author h2 { color: white; }
     .gp-quote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 26px; color: #8bb8f0; margin: 0 0 22px; }
@@ -455,6 +473,10 @@ const reviews = [
   </style>
 
   <script>
+    // Нажатия на «Написать в Telegram / Max» – цель Метрики messenger_click.
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+
     // Скрытый блок оплаты открывается по ссылке /gruppa#oplata.
     const payBox = document.getElementById('oplata');
     const showPay = () => {

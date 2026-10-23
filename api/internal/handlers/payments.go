@@ -632,7 +632,29 @@ type service struct {
 
 var services = map[string]service{
 	"start":  {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990, Page: "/start"},
-	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 5},
+	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 7},
+}
+
+// ServiceSeats – GET /api/services/{service}/seats: сколько мест всего и
+// сколько осталось (по оплаченным заказам). Публичный – страница группы
+// показывает «осталось N из M».
+func (a *App) ServiceSeats(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "service")
+	svc, ok := services[name]
+	if !ok || svc.Seats == 0 {
+		writeErr(w, 404, "not_found")
+		return
+	}
+	n, err := a.Repo.CountPaidServiceOrders(r.Context(), name)
+	if err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	left := svc.Seats - n
+	if left < 0 {
+		left = 0
+	}
+	writeJSON(w, 200, map[string]int{"seats": svc.Seats, "left": left})
 }
 
 func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {

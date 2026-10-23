@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ReviewsCarousel from '../components/ReviewsCarousel.astro';
+import { apiJson } from '../lib/api';
 // Персональные тренировки: онлайн или выезд на дом (Москва), 60 минут.
 // Первое занятие оплачивается после него, дальше – пакеты 5 и 10 занятий.
 // Запись – через личные сообщения (Telegram / Max) или заявку (source=personal);
@@ -8,6 +9,15 @@ import ReviewsCarousel from '../components/ReviewsCarousel.astro';
 const HELLO = 'Здравствуйте, Алексей! Хочу на персональную тренировку. Формат (онлайн или дома): \nМоя цель: ';
 const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent(HELLO);
 const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent(HELLO);
+// Пока идёт набор в группу (до 6 ноября включительно и есть места) –
+// показываем блок-ссылку на /gruppa для тех, кому персональные дороги.
+let groupOpen = Date.now() < Date.parse('2026-11-07T00:00:00+03:00');
+if (groupOpen) {
+  try {
+    const { status, data } = await apiJson<{ left: number }>('/api/services/gruppa/seats');
+    if (status === 200 && data && data.left <= 0) groupOpen = false;
+  } catch {}
+}
 const reviews = [
   { v: 64, name: 'Анна', text: 'Встроила спорт в жизнь, ушли зажимы в плечах и спине' },
   { v: 35, name: 'Анна', text: 'Регулярные тренировки, больше энергии, занимаемся всей семьёй' },
@@ -146,6 +156,12 @@ const reviews = [
         <p class="gp-rule"><b>Срок пакета</b>5 занятий – на месяц, 10 – на два. Это помогает держать ритм.</p>
         <p class="gp-rule"><b>Если заболели</b>Продлю пакет на время болезни – ничего не сгорит.</p>
       </div>
+      {groupOpen && (
+        <a href="/gruppa" class="gp-cross">
+          <span class="gp-cross-text"><b>Хотите дешевле и в компании?</b> Групповое ведение – 8 недель тренировок дома по своему плану, разбор каждую субботу. 9 900 ₽, старт 7 ноября.</span>
+          <span class="gp-cross-go">Подробнее →</span>
+        </a>
+      )}
     </div>
   </section>
 
@@ -201,8 +217,8 @@ const reviews = [
         <li><b>Договоримся</b> о дне и времени первого занятия</li>
         <li><b>Тренируемся</b> – оплату за первое занятие пришлю после него</li>
       </ol>
-      <a href={TG} class="btn-main btn-full" target="_blank" rel="noopener">Написать в Telegram</a>
-      <a href={MAX} class="gp-max" target="_blank" rel="noopener">Нет Telegram – написать в Max</a>
+      <a href={TG} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
+      <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Нет Telegram – написать в Max</a>
       <p class="gp-alt">Обычно отвечаю в течение дня</p>
 
       <details class="gp-leave">
@@ -391,6 +407,12 @@ const reviews = [
     .gp-prices b { font-size: 20px; color: var(--navy); white-space: nowrap; }
     .gp-prices small { display: block; font-size: 14px; color: var(--text-light, #6e6e6e); margin-top: 2px; }
     .gp-format-note { font-size: 15px; line-height: 1.6; color: var(--text-muted, #555); margin: auto 0 0; }
+    .gp-cross { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 36px; padding: 22px 26px; border-radius: 18px; background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); text-decoration: none; color: var(--text-mid, #3a3a3a); font-size: 16px; line-height: 1.6; transition: border-color .2s, transform .2s; }
+    .gp-cross b { color: var(--navy); }
+    .gp-cross-go { flex-shrink: 0; font-weight: 600; color: var(--orange); }
+    @media (hover: hover) { .gp-cross:hover { border-color: var(--orange); transform: translateY(-2px); } }
+    .gp-cross:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    @media (max-width: 700px) { .gp-cross { flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; } }
     .gp-rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 26px; }
     .gp-rule { border-left: 3px solid var(--orange); padding: 4px 0 4px 16px; font-size: 16px; line-height: 1.65; color: var(--text-mid, #3a3a3a); }
     .gp-rule b { display: block; color: var(--navy); margin-bottom: 2px; }
@@ -399,6 +421,10 @@ const reviews = [
   </style>
 
   <script>
+    // Нажатия на «Написать в Telegram / Max» – цель Метрики messenger_click.
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+
     // Заявка → POST /api/leads (CSRF подставляет обёртка fetch из SiteLayout).
     const lead = document.getElementById('lead-form') as HTMLFormElement | null;
     lead?.addEventListener('submit', async (e) => {
