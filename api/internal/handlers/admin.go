@@ -126,7 +126,10 @@ func (a *App) AdminUser(w http.ResponseWriter, r *http.Request) {
 	anketa := map[string]any{"url": a.anketaURL(u.ID)}
 	if q, err := a.Repo.GetQuestionnaire(r.Context(), u.ID); err == nil {
 		var items []map[string]string
-		for _, aq := range anketaQuestions {
+		_, form := anketaFormFor(q.Kind)
+		anketa["kind"] = q.Kind
+		anketa["url"] = a.anketaURLKind(u.ID, q.Kind)
+		for _, aq := range form.Questions {
 			if v := q.Answers[aq.Key]; v != "" {
 				items = append(items, map[string]string{"label": aq.Label, "answer": v})
 			}

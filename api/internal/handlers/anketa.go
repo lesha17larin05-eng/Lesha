@@ -33,7 +33,18 @@ func AnketaToken(secret, userID string) string {
 }
 
 func (a *App) anketaURL(userID uuid.UUID) string {
-	return a.Cfg.AppHost + "/anketa?u=" + userID.String() + "&t=" + AnketaToken(a.Cfg.JWTSecret, userID.String())
+	return a.anketaURLKind(userID, "start")
+}
+
+// anketaURLKind – ссылка на анкету нужного вида (start – перед первым
+// занятием, gruppa – перед групповым ведением). Вид в подпись не входит:
+// он выбирает только набор вопросов.
+func (a *App) anketaURLKind(userID uuid.UUID, kind string) string {
+	u := a.Cfg.AppHost + "/anketa?u=" + userID.String() + "&t=" + AnketaToken(a.Cfg.JWTSecret, userID.String())
+	if kind != "" && kind != "start" {
+		u += "&k=" + kind
+	}
+	return u
 }
 
 type anketaQuestion struct {
@@ -74,6 +85,85 @@ var anketaQuestions = []anketaQuestion{
 	{Key: "extra", Group: "Практическое", Label: "Что-то, чего я не спросил, но что важно знать?"},
 }
 
+// Вопросы анкеты группового ведения (утверждены 23.10.2026) и замеры до старта.
+var anketaGruppaQuestions = []anketaQuestion{
+	{Key: "name_age", Group: "О вас", Required: true, Short: true, Label: "Имя и возраст"},
+	{Key: "telegram", Group: "О вас", Required: true, Short: true, Label: "Ваш ник в Telegram",
+		Hint: "Чтобы добавить вас в чат группы"},
+	{Key: "goal", Group: "Цель", Required: true, Label: "Чего хотите добиться за эти 8 недель?",
+		Hint: "Например: выглядеть подтянутее, стать сильнее, больше энергии, наладить регулярность – или что-то своё"},
+	{Key: "success", Group: "Цель", Label: "Как вы поймёте, что всё получилось?"},
+	{Key: "activity", Group: "Опыт", Required: true, Label: "Какая у вас сейчас физическая активность?",
+		Hint: "Спорт, зал, бег, прогулки – или почти никакой"},
+	{Key: "stopped", Group: "Опыт", Label: "Если уже пробовали заниматься регулярно, что мешало продолжить?"},
+	{Key: "injuries", Group: "Здоровье", Health: true, Label: "Были ли травмы, переломы или операции? Какие и когда"},
+	{Key: "limits", Group: "Здоровье", Health: true, Label: "Есть ли ограничения или рекомендации от врача?"},
+	{Key: "pain", Group: "Здоровье", Health: true, Label: "Что-то беспокоит в теле сейчас?",
+		Hint: "Если есть боль – где и насколько сильно, от 0 до 10"},
+	{Key: "sleep", Group: "Образ жизни", Label: "Как вы спите: сколько часов, легко ли засыпаете и встаёте?"},
+	{Key: "day", Group: "Образ жизни", Label: "Как проходит обычный день?", Hint: "Сидячая работа или на ногах, сколько примерно шагов"},
+	{Key: "energy", Group: "Образ жизни", Short: true, Label: "Уровень энергии сейчас, от 1 до 10"},
+	{Key: "stress", Group: "Образ жизни", Short: true, Label: "Уровень стресса сейчас, от 1 до 10"},
+	{Key: "days", Group: "Тренировки", Required: true, Label: "В какие дни недели вам удобнее тренироваться? Есть ли гиря – какого веса и работали ли с ней?"},
+	{Key: "extra", Group: "Тренировки", Label: "Что ещё мне важно о вас знать?"},
+	{Key: "height", Group: "Замеры – утром, до завтрака", Required: true, Short: true, Label: "Рост, см"},
+	{Key: "weight", Group: "Замеры – утром, до завтрака", Required: true, Short: true, Label: "Вес, кг"},
+	{Key: "waist", Group: "Замеры – утром, до завтрака", Required: true, Short: true, Label: "Обхват талии, см",
+		Hint: "По линии пупка, живот не втягивать"},
+	{Key: "hips", Group: "Замеры – утром, до завтрака", Required: true, Short: true, Label: "Обхват бёдер, см",
+		Hint: "По самой широкой части"},
+	{Key: "breath", Group: "Замеры – утром, до завтрака", Required: true, Short: true, Label: "Задержка дыхания, секунд",
+		Hint: "3 спокойных вдоха-выдоха, на 4-м вдохе задержите дыхание и засеките время"},
+}
+
+// anketaForm – вид анкеты: тексты страницы, тема письма и вопросы.
+type anketaForm struct {
+	Eyebrow   string           `json:"eyebrow"`
+	Title     string           `json:"title"` // %s – имя, если известно
+	Lead      string           `json:"lead"`
+	Done      string           `json:"done"`
+	Subject   string           `json:"-"` // тема письма Алексею
+	Questions []anketaQuestion `json:"-"`
+}
+
+var anketaForms = map[string]anketaForm{
+	"start": {
+		Eyebrow: "Перед занятием", Title: "пара вопросов перед занятием",
+		Lead:    "Отвечайте своими словами – можно коротко. Чем честнее, тем точнее я соберу план под вас. Займёт 5–7 минут.",
+		Done:    "Прочитаю её и напишу вам в течение 1–2 дней – договоримся о времени занятия.",
+		Subject: "Анкета перед занятием", Questions: anketaQuestions,
+	},
+	"gruppa": {
+		Eyebrow: "Групповое ведение", Title: "анкета и замеры перед стартом",
+		Lead: "Отвечайте своими словами – можно коротко. По анкете я соберу ваш первый план, а замеры сравним в конце. " +
+			"Займёт 10 минут. Фото спереди, сбоку и сзади – по желанию: пришлите их лично мне в Telegram, в группе их никто не увидит.",
+		Done:    "Прочитаю её и добавлю вас в чат группы в Telegram. До встречи на старте!",
+		Subject: "Анкета группы", Questions: anketaGruppaQuestions,
+	},
+}
+
+// anketaFormFor – вид анкеты по ключу; неизвестный – «start».
+func anketaFormFor(kind string) (string, anketaForm) {
+	if f, ok := anketaForms[kind]; ok {
+		return kind, f
+	}
+	return "start", anketaForms["start"]
+}
+
+// anketaKind – какую анкету показать: из ссылки (?k=), иначе ту, что человек
+// уже заполнял, иначе «start».
+func anketaKind(r *http.Request, saved *db.Questionnaire) string {
+	if k := r.URL.Query().Get("k"); k != "" {
+		k, _ = anketaFormFor(k)
+		return k
+	}
+	if saved != nil {
+		k, _ := anketaFormFor(saved.Kind)
+		return k
+	}
+	return "start"
+}
+
 const anketaMaxLen = 3000 // символов на ответ
 
 // anketaUser – пользователь из подписанной ссылки, иначе nil.
@@ -106,11 +196,16 @@ func (a *App) GetAnketa(w http.ResponseWriter, r *http.Request) {
 	}
 	answers := map[string]string{}
 	submitted := false
-	if q, err := a.Repo.GetQuestionnaire(r.Context(), u.ID); err == nil {
-		answers, submitted = q.Answers, true
+	saved, err := a.Repo.GetQuestionnaire(r.Context(), u.ID)
+	if err != nil {
+		saved = nil
+	}
+	kind, form := anketaFormFor(anketaKind(r, saved))
+	if saved != nil && saved.Kind == kind {
+		answers, submitted = saved.Answers, true
 	}
 	writeJSON(w, 200, map[string]any{
-		"name": name, "questions": anketaQuestions, "answers": answers, "submitted": submitted,
+		"name": name, "kind": kind, "form": form, "questions": form.Questions, "answers": answers, "submitted": submitted,
 	})
 }
 
@@ -129,9 +224,14 @@ func (a *App) SubmitAnketa(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 400, "bad_json")
 		return
 	}
+	saved, err := a.Repo.GetQuestionnaire(r.Context(), u.ID)
+	if err != nil {
+		saved = nil
+	}
+	kind, form := anketaFormFor(anketaKind(r, saved))
 	clean := map[string]string{}
 	var missing []string
-	for _, q := range anketaQuestions {
+	for _, q := range form.Questions {
 		v := strings.TrimSpace(in.Answers[q.Key])
 		if rs := []rune(v); len(rs) > anketaMaxLen {
 			v = string(rs[:anketaMaxLen])
@@ -151,27 +251,27 @@ func (a *App) SubmitAnketa(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]any{"error": "required", "missing": missing})
 		return
 	}
-	_, existed := a.Repo.GetQuestionnaire(r.Context(), u.ID)
-	if err := a.Repo.SaveQuestionnaire(r.Context(), u.ID, clean); err != nil {
+	if err := a.Repo.SaveQuestionnaire(r.Context(), u.ID, kind, clean); err != nil {
 		slog.Warn("anketa save", "err", err)
 		writeErr(w, 500, "db")
 		return
 	}
-	a.notifyAnketa(u, clean, existed == nil)
+	a.notifyAnketa(u, kind, clean, saved != nil && saved.Kind == kind)
 	writeJSON(w, 200, map[string]any{"ok": 1})
 }
 
 // notifyAnketa – ответы анкеты Алексею на почту.
-func (a *App) notifyAnketa(u *db.User, answers map[string]string, updated bool) {
-	subject := "Анкета «Точки перемен»: " + u.Name
+func (a *App) notifyAnketa(u *db.User, kind string, answers map[string]string, updated bool) {
+	_, form := anketaFormFor(kind)
+	subject := form.Subject + ": " + u.Name
 	if updated {
-		subject = "Анкета обновлена: " + u.Name
+		subject = form.Subject + " обновлена: " + u.Name
 	}
 	var sb strings.Builder
 	sb.WriteString(`<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;line-height:1.55;max-width:640px;">`)
 	sb.WriteString(`<p><b>` + html.EscapeString(u.Name) + `</b> &lt;` + html.EscapeString(u.Email) + `&gt;</p>`)
 	group := ""
-	for _, q := range anketaQuestions {
+	for _, q := range form.Questions {
 		if q.Group != group {
 			group = q.Group
 			sb.WriteString(`<h3 style="margin:22px 0 8px;font-size:16px;color:#1a2744;">` + html.EscapeString(group) + `</h3>`)

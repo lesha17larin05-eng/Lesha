@@ -26,7 +26,7 @@ type leadReq struct {
 
 // consultation остаётся в списке: страница закрыта и редиректит на /start,
 // но старые ссылки и закладки могут прислать этот источник.
-var leadSources = map[string]bool{"coaching": true, "start": true, "consultation": true}
+var leadSources = map[string]bool{"coaching": true, "start": true, "consultation": true, "gruppa": true, "personal": true}
 
 func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 	var in leadReq
@@ -61,6 +61,8 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 	sourceTitle := map[string]string{
 		"coaching":     "Личное ведение",
 		"start":        "Точка перемен",
+		"gruppa":       "Групповое ведение",
+		"personal":     "Персональные тренировки",
 		"consultation": "Консультация (старая страница)",
 		"other":        "Сайт",
 	}[in.Source]
@@ -75,12 +77,13 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 				return "<p><b>Сообщение:</b><br>" + html.EscapeString(in.Message) + "</p>"
 			})()+
 			(func() string {
-				// «Точка перемен»: сначала переписка, потом Алексей пересылает ссылку
-				// на оплату – она открывает скрытый блок оплаты на странице.
-				if in.Source != "start" {
+				// «Точка перемен» и группа: сначала переписка, потом Алексей пересылает
+				// ссылку на оплату – она открывает скрытый блок оплаты на странице.
+				page := map[string]string{"start": "/start", "gruppa": "/gruppa"}[in.Source]
+				if page == "" {
 					return ""
 				}
-				return "<p><b>Ссылка на оплату для человека:</b> " + a.Cfg.AppHost + "/start#oplata</p>"
+				return "<p><b>Ссылка на оплату для человека:</b> " + a.Cfg.AppHost + page + "#oplata</p>"
 			})()+
 			"<p>Все заявки: <a href=\""+a.Cfg.AppHost+"/admin/leads\">"+a.Cfg.AppHost+"/admin/leads</a></p>")
 	writeJSON(w, 201, map[string]any{"ok": 1, "id": id})

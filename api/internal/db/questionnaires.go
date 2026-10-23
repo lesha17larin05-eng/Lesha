@@ -12,23 +12,24 @@ import (
 
 // Questionnaire – анкета перед «Точкой перемен» (миграция 020), одна на человека.
 type Questionnaire struct {
+	Kind        string            `json:"kind"` // start | gruppa (миграция 026)
 	Answers     map[string]string `json:"answers"`
 	SubmittedAt time.Time         `json:"submitted_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
 // SaveQuestionnaire создаёт или перезаписывает анкету человека.
-func (r *Repo) SaveQuestionnaire(ctx context.Context, userID uuid.UUID, answers map[string]string) error {
+func (r *Repo) SaveQuestionnaire(ctx context.Context, userID uuid.UUID, kind string, answers map[string]string) error {
 	b, err := json.Marshal(answers)
 	if err != nil {
 		return err
 	}
 	_, err = r.Pool.Exec(ctx, `
-		INSERT INTO questionnaires(user_id, answers, health_consent_at)
-		VALUES ($1, $2, now())
+		INSERT INTO questionnaires(user_id, kind, answers, health_consent_at)
+		VALUES ($1, $2, $3, now())
 		ON CONFLICT (user_id) DO UPDATE
-		   SET answers = EXCLUDED.answers, health_consent_at = now(), updated_at = now()`,
-		userID, b)
+		   SET kind = EXCLUDED.kind, answers = EXCLUDED.answers, health_consent_at = now(), updated_at = now()`,
+		userID, kind, b)
 	return err
 }
 
@@ -37,8 +38,8 @@ func (r *Repo) GetQuestionnaire(ctx context.Context, userID uuid.UUID) (*Questio
 	q := &Questionnaire{}
 	var raw []byte
 	err := r.Pool.QueryRow(ctx,
-		`SELECT answers, submitted_at, updated_at FROM questionnaires WHERE user_id = $1`, userID).
-		Scan(&raw, &q.SubmittedAt, &q.UpdatedAt)
+		`SELECT kind, answers, submitted_at, updated_at FROM questionnaires WHERE user_id = $1`, userID).
+		Scan(&q.Kind, &raw, &q.SubmittedAt, &q.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -47,4 +48,12 @@ func (r *Repo) GetQuestionnaire(ctx context.Context, userID uuid.UUID) (*Questio
 	}
 	_ = json.Unmarshal(raw, &q.Answers)
 	return q, nil
+}
+
+// CountPaidServiceOrders – сколько оплаченных заказов на услугу (места в группе).
+func (r *Repo) CountPaidServiceOrders(ctx context.Context, service string) (int, error) {
+	var n int
+	err := r.Pool.QueryRow(ctx,
+		`SELECT count(*) FROM orders WHERE service = $1 AND status = 'paid'`, service).Scan(&n)
+	return n, err
 }

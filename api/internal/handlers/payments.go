@@ -622,11 +622,17 @@ func (a *App) handleRefund(r *http.Request, o *db.Order, status string) {
 // Регистрации не требуем: человек оставляет почту и имя, аккаунт заводится
 // сам. Для покупки за 2 990 ₽ заставлять придумывать пароль – значит терять
 // половину тех, кто уже решился.
-var services = map[string]struct {
-	Title    string
+// Услуги с оплатой на сайте (без курса в кабинете).
+type service struct {
+	Title    string // название в чеке и уведомлениях
 	PriceRub int
-}{
-	"start": {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990},
+	Page     string // страница услуги – туда возвращает «Назад» из Продамуса
+	Seats    int    // сколько мест (0 – без ограничения)
+}
+
+var services = map[string]service{
+	"start":  {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990, Page: "/start"},
+	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 9 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 5},
 }
 
 func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
@@ -658,6 +664,12 @@ func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
 	if !in.ConsentPD {
 		writeErr(w, 400, "consent_pd_required")
 		return
+	}
+	if svc.Seats > 0 {
+		if n, err := a.Repo.CountPaidServiceOrders(r.Context(), in.Service); err == nil && n >= svc.Seats {
+			writeErr(w, 409, "sold_out")
+			return
+		}
 	}
 
 	// Находим или заводим человека – тем же способом, что и подписка на письма.
@@ -700,7 +712,7 @@ func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
 				"quantity": "1",
 			},
 		},
-		"urlReturn":       a.Cfg.AppHost + "/start",
+		"urlReturn":       a.Cfg.AppHost + svc.Page,
 		"urlSuccess":      a.Cfg.AppHost + "/oplacheno",
 		"urlNotification": a.Cfg.AppHost + "/api/webhooks/prodamus",
 		"npd_income_type": "FROM_INDIVIDUAL",
@@ -752,6 +764,10 @@ func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
 	if u == nil {
 		return
 	}
+	if o.Service == "gruppa" {
+		a.gruppaOrderPaid(u, o, svc)
+		return
+	}
 	anketa := a.anketaURL(o.UserID)
 	a.Mail.Async(u.Email, "Оплата получена – «Точка перемен»",
 		"<p>Здравствуйте! Оплата получена, спасибо.</p>"+
@@ -772,4 +788,29 @@ func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
 			"<p><b>Заказ:</b> №"+strconv.FormatInt(o.OrderNum, 10)+"</p>"+
 			"<p>Человеку ушло письмо со ссылкой на анкету – ответы придут отдельным письмом. "+
 			"Ссылка на его анкету (если нужно переслать): <a href=\""+anketa+"\">"+anketa+"</a></p>")
+}
+
+// gruppaOrderPaid – оплачено групповое ведение: письмо с анкетой и замерами,
+// уведомление Алексею.
+func (a *App) gruppaOrderPaid(u *db.User, o *db.Order, svc service) {
+	anketa := a.anketaURLKind(o.UserID, "gruppa")
+	a.Mail.Async(u.Email, "Вы в группе – групповое ведение с 9 ноября",
+		"<p>Здравствуйте! Оплата получена – вы в группе, я очень рад 🙂</p>"+
+			"<p><b>Первый шаг – анкета и замеры.</b> Минут 10: цель, опыт, здоровье, удобные дни "+
+			"и простые замеры (рост, вес, талия, бёдра, задержка дыхания). По анкете я соберу ваш первый план, "+
+			"а замеры сравним в конце.</p>"+
+			`<p><a href="`+anketa+`" style="display:inline-block;background:#e8652a;color:#fff;text-decoration:none;`+
+			`padding:12px 24px;border-radius:100px;font-weight:600">Заполнить анкету&nbsp;→</a></p>`+
+			"<p>Заполните, пожалуйста, до 7 ноября. После анкеты добавлю вас в чат группы в Telegram.</p>"+
+			"<p>Старт – понедельник, 9 ноября. Созвоны – по субботам в 10:15 по Москве.</p>"+
+			"<p>Если что-то непонятно – просто ответьте на это письмо или напишите мне в "+
+			"<a href=\"https://t.me/larin_lesha\">Телеграм</a>.</p>"+
+			"<p>Алексей Ларин</p>")
+
+	a.notifyAdmin("💰 ", "Оплачено групповое ведение",
+		"<p><b>Кто:</b> "+html.EscapeString(u.Name)+" &lt;"+html.EscapeString(u.Email)+"&gt;</p>"+
+			"<p><b>Что:</b> "+html.EscapeString(svc.Title)+"</p>"+
+			"<p><b>Сумма:</b> "+strconv.Itoa(o.AmountRub)+" ₽</p>"+
+			"<p><b>Заказ:</b> №"+strconv.FormatInt(o.OrderNum, 10)+"</p>"+
+			"<p>Человеку ушло письмо с анкетой и замерами. Ссылка на его анкету: <a href=\""+anketa+"\">"+anketa+"</a></p>")
 }

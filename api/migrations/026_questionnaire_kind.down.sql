@@ -1,0 +1,1 @@
+ALTER TABLE questionnaires DROP COLUMN IF EXISTS kind;

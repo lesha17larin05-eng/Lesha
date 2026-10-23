@@ -222,3 +222,10 @@ JSON `{"error": "<code>"}`:
 | POST | `/api/admin/orders/{id}/refund` | админ | Ручной возврат: заказ `paid` → `refunded`, для курса закрывается доступ с `granted_by='purchase'` (подаренные и бесплатные не трогаются). Пишется `audit_log` с `action='refund'`. 400 — заказ не в статусе `paid` (в т.ч. повторный возврат), 404 — нет заказа. Ответ: `{"ok":1,"access_revoked":bool}`. |
 
 `GET /api/admin/orders` теперь отдаёт и заказы на услуги (`course_id = NULL`): поля `service`, `product` (название курса или услуги) и `paid_at`. Раньше такие строки не сканировались и молча выпадали из списка.
+
+### Групповое ведение (23.10.2026)
+
+- `POST /api/checkout/service` принимает `service: "gruppa"` (9 900 ₽, 5 мест). Когда оплачено 5 заказов – `409 sold_out`. Возврат из Продамуса – на `/gruppa`.
+- После оплаты – письмо с анкетой `/anketa?u=&t=&k=gruppa` и уведомление Алексею.
+- `GET/POST /api/anketa` принимают `k` (вид анкеты: `start` | `gruppa`). Без `k` – вид уже заполненной анкеты, иначе `start`. В ответе GET – `kind` и `form` (тексты страницы).
+- `POST /api/leads`: новые источники `gruppa` (в уведомлении – ссылка на оплату `/gruppa#oplata`) и `personal`.

@@ -1,0 +1,524 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+// Групповое ведение: 8 недель, до 5 человек. Запись – через заявку (имя,
+// контакт, цель); Алексей пишет человеку и присылает ссылку /gruppa#oplata,
+// по ней открывается скрытый блок оплаты (POST /api/checkout/service,
+// service=gruppa). После оплаты – письмо с анкетой и замерами (anketa ?k=gruppa).
+const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Вопрос про групповое ведение: ');
+const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent('Здравствуйте, Алексей! Вопрос про групповое ведение: ');
+const reviews = [
+  { v: 50, name: 'Екатерина', text: 'Оформились мышцы, укрепились суставы, выросла выносливость' },
+  { v: 41, name: 'Ксения', text: '−11 кг за 3 месяца и совсем другое внутреннее состояние' },
+  { v: 13, name: 'Екатерина', text: '«После курса хочется жить и делать ещё больше»' },
+  { v: 54, name: 'Елена', text: 'Выстроила тренировки под сложный посменный график' },
+];
+---
+<SiteLayout
+  title="Групповое ведение – Алексей Ларин"
+  description="8 недель тренировок дома в группе до 5 человек: свой план, разбор каждую субботу и поддержка в чате. Старт 9 ноября, 9 900 ₽."
+  active="gruppa">
+
+  <!-- ПЕРВЫЙ ЭКРАН -->
+  <section class="gp-hero">
+    <div class="gp-hero-text">
+      <p class="gp-eyebrow"><span class="dot"></span>Групповое ведение · старт 9 ноября</p>
+      <h1>Войти в Новый год <em>сильнее</em></h1>
+      <p class="gp-sub">8 недель тренировок дома – по своему плану, с разбором каждую субботу и поддержкой в чате</p>
+      <div class="gp-params">
+        <div><b>8</b><span>недель</span></div>
+        <div><b>5</b><span>человек в группе</span></div>
+        <div><b>9 900 ₽</b><span>за всё время</span></div>
+      </div>
+      <div class="gp-cta">
+        <a href="#zapis" class="btn-main">Записаться в группу ↓</a>
+        <a href={TG} class="gp-ask" target="_blank" rel="noopener">Сначала задать вопрос в Telegram</a>
+      </div>
+      <p class="gp-safe">Передумаете до старта – верну деньги полностью</p>
+    </div>
+    <div class="gp-hero-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_4023.webp 1x, /img/IMG_4023@2x.webp 2x" />
+        <img src="/img/IMG_4023.jpg" srcset="/img/IMG_4023.jpg 1x, /img/IMG_4023@2x.jpg 2x" alt="Алексей Ларин" width="1200" height="800" loading="eager" fetchpriority="high" />
+      </picture>
+    </div>
+  </section>
+
+  <!-- ЗНАКОМО? -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Для кого</p>
+      <h2>Если вам <em>знакомо</em></h2>
+      <div class="gp-cards3">
+        <div class="gp-card">
+          <div class="gp-ico">🔁</div>
+          <h3>Начинали много раз</h3>
+          <p>Абонемент, марафон, приложение – и через пару недель всё сходит на нет. Одному держать ритм трудно, и это нормально.</p>
+        </div>
+        <div class="gp-card">
+          <div class="gp-ico">💪</div>
+          <h3>Хочется выглядеть и чувствовать себя лучше</h3>
+          <p>Подтянутое тело, больше сил, хороший сон и настроение. Без жёстких диет и тренировок «через не могу».</p>
+        </div>
+        <div class="gp-card">
+          <div class="gp-ico">🗺️</div>
+          <h3>Нужен понятный план</h3>
+          <p>Что делать, сколько и в какие дни – чтобы не гадать каждый раз, а просто открыть план и сделать.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- КАК УСТРОЕНО -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner">
+      <p class="gp-label">Как это устроено</p>
+      <h2>Каждая неделя – <em>по понятному ритму</em></h2>
+      <div class="gp-steps">
+        <div class="gp-step">
+          <div class="gp-num">1</div>
+          <div>
+            <h3>План на неделю – под вас</h3>
+            <p>Две силовые тренировки дома (третья – по желанию), прогулки и шаги. Упражнения и нагрузка – под ваш уровень и вашу цель. Нужен только коврик.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">2</div>
+          <div>
+            <h3>Созвон по субботам в 10:15</h3>
+            <p>Каждый рассказывает, как прошла неделя, а я разбираю и подстраиваю нагрузку. Время на каждого – по таймеру, без внимания никто не останется. Не получилось прийти – будет запись.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">3</div>
+          <div>
+            <h3>Чат группы в Telegram</h3>
+            <p>Отмечаетесь после тренировок ✅ и задаёте вопросы. Я на связи каждый день. Когда видишь, что другие тоже тренируются, самому заниматься проще.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">4</div>
+          <div>
+            <h3>Короткий отчёт в конце недели</h3>
+            <p>Пара строчек или голосовое: что получилось, что было трудно, как самочувствие. Так я готовлюсь к разбору заранее.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 НЕДЕЛЬ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">8 недель</p>
+      <h2>Два цикла <em>с отдыхом</em></h2>
+      <p class="gp-desc">Три недели тренируемся, неделю восстанавливаемся. Отдых – часть системы: в это время тело и становится сильнее.</p>
+      <div class="gp-timeline">
+        <div class="gp-tl">
+          <p class="gp-tl-date">9 – 29 ноября</p>
+          <h3>Цикл 1. Осваиваемся</h3>
+          <p>Учимся технике, находим свой ритм. Нагрузка растёт постепенно.</p>
+        </div>
+        <div class="gp-tl gp-tl-rest">
+          <p class="gp-tl-date">30 ноября – 6 декабря</p>
+          <h3>Неделя отдыха</h3>
+          <p>Восстанавливаемся и подводим итоги первого цикла.</p>
+        </div>
+        <div class="gp-tl">
+          <p class="gp-tl-date">7 – 27 декабря</p>
+          <h3>Цикл 2. Добавляем</h3>
+          <p>Упражнения сложнее, нагрузка выше – вы уже готовы.</p>
+        </div>
+        <div class="gp-tl gp-tl-rest">
+          <p class="gp-tl-date">28 декабря – 3 января</p>
+          <h3>Финал</h3>
+          <p>Повторяем замеры, сравниваем с началом – и встречаем Новый год с результатом.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ЧЕГО ЖДАТЬ + ЦЕНА -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner gp-offer">
+      <div class="gp-expect">
+        <p class="gp-label">Чего ждать</p>
+        <h2>Честно <em>о результате</em></h2>
+        <ul class="gp-checks">
+          <li><b>Первые 2–3 недели</b> – больше сил, лучше сон и настроение. Тренировки перестают быть подвигом.</li>
+          <li><b>К концу 8 недель</b> – тело крепче и подтянутее, одежда сидит иначе. Замеры это покажут.</li>
+          <li><b>Главное</b> – у вас остаётся привычка и понятная система, с которой хочется продолжать.</li>
+        </ul>
+      </div>
+      <div class="gp-price">
+        <p class="gp-price-label">Что входит</p>
+        <ul>
+          <li>Анкета и замеры до старта</li>
+          <li>Ваш план на каждую неделю</li>
+          <li>Созвоны по субботам с разбором + записи</li>
+          <li>Чат группы, я на связи каждый день</li>
+          <li>Сравнение замеров в конце</li>
+        </ul>
+        <div class="gp-price-sum">9 900 ₽</div>
+        <p class="gp-price-note">за 8 недель – около 1 240 ₽ в неделю<br>цена первого потока</p>
+        <a href="#zapis" class="btn-main btn-full">Записаться</a>
+        <p class="gp-price-seats">5 мест · набор до 6 ноября</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- КТО ВЕДЁТ -->
+  <section class="gp-author">
+    <div class="gp-author-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_4046.webp 1x, /img/IMG_4046@2x.webp 2x" />
+        <img src="/img/IMG_4046.jpg" srcset="/img/IMG_4046.jpg 1x, /img/IMG_4046@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy" />
+      </picture>
+    </div>
+    <div class="gp-author-text">
+      <p class="gp-label">Кто ведёт</p>
+      <h2>Алексей Ларин</h2>
+      <p class="gp-quote">Тренировки, после которых хочется жить.</p>
+      <p>Больше 10 лет тренирую детей и взрослых, магистр университета спорта «ГЦОЛИФК». За это время со мной занимались больше 8 000 человек – на курсах, в лагерях, на групповых и личных занятиях.</p>
+      <p>В 9 лет я сломал три позвонка и возвращался к движению шаг за шагом. Поэтому знаю, каково начинать заново, и всегда подбираю нагрузку под человека.</p>
+      <p>В тренировках соединяю силовые, бег и йогу – и обязательно отдых.</p>
+    </div>
+  </section>
+
+  <!-- ОТЗЫВЫ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label gp-center">Отзывы</p>
+      <h2 class="gp-center">Люди, которые <em>начали</em></h2>
+      <div class="gp-reviews">
+        {reviews.map((r) => (
+          <div class="gp-rev">
+            <div class="rv-video">
+              <video src={`/videos/${r.v}.mp4`} poster={`/videos/thumbs/${r.v}.jpg`} playsinline preload="none"></video>
+              <div class="rv-play"><div class="rv-play-btn"></div></div>
+            </div>
+            <p class="gp-rev-text">{r.text}</p>
+            <p class="gp-rev-name">{r.name} · видеоотзыв</p>
+          </div>
+        ))}
+      </div>
+      <p class="gp-center gp-more"><a href="/results">Все отзывы →</a></p>
+    </div>
+  </section>
+
+  <!-- ПОДОЙДЁТ / НЕ ПОДОЙДЁТ -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner gp-fit">
+      <div class="gp-fit-col">
+        <h3>Подойдёт, если</h3>
+        <ul>
+          <li>хотите регулярно тренироваться и прийти к своей цели – выглядеть лучше, стать сильнее и энергичнее;</li>
+          <li>нужны план, поддержка и обратная связь;</li>
+          <li>готовы заниматься 2 раза в неделю.</li>
+        </ul>
+      </div>
+      <div class="gp-fit-col gp-fit-no">
+        <h3>Не подойдёт, если</h3>
+        <ul>
+          <li>сейчас острая боль или недавняя операция без разрешения врача;</li>
+          <li>нужен результат за две недели;</li>
+          <li>нет возможности заниматься 2 раза в неделю.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ВОПРОСЫ -->
+  <section class="gp-section">
+    <div class="gp-inner gp-faq">
+      <p class="gp-label gp-center">Вопросы</p>
+      <h2 class="gp-center">Что обычно <em>спрашивают</em></h2>
+      <details><summary>Я совсем без формы – справлюсь?</summary><p>Да. План собираю под ваш уровень, у каждого упражнения есть вариант полегче. Задача – начать и втянуться.</p></details>
+      <details><summary>Что нужно для тренировок?</summary><p>Коврик и немного места дома. Если есть гиря и это подходит под ваши задачи – добавим её.</p></details>
+      <details><summary>Сколько времени занимает тренировка?</summary><p>Обычно 30–40 минут – зависит от вашего плана. На тяжёлые недели есть короткий план-минимум.</p></details>
+      <details><summary>А если не смогу прийти на созвон?</summary><p>Будет запись. Отчёт и вопросы – в чате, я отвечу.</p></details>
+      <details><summary>Я живу не в Москве</summary><p>Всё проходит онлайн. Созвон – по субботам в 10:15 по московскому времени.</p></details>
+      <details><summary>Как записаться и оплатить?</summary><p>Оставьте заявку внизу страницы. Я напишу вам, отвечу на вопросы и пришлю ссылку на оплату. После оплаты придёт анкета и замеры.</p></details>
+      <details><summary>Можно вернуть деньги?</summary><p>Если передумаете до старта 9 ноября – верну полностью.</p></details>
+      <details><summary>Что будет после 8 недель?</summary><p>Подведём итоги по замерам. Захотите продолжать – подскажу, что подойдёт: следующий поток, личное ведение или персональные тренировки.</p></details>
+    </div>
+  </section>
+
+  <!-- ЗАПИСЬ -->
+  <section class="gp-section gp-cream" id="zapis">
+    <div class="gp-inner gp-form-wrap">
+      <p class="gp-label gp-center">Запись</p>
+      <h2 class="gp-center">Записаться в группу</h2>
+      <p class="gp-desc gp-center">Оставьте заявку – я напишу вам, отвечу на вопросы и пришлю ссылку на оплату.</p>
+      <form id="lead-form" class="gp-form" data-source="gruppa" novalidate>
+        <div class="gp-row">
+          <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
+          <input class="gp-input" name="contact" placeholder="Telegram, телефон или почта" required />
+        </div>
+        <textarea class="gp-input" name="message" rows="3" placeholder="Чего хотите добиться за 8 недель (по желанию)"></textarea>
+        <label class="gp-consent">
+          <input type="checkbox" name="consent_pd" value="1" required />
+          <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
+        </label>
+        <button type="submit" class="btn-main btn-full">Оставить заявку</button>
+        <p class="gp-note" id="lead-note"></p>
+      </form>
+      <p class="gp-alt">Удобнее сразу написать? <a href={TG} target="_blank" rel="noopener">Telegram</a> · <a href={MAX} target="_blank" rel="noopener">Max</a></p>
+
+      <!-- Оплата: скрыта, открывается по ссылке /gruppa#oplata, которую Алексей присылает после переписки -->
+      <div class="gp-pay" id="oplata" hidden>
+        <h3>Оплата участия – 9 900 ₽</h3>
+        <form id="pay-form" novalidate>
+          <div class="gp-row">
+            <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
+            <input class="gp-input" name="email" type="email" placeholder="Почта – на неё придёт анкета" autocomplete="email" required />
+          </div>
+          <label class="gp-consent">
+            <input type="checkbox" name="consent_pd" required />
+            <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a> и <a href="/legal/offer" target="_blank" rel="noopener">офертой</a></span>
+          </label>
+          <button type="submit" class="btn-main btn-full">Оплатить 9 900 ₽</button>
+          <p class="gp-note" id="pay-note"></p>
+        </form>
+        <p class="gp-pay-safe">После оплаты на почту придёт анкета и замеры. Передумаете до старта – верну деньги.</p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .gp-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; min-height: 640px; background: var(--navy); }
+    .gp-hero-text { padding: 90px 72px 80px; display: flex; flex-direction: column; justify-content: center; color: white; }
+    .gp-eyebrow { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.85); margin-bottom: 26px; }
+    .gp-eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+    .gp-hero h1 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(42px, 4.6vw, 66px); line-height: 1.05; margin: 0 0 18px; color: white; }
+    .gp-hero h1 em { font-style: italic; color: #8bb8f0; }
+    .gp-sub { font-size: 20px; line-height: 1.6; color: rgba(255,255,255,.85); max-width: 520px; margin: 0 0 34px; }
+    .gp-params { display: flex; gap: 36px; margin-bottom: 36px; }
+    .gp-params b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 500; line-height: 1; color: white; }
+    .gp-params span { font-size: 15px; color: rgba(255,255,255,.75); }
+    .gp-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .gp-ask { color: rgba(255,255,255,.88); font-size: 16px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(255,255,255,.35); padding: 8px 4px; transition: color .2s, text-decoration-color .2s; }
+    .gp-ask:hover, .gp-ask:focus-visible { color: white; text-decoration-color: white; }
+    .gp-safe { margin: 18px 0 0; font-size: 15px; color: rgba(255,255,255,.75); }
+    .gp-safe::before { content: '✓ '; }
+    .gp-hero-photo { position: relative; overflow: hidden; background: #d9dde3; }
+    .gp-hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+
+    .btn-main { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--orange); color: white; border: none; cursor: pointer; text-decoration: none; padding: 17px 34px; border-radius: 100px; font-family: 'Manrope', sans-serif; font-size: 18px; font-weight: 600; box-shadow: 0 8px 28px rgba(232,101,42,.32); transition: background .2s, transform .2s; }
+    .btn-main:hover { background: var(--orange-warm, #f07530); transform: translateY(-2px); }
+    .btn-main:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+    .btn-main:disabled { opacity: .65; cursor: progress; transform: none; }
+    .btn-full { width: 100%; }
+
+    .gp-section { padding: 96px 24px; background: white; }
+    .gp-cream { background: var(--cream, #f8f5ef); }
+    .gp-inner { max-width: 1120px; margin: 0 auto; }
+    .gp-label { font-size: 14px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--orange); margin: 0 0 14px; }
+    .gp-section h2, .gp-author h2 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(34px, 3.4vw, 50px); line-height: 1.12; color: var(--navy); margin: 0 0 18px; }
+    .gp-section h2 em { font-style: italic; }
+    .gp-desc { font-size: 18px; line-height: 1.75; color: var(--text-muted, #555); max-width: 620px; margin: 0 0 44px; }
+    .gp-center { text-align: center; margin-left: auto; margin-right: auto; }
+
+    .gp-cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
+    .gp-card { background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 30px 28px; transition: transform .2s, box-shadow .2s; }
+    @media (hover: hover) { .gp-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,39,68,.07); } }
+    .gp-ico { font-size: 26px; margin-bottom: 14px; }
+    .gp-card h3, .gp-step h3, .gp-tl h3 { font-size: 19px; font-weight: 600; color: var(--navy); margin: 0 0 8px; line-height: 1.35; }
+    .gp-card p, .gp-step p, .gp-tl p { font-size: 16px; line-height: 1.7; color: var(--text-muted, #555); margin: 0; }
+
+    .gp-steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; margin-top: 40px; }
+    .gp-step { display: flex; gap: 18px; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 28px; }
+    .gp-num { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--navy); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+    .gp-timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .gp-tl { border-top: 3px solid var(--navy); background: var(--cream, #f8f5ef); border-radius: 0 0 16px 16px; padding: 22px 22px 26px; }
+    .gp-tl-rest { border-top-color: var(--orange); }
+    .gp-tl-date { font-size: 13px !important; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--orange) !important; margin: 0 0 8px !important; }
+
+    .gp-offer { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 56px; align-items: start; }
+    .gp-checks { list-style: none; padding: 0; margin: 24px 0 0; display: flex; flex-direction: column; gap: 18px; }
+    .gp-checks li { position: relative; padding-left: 34px; font-size: 17px; line-height: 1.7; color: var(--text-mid, #3a3a3a); }
+    .gp-checks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--orange); font-weight: 700; }
+    .gp-checks b { color: var(--navy); }
+    .gp-price { background: var(--navy); color: white; border-radius: 24px; padding: 34px 32px; }
+    .gp-price-label { font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.7); margin: 0 0 14px; }
+    .gp-price ul { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 9px; }
+    .gp-price li { font-size: 16px; color: rgba(255,255,255,.9); padding-left: 24px; position: relative; }
+    .gp-price li::before { content: '✓'; position: absolute; left: 0; color: #7fd4a4; }
+    .gp-price-sum { font-family: 'Cormorant Garamond', serif; font-size: 52px; line-height: 1; margin: 0 0 6px; }
+    .gp-price-note { font-size: 15px; color: rgba(255,255,255,.75); margin: 0 0 22px; line-height: 1.6; }
+    .gp-price-seats { text-align: center; font-size: 14px; color: rgba(255,255,255,.75); margin: 14px 0 0; }
+
+    .gp-author { display: grid; grid-template-columns: 0.8fr 1.2fr; background: var(--navy); color: white; }
+    .gp-author-photo { position: relative; min-height: 480px; overflow: hidden; background: #d9dde3; }
+    .gp-author-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+    .gp-author-text { padding: 80px 72px; }
+    .gp-author h2 { color: white; }
+    .gp-quote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 26px; color: #8bb8f0; margin: 0 0 22px; }
+    .gp-author-text p { font-size: 17px; line-height: 1.75; color: rgba(255,255,255,.82); margin: 0 0 14px; max-width: 560px; }
+
+    .gp-reviews { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 36px; }
+    .gp-rev { background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 18px; overflow: hidden; }
+    .rv-video { position: relative; aspect-ratio: 9 / 16; background: #111; }
+    .rv-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .rv-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.35)); }
+    .rv-play.hidden { display: none; }
+    .rv-play-btn { width: 58px; height: 58px; border-radius: 50%; background: rgba(232,101,42,.92); position: relative; transition: transform .2s; }
+    .rv-play-btn::after { content: ''; position: absolute; left: 23px; top: 18px; border-left: 17px solid white; border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+    @media (hover: hover) { .rv-play:hover .rv-play-btn { transform: scale(1.08); } }
+    .gp-rev-text { font-size: 16px; line-height: 1.55; color: var(--text-mid, #3a3a3a); margin: 16px 18px 6px; }
+    .gp-rev-name { font-size: 14px; color: var(--text-light, #6e6e6e); margin: 0 18px 18px; }
+    .gp-more { margin-top: 30px; }
+    .gp-more a { color: var(--navy); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--orange); padding-bottom: 2px; transition: color .2s; }
+    .gp-more a:hover { color: var(--orange); }
+
+    .gp-fit { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .gp-fit-col { background: white; border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 30px 30px 24px; }
+    .gp-fit-col h3 { font-size: 20px; color: var(--navy); margin: 0 0 14px; }
+    .gp-fit-col ul { margin: 0; padding-left: 20px; }
+    .gp-fit-col li { font-size: 16px; line-height: 1.7; color: var(--text-mid, #3a3a3a); margin-bottom: 8px; }
+    .gp-fit-col li::marker { color: #2e9e63; }
+    .gp-fit-no li::marker { color: #c9573a; }
+
+    .gp-faq { max-width: 780px; }
+    .gp-faq h2 { margin-bottom: 34px; }
+    .gp-faq details { background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 14px; margin-bottom: 10px; transition: border-color .2s; }
+    @media (hover: hover) { .gp-faq details:hover { border-color: rgba(232,101,42,.35); } }
+    .gp-faq summary { cursor: pointer; list-style: none; padding: 20px 24px; font-size: 17px; font-weight: 600; color: var(--navy); position: relative; padding-right: 50px; }
+    .gp-faq summary::-webkit-details-marker { display: none; }
+    .gp-faq summary::after { content: '+'; position: absolute; right: 24px; top: 16px; font-size: 24px; color: var(--orange); transition: transform .2s; }
+    .gp-faq details[open] summary::after { transform: rotate(45deg); }
+    .gp-faq summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; border-radius: 14px; }
+    .gp-faq details p { margin: 0; padding: 0 24px 20px; font-size: 16px; line-height: 1.7; color: var(--text-muted, #555); }
+
+    .gp-form-wrap { max-width: 600px; }
+    .gp-form { display: flex; flex-direction: column; gap: 12px; }
+    .gp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .gp-input { width: 100%; padding: 15px 18px; border-radius: 12px; border: 1.5px solid var(--border, #ece8e0); background: white; font-size: 17px; font-family: 'Manrope', sans-serif; color: var(--text, #1a1a1a); outline: none; transition: border-color .2s, box-shadow .2s; box-sizing: border-box; }
+    .gp-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(232,101,42,.12); }
+    textarea.gp-input { resize: vertical; min-height: 84px; }
+    .gp-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; color: var(--text-mid, #3a3a3a); cursor: pointer; }
+    .gp-consent input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--orange); flex-shrink: 0; cursor: pointer; }
+    .gp-consent a { color: var(--orange); }
+    .gp-note { text-align: center; font-size: 15px; color: var(--text-light, #6e6e6e); min-height: 1em; margin: 0; }
+    .gp-note.is-error { color: #c53030; }
+    .gp-alt { text-align: center; font-size: 15px; color: var(--text-light, #6e6e6e); margin: 18px 0 0; }
+    .gp-alt a { color: var(--navy); font-weight: 600; }
+    .gp-success { text-align: center; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 18px; padding: 30px 24px; }
+    .gp-success h3 { font-size: 21px; color: var(--navy); margin: 0 0 8px; }
+    .gp-success p { margin: 0; color: var(--text-muted, #555); }
+    .gp-pay { margin-top: 40px; background: white; border: 1.5px solid var(--orange); border-radius: 20px; padding: 28px 24px; scroll-margin-top: 90px; }
+    .gp-pay h3 { font-size: 21px; color: var(--navy); margin: 0 0 16px; text-align: center; }
+    .gp-pay form { display: flex; flex-direction: column; gap: 12px; }
+    .gp-pay-safe { text-align: center; font-size: 14px; color: var(--text-light, #6e6e6e); margin: 14px 0 0; }
+
+    @media (max-width: 1000px) {
+      .gp-hero { grid-template-columns: 1fr; }
+      .gp-hero-photo { min-height: 420px; order: -1; }
+      .gp-hero-text { padding: 56px 32px 64px; }
+      .gp-cards3 { grid-template-columns: 1fr; }
+      .gp-timeline { grid-template-columns: 1fr 1fr; }
+      .gp-offer { grid-template-columns: 1fr; gap: 36px; }
+      .gp-author { grid-template-columns: 1fr; }
+      .gp-author-photo { min-height: 380px; }
+      .gp-author-text { padding: 56px 32px; }
+      .gp-reviews { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 700px) {
+      .gp-section { padding: 64px 20px; }
+      .gp-hero-text { padding: 44px 20px 52px; }
+      .gp-hero-photo { min-height: 340px; }
+      .gp-params { gap: 22px; }
+      .gp-params b { font-size: 28px; }
+      .gp-cta { flex-direction: column; align-items: stretch; }
+      .gp-cta .btn-main { width: 100%; }
+      .gp-ask { text-align: center; }
+      .gp-steps, .gp-timeline, .gp-fit, .gp-row { grid-template-columns: 1fr; }
+      .gp-step { padding: 22px; }
+      .gp-author-text { padding: 48px 20px; }
+      .gp-reviews { gap: 12px; }
+      .gp-rev-text { font-size: 15px; margin: 12px 12px 4px; }
+      .gp-rev-name { margin: 0 12px 14px; }
+    }
+  </style>
+
+  <script>
+    // Видеоотзывы: ролик грузится и играет только по клику.
+    document.querySelectorAll('.rv-video').forEach((box) => {
+      const video = box.querySelector('video') as HTMLVideoElement | null;
+      const overlay = box.querySelector('.rv-play') as HTMLElement | null;
+      if (!video || !overlay) return;
+      overlay.addEventListener('click', () => { overlay.classList.add('hidden'); video.play(); });
+      video.addEventListener('click', () => { if (video.paused) { overlay.classList.add('hidden'); video.play(); } else video.pause(); });
+      video.addEventListener('pause', () => overlay.classList.remove('hidden'));
+    });
+
+    // Скрытый блок оплаты открывается по ссылке /gruppa#oplata.
+    const payBox = document.getElementById('oplata');
+    const showPay = () => {
+      if (!payBox || location.hash !== '#oplata') return;
+      payBox.hidden = false;
+      payBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    showPay();
+    window.addEventListener('hashchange', showPay);
+
+    // Заявка → POST /api/leads (CSRF подставляет обёртка fetch из SiteLayout).
+    const lead = document.getElementById('lead-form') as HTMLFormElement | null;
+    lead?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const note = document.getElementById('lead-note') as HTMLElement;
+      const btn = lead.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const say = (m: string, err = false) => { note.textContent = m; note.classList.toggle('is-error', err); };
+      const fd = new FormData(lead);
+      const name = String(fd.get('name') || '').trim();
+      const contact = String(fd.get('contact') || '').trim();
+      if (!name) return say('Укажите имя', true);
+      if (contact.length < 5) return say('Укажите Telegram, телефон или почту – как с вами связаться', true);
+      if (!fd.get('consent_pd')) return say('Чтобы продолжить, отметьте согласие', true);
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Отправляем…';
+      try {
+        const r = await fetch('/api/leads', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ name, contact, message: String(fd.get('message') || '').trim(), source: 'gruppa', consent_pd: true }),
+        });
+        if (r.ok) {
+          (window as any).reachGoal?.('lead_submit');
+          const box = document.createElement('div');
+          box.className = 'gp-success';
+          box.innerHTML = '<h3>Заявка у меня 🙌</h3><p>Напишу вам в течение дня, отвечу на вопросы и пришлю ссылку на оплату.</p>';
+          lead.replaceWith(box);
+          return;
+        }
+        say('Не получилось отправить – попробуйте ещё раз или напишите в Telegram', true);
+      } catch { say('Ошибка сети – попробуйте ещё раз', true); }
+      finally { btn.disabled = false; btn.textContent = orig; }
+    });
+
+    // Оплата → POST /api/checkout/service → Продамус.
+    const pay = document.getElementById('pay-form') as HTMLFormElement | null;
+    pay?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const note = document.getElementById('pay-note') as HTMLElement;
+      const btn = pay.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const say = (m: string, err = false) => { note.textContent = m; note.classList.toggle('is-error', err); };
+      const fd = new FormData(pay);
+      const name = String(fd.get('name') || '').trim();
+      const email = String(fd.get('email') || '').trim();
+      if (!name) return say('Укажите имя', true);
+      if (!email.includes('@') || !email.includes('.')) return say('Проверьте адрес почты', true);
+      if (!fd.get('consent_pd')) return say('Чтобы продолжить, отметьте согласие', true);
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Готовим оплату…';
+      try {
+        const r = await fetch('/api/checkout/service', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ service: 'gruppa', name, email, consent_pd: true }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.url) { (window as any).reachGoal?.('checkout_gruppa'); location.href = d.url; return; }
+        if (d.error === 'sold_out') say('Все места в этом потоке заняты – напишите мне, запишу в следующий', true);
+        else say('Не получилось открыть оплату – напишите мне, разберёмся', true);
+      } catch { say('Ошибка сети – попробуйте ещё раз', true); }
+      finally { btn.disabled = false; btn.textContent = orig; }
+    });
+  </script>
+</SiteLayout>

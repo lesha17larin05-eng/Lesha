@@ -3605,3 +3605,82 @@ func TestEmailClick(t *testing.T) {
 		t.Fatal("untracked link left in the letter")
 	}
 }
+
+// TestGruppa – групповое ведение: анкета со своими вопросами и замерами,
+// оплата до 5 мест, заявка с ссылкой на оплату.
+func TestGruppa(t *testing.T) {
+	srv, repo, cfg := setup(t)
+	ctx := context.Background()
+	uid, err := repo.CreateUser(ctx, "g@b.ru", "x", "Ольга", "user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := "?u=" + uid.String() + "&t=" + handlers.AnketaToken(cfg.JWTSecret, uid.String())
+	c := newClient(srv)
+
+	// Анкета группы: свои вопросы и замеры
+	r, body := c.do("GET", "/api/anketa"+base+"&k=gruppa", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), `"kind":"gruppa"`) || !strings.Contains(string(body), `"key":"waist"`) ||
+		strings.Contains(string(body), `"key":"slots"`) {
+		t.Fatalf("gruppa anketa: %d %s", r.StatusCode, body)
+	}
+	// Неизвестный вид – обычная анкета
+	if _, body := c.do("GET", "/api/anketa"+base+"&k=chto-to", nil); !strings.Contains(string(body), `"kind":"start"`) {
+		t.Fatalf("unknown kind: %s", body)
+	}
+	answers := map[string]string{"name_age": "Ольга, 34", "telegram": "@olga", "goal": "сильнее", "activity": "прогулки",
+		"days": "вт, чт", "height": "168", "weight": "62", "waist": "70", "hips": "96"}
+	if r, body := c.do("POST", "/api/anketa"+base+"&k=gruppa", map[string]any{"answers": answers, "consent_health": true}); r.StatusCode != 400 ||
+		!strings.Contains(string(body), `"breath"`) {
+		t.Fatalf("missing breath: %d %s", r.StatusCode, body)
+	}
+	answers["breath"] = "35"
+	if r, body := c.do("POST", "/api/anketa"+base+"&k=gruppa", map[string]any{"answers": answers, "consent_health": true}); r.StatusCode != 200 {
+		t.Fatalf("submit: %d %s", r.StatusCode, body)
+	}
+	saved, err := repo.GetQuestionnaire(ctx, uid)
+	if err != nil || saved.Kind != "gruppa" || saved.Answers["waist"] != "70" {
+		t.Fatalf("saved: %+v %v", saved, err)
+	}
+	// Ссылка без ?k= открывает ту анкету, что человек заполнял
+	if _, body := c.do("GET", "/api/anketa"+base, nil); !strings.Contains(string(body), `"kind":"gruppa"`) || !strings.Contains(string(body), `"submitted":true`) {
+		t.Fatalf("saved kind: %s", body)
+	}
+	// Админка показывает ответы по вопросам группы
+	adm := adminClient(t, srv, repo)
+	if _, body := adm.do("GET", "/api/admin/users/"+uid.String(), nil); !strings.Contains(string(body), "Обхват талии") || !strings.Contains(string(body), "k=gruppa") {
+		t.Fatalf("admin card: %s", body)
+	}
+
+	// Оплата: заказ на 9 900, пока есть места; 5 оплаченных – мест нет
+	r, body = c.do("POST", "/api/checkout/service", map[string]any{"service": "gruppa", "email": "g2@b.ru", "name": "Анна", "consent_pd": true})
+	if r.StatusCode != 200 {
+		t.Fatalf("checkout: %d %s", r.StatusCode, body)
+	}
+	orders, _ := repo.ListOrders(ctx, "", nil, nil, 10, 0)
+	if len(orders) != 1 || orders[0].Service != "gruppa" || orders[0].AmountRub != 9900 {
+		t.Fatalf("order: %+v", orders)
+	}
+	for i := 0; i < 5; i++ {
+		o, err := repo.CreateServiceOrder(ctx, uid, "gruppa", 9900)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := repo.Pool.Exec(ctx, `UPDATE orders SET status='paid', paid_at=now() WHERE id=$1`, o.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if r, body := c.do("POST", "/api/checkout/service", map[string]any{"service": "gruppa", "email": "g3@b.ru", "name": "Ира", "consent_pd": true}); r.StatusCode != 409 ||
+		!strings.Contains(string(body), "sold_out") {
+		t.Fatalf("sold out: %d %s", r.StatusCode, body)
+	}
+
+	// Заявка со страницы группы – в Telegram приходит ссылка на оплату
+	if r, body := newClient(srv).do("POST", "/api/leads", map[string]any{"name": "Ира", "contact": "@ira_ok", "source": "gruppa", "consent_pd": true}); r.StatusCode >= 300 {
+		t.Fatalf("lead: %d %s", r.StatusCode, body)
+	}
+	msg := waitRelay(t, "Новая заявка: Групповое ведение")
+	if !strings.Contains(msg, "/gruppa#oplata") {
+		t.Fatalf("lead message: %q", msg)
+	}
+}
