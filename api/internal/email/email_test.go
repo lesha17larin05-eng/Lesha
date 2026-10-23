@@ -155,3 +155,23 @@ func TestHealthTracksOutage(t *testing.T) {
 		t.Fatal("successful send must clear outage")
 	}
 }
+
+func TestHTMLToText(t *testing.T) {
+	in := `<html><head><style>p{color:red}</style></head><body><p>Привет, <b>Анна</b>!</p><p>Первая строка<br>вторая</p><ul><li>раз</li><li>два</li></ul><p><a href="https://leshalarin.ru/personal">Записаться &rarr;</a></p><p><a href="https://t.me/lesha_larin">https://t.me/lesha_larin</a></p></body></html>`
+	got := HTMLToText(in)
+	for _, want := range []string{"Привет, Анна!", "Первая строка\nвторая", "– раз", "– два", "Записаться → (https://leshalarin.ru/personal)", "https://t.me/lesha_larin"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("нет %q в:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "<") || strings.Contains(got, "color:red") {
+		t.Fatalf("остались теги или стили:\n%s", got)
+	}
+}
+
+func TestMultipartBody(t *testing.T) {
+	b := multipartBody("<p>Привет</p>")
+	if !strings.Contains(b, "multipart/alternative") || !strings.Contains(b, "text/plain; charset=UTF-8") || !strings.Contains(b, "text/html; charset=UTF-8") {
+		t.Fatalf("нет частей: %s", b)
+	}
+}

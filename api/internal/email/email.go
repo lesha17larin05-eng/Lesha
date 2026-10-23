@@ -6,11 +6,13 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"html"
 	"log/slog"
 	"mime"
 	"net"
 	"net/mail"
 	"net/smtp"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -182,18 +184,14 @@ func (s *Sender) sendOnce(to, subject, body string, extra map[string]string) err
 		"Date: " + time.Now().UTC().Format(time.RFC1123Z) + "\r\n" +
 		"Message-ID: <" + randID() + "@" + domain + ">\r\n" +
 		"Subject: " + mime.QEncoding.Encode("UTF-8", subject) + "\r\n" +
-		"MIME-Version: 1.0\r\n" +
-		"Content-Type: text/html; charset=UTF-8\r\n" +
-		// base64 – чтобы длинные строки HTML не резались почтовым сервером
-		// по лимиту в 998 символов (иначе перенос попадает внутрь тега).
-		"Content-Transfer-Encoding: base64\r\n"
+		"MIME-Version: 1.0\r\n"
 	for k, v := range extra {
 		if k == "" || v == "" {
 			continue
 		}
 		msg += k + ": " + v + "\r\n"
 	}
-	msg += "\r\n" + base64Wrap(body)
+	msg += multipartBody(body)
 
 	if _, err = fmt.Fprint(wc, msg); err != nil {
 		return fmt.Errorf("smtp write body: %w", err)
@@ -249,6 +247,65 @@ func domainFromEmail(addr string) string {
 		return "localhost"
 	}
 	return addr[i+1:]
+}
+
+// multipartBody – тело письма multipart/alternative: текстовая версия и HTML.
+// Письма только с HTML антиспам-фильтры (SpamAssassin MIME_HTML_ONLY, Mail.ru,
+// Gmail) считают подозрительными. Обе части – base64, чтобы длинные строки
+// не резались почтовым сервером по лимиту в 998 символов.
+func multipartBody(html string) string {
+	boundary := "alt-" + randID()
+	return "Content-Type: multipart/alternative; boundary=\"" + boundary + "\"\r\n\r\n" +
+		"--" + boundary + "\r\n" +
+		"Content-Type: text/plain; charset=UTF-8\r\n" +
+		"Content-Transfer-Encoding: base64\r\n\r\n" +
+		base64Wrap(HTMLToText(html)) + "\r\n" +
+		"--" + boundary + "\r\n" +
+		"Content-Type: text/html; charset=UTF-8\r\n" +
+		"Content-Transfer-Encoding: base64\r\n\r\n" +
+		base64Wrap(html) + "\r\n" +
+		"--" + boundary + "--\r\n"
+}
+
+var (
+	reLink    = regexp.MustCompile(`(?is)<a\s[^>]*href=["']([^"']+)["'][^>]*>(.*?)</a>`)
+	reBreak   = regexp.MustCompile(`(?i)<br\s*/?>`)
+	reBlock   = regexp.MustCompile(`(?i)</(p|div|h[1-6]|tr|table|blockquote|ul|ol)>`)
+	reItem    = regexp.MustCompile(`(?i)<li[^>]*>`)
+	reHidden  = regexp.MustCompile(`(?is)<(style|script|head)[^>]*>.*?</(style|script|head)>`)
+	reTag     = regexp.MustCompile(`(?s)<[^>]+>`)
+	reSpaces  = regexp.MustCompile(`[ \t]+`)
+	reNewline = regexp.MustCompile(`\n\s*\n\s*(\n\s*)+`)
+)
+
+// HTMLToText – простая текстовая версия письма: ссылки как «текст (адрес)»,
+// абзацы и переносы сохраняются, теги убираются.
+func HTMLToText(h string) string {
+	s := reHidden.ReplaceAllString(h, "")
+	s = reLink.ReplaceAllStringFunc(s, func(m string) string {
+		sub := reLink.FindStringSubmatch(m)
+		text := strings.TrimSpace(reTag.ReplaceAllString(sub[2], ""))
+		href := html.UnescapeString(sub[1])
+		if text == "" || strings.Contains(href, text) {
+			return href
+		}
+		if strings.HasPrefix(href, "mailto:") || strings.HasPrefix(href, "#") {
+			return text
+		}
+		return text + " (" + href + ")"
+	})
+	s = reBreak.ReplaceAllString(s, "\n")
+	s = reBlock.ReplaceAllString(s, "\n\n")
+	s = reItem.ReplaceAllString(s, "\n– ")
+	s = reTag.ReplaceAllString(s, "")
+	s = html.UnescapeString(s)
+	lines := strings.Split(s, "\n")
+	for i, l := range lines {
+		lines[i] = strings.TrimSpace(reSpaces.ReplaceAllString(l, " "))
+	}
+	s = strings.Join(lines, "\n")
+	s = reNewline.ReplaceAllString(s, "\n\n")
+	return strings.TrimSpace(s) + "\n"
 }
 
 func randID() string {

@@ -101,6 +101,8 @@ make deploy
 | `USER_EMAIL/PASSWORD`   | Сидер создаст обычного юзера с записью на free курс. | `user@leshalarin.ru / user12345` |
 | `CORS_ORIGIN`           | Origin для CORS. В проде — `https://leshalarin.ru`. | `http://localhost` |
 
+Каждое письмо уходит как `multipart/alternative`: текстовая версия (`email.HTMLToText`) + HTML. Письма только с HTML антиспам-фильтры считают подозрительными (с 23.10.2026).
+
 **В проде обязательно перегенерируй**: `JWT_SECRET`, `SESSION_SECRET`, `VIDEO_TOKEN_SECRET`, `ADMIN_PASSWORD`, `USER_PASSWORD`, `PRODAMUS_SECRET_KEY`, `PRODAMUS_TEST_MODE=false`.
 
 ## Бэкапы
