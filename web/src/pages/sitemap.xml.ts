@@ -44,15 +44,24 @@ export const GET: APIRoute = async () => {
     published = new Set((data || []).map((c: any) => `/courses/${c.slug}`));
   } catch {}
   const extra = DRAFTABLE.filter((e) => published.has(e.path));
+  // Статьи блога – каждая отдельной строкой, с датой публикации.
+  let articles: (Entry & { lastmod?: string })[] = [];
+  try {
+    const { data } = await apiJson<any[]>('/api/articles?limit=100');
+    articles = (data || []).map((a: any) => ({
+      path: `/blog/${a.slug}`, changefreq: 'monthly', priority: '0.6',
+      lastmod: a.published_at ? String(a.published_at).slice(0, 10) : undefined,
+    }));
+  } catch {}
   const i = base.findIndex((e) => e.path === '/courses/zdorovaya-spina') + 1;
-  const entries = [...base.slice(0, i), ...extra, ...base.slice(i)];
+  const entries: (Entry & { lastmod?: string })[] = [...base.slice(0, i), ...extra, ...base.slice(i), ...articles];
   const body =
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     entries
       .map(
         (e) =>
-          `  <url><loc>${SITE}${e.path}</loc><changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`,
+          `  <url><loc>${SITE}${e.path}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ''}<changefreq>${e.changefreq}</changefreq><priority>${e.priority}</priority></url>`,
       )
       .join('\n') +
     '\n</urlset>\n';
