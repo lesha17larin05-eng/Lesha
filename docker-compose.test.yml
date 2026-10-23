@@ -10,6 +10,7 @@ services:
       - ./api/migrations/002_articles.up.sql:/docker-entrypoint-initdb.d/002_articles.up.sql:ro
       - ./api/migrations/003_users_phone.up.sql:/docker-entrypoint-initdb.d/003_users_phone.up.sql:ro
       - ./api/migrations/004_users_consent.up.sql:/docker-entrypoint-initdb.d/004_users_consent.up.sql:ro
+      - ./api/migrations/005_user_logs_set_null.up.sql:/docker-entrypoint-initdb.d/005_user_logs_set_null.up.sql:ro
       - ./api/migrations/009_leads.up.sql:/docker-entrypoint-initdb.d/009_leads.up.sql:ro
       - ./api/migrations/010_lesson_activity.up.sql:/docker-entrypoint-initdb.d/010_lesson_activity.up.sql:ro
       - ./api/migrations/011_site_settings.up.sql:/docker-entrypoint-initdb.d/011_site_settings.up.sql:ro
@@ -18,6 +19,15 @@ services:
       - ./api/migrations/014_campaign_pause.up.sql:/docker-entrypoint-initdb.d/014_campaign_pause.up.sql:ro
       - ./api/migrations/015_article_views.up.sql:/docker-entrypoint-initdb.d/015_article_views.up.sql:ro
       - ./api/migrations/016_service_orders.up.sql:/docker-entrypoint-initdb.d/016_service_orders.up.sql:ro
+      - ./api/migrations/017_drip.up.sql:/docker-entrypoint-initdb.d/017_drip.up.sql:ro
+      - ./api/migrations/018_traffic_source.up.sql:/docker-entrypoint-initdb.d/018_traffic_source.up.sql:ro
+      - ./api/migrations/019_unsubscribe_reasons.up.sql:/docker-entrypoint-initdb.d/019_unsubscribe_reasons.up.sql:ro
+      - ./api/migrations/020_questionnaires.up.sql:/docker-entrypoint-initdb.d/020_questionnaires.up.sql:ro
+      - ./api/migrations/021_email_retry.up.sql:/docker-entrypoint-initdb.d/021_email_retry.up.sql:ro
+      - ./api/migrations/022_order_return.up.sql:/docker-entrypoint-initdb.d/022_order_return.up.sql:ro
+      - ./api/migrations/023_order_abandoned.up.sql:/docker-entrypoint-initdb.d/023_order_abandoned.up.sql:ro
+      - ./api/migrations/024_login_codes_optout.up.sql:/docker-entrypoint-initdb.d/024_login_codes_optout.up.sql:ro
+      - ./api/migrations/025_email_clicks.up.sql:/docker-entrypoint-initdb.d/025_email_clicks.up.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d test"]
       interval: 2s

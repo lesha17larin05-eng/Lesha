@@ -176,6 +176,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/admin/users", app.AdminUsers)
 		r.Get("/api/admin/users/export.csv", app.AdminUsersExport)
 		r.Get("/api/admin/users/{id}", app.AdminUser)
+		r.Delete("/api/admin/users/{id}", app.AdminDeleteUser)
 		r.Post("/api/admin/courses", app.AdminCreateCourse)
 		r.Get("/api/admin/courses/{id}", app.AdminGetCourse)
 		r.Patch("/api/admin/courses/{id}", app.AdminUpdateCourse)
@@ -2517,6 +2518,53 @@ func TestAdminRefundOrder(t *testing.T) {
 	r, body = admin.do("GET", "/api/admin/orders", nil)
 	if r.StatusCode != 200 || !strings.Contains(string(body), so.ID.String()) {
 		t.Fatalf("заказ на услугу не попал в список: %d %s", r.StatusCode, body)
+	}
+}
+
+// TestAdminDeleteUser – удаление пользователя из админки: брошенные заказы
+// (pending/failed) удаляются вместе с ним, оплаченные и возвраты – блокируют.
+func TestAdminDeleteUser(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	admin := adminClient(t, srv, repo)
+
+	// Бот с брошенным и неудачным заказами – удаляется вместе с ними
+	bot, _ := repo.CreateUser(ctx, "bot-del@b.ru", "x", "Бот", "user")
+	o1, _ := repo.CreateServiceOrder(ctx, bot, "start", 2990)
+	o2, _ := repo.CreateServiceOrder(ctx, bot, "start", 2990)
+	_, _ = repo.Pool.Exec(ctx, `UPDATE orders SET status='failed' WHERE id=$1`, o2.ID)
+	if r, body := admin.do("DELETE", "/api/admin/users/"+bot.String(), nil); r.StatusCode != 200 {
+		t.Fatalf("удаление с брошенными заказами: %d %s", r.StatusCode, body)
+	}
+	var n int
+	_ = repo.Pool.QueryRow(ctx, `SELECT count(*) FROM orders WHERE id IN ($1,$2)`, o1.ID, o2.ID).Scan(&n)
+	if n != 0 {
+		t.Fatalf("брошенные заказы должны удалиться, осталось %d", n)
+	}
+	if _, err := repo.GetUser(ctx, bot); err == nil {
+		t.Fatal("пользователь должен удалиться")
+	}
+
+	// Оплаченный заказ – отказ, пользователь и заказ на месте
+	paid, _ := repo.CreateUser(ctx, "paid-del@b.ru", "x", "Клиент", "user")
+	po, _ := repo.CreateServiceOrder(ctx, paid, "start", 2990)
+	_ = repo.MarkOrderPaid(ctx, po.ID, "P-DEL-1")
+	if r, _ := admin.do("DELETE", "/api/admin/users/"+paid.String(), nil); r.StatusCode != 409 {
+		t.Fatalf("с оплаченным заказом: ждём 409, получили %d", r.StatusCode)
+	}
+	if _, err := repo.GetOrder(ctx, po.ID); err != nil {
+		t.Fatal("оплаченный заказ должен остаться")
+	}
+
+	// Возврат – тоже отказ: это финансовая история
+	ref, _ := repo.CreateUser(ctx, "refund-del@b.ru", "x", "Возврат", "user")
+	ro, _ := repo.CreateServiceOrder(ctx, ref, "start", 2990)
+	_, _ = repo.Pool.Exec(ctx, `UPDATE orders SET status='refunded' WHERE id=$1`, ro.ID)
+	if r, _ := admin.do("DELETE", "/api/admin/users/"+ref.String(), nil); r.StatusCode != 409 {
+		t.Fatalf("с возвратом: ждём 409, получили %d", r.StatusCode)
+	}
+	if _, err := repo.GetOrder(ctx, ro.ID); err != nil {
+		t.Fatal("заказ с возвратом должен остаться")
 	}
 }
 

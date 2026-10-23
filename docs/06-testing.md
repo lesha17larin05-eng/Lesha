@@ -8,7 +8,8 @@ make test-clean   # сносит test-стек, тома и сети
 ```
 
 `make test` использует `docker-compose.test.yml`:
-- `test-db` — отдельная Postgres, миграция `001_init.up.sql` применяется через `/docker-entrypoint-initdb.d/`.
+- `test-db` — отдельная Postgres, схемные миграции (`*.up.sql`, кроме контентных 006–008) применяются через `/docker-entrypoint-initdb.d/`. **Новую миграцию добавляй и в `docker-compose.test.yml`** – иначе тесты падают с `relation ... does not exist` (так было до 2026-10-23: 017–025 не подключили, падали почти все тесты).
+- Прогон на сервере, не трогая прод: скопировать `api/` и `docker-compose.test.yml` в `/root/lesha-test` и запустить `docker compose -p lesha-test -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from api-test` (отдельное имя проекта `-p lesha-test` обязательно).
 - `api-test` — образ из `api/Dockerfile.test`, запускает `go test -count=1 -v ./...`.
 
 `-count=1` отключает кеш тестов; `--exit-code-from api-test` — Makefile считает успехом 0 от api-test.
@@ -136,5 +137,6 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestServiceCheckout`                  | Оплата «Точки перемен»: без согласия, с кривым адресом, без имени и с неизвестной услугой — 400; валидная заявка заводит покупателя с именем и создаёт заказ `service='start'`, `course_id IS NULL`, 2 990 ₽, `pending`; вебхук переводит заказ в `paid` и при этом **не** создаёт ни одного enrollment. |
 
 | `TestAdminRefundOrder`                 | Ручной возврат: не-админу закрыт; админ переводит `paid` → `refunded`, купленный доступ закрывается (`access_revoked:true`), в `audit_log` одна запись `refund`; повторный возврат — 400. Заказ на услугу (`course_id IS NULL`) виден в `GET /api/admin/orders`. |
+| `TestAdminDeleteUser`                  | Удаление пользователя из админки: брошенные заказы (`pending`, `failed`) удаляются вместе с ним; с оплаченным заказом или возвратом – 409, пользователь и заказ остаются. |
 
 Unit: `internal/email` – запасной ящик на фейковом SMTP, `OnAsyncFail`, `Health` (начало сбоя, сброс после успеха); `internal/notify` – HTML → текст, отправка в прокладку; `handlers.TestMailMonitor` – когда слать «письма не отправляются» / «снова работает».

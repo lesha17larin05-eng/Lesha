@@ -208,18 +208,45 @@ func (a *App) AdminDeleteUser(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 403, "cannot_delete_admin")
 		return
 	}
-	// Проверка: есть ли оплаченные заказы – таких пользователей не удаляем.
+	// Проверка: есть ли оплаченные заказы или возвраты – таких пользователей
+	// не удаляем, это финансовая история (учёт, налоги, споры).
 	var hasPaid bool
 	if err := a.Repo.Pool.QueryRow(r.Context(),
-		`SELECT EXISTS(SELECT 1 FROM orders WHERE user_id=$1 AND status='paid')`, uid).Scan(&hasPaid); err == nil && hasPaid {
+		`SELECT EXISTS(SELECT 1 FROM orders WHERE user_id=$1 AND status IN ('paid','refunded'))`, uid).Scan(&hasPaid); err == nil && hasPaid {
 		writeErr(w, 409, "has_paid_orders")
 		return
 	}
-	if _, err := a.Repo.Pool.Exec(r.Context(), `DELETE FROM users WHERE id=$1`, uid); err != nil {
+	// Брошенные заказы (ожидает оплаты, ошибка оплаты) удаляем вместе
+	// с пользователем: у orders.user_id нет каскада, и без этого база не даёт
+	// удалить, например, ботов, оставивших брошенные заказы. Записи вебхуков
+	// по этим заказам сохраняем, только снимаем ссылку на заказ.
+	tx, err := a.Repo.Pool.Begin(r.Context())
+	if err != nil {
 		writeErr(w, 500, "db")
 		return
 	}
-	a.Repo.Audit(r.Context(), adminID, "delete", "user", &uid, map[string]any{"email": u.Email})
+	defer tx.Rollback(r.Context())
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE payment_webhooks SET order_id = NULL
+		  WHERE order_id IN (SELECT id FROM orders WHERE user_id=$1 AND status IN ('pending','failed'))`, uid); err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	tag, err := tx.Exec(r.Context(), `DELETE FROM orders WHERE user_id=$1 AND status IN ('pending','failed')`, uid)
+	if err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	if _, err := tx.Exec(r.Context(), `DELETE FROM users WHERE id=$1`, uid); err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
+		writeErr(w, 500, "db")
+		return
+	}
+	a.Repo.Audit(r.Context(), adminID, "delete", "user", &uid,
+		map[string]any{"email": u.Email, "unpaid_orders_deleted": tag.RowsAffected()})
 	writeJSON(w, 200, map[string]string{"ok": "1"})
 }
 

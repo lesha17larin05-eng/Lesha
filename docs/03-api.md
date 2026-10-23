@@ -72,6 +72,7 @@ In-memory token bucket (`api/internal/middleware/middleware.go`): 20 запро�
 | `GET  /api/admin/stats`                            | users_total, online (5 мин), revenue_day/week/month (₽). |
 | `GET  /api/admin/users?search=&page=`              | Поиск + пагинация по 50. |
 | `GET  /api/admin/users/{id}`                       | Юзер + enrollments + orders. |
+| `DELETE /api/admin/users/{id}`                     | Удалить пользователя. Брошенные заказы (`pending`/`failed`) удаляются вместе с ним, у их вебхуков снимается `order_id`. Есть `paid` или `refunded` → 409 `has_paid_orders`. Себя – 400, админа – 403. В `audit_log` – `delete` с числом удалённых заказов. |
 | `POST /api/admin/users/{id}/enrollments`           | `{course_id}` — выдать доступ (`granted_by='admin'`). |
 | `DELETE /api/admin/users/{id}/enrollments/{course_id}` | Отозвать. |
 | `GET  /api/admin/courses`                          | Все курсы (включая неопубликованные). |
