@@ -27,7 +27,7 @@ const reviews = [
 ---
 <SiteLayout
   title="Персональные тренировки – Алексей Ларин"
-  description="Персональные тренировки с тренером Алексеем Лариным: онлайн или у вас дома в Москве. 60 минут, нагрузка под ваш уровень. Первое занятие оплачивается после него."
+  description="Персональные тренировки с тренером Алексеем Лариным: онлайн или у вас дома в Москве. 60 минут, нагрузка под ваш уровень."
   active="personal">
 
   <!-- ПЕРВЫЙ ЭКРАН -->
@@ -44,7 +44,7 @@ const reviews = [
       <div class="gp-cta">
         <a href="#zapis" class="btn-main">Записаться на первое занятие ↓</a>
       </div>
-      <p class="gp-safe">Первое занятие оплачиваете после него</p>
+      <p class="gp-safe">Первое занятие – 3 000 ₽ онлайн или 5 000 ₽ у вас дома</p>
     </div>
     <div class="gp-hero-photo pt">
       <picture>
@@ -102,8 +102,8 @@ const reviews = [
         <div class="gp-step">
           <div class="gp-num">3</div>
           <div>
-            <h3>Оплата – после</h3>
-            <p>Первое занятие оплачиваете, когда оно уже прошло и вы знаете, как я работаю.</p>
+            <h3>Сначала тренируемся, потом оплата</h3>
+            <p>После первого занятия пришлю ссылку на оплату. Платите, уже зная, как я работаю.</p>
           </div>
         </div>
         <div class="gp-step">
@@ -184,7 +184,7 @@ const reviews = [
       <p class="gp-label gp-center">Вопросы</p>
       <h2 class="gp-center">Что обычно <em>спрашивают</em></h2>
       <details><summary>Я совсем без формы – справлюсь?</summary><p>Да. Начинаем с вашего уровня, у каждого упражнения есть вариант полегче. Задача первого занятия – чтобы вам было по силам и захотелось продолжать.</p></details>
-      <details><summary>Как часто нужно заниматься?</summary><p>Обычно раз-два в неделю. Пакет на 5 занятий рассчитан на месяц, на 10 – на два месяца.</p></details>
+      <details><summary>Как часто нужно заниматься?</summary><p>Рекомендую от двух раз в неделю. Точнее подберём под вашу цель и график.</p></details>
       <details><summary>Что нужно для онлайн-занятия?</summary><p>Коврик, немного места и телефон или ноутбук с камерой – так, чтобы я вас видел.</p></details>
       <details><summary>У меня болит спина или суставы – можно?</summary><p>Расскажите об этом заранее – подберу упражнения с учётом самочувствия. Если боль острая или недавно была операция, сначала нужно разрешение врача.</p></details>
       <details><summary>Как оплатить?</summary><p>Первое занятие – после него, я пришлю ссылку на оплату. Дальше – пакетом, перед следующим занятием.</p></details>
@@ -200,7 +200,7 @@ const reviews = [
       <ol class="gp-how">
         <li><b>Напишите мне в Telegram</b> (или в Max) – формат и пару слов о своей цели</li>
         <li><b>Договоримся</b> о дне и времени первого занятия</li>
-        <li><b>Тренируемся</b>, а оплачиваете вы уже после</li>
+        <li><b>Тренируемся</b> – оплату за первое занятие пришлю после него</li>
       </ol>
       <a href={TG} class="btn-main btn-full" target="_blank" rel="noopener">Написать в Telegram</a>
       <a href={MAX} class="gp-max" target="_blank" rel="noopener">Нет Telegram – написать в Max</a>
@@ -383,7 +383,7 @@ const reviews = [
 
     .gp-hero-photo.pt img { object-position: center top; }
     .gp-formats { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 40px; }
-    .gp-format { background: white; border: 1px solid var(--border, #ece8e0); border-radius: 22px; padding: 32px 30px 28px; display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s; }
+    .gp-format { background: white; border: 1px solid var(--border, #ece8e0); border-top: 4px solid var(--orange); border-radius: 22px; padding: 32px 30px 28px; display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s; }
     @media (hover: hover) { .gp-format:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,39,68,.07); } }
     .gp-format h3 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 32px; color: var(--navy); margin: 0 0 6px; }
     .gp-format-where { font-size: 16px; color: var(--text-muted, #555); line-height: 1.6; margin: 0 0 22px; }

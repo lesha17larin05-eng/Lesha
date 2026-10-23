@@ -1,7 +1,7 @@
 ---
 // Карусель видеоотзывов: лента со свайпом и стрелками ← →.
 // Видео грузятся только по клику (preload="none"), обложки – когда карточка
-// подъезжает к экрану, поэтому отзывов можно ставить много. Лента листается по кругу.
+// подъезжает к экрану, поэтому отзывов можно ставить много. Лента бесконечная: стрелки листают по порядку в обе стороны.
 // Использование: <ReviewsCarousel reviews={[{ v: 50, name: 'Екатерина', text: '…' }]} />
 // v – номер ролика в /videos/<v>.mp4 (обложка – /videos/thumbs/<v>.jpg).
 interface Review { v: number; name: string; text: string }
@@ -60,15 +60,22 @@ const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Revie
       const card = track.querySelector('.rc-card') as HTMLElement | null;
       return card ? card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || '0') : track.clientWidth;
     };
-    // По кругу: с последней карточки «вперёд» – в начало, с первой «назад» – в конец.
-    const atStart = () => track.scrollLeft <= 4;
-    const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-    prev.addEventListener('click', () => atStart()
-      ? track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' })
-      : track.scrollBy({ left: -step(), behavior: 'smooth' }));
-    next.addEventListener('click', () => atEnd()
-      ? track.scrollTo({ left: 0, behavior: 'smooth' })
-      : track.scrollBy({ left: step(), behavior: 'smooth' }));
+    // Бесконечная лента: у края переносим крайнюю карточку на другую сторону
+    // (без видимого скачка) и листаем дальше в ту же сторону.
+    const jump = (dx: number) => {
+      track.style.scrollBehavior = 'auto'; track.style.scrollSnapType = 'none';
+      track.scrollLeft += dx;
+      track.style.scrollSnapType = ''; track.style.scrollBehavior = '';
+    };
+    const cards = () => track.querySelectorAll<HTMLElement>('.rc-card');
+    const go = (dir: number) => {
+      const s = step();
+      if (dir > 0 && track.scrollLeft + s > track.scrollWidth - track.clientWidth - 4) { const c = cards(); track.appendChild(c[0]); jump(-s); }
+      if (dir < 0 && track.scrollLeft < s - 4) { const c = cards(); track.prepend(c[c.length - 1]); jump(s); }
+      requestAnimationFrame(() => track.scrollBy({ left: dir * s, behavior: 'smooth' }));
+    };
+    prev.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
     if (track.scrollWidth <= track.clientWidth + 4) { prev.hidden = true; next.hidden = true; }
 
     // Обложки грузим, когда карточка рядом с видимой частью ленты.
