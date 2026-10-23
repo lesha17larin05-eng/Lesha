@@ -5,7 +5,6 @@ import ReviewsCarousel from '../components/ReviewsCarousel.astro';
 // контакт, цель); Алексей пишет человеку и присылает ссылку /gruppa#oplata,
 // по ней открывается скрытый блок оплаты (POST /api/checkout/service,
 // service=gruppa). После оплаты – письмо с анкетой и замерами (anketa ?k=gruppa).
-const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Вопрос про групповое ведение: ');
 const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
 const TG_JOIN = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
 const reviews = [
@@ -40,14 +39,13 @@ const reviews = [
       </div>
       <div class="gp-cta">
         <a href="#zapis" class="btn-main">Записаться в группу ↓</a>
-        <a href={TG} class="gp-ask" target="_blank" rel="noopener">Сначала задать вопрос в Telegram</a>
       </div>
-      <p class="gp-safe">Передумаете до старта – верну деньги полностью</p>
+      <p class="gp-safe">5 мест · набор до 6 ноября</p>
     </div>
     <div class="gp-hero-photo">
       <picture>
-        <source type="image/webp" srcset="/img/IMG_4023.webp 1x, /img/IMG_4023@2x.webp 2x" />
-        <img src="/img/IMG_4023.jpg" srcset="/img/IMG_4023.jpg 1x, /img/IMG_4023@2x.jpg 2x" alt="Алексей Ларин" width="1200" height="800" loading="eager" fetchpriority="high" />
+        <source type="image/webp" srcset="/img/IMG_3934.webp 1x, /img/IMG_3934@2x.webp 2x" />
+        <img src="/img/IMG_3934.jpg" srcset="/img/IMG_3934.jpg 1x, /img/IMG_3934@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="eager" fetchpriority="high" />
       </picture>
     </div>
   </section>
@@ -59,17 +57,17 @@ const reviews = [
       <h2>Если вам <em>знакомо</em></h2>
       <div class="gp-cards3">
         <div class="gp-card">
-          <div class="gp-ico">🔁</div>
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 20a13 13 0 0 1 23-6l3 3"/><path d="M38 9v8h-8"/><path d="M36 28a13 13 0 0 1-23 6l-3-3"/><path d="M10 39v-8h8"/></svg></div>
           <h3>Начинали много раз</h3>
           <p>Абонемент, марафон, приложение – и через пару недель всё сходит на нет. Одному держать ритм трудно, и это нормально.</p>
         </div>
         <div class="gp-card">
-          <div class="gp-ico">💪</div>
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="9" r="4"/><path d="M12 18l12 3 12-3"/><path d="M24 21v10"/><path d="M24 31l-6 11"/><path d="M24 31l6 11"/><path d="M6 15v6M42 15v6M4 18h4M40 18h4"/></svg></div>
           <h3>Хочется выглядеть и чувствовать себя лучше</h3>
           <p>Подтянутое тело, больше сил, хороший сон и настроение. Без жёстких диет и тренировок «через не могу».</p>
         </div>
         <div class="gp-card">
-          <div class="gp-ico">🗺️</div>
+          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="7" width="30" height="35" rx="4"/><path d="M17 7v-2h14v2"/><path d="M16 19l3 3 6-6"/><path d="M28 20h5"/><path d="M16 31l3 3 6-6"/><path d="M28 32h5"/></svg></div>
           <h3>Нужен понятный план</h3>
           <p>Что делать, сколько и в какие дни – чтобы не гадать каждый раз, а просто открыть план и сделать.</p>
         </div>
@@ -236,7 +234,7 @@ const reviews = [
       <details><summary>А если не смогу прийти на созвон?</summary><p>Будет запись. Отчёт и вопросы – в чате, я отвечу.</p></details>
       <details><summary>Я живу не в Москве</summary><p>Всё проходит онлайн. Созвон – по субботам в 10:15 по московскому времени.</p></details>
       <details><summary>Как записаться и оплатить?</summary><p>Напишите мне в Telegram или Max. Я отвечу на вопросы, забронирую место и пришлю ссылку на оплату. После оплаты придёт анкета и замеры.</p></details>
-      <details><summary>Можно вернуть деньги?</summary><p>Если передумаете до старта 7 ноября – верну полностью.</p></details>
+      <details><summary>Можно вернуть деньги?</summary><p>Да, если передумаете до 1 ноября – верну полностью. Позже уже нет: группа маленькая, и место закреплено за вами.</p></details>
       <details><summary>Что будет после 8 недель?</summary><p>Подведём итоги по замерам. Захотите продолжать – подскажу, что подойдёт: следующий поток, личное ведение или персональные тренировки.</p></details>
     </div>
   </section>
@@ -287,7 +285,7 @@ const reviews = [
           <button type="submit" class="btn-main btn-full">Оплатить 9 900 ₽</button>
           <p class="gp-note" id="pay-note"></p>
         </form>
-        <p class="gp-pay-safe">После оплаты на почту придёт анкета и замеры. Передумаете до старта – верну деньги.</p>
+        <p class="gp-pay-safe">После оплаты на почту придёт анкета и замеры.</p>
       </div>
     </div>
   </section>
@@ -307,9 +305,9 @@ const reviews = [
     .gp-ask { color: rgba(255,255,255,.88); font-size: 16px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(255,255,255,.35); padding: 8px 4px; transition: color .2s, text-decoration-color .2s; }
     .gp-ask:hover, .gp-ask:focus-visible { color: white; text-decoration-color: white; }
     .gp-safe { margin: 18px 0 0; font-size: 15px; color: rgba(255,255,255,.75); }
-    .gp-safe::before { content: '✓ '; }
+    
     .gp-hero-photo { position: relative; overflow: hidden; background: #d9dde3; }
-    .gp-hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+    .gp-hero-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
 
     .btn-main { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--orange); color: white; border: none; cursor: pointer; text-decoration: none; padding: 17px 34px; border-radius: 100px; font-family: 'Manrope', sans-serif; font-size: 18px; font-weight: 600; box-shadow: 0 8px 28px rgba(232,101,42,.32); transition: background .2s, transform .2s; }
     .btn-main:hover { background: var(--orange-warm, #f07530); transform: translateY(-2px); }
@@ -329,7 +327,8 @@ const reviews = [
     .gp-cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
     .gp-card { background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 30px 28px; transition: transform .2s, box-shadow .2s; }
     @media (hover: hover) { .gp-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,39,68,.07); } }
-    .gp-ico { font-size: 26px; margin-bottom: 14px; }
+    .gp-ico { width: 56px; height: 56px; border-radius: 16px; background: white; border: 1px solid var(--border, #ece8e0); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+    .gp-ico svg { width: 30px; height: 30px; fill: none; stroke: var(--orange); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
     .gp-card h3, .gp-step h3, .gp-tl h3 { font-size: 19px; font-weight: 600; color: var(--navy); margin: 0 0 8px; line-height: 1.35; }
     .gp-card p, .gp-step p, .gp-tl p { font-size: 16px; line-height: 1.7; color: var(--text-muted, #555); margin: 0; }
 
