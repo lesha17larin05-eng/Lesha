@@ -21,10 +21,8 @@ const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Revie
       </figure>
     ))}
   </div>
-  <div class="rc-nav">
-    <button type="button" class="rc-arrow" data-dir="-1" aria-label="Предыдущие отзывы">←</button>
-    <button type="button" class="rc-arrow" data-dir="1" aria-label="Следующие отзывы">→</button>
-  </div>
+  <button type="button" class="rc-arrow" data-dir="-1" aria-label="Предыдущие отзывы">←</button>
+  <button type="button" class="rc-arrow" data-dir="1" aria-label="Следующие отзывы">→</button>
 </div>
 
 <style>
@@ -42,13 +40,16 @@ const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Revie
   .rc-play:focus-visible { outline: 3px solid var(--orange, #e8652a); outline-offset: -3px; }
   .rc-text { font-size: 16px; line-height: 1.55; color: var(--text-mid, #3a3a3a); margin: 14px 16px 6px; }
   .rc-name { font-size: 14px; color: var(--text-light, #6e6e6e); margin: auto 16px 16px; }
-  .rc-nav { display: flex; justify-content: center; gap: 12px; margin-top: 22px; }
-  .rc-arrow { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--border, #ece8e0); background: white; color: var(--navy, #1a2744); font-size: 20px; cursor: pointer; transition: border-color .2s, background .2s, color .2s, opacity .2s; }
+  /* Стрелки по бокам ленты, по центру видео */
+  .rc-arrow { position: absolute; top: 36%; transform: translateY(-50%); z-index: 2; width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--border, #ece8e0); background: white; color: var(--navy, #1a2744); font-size: 22px; cursor: pointer; box-shadow: 0 6px 20px rgba(26,39,68,.12); transition: border-color .2s, color .2s, opacity .2s; }
+  .rc-arrow[data-dir="-1"] { left: -26px; }
+  .rc-arrow[data-dir="1"] { right: -26px; }
   @media (hover: hover) { .rc-arrow:hover:not(:disabled) { border-color: var(--orange, #e8652a); color: var(--orange, #e8652a); } }
   .rc-arrow:focus-visible { outline: 2px solid var(--orange, #e8652a); outline-offset: 2px; }
-  .rc-arrow:disabled { opacity: .35; cursor: default; }
+  .rc-arrow:disabled { opacity: 0; pointer-events: none; }
   @media (max-width: 1000px) { .rc-track { grid-auto-columns: calc((100% - 2 * 16px) / 3); gap: 16px; } }
-  @media (max-width: 700px) { .rc-track { grid-auto-columns: 62%; gap: 12px; } .rc-text { font-size: 15px; margin: 12px 12px 4px; } .rc-name { margin: auto 12px 14px; } }
+  @media (max-width: 1240px) { .rc-arrow[data-dir="-1"] { left: 6px; } .rc-arrow[data-dir="1"] { right: 6px; } }
+  @media (max-width: 700px) { .rc-arrow { width: 42px; height: 42px; font-size: 18px; } .rc-track { grid-auto-columns: 62%; gap: 12px; } .rc-text { font-size: 15px; margin: 12px 12px 4px; } .rc-name { margin: auto 12px 14px; } }
 </style>
 
 <script>
