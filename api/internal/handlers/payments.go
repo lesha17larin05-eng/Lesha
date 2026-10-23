@@ -632,7 +632,7 @@ type service struct {
 
 var services = map[string]service{
 	"start":  {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990, Page: "/start"},
-	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 9 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 5},
+	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 5},
 }
 
 func (a *App) ServiceCheckout(w http.ResponseWriter, r *http.Request) {
@@ -794,15 +794,16 @@ func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
 // уведомление Алексею.
 func (a *App) gruppaOrderPaid(u *db.User, o *db.Order, svc service) {
 	anketa := a.anketaURLKind(o.UserID, "gruppa")
-	a.Mail.Async(u.Email, "Вы в группе – групповое ведение с 9 ноября",
+	a.Mail.Async(u.Email, "Вы в группе – групповое ведение с 7 ноября",
 		"<p>Здравствуйте! Оплата получена – вы в группе, я очень рад 🙂</p>"+
 			"<p><b>Первый шаг – анкета и замеры.</b> Минут 10: цель, опыт, здоровье, удобные дни "+
 			"и простые замеры (рост, вес, талия, бёдра, задержка дыхания). По анкете я соберу ваш первый план, "+
 			"а замеры сравним в конце.</p>"+
 			`<p><a href="`+anketa+`" style="display:inline-block;background:#e8652a;color:#fff;text-decoration:none;`+
 			`padding:12px 24px;border-radius:100px;font-weight:600">Заполнить анкету&nbsp;→</a></p>`+
-			"<p>Заполните, пожалуйста, до 7 ноября. После анкеты добавлю вас в чат группы в Telegram.</p>"+
-			"<p>Старт – понедельник, 9 ноября. Созвоны – по субботам в 10:15 по Москве.</p>"+
+			"<p>Заполните, пожалуйста, до 5 ноября. После анкеты добавлю вас в чат группы в Telegram.</p>"+
+			"<p>Первый созвон – суббота, 7 ноября, в 10:15 по Москве: знакомимся, и каждый получает свой план. "+
+			"Дальше созвоны – каждую субботу в это же время.</p>"+
 			"<p>Если что-то непонятно – просто ответьте на это письмо или напишите мне в "+
 			"<a href=\"https://t.me/larin_lesha\">Телеграм</a>.</p>"+
 			"<p>Алексей Ларин</p>")

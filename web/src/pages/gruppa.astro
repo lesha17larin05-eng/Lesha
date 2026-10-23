@@ -1,27 +1,36 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
+import ReviewsCarousel from '../components/ReviewsCarousel.astro';
 // Групповое ведение: 8 недель, до 5 человек. Запись – через заявку (имя,
 // контакт, цель); Алексей пишет человеку и присылает ссылку /gruppa#oplata,
 // по ней открывается скрытый блок оплаты (POST /api/checkout/service,
 // service=gruppa). После оплаты – письмо с анкетой и замерами (anketa ?k=gruppa).
 const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Вопрос про групповое ведение: ');
-const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent('Здравствуйте, Алексей! Вопрос про групповое ведение: ');
+const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
+const TG_JOIN = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
 const reviews = [
   { v: 50, name: 'Екатерина', text: 'Оформились мышцы, укрепились суставы, выросла выносливость' },
   { v: 41, name: 'Ксения', text: '−11 кг за 3 месяца и совсем другое внутреннее состояние' },
   { v: 13, name: 'Екатерина', text: '«После курса хочется жить и делать ещё больше»' },
   { v: 54, name: 'Елена', text: 'Выстроила тренировки под сложный посменный график' },
+  { v: 40, name: 'Ксения', text: 'Ушли боли в тазобедренных суставах, влезла в старые джинсы' },
+  { v: 58, name: 'Дарья', text: 'Взяла себя в руки, вернула энергию и начала бегать' },
+  { v: 12, name: 'Варвара', text: 'Укрепление без изнурения, сон стал крепче' },
+  { v: 48, name: 'Маргарита', text: 'Привела тело в тонус и вернула вдохновение' },
+  { v: 56, name: 'Наталия', text: 'Системный подход без перегруза, лёгкая и задорная атмосфера' },
+  { v: 47, name: 'Денис', text: 'Огонь и командный дух на групповых занятиях' },
+  { v: 64, name: 'Анна', text: 'Встроила спорт в жизнь, ушли зажимы в плечах и спине' },
 ];
 ---
 <SiteLayout
   title="Групповое ведение – Алексей Ларин"
-  description="8 недель тренировок дома в группе до 5 человек: свой план, разбор каждую субботу и поддержка в чате. Старт 9 ноября, 9 900 ₽."
+  description="8 недель тренировок дома в группе до 5 человек: свой план, разбор каждую субботу и поддержка в чате. Старт 7 ноября, 9 900 ₽."
   active="gruppa">
 
   <!-- ПЕРВЫЙ ЭКРАН -->
   <section class="gp-hero">
     <div class="gp-hero-text">
-      <p class="gp-eyebrow"><span class="dot"></span>Групповое ведение · старт 9 ноября</p>
+      <p class="gp-eyebrow"><span class="dot"></span>Групповое ведение · старт 7 ноября</p>
       <h1>Войти в Новый год <em>сильнее</em></h1>
       <p class="gp-sub">8 недель тренировок дома – по своему плану, с разбором каждую субботу и поддержкой в чате</p>
       <div class="gp-params">
@@ -114,9 +123,9 @@ const reviews = [
       <p class="gp-desc">Три недели тренируемся, неделю восстанавливаемся. Отдых – часть системы: в это время тело и становится сильнее.</p>
       <div class="gp-timeline">
         <div class="gp-tl">
-          <p class="gp-tl-date">9 – 29 ноября</p>
+          <p class="gp-tl-date">7 – 29 ноября</p>
           <h3>Цикл 1. Осваиваемся</h3>
-          <p>Учимся технике, находим свой ритм. Нагрузка растёт постепенно.</p>
+          <p>7 ноября – первый созвон: знакомимся, и каждый получает свой план. Дальше учимся технике и находим ритм.</p>
         </div>
         <div class="gp-tl gp-tl-rest">
           <p class="gp-tl-date">30 ноября – 6 декабря</p>
@@ -179,7 +188,7 @@ const reviews = [
       <h2>Алексей Ларин</h2>
       <p class="gp-quote">Тренировки, после которых хочется жить.</p>
       <p>Больше 10 лет тренирую детей и взрослых, магистр университета спорта «ГЦОЛИФК». За это время со мной занимались больше 8 000 человек – на курсах, в лагерях, на групповых и личных занятиях.</p>
-      <p>В 9 лет я сломал три позвонка и возвращался к движению шаг за шагом. Поэтому знаю, каково начинать заново, и всегда подбираю нагрузку под человека.</p>
+      <p>Работаю с людьми любого уровня – от тех, кто начинает с нуля, до тех, кто давно тренируется. Нагрузку всегда подбираю под человека.</p>
       <p>В тренировках соединяю силовые, бег и йогу – и обязательно отдых.</p>
     </div>
   </section>
@@ -189,18 +198,7 @@ const reviews = [
     <div class="gp-inner">
       <p class="gp-label gp-center">Отзывы</p>
       <h2 class="gp-center">Люди, которые <em>начали</em></h2>
-      <div class="gp-reviews">
-        {reviews.map((r) => (
-          <div class="gp-rev">
-            <div class="rv-video">
-              <video src={`/videos/${r.v}.mp4`} poster={`/videos/thumbs/${r.v}.jpg`} playsinline preload="none"></video>
-              <div class="rv-play"><div class="rv-play-btn"></div></div>
-            </div>
-            <p class="gp-rev-text">{r.text}</p>
-            <p class="gp-rev-name">{r.name} · видеоотзыв</p>
-          </div>
-        ))}
-      </div>
+      <div class="gp-reviews-wrap"><ReviewsCarousel reviews={reviews} /></div>
       <p class="gp-center gp-more"><a href="/results">Все отзывы →</a></p>
     </div>
   </section>
@@ -237,8 +235,8 @@ const reviews = [
       <details><summary>Сколько времени занимает тренировка?</summary><p>Обычно 30–40 минут – зависит от вашего плана. На тяжёлые недели есть короткий план-минимум.</p></details>
       <details><summary>А если не смогу прийти на созвон?</summary><p>Будет запись. Отчёт и вопросы – в чате, я отвечу.</p></details>
       <details><summary>Я живу не в Москве</summary><p>Всё проходит онлайн. Созвон – по субботам в 10:15 по московскому времени.</p></details>
-      <details><summary>Как записаться и оплатить?</summary><p>Оставьте заявку внизу страницы. Я напишу вам, отвечу на вопросы и пришлю ссылку на оплату. После оплаты придёт анкета и замеры.</p></details>
-      <details><summary>Можно вернуть деньги?</summary><p>Если передумаете до старта 9 ноября – верну полностью.</p></details>
+      <details><summary>Как записаться и оплатить?</summary><p>Напишите мне в Telegram или Max. Я отвечу на вопросы, забронирую место и пришлю ссылку на оплату. После оплаты придёт анкета и замеры.</p></details>
+      <details><summary>Можно вернуть деньги?</summary><p>Если передумаете до старта 7 ноября – верну полностью.</p></details>
       <details><summary>Что будет после 8 недель?</summary><p>Подведём итоги по замерам. Захотите продолжать – подскажу, что подойдёт: следующий поток, личное ведение или персональные тренировки.</p></details>
     </div>
   </section>
@@ -247,22 +245,32 @@ const reviews = [
   <section class="gp-section gp-cream" id="zapis">
     <div class="gp-inner gp-form-wrap">
       <p class="gp-label gp-center">Запись</p>
-      <h2 class="gp-center">Записаться в группу</h2>
-      <p class="gp-desc gp-center">Оставьте заявку – я напишу вам, отвечу на вопросы и пришлю ссылку на оплату.</p>
-      <form id="lead-form" class="gp-form" data-source="gruppa" novalidate>
-        <div class="gp-row">
-          <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
-          <input class="gp-input" name="contact" placeholder="Telegram, телефон или почта" required />
-        </div>
-        <textarea class="gp-input" name="message" rows="3" placeholder="Чего хотите добиться за 8 недель (по желанию)"></textarea>
-        <label class="gp-consent">
-          <input type="checkbox" name="consent_pd" value="1" required />
-          <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
-        </label>
-        <button type="submit" class="btn-main btn-full">Оставить заявку</button>
-        <p class="gp-note" id="lead-note"></p>
-      </form>
-      <p class="gp-alt">Удобнее сразу написать? <a href={TG} target="_blank" rel="noopener">Telegram</a> · <a href={MAX} target="_blank" rel="noopener">Max</a></p>
+      <h2 class="gp-center">Напишите – <em>забронирую место</em></h2>
+      <ol class="gp-how">
+        <li><b>Напишите мне в Telegram</b> (или в Max) – пару слов о себе и своей цели</li>
+        <li><b>Отвечу на вопросы</b>, забронирую место и пришлю ссылку на оплату</li>
+        <li><b>После оплаты</b> придёт анкета и замеры, а 7 ноября – первый созвон</li>
+      </ol>
+      <a href={TG_JOIN} class="btn-main btn-full" target="_blank" rel="noopener">Написать в Telegram</a>
+      <a href={MAX} class="gp-max" target="_blank" rel="noopener">Нет Telegram – написать в Max</a>
+      <p class="gp-alt">Обычно отвечаю в течение дня · 5 мест · набор до 6 ноября</p>
+
+      <details class="gp-leave">
+        <summary>Нет мессенджеров? <span>Оставьте контакт</span> – я напишу сам</summary>
+        <form id="lead-form" class="gp-form" data-source="gruppa" novalidate>
+          <div class="gp-row">
+            <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
+            <input class="gp-input" name="contact" placeholder="Телефон или почта" required />
+          </div>
+          <textarea class="gp-input" name="message" rows="3" placeholder="Чего хотите добиться за 8 недель (по желанию)"></textarea>
+          <label class="gp-consent">
+            <input type="checkbox" name="consent_pd" value="1" required />
+            <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a></span>
+          </label>
+          <button type="submit" class="btn-main btn-full">Отправить</button>
+          <p class="gp-note" id="lead-note"></p>
+        </form>
+      </details>
 
       <!-- Оплата: скрыта, открывается по ссылке /gruppa#oplata, которую Алексей присылает после переписки -->
       <div class="gp-pay" id="oplata" hidden>
@@ -356,17 +364,7 @@ const reviews = [
     .gp-quote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 26px; color: #8bb8f0; margin: 0 0 22px; }
     .gp-author-text p { font-size: 17px; line-height: 1.75; color: rgba(255,255,255,.82); margin: 0 0 14px; max-width: 560px; }
 
-    .gp-reviews { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 36px; }
-    .gp-rev { background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 18px; overflow: hidden; }
-    .rv-video { position: relative; aspect-ratio: 9 / 16; background: #111; }
-    .rv-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .rv-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.35)); }
-    .rv-play.hidden { display: none; }
-    .rv-play-btn { width: 58px; height: 58px; border-radius: 50%; background: rgba(232,101,42,.92); position: relative; transition: transform .2s; }
-    .rv-play-btn::after { content: ''; position: absolute; left: 23px; top: 18px; border-left: 17px solid white; border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
-    @media (hover: hover) { .rv-play:hover .rv-play-btn { transform: scale(1.08); } }
-    .gp-rev-text { font-size: 16px; line-height: 1.55; color: var(--text-mid, #3a3a3a); margin: 16px 18px 6px; }
-    .gp-rev-name { font-size: 14px; color: var(--text-light, #6e6e6e); margin: 0 18px 18px; }
+    .gp-reviews-wrap { margin-top: 36px; }
     .gp-more { margin-top: 30px; }
     .gp-more a { color: var(--navy); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--orange); padding-bottom: 2px; transition: color .2s; }
     .gp-more a:hover { color: var(--orange); }
@@ -391,6 +389,19 @@ const reviews = [
     .gp-faq details p { margin: 0; padding: 0 24px 20px; font-size: 16px; line-height: 1.7; color: var(--text-muted, #555); }
 
     .gp-form-wrap { max-width: 600px; }
+    .gp-how { list-style: none; counter-reset: how; padding: 0; margin: 30px 0 30px; display: flex; flex-direction: column; gap: 14px; }
+    .gp-how li { counter-increment: how; position: relative; padding: 4px 0 4px 54px; font-size: 17px; line-height: 1.6; color: var(--text-mid, #3a3a3a); }
+    .gp-how li::before { content: counter(how); position: absolute; left: 0; top: 0; width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .gp-how b { color: var(--navy); }
+    .gp-max { display: block; text-align: center; margin: 14px 0 0; color: var(--navy); font-weight: 600; font-size: 16px; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(26,39,68,.3); transition: color .2s; }
+    .gp-max:hover { color: var(--orange); }
+    .gp-leave { margin-top: 28px; text-align: center; }
+    .gp-leave > summary { list-style: none; cursor: pointer; display: inline-block; font-size: 15px; color: var(--text-light, #6e6e6e); padding: 6px 12px; border-radius: 100px; transition: background .2s; }
+    .gp-leave > summary::-webkit-details-marker { display: none; }
+    .gp-leave > summary span { color: var(--orange); text-decoration: underline; text-underline-offset: 3px; }
+    @media (hover: hover) { .gp-leave > summary:hover { background: white; } }
+    .gp-leave[open] > summary { margin-bottom: 16px; }
+    .gp-leave .gp-form { text-align: left; }
     .gp-form { display: flex; flex-direction: column; gap: 12px; }
     .gp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .gp-input { width: 100%; padding: 15px 18px; border-radius: 12px; border: 1.5px solid var(--border, #ece8e0); background: white; font-size: 17px; font-family: 'Manrope', sans-serif; color: var(--text, #1a1a1a); outline: none; transition: border-color .2s, box-shadow .2s; box-sizing: border-box; }
@@ -421,7 +432,6 @@ const reviews = [
       .gp-author { grid-template-columns: 1fr; }
       .gp-author-photo { min-height: 380px; }
       .gp-author-text { padding: 56px 32px; }
-      .gp-reviews { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 700px) {
       .gp-section { padding: 64px 20px; }
@@ -435,23 +445,10 @@ const reviews = [
       .gp-steps, .gp-timeline, .gp-fit, .gp-row { grid-template-columns: 1fr; }
       .gp-step { padding: 22px; }
       .gp-author-text { padding: 48px 20px; }
-      .gp-reviews { gap: 12px; }
-      .gp-rev-text { font-size: 15px; margin: 12px 12px 4px; }
-      .gp-rev-name { margin: 0 12px 14px; }
     }
   </style>
 
   <script>
-    // Видеоотзывы: ролик грузится и играет только по клику.
-    document.querySelectorAll('.rv-video').forEach((box) => {
-      const video = box.querySelector('video') as HTMLVideoElement | null;
-      const overlay = box.querySelector('.rv-play') as HTMLElement | null;
-      if (!video || !overlay) return;
-      overlay.addEventListener('click', () => { overlay.classList.add('hidden'); video.play(); });
-      video.addEventListener('click', () => { if (video.paused) { overlay.classList.add('hidden'); video.play(); } else video.pause(); });
-      video.addEventListener('pause', () => overlay.classList.remove('hidden'));
-    });
-
     // Скрытый блок оплаты открывается по ссылке /gruppa#oplata.
     const payBox = document.getElementById('oplata');
     const showPay = () => {
@@ -473,7 +470,7 @@ const reviews = [
       const name = String(fd.get('name') || '').trim();
       const contact = String(fd.get('contact') || '').trim();
       if (!name) return say('Укажите имя', true);
-      if (contact.length < 5) return say('Укажите Telegram, телефон или почту – как с вами связаться', true);
+      if (contact.length < 5) return say('Укажите телефон или почту – как с вами связаться', true);
       if (!fd.get('consent_pd')) return say('Чтобы продолжить, отметьте согласие', true);
       btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Отправляем…';
       try {
@@ -485,7 +482,7 @@ const reviews = [
           (window as any).reachGoal?.('lead_submit');
           const box = document.createElement('div');
           box.className = 'gp-success';
-          box.innerHTML = '<h3>Заявка у меня 🙌</h3><p>Напишу вам в течение дня, отвечу на вопросы и пришлю ссылку на оплату.</p>';
+          box.innerHTML = '<h3>Получил 🙌</h3><p>Напишу вам в течение дня, отвечу на вопросы и пришлю ссылку на оплату.</p>';
           lead.replaceWith(box);
           return;
         }

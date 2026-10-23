@@ -1,0 +1,84 @@
+---
+// Карусель видеоотзывов: лента со свайпом и стрелками ← →.
+// Видео грузятся только по клику (preload="none"), страница остаётся лёгкой.
+// Использование: <ReviewsCarousel reviews={[{ v: 50, name: 'Екатерина', text: '…' }]} />
+// v – номер ролика в /videos/<v>.mp4 (обложка – /videos/thumbs/<v>.jpg).
+interface Review { v: number; name: string; text: string }
+const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Review[]; label?: string };
+---
+<div class="rc" data-rc>
+  <div class="rc-track" tabindex="0" aria-label={label}>
+    {reviews.map((r) => (
+      <figure class="rc-card">
+        <div class="rc-video">
+          <video src={`/videos/${r.v}.mp4`} poster={`/videos/thumbs/${r.v}.jpg`} playsinline preload="none"></video>
+          <button type="button" class="rc-play" aria-label={`Смотреть отзыв: ${r.name}`}><span></span></button>
+        </div>
+        <figcaption>
+          <p class="rc-text">{r.text}</p>
+          <p class="rc-name">{r.name}</p>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+  <div class="rc-nav">
+    <button type="button" class="rc-arrow" data-dir="-1" aria-label="Предыдущие отзывы">←</button>
+    <button type="button" class="rc-arrow" data-dir="1" aria-label="Следующие отзывы">→</button>
+  </div>
+</div>
+
+<style>
+  .rc { position: relative; }
+  .rc-track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 20px) / 4); gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; padding-bottom: 4px; outline: none; }
+  .rc-track::-webkit-scrollbar { display: none; }
+  .rc-card { scroll-snap-align: start; margin: 0; background: var(--cream, #f8f5ef); border: 1px solid var(--border, #ece8e0); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+  .rc-video { position: relative; aspect-ratio: 9 / 16; background: #111; }
+  .rc-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rc-play { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.35)); }
+  .rc-play.hidden { display: none; }
+  .rc-play span { width: 58px; height: 58px; border-radius: 50%; background: rgba(232,101,42,.92); position: relative; transition: transform .2s; }
+  .rc-play span::after { content: ''; position: absolute; left: 23px; top: 18px; border-left: 17px solid white; border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+  @media (hover: hover) { .rc-play:hover span { transform: scale(1.08); } }
+  .rc-play:focus-visible { outline: 3px solid var(--orange, #e8652a); outline-offset: -3px; }
+  .rc-text { font-size: 16px; line-height: 1.55; color: var(--text-mid, #3a3a3a); margin: 14px 16px 6px; }
+  .rc-name { font-size: 14px; color: var(--text-light, #6e6e6e); margin: auto 16px 16px; }
+  .rc-nav { display: flex; justify-content: center; gap: 12px; margin-top: 22px; }
+  .rc-arrow { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--border, #ece8e0); background: white; color: var(--navy, #1a2744); font-size: 20px; cursor: pointer; transition: border-color .2s, background .2s, color .2s, opacity .2s; }
+  @media (hover: hover) { .rc-arrow:hover:not(:disabled) { border-color: var(--orange, #e8652a); color: var(--orange, #e8652a); } }
+  .rc-arrow:focus-visible { outline: 2px solid var(--orange, #e8652a); outline-offset: 2px; }
+  .rc-arrow:disabled { opacity: .35; cursor: default; }
+  @media (max-width: 1000px) { .rc-track { grid-auto-columns: calc((100% - 2 * 16px) / 3); gap: 16px; } }
+  @media (max-width: 700px) { .rc-track { grid-auto-columns: 62%; gap: 12px; } .rc-text { font-size: 15px; margin: 12px 12px 4px; } .rc-name { margin: auto 12px 14px; } }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-rc]').forEach((rc) => {
+    const track = rc.querySelector('.rc-track') as HTMLElement;
+    const [prev, next] = Array.from(rc.querySelectorAll<HTMLButtonElement>('.rc-arrow'));
+    const step = () => {
+      const card = track.querySelector('.rc-card') as HTMLElement | null;
+      return card ? card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || '0') : track.clientWidth;
+    };
+    const update = () => {
+      prev.disabled = track.scrollLeft <= 4;
+      next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    };
+    rc.querySelectorAll<HTMLButtonElement>('.rc-arrow').forEach((b) =>
+      b.addEventListener('click', () => track.scrollBy({ left: Number(b.dataset.dir) * step(), behavior: 'smooth' })));
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+
+    rc.querySelectorAll<HTMLElement>('.rc-video').forEach((box) => {
+      const video = box.querySelector('video') as HTMLVideoElement;
+      const btn = box.querySelector('.rc-play') as HTMLElement;
+      btn.addEventListener('click', () => {
+        // Один ролик за раз
+        rc.querySelectorAll('video').forEach((v) => { if (v !== video) (v as HTMLVideoElement).pause(); });
+        btn.classList.add('hidden'); video.play();
+      });
+      video.addEventListener('click', () => { if (video.paused) { btn.classList.add('hidden'); video.play(); } else video.pause(); });
+      video.addEventListener('pause', () => btn.classList.remove('hidden'));
+    });
+  });
+</script>
