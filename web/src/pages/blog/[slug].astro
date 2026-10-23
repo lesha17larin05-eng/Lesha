@@ -6,7 +6,17 @@ import { coverPositionsArticle, coverPositionsCard } from '../../lib/covers';
 
 const slug = Astro.params.slug;
 const cookie = Astro.request.headers.get('cookie') || '';
+// Объединённые статьи (октябрь 2026) – навсегда на ту, куда перенесён текст.
+const merged: Record<string, string> = {
+  'princip-malenkih-shagov': 'kak-nachat-trenirovatsya',
+  'kak-sformirovat-privychku-trenirovatsya': 'pochemu-brosaju-trenirovki',
+  'trenirovki-i-mentalnoe-zdorove': 'kak-snizit-trevozhnost',
+};
+if (slug && merged[slug]) return Astro.redirect(`/blog/${merged[slug]}`, 301);
 const { status, data } = await apiJson<any>(`/api/articles/${slug}`, { cookie });
+// Скрытые статьи – временно в список статей (их можно вернуть).
+const hidden = ['muzhskoe-zhenskoe-zdorove', 'banja-i-zdorove', 'sotsialnoe-zdorove', 'gimnastika-dlja-glaz', 'obuchenie-novomu-navyku', 'akrojoga-chto-eto'];
+if (status === 404 && slug && hidden.includes(slug)) return Astro.redirect('/blog', 302);
 if (status !== 200 || !data) {
   return new Response('Not found', { status: 404 });
 }

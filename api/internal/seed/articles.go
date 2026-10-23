@@ -18,16 +18,16 @@ import (
 var articlesFS embed.FS
 
 var (
-	reMetaDesc      = regexp.MustCompile(`(?is)<meta\s+name=["']description["']\s+content=["']([^"']*)["']`)
-	reArticleTag    = regexp.MustCompile(`(?is)<span\s+class=["']article-tag["'][^>]*>(.*?)</span>`)
-	reArticleH1     = regexp.MustCompile(`(?is)<div\s+class=["']article-header["'][^>]*>.*?<h1[^>]*>(.*?)</h1>`)
-	reArticleMeta   = regexp.MustCompile(`(?is)<div\s+class=["']article-meta["'][^>]*>(.*?)</div>`)
-	reReadingMin    = regexp.MustCompile(`(\d+)\s*мин`)
-	reArticleBody   = regexp.MustCompile(`(?is)<div\s+class=["']article-body["'][^>]*>(.*?)</div>\s*<footer`)
-	reBackLink      = regexp.MustCompile(`(?is)<a[^>]*class=["']back-link["'][^>]*>.*?</a>`)
-	reArticleCta    = regexp.MustCompile(`(?is)<div\s+class=["']article-cta["'][^>]*>.*?</div>`)
-	reTagsAll       = regexp.MustCompile(`<[^>]+>`)
-	reMultiSpace    = regexp.MustCompile(`\s+`)
+	reMetaDesc    = regexp.MustCompile(`(?is)<meta\s+name=["']description["']\s+content=["']([^"']*)["']`)
+	reArticleTag  = regexp.MustCompile(`(?is)<span\s+class=["']article-tag["'][^>]*>(.*?)</span>`)
+	reArticleH1   = regexp.MustCompile(`(?is)<div\s+class=["']article-header["'][^>]*>.*?<h1[^>]*>(.*?)</h1>`)
+	reArticleMeta = regexp.MustCompile(`(?is)<div\s+class=["']article-meta["'][^>]*>(.*?)</div>`)
+	reReadingMin  = regexp.MustCompile(`(\d+)\s*мин`)
+	reArticleBody = regexp.MustCompile(`(?is)<div\s+class=["']article-body["'][^>]*>(.*?)</div>\s*<footer`)
+	reBackLink    = regexp.MustCompile(`(?is)<a[^>]*class=["']back-link["'][^>]*>.*?</a>`)
+	reArticleCta  = regexp.MustCompile(`(?is)<div\s+class=["']article-cta["'][^>]*>.*?</div>`)
+	reTagsAll     = regexp.MustCompile(`<[^>]+>`)
+	reMultiSpace  = regexp.MustCompile(`\s+`)
 )
 
 // parseArticleHTML extracts structured fields from an HTML article in сайт/blog/*.
@@ -75,7 +75,7 @@ var articleCoverImages = map[string]string{
 	"kak-snizit-trevozhnost":                    "/img/blog/trevozhnost.jpg",
 	"istorija-pereloma-pozvonochnika":           "/img/blog/perelom-new.jpeg",
 	"kak-pravilno-podnimat-tyazhesti":           "/img/blog/podnimat.jpg",
-	"mpk-chto-eto-i-kak-uluchshit":             "/img/blog/mpk.jpeg",
+	"mpk-chto-eto-i-kak-uluchshit":              "/img/blog/mpk.jpeg",
 	"kak-sformirovat-privychku-trenirovatsya":   "/img/blog/privychka.jpg",
 	"kak-nachat-begat":                          "/img/blog/mpk-new.jpeg",
 	"trenirovki-i-mentalnoe-zdorove":            "/img/blog/mentalnoe-zdorove.jpg",
@@ -100,38 +100,35 @@ var articleCoverImages = map[string]string{
 // articleSortOrder defines the display order for articles (lower = shown first).
 // Articles not listed here get a high sort_order and appear at the end.
 var articleSortOrder = map[string]int{
-	"bolit-poyasnitsa-sidjachaja-rabota":         1,
-	"pochemu-net-energii":                        2,
-	"pochemu-brosaju-trenirovki":                 3,
-	"kak-nachat-trenirovatsya":                   4,
-	"pochemu-ne-hudeu-hotja-treniruus":           5,
-	"sustavnaja-gimnastika-dlja-nachinajuschih":  6,
-	"kak-uluchshit-son":                          7,
-	"kak-uluchshit-osanku":                       8,
-	"zachem-delat-zaryadku":                      9,
-	"kak-snizit-trevozhnost":                     10,
-	"trenirovki-i-mentalnoe-zdorove":             11,
-	"kak-sformirovat-privychku-trenirovatsya":    12,
-	"kak-pitatsya-chtoby-pohudjet":               13,
-	"princip-malenkih-shagov":                    14,
-	"istorija-pereloma-pozvonochnika":            15,
-	"uprazhnenija-pri-sidjachej-rabote":          16,
-	"uprazhnenija-dlja-shei":                     17,
-	"uprazhnenija-ot-otekov":                     18,
-	"kak-pravilno-podnimat-tyazhesti":            19,
-	"kak-nachat-begat":                           20,
-	"kak-razvit-gibkost":                         21,
-	"dyhatelnye-tehniki":                         22,
-	"kak-nauchitsja-meditirovat":                 23,
-	"banja-i-zdorove":                            24,
-	"mpk-chto-eto-i-kak-uluchshit":              25,
-	"gimnastika-dlja-glaz":                       26,
-	"obuchenie-novomu-navyku":                    27,
-	"sotsialnoe-zdorove":                         28,
-	"muzhskoe-zhenskoe-zdorove":                  29,
-	"kak-trenirujet-detej":                       30,
-	"kak-begat-zimoj":                            31,
-	"akrojoga-chto-eto":                          32,
+	"bolit-poyasnitsa-sidjachaja-rabota":        1,
+	"pochemu-net-energii":                       2,
+	"pochemu-brosaju-trenirovki":                3,
+	"kak-nachat-trenirovatsya":                  4,
+	"pochemu-ne-hudeu-hotja-treniruus":          5,
+	"sustavnaja-gimnastika-dlja-nachinajuschih": 6,
+	"kak-uluchshit-son":                         7,
+	"kak-uluchshit-osanku":                      8,
+	"zachem-delat-zaryadku":                     9,
+	"kak-snizit-trevozhnost":                    10,
+	"kak-nachat-begat":                          11,
+	"uprazhnenija-dlja-shei":                    12,
+	"kak-pitatsya-chtoby-pohudjet":              13,
+	"istorija-pereloma-pozvonochnika":           14,
+	"uprazhnenija-pri-sidjachej-rabote":         15,
+	"uprazhnenija-ot-otekov":                    16,
+	"kak-pravilno-podnimat-tyazhesti":           17,
+	"kak-razvit-gibkost":                        18,
+	"dyhatelnye-tehniki":                        19,
+	"kak-nauchitsja-meditirovat":                20,
+	"mpk-chto-eto-i-kak-uluchshit":              21,
+	"kak-begat-zimoj":                           22,
+	"kak-trenirujet-detej":                      23,
+	"banja-i-zdorove":                           24,
+	"gimnastika-dlja-glaz":                      25,
+	"obuchenie-novomu-navyku":                   26,
+	"sotsialnoe-zdorove":                        27,
+	"muzhskoe-zhenskoe-zdorove":                 28,
+	"akrojoga-chto-eto":                         29,
 }
 
 // SeedArticles syncs all embedded HTML articles into the database.

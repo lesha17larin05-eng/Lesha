@@ -153,6 +153,8 @@ API-проверки на бэкенде дублируют — middleware фр�
 ## Блог: даты, похожие статьи, JSON-LD
 
 - Карточки и шапка статьи показывают дату публикации (`published_at`).
+- Теги блога (октябрь 2026): «Спина и тело», «Начать и не бросить», «Сон и энергия», «Голова и стресс», «Похудение и питание», «Бег и выносливость» – цвета в `tagClasses` в `blog/index.astro`; тег задаётся в HTML статьи (`span.article-tag`).
+- `blog/[slug].astro`: 301 для объединённых статей (princip-malenkih-shagov → kak-nachat-trenirovatsya, kak-sformirovat-privychku-trenirovatsya → pochemu-brosaju-trenirovki, trenirovki-i-mentalnoe-zdorove → kak-snizit-trevozhnost); скрытые статьи (миграция 029) при 404 – 302 на /blog.
 - Фильтр тегов на /blog синхронизируется с `?tag=` (SSR рендерит уже отфильтрованный список — ссылку можно шарить).
 - В статье блок «Похожие статьи» (по тегу, добор свежими) и `BlogPosting` JSON-LD.
 - Позиции обложек — общий модуль `web/src/lib/covers.ts` (карточная и полноразмерная версии).
