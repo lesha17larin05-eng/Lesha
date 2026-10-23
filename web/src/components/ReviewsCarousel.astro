@@ -1,6 +1,7 @@
 ---
 // Карусель видеоотзывов: лента со свайпом и стрелками ← →.
-// Видео грузятся только по клику (preload="none"), страница остаётся лёгкой.
+// Видео грузятся только по клику (preload="none"), обложки – когда карточка
+// подъезжает к экрану, поэтому отзывов можно ставить много. Лента листается по кругу.
 // Использование: <ReviewsCarousel reviews={[{ v: 50, name: 'Екатерина', text: '…' }]} />
 // v – номер ролика в /videos/<v>.mp4 (обложка – /videos/thumbs/<v>.jpg).
 interface Review { v: number; name: string; text: string }
@@ -11,7 +12,7 @@ const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Revie
     {reviews.map((r) => (
       <figure class="rc-card">
         <div class="rc-video">
-          <video src={`/videos/${r.v}.mp4`} poster={`/videos/thumbs/${r.v}.jpg`} playsinline preload="none"></video>
+          <video src={`/videos/${r.v}.mp4`} data-poster={`/videos/thumbs/${r.v}.jpg`} playsinline preload="none"></video>
           <button type="button" class="rc-play" aria-label={`Смотреть отзыв: ${r.name}`}><span></span></button>
         </div>
         <figcaption>
@@ -46,7 +47,6 @@ const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Revie
   .rc-arrow[data-dir="1"] { right: -26px; }
   @media (hover: hover) { .rc-arrow:hover:not(:disabled) { border-color: var(--orange, #e8652a); color: var(--orange, #e8652a); } }
   .rc-arrow:focus-visible { outline: 2px solid var(--orange, #e8652a); outline-offset: 2px; }
-  .rc-arrow:disabled { opacity: 0; pointer-events: none; }
   @media (max-width: 1000px) { .rc-track { grid-auto-columns: calc((100% - 2 * 16px) / 3); gap: 16px; } }
   @media (max-width: 1240px) { .rc-arrow[data-dir="-1"] { left: 6px; } .rc-arrow[data-dir="1"] { right: 6px; } }
   @media (max-width: 700px) { .rc-arrow { width: 42px; height: 42px; font-size: 18px; } .rc-track { grid-auto-columns: 62%; gap: 12px; } .rc-text { font-size: 15px; margin: 12px 12px 4px; } .rc-name { margin: auto 12px 14px; } }
@@ -60,15 +60,30 @@ const { reviews = [], label = 'Отзывы' } = Astro.props as { reviews: Revie
       const card = track.querySelector('.rc-card') as HTMLElement | null;
       return card ? card.offsetWidth + parseFloat(getComputedStyle(track).columnGap || '0') : track.clientWidth;
     };
-    const update = () => {
-      prev.disabled = track.scrollLeft <= 4;
-      next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-    };
-    rc.querySelectorAll<HTMLButtonElement>('.rc-arrow').forEach((b) =>
-      b.addEventListener('click', () => track.scrollBy({ left: Number(b.dataset.dir) * step(), behavior: 'smooth' })));
-    track.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    update();
+    // По кругу: с последней карточки «вперёд» – в начало, с первой «назад» – в конец.
+    const atStart = () => track.scrollLeft <= 4;
+    const atEnd = () => track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    prev.addEventListener('click', () => atStart()
+      ? track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' })
+      : track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => atEnd()
+      ? track.scrollTo({ left: 0, behavior: 'smooth' })
+      : track.scrollBy({ left: step(), behavior: 'smooth' }));
+    if (track.scrollWidth <= track.clientWidth + 4) { prev.hidden = true; next.hidden = true; }
+
+    // Обложки грузим, когда карточка рядом с видимой частью ленты.
+    const vids = Array.from(rc.querySelectorAll<HTMLVideoElement>('video[data-poster]'));
+    const setPoster = (v: HTMLVideoElement) => { if (v.dataset.poster) { v.poster = v.dataset.poster; delete v.dataset.poster; } };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (e.isIntersecting) { setPoster(e.target as HTMLVideoElement); io.unobserve(e.target); }
+      }), { root: track, rootMargin: '0px 100% 0px 100%' });
+      // Начинаем, только когда сама лента рядом с экраном.
+      const near = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) { near.disconnect(); vids.forEach((v) => io.observe(v)); }
+      }, { rootMargin: '600px 0px' });
+      near.observe(rc);
+    } else vids.forEach(setPoster);
 
     rc.querySelectorAll<HTMLElement>('.rc-video').forEach((box) => {
       const video = box.querySelector('video') as HTMLVideoElement;
