@@ -220,10 +220,7 @@ const myEmail: string = me?.email || '';
 
     @media (max-width: 600px) {
       .ms-cab-page { padding: 40px 16px 80px; }
-      .ms-cab-next { font-size: 17px; line-height: 1.6; color: var(--text-mid); text-align: center; margin: 8px 0 24px; }
-    .ms-cab-next a { color: var(--navy); font-weight: 600; text-decoration: underline; text-decoration-color: var(--orange); text-underline-offset: 4px; transition: color .2s; }
-    .ms-cab-next a:hover { color: var(--orange); }
-    .ms-crosssell { padding: 22px 20px; }
+      .ms-crosssell { padding: 22px 20px; }
       .ms-cab-lesson-head { padding: 20px 20px 16px; }
       .ms-cab-video-wrap { margin: 0 16px 16px; }
       .ms-cab-platforms { margin: 0 16px 20px; }
@@ -262,6 +259,9 @@ const myEmail: string = me?.email || '';
     .ms-welcome-form input { flex: 1 1 220px; padding: 11px 14px; border: 1px solid #e3d9c8; border-radius: 10px; font: inherit; font-size: 16px; }
     .ms-welcome-form button { background: var(--orange); color: #fff; border: none; border-radius: 100px; padding: 11px 22px; font: inherit; font-weight: 600; cursor: pointer; }
     .ms-welcome-note { font-size: 15px; margin-top: 8px; min-height: 1em; }
+    .ms-cab-next { font-size: 17px; line-height: 1.6; color: var(--text-mid); text-align: center; margin: 8px 0 24px; }
+    .ms-cab-next a { color: var(--navy); font-weight: 600; text-decoration: underline; text-decoration-color: var(--orange); text-underline-offset: 4px; transition: color .2s; }
+    .ms-cab-next a:hover { color: var(--orange); }
   </style>
 
   <div class="ms-cab-page">
@@ -278,7 +278,7 @@ const myEmail: string = me?.email || '';
 
     {canFixEmail && (
       <div class="ms-welcome" id="ms-welcome">
-        <div class="ms-welcome-title">Доступ открыт – можно начинать 🙌</div>
+        <div class="ms-welcome-title">Доступ открыт – можно начинать</div>
         <p>Письмо с паролем для входа ушло на <b id="ms-welcome-email">{myEmail}</b>. Если его нет во «Входящих» – загляните в «Спам» и «Рассылки».
           Не тот адрес? <button type="button" class="ms-welcome-link" id="ms-fix-open">Исправить</button></p>
         <form class="ms-welcome-form" id="ms-fix-form" novalidate>
@@ -291,7 +291,7 @@ const myEmail: string = me?.email || '';
 
     {showCrossSell && (
       <div class="ms-crosssell">
-        <div class="ms-crosssell-label">🎉 Вы прошли весь курс – поздравляем!</div>
+        <div class="ms-crosssell-label">Вы прошли весь курс – поздравляем!</div>
         <div class="ms-crosssell-title">Понравился формат? Следующий шаг – «Здоровая спина»</div>
         <p class="ms-crosssell-text">12 уроков за 3 недели: полноценные тренировки, лекции о том, как устроена спина, и аудио-практика расслабления. Урок «Тренировка для спины», который вы уже прошли, – как раз оттуда.</p>
         <a href="/courses/zdorovaya-spina" class="ms-crosssell-btn" onclick="window.reachGoal && window.reachGoal('crosssell_click')">Посмотреть программу курса →</a>

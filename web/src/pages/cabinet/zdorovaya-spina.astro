@@ -361,6 +361,22 @@ const materials = [
       .zs-cab-feedback { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
       .zs-cab-feedback-btn { width: 100%; justify-content: center; }
     }
+    /* Телефон: модуль без рамки, номер и метка в одну строку, название и
+       описание – на всю ширину карточки. */
+    @media (max-width: 600px) {
+      .zs-cab-module { padding: 0; background: none; border: none; border-radius: 0; margin-bottom: 36px; }
+      .zs-cab-module-title { margin-bottom: 16px; }
+      .zs-cab-lessons { gap: 16px; }
+      .zs-cab-lesson-head { display: grid; grid-template-columns: 36px 1fr; column-gap: 12px; row-gap: 8px; align-items: center; padding: 18px 16px 14px; }
+      .zs-cab-lesson-num { margin-top: 0; }
+      .zs-cab-lesson-meta { display: contents; }
+      .zs-cab-lesson-tag { margin: 0; justify-self: start; }
+      .zs-cab-lesson-title, .zs-cab-lesson-desc { grid-column: 1 / -1; }
+      .zs-cab-lesson-title { margin-bottom: 0; }
+      .zs-cab-lesson-desc { font-size: 17px; line-height: 1.65; }
+      .zs-cab-video-wrap { margin: 0 12px 14px; }
+      .zs-cab-platforms { margin: 0 12px 16px; flex-direction: row; }
+    }
   </style>
 
   <div class="zs-cab-page">

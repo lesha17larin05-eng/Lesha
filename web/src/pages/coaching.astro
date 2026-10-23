@@ -62,17 +62,14 @@ const reviews = [
       <h2>Если вам <em>знакомо</em></h2>
       <div class="gp-cards3">
         <div class="gp-card">
-          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 20a13 13 0 0 1 23-6l3 3"/><path d="M38 9v8h-8"/><path d="M36 28a13 13 0 0 1-23 6l-3-3"/><path d="M10 39v-8h8"/></svg></div>
           <h3>Начинали много раз</h3>
           <p>Абонемент, марафон, приложение – и через пару недель всё сходит на нет. Когда раз в неделю мы встречаемся, а между встречами я рядом, бросить гораздо сложнее.</p>
         </div>
         <div class="gp-card">
-          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="9" r="4"/><path d="M12 18l12 3 12-3"/><path d="M24 21v10"/><path d="M24 31l-6 11"/><path d="M24 31l6 11"/><path d="M6 15v6M42 15v6M4 18h4M40 18h4"/></svg></div>
           <h3>Хочется выглядеть и чувствовать себя лучше</h3>
           <p>Подтянутое тело, больше сил, хороший сон и настроение. Без жёстких диет и тренировок «через не могу».</p>
         </div>
         <div class="gp-card">
-          <div class="gp-ico"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="10" width="34" height="31" rx="4"/><path d="M7 19h34"/><path d="M16 6v8M32 6v8"/><path d="M15 27h5M23 27h5M31 27h3M15 34h5M23 34h5"/></svg></div>
           <h3>Нужен план под вашу жизнь</h3>
           <p>Работа, семья, свой график. Собираю неделю так, чтобы её реально выполнить, и подстраиваю, когда что-то меняется.</p>
         </div>
@@ -332,7 +329,7 @@ const reviews = [
           (window as any).reachGoal?.('lead_submit');
           const box = document.createElement('div');
           box.className = 'gp-success';
-          box.innerHTML = '<h3>Получил 🙌</h3><p>Напишу вам в течение дня – договоримся о времени первого занятия.</p>';
+          box.innerHTML = '<h3>Получил, спасибо!</h3><p>Напишу вам в течение дня – договоримся о времени первого занятия.</p>';
           lead.replaceWith(box);
           return;
         }
