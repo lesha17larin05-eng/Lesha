@@ -19,7 +19,7 @@ const plural = (n: number, one: string, few: string, many: string) => {
   return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
 };
 const seatsText = left <= 0
-  ? 'Мест нет – запишу в следующий поток'
+  ? 'Места закончились – напишите, добавлю в лист ожидания'
   : left === seats
     ? `${seats} мест · набор до 6 ноября`
     : `Осталось ${left} ${plural(left, 'место', 'места', 'мест')} из ${seats} · набор до 6 ноября`;
@@ -540,7 +540,7 @@ const reviews = [
         });
         const d = await r.json().catch(() => ({}));
         if (r.ok && d.url) { (window as any).reachGoal?.('checkout_gruppa'); location.href = d.url; return; }
-        if (d.error === 'sold_out') say('Все места в этом потоке заняты – напишите мне, запишу в следующий', true);
+        if (d.error === 'sold_out') say('Места закончились – напишите мне, добавлю в лист ожидания: если кто-то откажется, место ваше', true);
         else say('Не получилось открыть оплату – напишите мне, разберёмся', true);
       } catch { say('Ошибка сети – попробуйте ещё раз', true); }
       finally { btn.disabled = false; btn.textContent = orig; }
