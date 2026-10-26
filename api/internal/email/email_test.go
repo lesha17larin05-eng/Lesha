@@ -175,3 +175,14 @@ func TestMultipartBody(t *testing.T) {
 		t.Fatalf("нет частей: %s", b)
 	}
 }
+
+func TestReplyTo(t *testing.T) {
+	s := New("h", "465", "lesha@leshalarin.ru", "p", "Алексей <lesha@leshalarin.ru>")
+	if got := s.replyTo(); got != "lesha@leshalarin.ru" {
+		t.Fatalf("default reply-to = %q", got)
+	}
+	s.ReplyTo = " les-larin@yandex.ru "
+	if got := s.replyTo(); got != "les-larin@yandex.ru" {
+		t.Fatalf("reply-to = %q", got)
+	}
+}

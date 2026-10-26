@@ -16,6 +16,7 @@ type Config struct {
 	SMTPUser      string
 	SMTPPassword  string
 	SMTPFrom      string
+	SMTPReplyTo   string
 	// Запасной ящик (SMTP2_*): письмо уходит через него, если основной недоступен.
 	SMTP2Host, SMTP2Port, SMTP2User, SMTP2Password, SMTP2From string
 	// Уведомления в Telegram через прокладку Google Apps Script (см. internal/notify).
@@ -57,6 +58,7 @@ func Load() *Config {
 		SMTPUser:            os.Getenv("SMTP_USER"),
 		SMTPPassword:        os.Getenv("SMTP_PASSWORD"),
 		SMTPFrom:            env("SMTP_FROM", "Leshalarin <info@leshalarin.ru>"),
+		SMTPReplyTo:         os.Getenv("SMTP_REPLY_TO"),
 		SMTP2Host:           os.Getenv("SMTP2_HOST"),
 		SMTP2Port:           env("SMTP2_PORT", "465"),
 		SMTP2User:           os.Getenv("SMTP2_USER"),

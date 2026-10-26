@@ -86,8 +86,9 @@ make deploy
 | `DATABASE_URL`          | Строка подключения к Postgres.                    | `postgres://app:app@postgres:5432/app` |
 | `DATA_DIR`              | Корень bind mount.                                | `./data`       |
 | `POSTGRES_USER/PASSWORD/DB` | Используются и postgres-контейнером и `DATABASE_URL`. | `app/app/app` |
-| `SMTP_HOST/PORT/USER/PASSWORD/FROM` | SMTP. Если HOST пуст — письма пропускаются (логируются). В проде с 12.10.2026 — `smtp.mail.ru`, ящик `leshalarin.trener@mail.ru` (пароль для внешних приложений, только SMTP). | пусто |
+| `SMTP_HOST/PORT/USER/PASSWORD/FROM` | SMTP. Если HOST пуст — письма пропускаются (логируются). В проде с 26.10.2026 — ящик на своём домене `lesha@leshalarin.ru` на хостинге reg.ru: HOST `server321.hosting.reg.ru` (не mail.leshalarin.ru – сертификат на *.hosting.reg.ru), порт 465. SPF/DKIM (селектор `default`)/DMARC настроены, проверено: spf=pass, dkim=pass. Раньше – `smtp.mail.ru` с `leshalarin.trener@mail.ru` (бэкап .env: `/root/env-backup-2026-10-26`). | пусто |
 | `TELEGRAM_RELAY_URL/SECRET` | Уведомления в Telegram через Google Apps Script (см. «Уведомления в Telegram»). Пусто — выключено. | пусто |
+| `SMTP_REPLY_TO` | Адрес в заголовке Reply-To (куда уходят ответы получателей). Пусто — `SMTP_USER`. | пусто |
 | `SMTP2_HOST/PORT/USER/PASSWORD/FROM` | Запасной ящик. Если основной не ответил/отказал — письмо уходит через запасной (от его адреса). В проде — прежний Яндекс `Les-larin@yandex.ru`. | пусто |
 | `PRODAMUS_PAYFORM_URL`  | URL платёжной страницы (например `https://leshalarin.payform.ru`). | dev placeholder |
 | `PRODAMUS_SECRET_KEY`   | Секрет для HMAC-подписи (берётся в кабинете Продамуса). | dev placeholder |

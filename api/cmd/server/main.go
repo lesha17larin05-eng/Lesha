@@ -38,6 +38,7 @@ func main() {
 	}
 
 	mail := email.New(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.SMTPFrom)
+	mail.ReplyTo = cfg.SMTPReplyTo
 	if cfg.SMTP2Host != "" {
 		mail.Fallback = email.New(cfg.SMTP2Host, cfg.SMTP2Port, cfg.SMTP2User, cfg.SMTP2Password, cfg.SMTP2From)
 	}

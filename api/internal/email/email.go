@@ -22,6 +22,8 @@ import (
 // Порт 465 – implicit TLS (SMTPS); 587/25 – STARTTLS.
 type Sender struct {
 	Host, Port, User, Pass, From string
+	// ReplyTo – куда уходят ответы получателей; пусто → адрес отправителя (User).
+	ReplyTo string
 
 	// Fallback – запасной ящик (другой почтовый сервис). Если основной не
 	// ответил или отказал, письмо уходит через запасной – от его адреса.
@@ -175,12 +177,12 @@ func (s *Sender) sendOnce(to, subject, body string, extra map[string]string) err
 	// - Subject: тоже Q-encoded если не-ASCII
 	// - Date в формате RFC 1123Z (требуется для проверки спам-фильтров)
 	// - Message-ID – уникальный, иначе антиспам недоволен
-	// - Reply-To = адрес отправителя (по умолчанию)
+	// - Reply-To = ReplyTo, если задан (SMTP_REPLY_TO), иначе адрес отправителя
 	fromHeader := encodeAddress(s.From, s.User)
 	domain := domainFromEmail(s.User)
 	msg := "From: " + fromHeader + "\r\n" +
 		"To: " + to + "\r\n" +
-		"Reply-To: " + s.User + "\r\n" +
+		"Reply-To: " + s.replyTo() + "\r\n" +
 		"Date: " + time.Now().UTC().Format(time.RFC1123Z) + "\r\n" +
 		"Message-ID: <" + randID() + "@" + domain + ">\r\n" +
 		"Subject: " + mime.QEncoding.Encode("UTF-8", subject) + "\r\n" +
@@ -341,4 +343,12 @@ func base64Wrap(body string) string {
 		sb.WriteString("\r\n")
 	}
 	return sb.String()
+}
+
+// replyTo – адрес для заголовка Reply-To: SMTP_REPLY_TO или логин SMTP.
+func (s *Sender) replyTo() string {
+	if r := strings.TrimSpace(s.ReplyTo); r != "" {
+		return r
+	}
+	return s.User
 }
