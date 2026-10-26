@@ -786,6 +786,11 @@ func (a *App) serviceOrderPaid(ctx context.Context, o *db.Order) {
 	if u == nil {
 		return
 	}
+	// «Люди»: оплативший – со статусом «купил» (по почте находим или создаём).
+	if err := a.Repo.MarkLeadBought(ctx, u.Name, u.Email, o.Service,
+		time.Now().In(moscow).Format("02.01.2006")+": оплатил(а) «"+svc.Title+"», "+strconv.Itoa(o.AmountRub)+" ₽"); err != nil {
+		slog.Warn("people: mark bought", "email", u.Email, "err", err)
+	}
 	if o.Service == "gruppa" {
 		a.gruppaOrderPaid(u, o, svc)
 		return

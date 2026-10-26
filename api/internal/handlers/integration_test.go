@@ -173,6 +173,9 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Get("/api/admin/campaigns/{id}", app.AdminGetCampaign)
 		r.Post("/api/admin/campaigns/{id}/{action}", app.AdminCampaignAction)
 		r.Get("/api/admin/leads", app.AdminLeads)
+		r.Get("/api/admin/leads.csv", app.AdminLeadsCSV)
+		r.Post("/api/admin/leads", app.AdminCreateLead)
+		r.Post("/api/admin/leads/bulk", app.AdminBulkLeads)
 		r.Patch("/api/admin/leads/{id}", app.AdminUpdateLead)
 		r.Get("/api/admin/users", app.AdminUsers)
 		r.Get("/api/admin/users/export.csv", app.AdminUsersExport)
@@ -2362,6 +2365,11 @@ func TestServiceCheckout(t *testing.T) {
 	if enrollments != 0 {
 		t.Fatalf("оплата услуги не должна открывать курсы, а открыла %d", enrollments)
 	}
+	// «Люди»: оплативший попадает в базу со статусом «купил».
+	pl, err := repo.FindLeadByContact(ctx, u.Email)
+	if err != nil || pl.Status != "bought" || !strings.Contains(pl.Note, "оплатил") {
+		t.Fatalf("люди после оплаты: %v %+v", err, pl)
+	}
 }
 
 // Курс жонглирования: тарифы 1490/3990, черновик курса не продаётся
@@ -3693,5 +3701,97 @@ func TestGruppa(t *testing.T) {
 	msg := waitRelay(t, "Новая заявка: Групповое ведение")
 	if !strings.Contains(msg, "/gruppa#oplata") {
 		t.Fatalf("lead message: %q", msg)
+	}
+}
+
+// TestPeople – база «Люди»: ручное добавление (дубли по контакту → 409),
+// массовое добавление, правка следующего шага, CSV, закрыто для не-админов.
+func TestPeople(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+
+	user := newClient(srv)
+	user.do("POST", "/api/auth/register", map[string]any{
+		"email": "people-user@b.ru", "password": "password123", "consent_pd": true})
+	user.do("POST", "/api/auth/login", map[string]string{"email": "people-user@b.ru", "password": "password123"})
+	if r, _ := user.do("POST", "/api/admin/leads", map[string]any{"name": "X"}); r.StatusCode == 201 {
+		t.Fatalf("обычному пользователю создавать нельзя")
+	}
+
+	adm := newClient(srv)
+	adm.do("POST", "/api/auth/register", map[string]any{
+		"email": "people-adm@b.ru", "password": "password123", "consent_pd": true})
+	ua, _ := repo.GetUserByEmail(ctx, "people-adm@b.ru")
+	_, _ = repo.Pool.Exec(ctx, `UPDATE users SET role='admin' WHERE id=$1`, ua.ID)
+	adm.do("POST", "/api/auth/login", map[string]string{"email": "people-adm@b.ru", "password": "password123"})
+
+	// без имени → 400; плохая дата → 400
+	if r, body := adm.do("POST", "/api/admin/leads", map[string]any{"name": " "}); r.StatusCode != 400 || !strings.Contains(string(body), "name_required") {
+		t.Fatalf("no name: %d %s", r.StatusCode, body)
+	}
+	if r, body := adm.do("POST", "/api/admin/leads", map[string]any{"name": "Маша", "next_at": "2026-13-40"}); r.StatusCode != 400 || !strings.Contains(string(body), "bad_date") {
+		t.Fatalf("bad date: %d %s", r.StatusCode, body)
+	}
+	// создание
+	r, body := adm.do("POST", "/api/admin/leads", map[string]any{
+		"name": "Маша", "contact": "@masha", "source": "telegram", "interest": "gruppa",
+		"next_step": "написать про группу", "next_at": "2026-10-29"})
+	if r.StatusCode != 201 {
+		t.Fatalf("create: %d %s", r.StatusCode, body)
+	}
+	var created struct{ ID string `json:"id"` }
+	_ = json.Unmarshal(body, &created)
+	// дубль по контакту без учёта регистра → 409
+	if r, body := adm.do("POST", "/api/admin/leads", map[string]any{"name": "Мария", "contact": " @MASHA "}); r.StatusCode != 409 || !strings.Contains(string(body), "duplicate") {
+		t.Fatalf("duplicate: %d %s", r.StatusCode, body)
+	}
+	l, err := repo.GetLead(ctx, uuid.MustParse(created.ID))
+	if err != nil || l.Source != "telegram" || l.Interest != "gruppa" || l.NextAt == nil || *l.NextAt != "2026-10-29" || l.Status != "new" {
+		t.Fatalf("created lead: %v %+v", err, l)
+	}
+
+	// правка: статус и перенос шага; очистка даты пустой строкой
+	r, body = adm.do("PATCH", "/api/admin/leads/"+created.ID, map[string]any{"status": "in_progress", "next_at": "2026-11-02", "note": "ответила, думает"})
+	if r.StatusCode != 200 || !strings.Contains(string(body), "2026-11-02") {
+		t.Fatalf("patch: %d %s", r.StatusCode, body)
+	}
+	r, _ = adm.do("PATCH", "/api/admin/leads/"+created.ID, map[string]any{"next_at": "", "next_step": ""})
+	l, _ = repo.GetLead(ctx, uuid.MustParse(created.ID))
+	if r.StatusCode != 200 || l.NextAt != nil || l.NextStep != "" || l.Status != "in_progress" || l.Note != "ответила, думает" || l.Interest != "gruppa" {
+		t.Fatalf("patch clear: %d %+v", r.StatusCode, l)
+	}
+	if r, _ := adm.do("PATCH", "/api/admin/leads/"+created.ID, map[string]any{"interest": "hack"}); r.StatusCode != 400 {
+		t.Fatalf("bad interest must be 400, got %d", r.StatusCode)
+	}
+
+	// массовое добавление: разделители, маркеры списка, дубли пропускаются
+	r, body = adm.do("POST", "/api/admin/leads/bulk", map[string]any{
+		"text":   "1. Пётр – @petr\n• Анна, +79990001122\n\nОльга\n@masha\nПётр – @PETR\n89991234567",
+		"source": "telegram", "interest": "gruppa"})
+	if r.StatusCode != 200 {
+		t.Fatalf("bulk: %d %s", r.StatusCode, body)
+	}
+	var bulk struct {
+		Added   int      `json:"added"`
+		Skipped []string `json:"skipped"`
+	}
+	_ = json.Unmarshal(body, &bulk)
+	if bulk.Added != 4 || len(bulk.Skipped) != 2 {
+		t.Fatalf("bulk result: %s", body)
+	}
+	if p, err := repo.FindLeadByContact(ctx, "+79990001122"); err != nil || p.Name != "Анна" {
+		t.Fatalf("bulk anna: %v %+v", err, p)
+	}
+	if p, err := repo.FindLeadByContact(ctx, "89991234567"); err != nil || p.Name != "89991234567" {
+		t.Fatalf("bulk phone only: %v %+v", err, p)
+	}
+
+	// CSV
+	r, body = adm.do("GET", "/api/admin/leads.csv", nil)
+	if r.StatusCode != 200 || !strings.Contains(string(body), "@petr") || !strings.HasPrefix(string(body), "\xEF\xBB\xBF") {
+		t.Fatalf("csv: %d %.200s", r.StatusCode, body)
+	}
+	if r, _ := user.do("GET", "/api/admin/leads.csv", nil); r.StatusCode == 200 {
+		t.Fatalf("csv must be admin-only")
 	}
 }

@@ -651,10 +651,17 @@ func (r *Repo) CreateLead(ctx context.Context, name, contact, message, source st
 	return id, err
 }
 
+const leadCols = `id,name,contact,message,source,status,consent_pd,created_at,
+	interest,note,next_step,to_char(next_at,'YYYY-MM-DD'),updated_at`
+
+func scanLead(row interface{ Scan(...any) error }, l *Lead) error {
+	return row.Scan(&l.ID, &l.Name, &l.Contact, &l.Message, &l.Source, &l.Status, &l.ConsentPD, &l.CreatedAt,
+		&l.Interest, &l.Note, &l.NextStep, &l.NextAt, &l.UpdatedAt)
+}
+
 func (r *Repo) ListLeads(ctx context.Context, limit int) ([]Lead, error) {
 	rows, err := r.Pool.Query(ctx,
-		`SELECT id,name,contact,message,source,status,consent_pd,created_at
-		   FROM leads ORDER BY created_at DESC LIMIT $1`, limit)
+		`SELECT `+leadCols+` FROM leads ORDER BY created_at DESC LIMIT $1`, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -662,7 +669,7 @@ func (r *Repo) ListLeads(ctx context.Context, limit int) ([]Lead, error) {
 	var out []Lead
 	for rows.Next() {
 		var l Lead
-		if err := rows.Scan(&l.ID, &l.Name, &l.Contact, &l.Message, &l.Source, &l.Status, &l.ConsentPD, &l.CreatedAt); err != nil {
+		if err := scanLead(rows, &l); err != nil {
 			return nil, err
 		}
 		out = append(out, l)
@@ -670,8 +677,72 @@ func (r *Repo) ListLeads(ctx context.Context, limit int) ([]Lead, error) {
 	return out, rows.Err()
 }
 
-func (r *Repo) UpdateLeadStatus(ctx context.Context, id uuid.UUID, status string) error {
-	ct, err := r.Pool.Exec(ctx, `UPDATE leads SET status=$2 WHERE id=$1`, id, status)
+func (r *Repo) GetLead(ctx context.Context, id uuid.UUID) (*Lead, error) {
+	var l Lead
+	err := scanLead(r.Pool.QueryRow(ctx, `SELECT `+leadCols+` FROM leads WHERE id=$1`, id), &l)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &l, nil
+}
+
+// FindLeadByContact – запись с тем же контактом (без учёта регистра и пробелов).
+// Пустой контакт ни с чем не совпадает.
+func (r *Repo) FindLeadByContact(ctx context.Context, contact string) (*Lead, error) {
+	c := strings.ToLower(strings.TrimSpace(contact))
+	if c == "" {
+		return nil, ErrNotFound
+	}
+	var l Lead
+	err := scanLead(r.Pool.QueryRow(ctx,
+		`SELECT `+leadCols+` FROM leads WHERE lower(trim(contact))=$1 ORDER BY created_at LIMIT 1`, c), &l)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &l, nil
+}
+
+// CreateLeadManual – запись, добавленная Алексеем вручную (согласие на ПД
+// здесь не собирается: человек сам написал в мессенджер).
+func (r *Repo) CreateLeadManual(ctx context.Context, in LeadInput) (uuid.UUID, error) {
+	if in.Status == "" {
+		in.Status = "new"
+	}
+	var id uuid.UUID
+	err := r.Pool.QueryRow(ctx,
+		`INSERT INTO leads(name,contact,message,source,consent_pd,status,interest,note,next_step,next_at)
+		 VALUES($1,$2,'',$3,false,$4,$5,$6,$7,NULLIF($8,'')::date) RETURNING id`,
+		in.Name, in.Contact, in.Source, in.Status, in.Interest, in.Note, in.NextStep, derefStr(in.NextAt)).Scan(&id)
+	return id, err
+}
+
+func derefStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// UpdateLead – частичная правка. Поля nil не меняются; NextAt "" очищает дату.
+func (r *Repo) UpdateLead(ctx context.Context, id uuid.UUID, p LeadPatch) error {
+	ct, err := r.Pool.Exec(ctx, `UPDATE leads SET
+		name      = COALESCE($2, name),
+		contact   = COALESCE($3, contact),
+		source    = COALESCE($4, source),
+		interest  = COALESCE($5, interest),
+		note      = COALESCE($6, note),
+		next_step = COALESCE($7, next_step),
+		status    = COALESCE($8, status),
+		next_at   = CASE WHEN $9::text IS NULL THEN next_at ELSE NULLIF($9::text,'')::date END,
+		updated_at = now()
+		WHERE id=$1`,
+		id, p.Name, p.Contact, p.Source, p.Interest, p.Note, p.NextStep, p.Status, p.NextAt)
 	if err != nil {
 		return err
 	}
@@ -679,6 +750,34 @@ func (r *Repo) UpdateLeadStatus(ctx context.Context, id uuid.UUID, status string
 		return ErrNotFound
 	}
 	return nil
+}
+
+func (r *Repo) UpdateLeadStatus(ctx context.Context, id uuid.UUID, status string) error {
+	return r.UpdateLead(ctx, id, LeadPatch{Status: &status})
+}
+
+// MarkLeadBought – после оплаты услуги: находим человека по почте и ставим
+// «купил» с заметкой; если его нет – создаём запись.
+func (r *Repo) MarkLeadBought(ctx context.Context, name, email, service, note string) error {
+	l, err := r.FindLeadByContact(ctx, email)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return err
+	}
+	st := "bought"
+	if l != nil {
+		n := strings.TrimSpace(l.Note + "\n" + note)
+		p := LeadPatch{Status: &st, Note: &n}
+		if l.Interest == "" {
+			p.Interest = &service
+		}
+		return r.UpdateLead(ctx, l.ID, p)
+	}
+	if name == "" {
+		name = email
+	}
+	_, err = r.CreateLeadManual(ctx, LeadInput{Name: name, Contact: email, Source: service,
+		Interest: service, Note: note, Status: st})
+	return err
 }
 
 // ---- ADMIN: карточка пользователя ----

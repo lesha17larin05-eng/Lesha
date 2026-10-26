@@ -195,6 +195,10 @@ SQL каждой группы — отдельная константа, вво�
 
 Когда Алексею ушло уведомление «🛒 не завершил оплату» – заказ `pending` старше часа, покупатель не возвращался с оплаты (`returned_at IS NULL`) и не делал новых попыток купить то же самое (`Repo.AbandonedOrders`, окно – последние сутки).
 
+### «Люди» (миграция 030)
+
+`030_people` расширяет `leads`: `interest`, `note`, `next_step`, `next_at DATE`, `updated_at`; статусы `new|in_progress|bought|later|no|done` (CHECK пересоздан); у заявок с сайта `interest` = страница-источник. Индексы по `next_at` и `lower(contact)` (поиск дублей). Оплата услуги (`serviceOrderPaid`) находит человека по почте и ставит `bought` с заметкой, иначе создаёт запись. Записи не удаляем.
+
 ### Скрытые статьи (миграция 029)
 
 `029_hide_weak_articles` ставит `is_published=false` шести слабым статьям (muzhskoe-zhenskoe-zdorove, banja-i-zdorove, sotsialnoe-zdorove, gimnastika-dlja-glaz, obuchenie-novomu-navyku, akrojoga-chto-eto). HTML-файлы остаются, сидер сохраняет `is_published`, вернуть – down-миграцией или в админке. Три статьи объединены с другими: их HTML удалены, сидер удаляет записи (см. редиректы в `04-frontend.md`).

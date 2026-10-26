@@ -2,81 +2,401 @@
 import Base from '../../layouts/Base.astro';
 import AdminNav from '../../components/AdminNav.astro';
 import { apiJson } from '../../lib/api';
+
+// «Люди» – простая база контактов: заявки с сайта, оплатившие услуги и все,
+// кого Алексей добавил вручную (написали в Telegram, Max, лично…).
+// Данные – GET /api/admin/leads; правка – PATCH, добавление – POST (см. docs/03-api.md).
+// Список рисуется на клиенте, чтобы фильтры и правка работали без перезагрузки.
 const cookie = Astro.request.headers.get('cookie') || '';
 const { data } = await apiJson<any[]>('/api/admin/leads', { cookie });
-const leads = Array.isArray(data) ? data : [];
+const people = Array.isArray(data) ? data : [];
 const user = (Astro.locals as any).user;
-
-const sourceLabels: Record<string, string> = {
-  coaching: 'Личное ведение',
-  consultation: 'Консультация (архив)',
-  start: 'Точка перемен',
-  other: 'Другое',
-};
-const statusLabels: Record<string, string> = {
-  new: 'Новая',
-  in_progress: 'В работе',
-  done: 'Обработана',
-};
-const fmt = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-};
 ---
-<Base title="Заявки" user={user}>
+<Base title="Люди" user={user}>
   <AdminNav active="leads" />
-  <section class="container" style="padding:50px 16px;">
-    <h1>Заявки</h1>
-    <p class="muted">С форм «Личное ведение» и «Точка перемен». Новые – сверху.</p>
-    {leads.length === 0
-      ? <p class="muted" style="margin-top:20px;">Заявок пока нет.</p>
-      : <table style="margin-top:16px;">
-          <thead><tr><th>Когда</th><th>Имя</th><th>Контакт</th><th>Откуда</th><th>Сообщение</th><th>Статус</th></tr></thead>
-          <tbody>
-            {leads.map((l: any) => (
-              <tr class={l.status === 'done' ? 'lead-done' : ''}>
-                <td style="white-space:nowrap;">{fmt(l.created_at)}</td>
-                <td>{l.name}</td>
-                <td>{l.contact}</td>
-                <td>{sourceLabels[l.source] ?? l.source}</td>
-                <td style="max-width:340px; white-space:normal;">{l.message || '–'}</td>
-                <td>
-                  <select class="lead-status input" data-id={l.id} style="width:auto; padding:6px 10px; font-size: 14px;">
-                    {Object.entries(statusLabels).map(([val, label]) => (
-                      <option value={val} selected={l.status === val}>{label}</option>
-                    ))}
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-    }
+  <section class="container ppl">
+    <div class="ppl-head">
+      <div>
+        <h1>Люди</h1>
+        <p class="muted">Все, с кем вы общаетесь: заявки с сайта, оплатившие и те, кого вы добавили сами. Наверху – что сделать на этой неделе.</p>
+      </div>
+      <div class="ppl-actions">
+        <button class="btn" type="button" data-open="add">+ Добавить человека</button>
+        <button class="ppl-btn" type="button" data-open="bulk">Добавить списком</button>
+        <a class="ppl-btn" href="/api/admin/leads.csv">Скачать таблицу</a>
+      </div>
+    </div>
+
+    <form class="ppl-panel" id="add-form" hidden>
+      <h2>Новый человек</h2>
+      <div class="ppl-grid">
+        <label>Имя *<input name="name" required maxlength="300" autocomplete="off" /></label>
+        <label>Контакт<input name="contact" maxlength="300" placeholder="@telegram, телефон или почта" autocomplete="off" /></label>
+        <label>Откуда<select name="source" data-opts="sourcesManual"></select></label>
+        <label>Что интересует<select name="interest" data-opts="interests"></select></label>
+        <label class="wide">Следующий шаг<input name="next_step" maxlength="300" placeholder="Например: написать про группу" /></label>
+        <label>Когда<input name="next_at" type="date" /></label>
+        <label class="wide">Заметка<textarea name="note" rows="2" maxlength="5000" placeholder="О чём говорили, что важно помнить"></textarea></label>
+      </div>
+      <div class="ppl-form-foot">
+        <button class="btn" type="submit">Сохранить</button>
+        <button class="ppl-btn" type="button" data-close>Отмена</button>
+        <span class="ppl-msg" role="status"></span>
+      </div>
+    </form>
+
+    <form class="ppl-panel" id="bulk-form" hidden>
+      <h2>Добавить списком</h2>
+      <p class="muted">По одному человеку на строку: «Имя – @контакт» (можно через запятую или просто имя). Те, кто уже есть в базе с таким контактом, пропускаются.</p>
+      <textarea name="text" rows="7" placeholder={"Мария – @masha\nПётр – +7 999 123-45-67\nОльга"}></textarea>
+      <div class="ppl-grid">
+        <label>Откуда<select name="source" data-opts="sourcesManual"></select></label>
+        <label>Что интересует<select name="interest" data-opts="interests"></select></label>
+      </div>
+      <div class="ppl-form-foot">
+        <button class="btn" type="submit">Добавить</button>
+        <button class="ppl-btn" type="button" data-close>Отмена</button>
+        <span class="ppl-msg" role="status"></span>
+      </div>
+    </form>
+
+    <h2 class="ppl-h2">Задачи</h2>
+    <div id="tasks"></div>
+
+    <h2 class="ppl-h2">Все люди <span class="muted" id="count"></span></h2>
+    <div class="ppl-filters">
+      <input id="f-q" type="search" placeholder="Поиск по имени, контакту, заметке" />
+      <select id="f-status"><option value="">Все статусы</option></select>
+      <select id="f-interest"><option value="">Любой интерес</option></select>
+      <select id="f-source"><option value="">Откуда угодно</option></select>
+    </div>
+    <div id="list"></div>
   </section>
-  <style>
-    .lead-done { opacity: 0.55; }
+
+  <dialog id="edit" class="ppl-dialog">
+    <form id="edit-form">
+      <button class="ppl-x" type="button" data-dclose aria-label="Закрыть">×</button>
+      <h2 id="edit-title">Человек</h2>
+      <p class="muted" id="edit-meta"></p>
+      <div class="ppl-site-msg" id="edit-msg" hidden></div>
+      <div class="ppl-grid">
+        <label>Имя *<input name="name" required maxlength="300" /></label>
+        <label>Контакт<input name="contact" maxlength="300" /></label>
+        <label>Откуда<select name="source" data-opts="sourcesAll"></select></label>
+        <label>Что интересует<select name="interest" data-opts="interests"></select></label>
+        <label>Статус<select name="status" data-opts="statuses"></select></label>
+        <label>Когда<input name="next_at" type="date" /></label>
+        <label class="wide">Следующий шаг<input name="next_step" maxlength="300" /></label>
+        <label class="wide">Заметка<textarea name="note" rows="4" maxlength="5000"></textarea></label>
+      </div>
+      <div class="ppl-form-foot">
+        <button class="btn" type="submit">Сохранить</button>
+        <button class="ppl-btn" type="button" data-dclose>Отмена</button>
+        <span class="ppl-msg" role="status"></span>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="application/json" id="people-data" set:html={JSON.stringify(people).replace(/</g, '\\u003c')}></script>
+
+  <!-- global: строки списка рисуются через innerHTML и не получают scoped-атрибутов Astro; все классы с префиксом ppl- -->
+  <style is:global>
+    .ppl { padding: 40px 16px 80px; font-size: 16px; }
+    .ppl-head { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+    .ppl-head h1 { margin: 0 0 6px; }
+    .ppl-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ppl-btn { display: inline-flex; align-items: center; padding: 11px 18px; border-radius: 100px; border: 1.5px solid var(--border); background: #fff; color: var(--navy); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; transition: border-color .15s, background .15s; }
+    .ppl-btn:hover { border-color: var(--navy); text-decoration: none; }
+    .ppl-btn:focus-visible, .ppl-mini:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .ppl-panel { margin-top: 20px; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+    .ppl-panel h2, .ppl-dialog h2 { margin: 0 0 12px; font-size: 22px; }
+    .ppl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 10px; }
+    .ppl-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-weight: 600; color: var(--text-mid, #444); }
+    .ppl-grid .wide { grid-column: 1 / -1; }
+    .ppl input, .ppl select, .ppl textarea, .ppl-dialog input, .ppl-dialog select, .ppl-dialog textarea { font: inherit; font-size: 16px; font-weight: 400; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; color: var(--text, #1a1a1a); width: 100%; box-sizing: border-box; transition: border-color .15s; }
+    .ppl input:focus, .ppl select:focus, .ppl textarea:focus, .ppl-dialog input:focus, .ppl-dialog select:focus, .ppl-dialog textarea:focus { outline: none; border-color: var(--orange); }
+    .ppl-panel textarea[name="text"] { margin-top: 8px; }
+    .ppl-form-foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+    .ppl-msg { font-size: 15px; color: var(--text-muted); }
+    .ppl-msg.err { color: #b91c1c; }
+    .ppl-msg.ok { color: #0a6040; }
+    .ppl-h2 { margin: 40px 0 12px; font-size: 24px; }
+    .ppl-group { margin-bottom: 18px; }
+    .ppl-group h3 { font-size: 16px; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; color: var(--text-muted); }
+    .ppl-group.overdue h3 { color: #b91c1c; }
+    .ppl-group.today h3 { color: var(--orange); }
+    .ppl-empty { color: var(--text-muted); font-size: 15px; }
+    .ppl-row { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; transition: box-shadow .15s; }
+    @media (hover: hover) { .ppl-row:hover { box-shadow: 0 6px 18px rgba(26,39,68,.07); } }
+    .ppl-row.dim { opacity: .55; }
+    .ppl-who { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1 1 260px; }
+    .ppl-name { font-weight: 700; color: var(--navy); background: none; border: none; padding: 0; font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+    .ppl-name:hover { color: var(--orange); }
+    .ppl-sub { font-size: 15px; color: var(--text-muted); overflow-wrap: anywhere; }
+    .ppl-sub a { color: inherit; }
+    .ppl-step { font-size: 15px; color: var(--text, #1a1a1a); }
+    .ppl-tag { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 13px; font-weight: 600; background: #eef2f7; color: var(--navy); margin-right: 4px; }
+    .ppl-tag.st-new { background: #dbeeff; color: #1060a0; }
+    .ppl-tag.st-in_progress { background: #fdefd4; color: #8a5010; }
+    .ppl-tag.st-bought { background: #d4f0e4; color: #0a6040; }
+    .ppl-tag.st-later { background: #f0e4ff; color: #6020a0; }
+    .ppl-tag.st-no, .ppl-tag.st-done { background: #eee; color: #666; }
+    .ppl-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ppl-mini { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font: inherit; font-size: 14px; font-weight: 600; color: var(--navy); cursor: pointer; transition: background .15s, border-color .15s; }
+    .ppl-mini:hover { border-color: var(--navy); }
+    .ppl-mini.done { background: #0a6040; border-color: #0a6040; color: #fff; }
+    .ppl-mini.done:hover { background: #084d33; }
+    .ppl-filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .ppl-dialog { border: none; border-radius: 18px; padding: 26px; width: min(640px, calc(100vw - 24px)); max-height: calc(100vh - 40px); box-shadow: 0 24px 64px rgba(15,21,32,.25); }
+    .ppl-dialog::backdrop { background: rgba(15,21,32,.5); }
+    .ppl-x { position: absolute; top: 12px; right: 14px; border: none; background: none; font-size: 28px; cursor: pointer; color: var(--text-muted); }
+    .ppl-dialog form { position: relative; }
+    .ppl-site-msg { background: #f7f5f0; border-radius: 10px; padding: 10px 14px; font-size: 15px; white-space: pre-wrap; margin: 6px 0 4px; }
+    @media (max-width: 700px) {
+      .ppl-grid { grid-template-columns: 1fr; }
+      .ppl-filters { grid-template-columns: 1fr 1fr; }
+      .ppl-filters #f-q { grid-column: 1 / -1; }
+      .ppl-head h1 { font-size: 30px; }
+    }
   </style>
+
   <script>
-    document.querySelectorAll<HTMLSelectElement>('.lead-status').forEach((sel) => {
-      sel.addEventListener('change', async () => {
-        const id = sel.dataset.id;
-        const prev = sel.dataset.prev || '';
-        sel.disabled = true;
-        const r = await fetch(`/api/admin/leads/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: sel.value }),
-        }).catch(() => null);
-        sel.disabled = false;
-        if (!r || !r.ok) {
-          alert('Не удалось сохранить статус');
-          if (prev) sel.value = prev;
-          return;
-        }
-        sel.dataset.prev = sel.value;
-        sel.closest('tr')?.classList.toggle('lead-done', sel.value === 'done');
+    const L = {
+      sourcesManual: { telegram: 'Telegram', max: 'Max', instagram: 'Instagram', vk: 'ВКонтакте', offline: 'Лично', referral: 'По рекомендации', manual: 'Другое' },
+      sourcesSite: { gruppa: 'Сайт: группа', personal: 'Сайт: персональные', coaching: 'Сайт: личное ведение', start: 'Сайт: Точка перемен', consultation: 'Сайт: консультация', other: 'Сайт' },
+      interests: { '': '—', gruppa: 'Группа', personal: 'Персональные', coaching: 'Личное ведение', course: 'Курс', question: 'Вопрос', start: 'Точка перемен', other: 'Другое' },
+      statuses: { new: 'Новый', in_progress: 'В разговоре', bought: 'Купил', later: 'Не сейчас', no: 'Не подходит', done: 'Закрыто' },
+    } as Record<string, Record<string, string>>;
+    L.sourcesAll = { ...L.sourcesManual, ...L.sourcesSite };
+    const SRC = L.sourcesAll, INT = L.interests, ST = L.statuses;
+
+    let people: any[] = JSON.parse(document.getElementById('people-data')!.textContent || '[]');
+
+    const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const addDays = (s: string, n: number) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
+    const today = ymd(new Date());
+    const weekEnd = (() => { const d = new Date(); const wd = (d.getDay() + 6) % 7; d.setDate(d.getDate() + (6 - wd)); return ymd(d); })();
+    const human = (s: string) => { const [y, m, d] = s.split('-'); return `${d}.${m}${y !== String(new Date().getFullYear()) ? '.' + y : ''}`; };
+    const weekday = (s: string) => ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'][new Date(s + 'T12:00:00').getDay()];
+
+    function contactHTML(c: string) {
+      const v = (c || '').trim();
+      if (!v) return '';
+      if (/^@[\w\d_]{3,}$/.test(v)) return `<a href="https://t.me/${esc(v.slice(1))}" target="_blank" rel="noopener">${esc(v)}</a>`;
+      if (/^\S+@\S+\.\S+$/.test(v)) return `<a href="mailto:${esc(v)}">${esc(v)}</a>`;
+      if (/^\+?[\d\s()-]{7,}$/.test(v)) return `<a href="tel:${esc(v.replace(/[^\d+]/g, ''))}">${esc(v)}</a>`;
+      return esc(v);
+    }
+
+    // Заполняем все <select data-opts="…">.
+    function fillSelect(sel: HTMLSelectElement, key: string) {
+      sel.innerHTML = Object.entries(L[key]).map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
+    }
+    document.querySelectorAll<HTMLSelectElement>('select[data-opts]').forEach((s) => fillSelect(s, s.dataset.opts!));
+    const addOpts = (id: string, obj: Record<string, string>) => {
+      const s = document.getElementById(id) as HTMLSelectElement;
+      s.insertAdjacentHTML('beforeend', Object.entries(obj).filter(([v]) => v).map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join(''));
+    };
+    addOpts('f-status', ST);
+    document.getElementById('f-status')!.insertAdjacentHTML('beforeend', '<option value="nostep">Без следующего шага</option>'); addOpts('f-interest', INT); addOpts('f-source', SRC);
+
+    async function api(method: string, url: string, body?: any) {
+      try {
+        const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+        const j = await r.json().catch(() => ({}));
+        return { ok: r.ok, status: r.status, data: j };
+      } catch {
+        return { ok: false, status: 0, data: { error: 'network' } };
+      }
+    }
+    const ERR: Record<string, string> = {
+      name_required: 'Укажите имя.', bad_date: 'Проверьте дату.', too_long: 'Слишком длинный текст.',
+      network: 'Нет связи. Попробуйте ещё раз.', duplicate: 'Такой контакт уже есть.',
+    };
+
+    function rowHTML(p: any, withTask: boolean) {
+      const tags = [
+        `<span class="ppl-tag st-${esc(p.status)}">${esc(ST[p.status] || p.status)}</span>`,
+        p.interest ? `<span class="ppl-tag">${esc(INT[p.interest] || p.interest)}</span>` : '',
+      ].join('');
+      const step = p.next_step || p.next_at
+        ? `<div class="ppl-step">→ ${esc(p.next_step || 'следующий шаг')}${p.next_at ? ` · <b>${weekday(p.next_at)}, ${human(p.next_at)}</b>` : ''}</div>`
+        : '';
+      const sub = [contactHTML(p.contact), esc(SRC[p.source] || p.source)].filter(Boolean).join(' · ');
+      const btns = withTask
+        ? `<button class="ppl-mini done" data-act="done" data-id="${p.id}">Сделано</button>
+           <button class="ppl-mini" data-act="plus" data-days="3" data-id="${p.id}">+3 дня</button>
+           <button class="ppl-mini" data-act="plus" data-days="7" data-id="${p.id}">+неделя</button>`
+        : `<button class="ppl-mini" data-act="edit" data-id="${p.id}">Изменить</button>`;
+      const dim = !withTask && (p.status === 'no' || p.status === 'done');
+      return `<div class="ppl-row${dim ? ' dim' : ''}">
+        <div class="ppl-who">
+          <div><button class="ppl-name" data-act="edit" data-id="${p.id}">${esc(p.name)}</button> ${tags}</div>
+          ${sub ? `<div class="ppl-sub">${sub}</div>` : ''}
+          ${step}
+        </div>
+        <div class="ppl-btns">${btns}</div>
+      </div>`;
+    }
+
+    function renderTasks() {
+      const withDate = people.filter((p) => p.next_at && p.status !== 'no' && p.status !== 'done')
+        .sort((a, b) => a.next_at.localeCompare(b.next_at));
+      const groups = [
+        { key: 'overdue', title: 'Просрочено', items: withDate.filter((p) => p.next_at < today) },
+        { key: 'today', title: 'Сегодня', items: withDate.filter((p) => p.next_at === today) },
+        { key: 'week', title: 'До конца недели', items: withDate.filter((p) => p.next_at > today && p.next_at <= weekEnd) },
+        { key: 'later', title: 'Дальше', items: withDate.filter((p) => p.next_at > weekEnd).slice(0, 15) },
+      ];
+      const noStep = people.filter((p) => !p.next_at && (p.status === 'new' || p.status === 'in_progress')).length;
+      const el = document.getElementById('tasks')!;
+      const html = groups.filter((g) => g.items.length || g.key === 'today').map((g) => `
+        <div class="ppl-group ${g.key}">
+          <h3>${g.title}${g.items.length ? ` · ${g.items.length}` : ''}</h3>
+          ${g.items.length ? g.items.map((p) => rowHTML(p, true)).join('') : '<p class="ppl-empty">На сегодня задач нет.</p>'}
+        </div>`).join('');
+      el.innerHTML = html + (noStep
+        ? `<p class="ppl-empty">Новых и «в разговоре» без следующего шага: ${noStep} – <button class="ppl-mini" id="show-nostep">показать</button></p>`
+        : '');
+      document.getElementById('show-nostep')?.addEventListener('click', () => {
+        (document.getElementById('f-status') as HTMLSelectElement).value = 'nostep';
+        renderList();
+        document.getElementById('list')!.scrollIntoView({ behavior: 'smooth' });
       });
-      sel.dataset.prev = sel.value;
+    }
+
+    function renderList() {
+      const q = (document.getElementById('f-q') as HTMLInputElement).value.trim().toLowerCase();
+      const st = (document.getElementById('f-status') as HTMLSelectElement).value;
+      const it = (document.getElementById('f-interest') as HTMLSelectElement).value;
+      const so = (document.getElementById('f-source') as HTMLSelectElement).value;
+      const items = people.filter((p) => {
+        if (st === 'nostep') { if (p.next_at || !(p.status === 'new' || p.status === 'in_progress')) return false; }
+        else if (st && p.status !== st) return false;
+        if (it && p.interest !== it) return false;
+        if (so && p.source !== so) return false;
+        if (q && ![p.name, p.contact, p.note, p.message, p.next_step].join(' ').toLowerCase().includes(q)) return false;
+        return true;
+      });
+      document.getElementById('count')!.textContent = `· ${items.length}`;
+      document.getElementById('list')!.innerHTML = items.length
+        ? items.map((p) => rowHTML(p, false)).join('')
+        : '<p class="ppl-empty">Никого не нашлось.</p>';
+    }
+    const render = () => { renderTasks(); renderList(); };
+    ['f-q', 'f-status', 'f-interest', 'f-source'].forEach((id) => document.getElementById(id)!.addEventListener('input', () => renderList()));
+
+    // Панели «добавить».
+    document.querySelectorAll<HTMLElement>('[data-open]').forEach((b) => b.addEventListener('click', () => {
+      const f = document.getElementById(b.dataset.open + '-form') as HTMLFormElement;
+      f.hidden = !f.hidden;
+      if (!f.hidden) (f.querySelector('input,textarea') as HTMLElement)?.focus();
+    }));
+    document.querySelectorAll<HTMLElement>('.ppl-panel [data-close]').forEach((b) => b.addEventListener('click', () => {
+      (b.closest('form') as HTMLFormElement).hidden = true;
+    }));
+    (document.querySelector('#add-form select[name="source"]') as HTMLSelectElement).value = 'telegram';
+    (document.querySelector('#bulk-form select[name="source"]') as HTMLSelectElement).value = 'telegram';
+
+    function formObj(f: HTMLFormElement) {
+      const o: Record<string, string> = {};
+      new FormData(f).forEach((v, k) => { o[k] = String(v).trim(); });
+      return o;
+    }
+    const say = (f: HTMLElement, text: string, kind = '') => {
+      const m = f.querySelector('.ppl-msg') as HTMLElement; m.textContent = text; m.className = 'ppl-msg ' + kind;
+    };
+
+    document.getElementById('add-form')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.currentTarget as HTMLFormElement;
+      const body = formObj(f);
+      if (!body.next_at) delete body.next_at;
+      const r = await api('POST', '/api/admin/leads', body);
+      if (r.status === 409) { say(f, `Такой контакт уже есть: ${r.data.name}.`, 'err'); return; }
+      if (!r.ok) { say(f, ERR[r.data.error] || 'Не получилось сохранить.', 'err'); return; }
+      people.unshift({ id: r.data.id, name: body.name, contact: body.contact || '', source: body.source, interest: body.interest || '',
+        note: body.note || '', next_step: body.next_step || '', next_at: body.next_at || null, status: 'new', message: '', created_at: new Date().toISOString() });
+      const src = body.source;
+      f.reset(); (f.querySelector('select[name="source"]') as HTMLSelectElement).value = src;
+      say(f, `Добавлено: ${body.name}`, 'ok');
+      render();
     });
+
+    document.getElementById('bulk-form')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.currentTarget as HTMLFormElement;
+      const body = formObj(f);
+      if (!body.text) { say(f, 'Вставьте список.', 'err'); return; }
+      const r = await api('POST', '/api/admin/leads/bulk', body);
+      if (!r.ok) { say(f, ERR[r.data.error] || 'Не получилось добавить.', 'err'); return; }
+      say(f, `Добавлено: ${r.data.added}.` + (r.data.skipped?.length ? ` Уже были в базе: ${r.data.skipped.join(', ')}.` : ''), 'ok');
+      const fresh = await api('GET', '/api/admin/leads');
+      if (fresh.ok && Array.isArray(fresh.data)) people = fresh.data;
+      (f.querySelector('textarea') as HTMLTextAreaElement).value = '';
+      render();
+    });
+
+    // Правка.
+    const dlg = document.getElementById('edit') as HTMLDialogElement;
+    const ef = document.getElementById('edit-form') as HTMLFormElement;
+    let editing: any = null;
+    function openEdit(p: any) {
+      editing = p;
+      document.getElementById('edit-title')!.textContent = p.name;
+      document.getElementById('edit-meta')!.textContent = `Добавлен ${new Date(p.created_at).toLocaleDateString('ru-RU')} · ${SRC[p.source] || p.source}`;
+      const m = document.getElementById('edit-msg')!;
+      m.hidden = !p.message; m.textContent = p.message ? 'Сообщение с сайта: ' + p.message : '';
+      for (const k of ['name', 'contact', 'source', 'interest', 'status', 'next_step', 'note']) {
+        (ef.elements.namedItem(k) as HTMLInputElement).value = p[k] ?? '';
+      }
+      (ef.elements.namedItem('next_at') as HTMLInputElement).value = p.next_at || '';
+      say(ef, '');
+      dlg.showModal();
+    }
+    dlg.querySelectorAll('[data-dclose]').forEach((b) => b.addEventListener('click', () => dlg.close()));
+    ef.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!editing) return;
+      const body = formObj(ef);
+      const r = await api('PATCH', `/api/admin/leads/${editing.id}`, body);
+      if (!r.ok) { say(ef, ERR[r.data.error] || 'Не получилось сохранить.', 'err'); return; }
+      Object.assign(editing, r.data.lead || body);
+      dlg.close();
+      render();
+    });
+
+    async function patch(p: any, body: any) {
+      const r = await api('PATCH', `/api/admin/leads/${p.id}`, body);
+      if (!r.ok) { alert(ERR[r.data.error] || 'Не получилось сохранить.'); return false; }
+      Object.assign(p, r.data.lead || body);
+      render();
+      return true;
+    }
+
+    document.addEventListener('click', async (e) => {
+      const b = (e.target as HTMLElement).closest('[data-act]') as HTMLElement | null;
+      if (!b) return;
+      const p = people.find((x) => x.id === b.dataset.id);
+      if (!p) return;
+      const act = b.dataset.act;
+      if (act === 'edit') { openEdit(p); return; }
+      if (act === 'plus') {
+        const base = p.next_at && p.next_at > today ? p.next_at : today;
+        await patch(p, { next_at: addDays(base, Number(b.dataset.days)) });
+        return;
+      }
+      if (act === 'done') {
+        const d = new Date();
+        const line = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}: ${p.next_step || 'шаг'} – сделано`;
+        const note = (p.note ? p.note + '\n' : '') + line;
+        const ok = await patch(p, { note, next_step: '', next_at: '', status: p.status === 'new' ? 'in_progress' : p.status });
+        if (ok) openEdit(p); // сразу предлагаем поставить следующий шаг
+      }
+    });
+
+    render();
   </script>
 </Base>

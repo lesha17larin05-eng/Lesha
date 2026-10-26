@@ -111,4 +111,21 @@ type Lead struct {
 	Status    string    `json:"status"`
 	ConsentPD bool      `json:"consent_pd"`
 	CreatedAt time.Time `json:"created_at"`
+	// «Люди»: интерес, заметка, следующий шаг и его дата (YYYY-MM-DD или nil).
+	Interest  string    `json:"interest"`
+	Note      string    `json:"note"`
+	NextStep  string    `json:"next_step"`
+	NextAt    *string   `json:"next_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// LeadInput – поля для ручного создания/правки записи в «Людях».
+type LeadInput struct {
+	Name, Contact, Source, Interest, Note, NextStep, Status string
+	NextAt                                                  *string
+}
+
+// LeadPatch – частичная правка: nil = поле не трогаем. NextAt "" = очистить дату.
+type LeadPatch struct {
+	Name, Contact, Source, Interest, Note, NextStep, Status, NextAt *string
 }

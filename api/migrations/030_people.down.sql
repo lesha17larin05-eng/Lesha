@@ -1,0 +1,10 @@
+DROP INDEX IF EXISTS idx_leads_contact_lower;
+DROP INDEX IF EXISTS idx_leads_next_at;
+UPDATE leads SET status = 'done' WHERE status IN ('bought','later','no');
+ALTER TABLE leads DROP CONSTRAINT IF EXISTS leads_status_check;
+ALTER TABLE leads ADD CONSTRAINT leads_status_check CHECK (status IN ('new','in_progress','done'));
+ALTER TABLE leads DROP COLUMN IF EXISTS updated_at;
+ALTER TABLE leads DROP COLUMN IF EXISTS next_at;
+ALTER TABLE leads DROP COLUMN IF EXISTS next_step;
+ALTER TABLE leads DROP COLUMN IF EXISTS note;
+ALTER TABLE leads DROP COLUMN IF EXISTS interest;

@@ -175,13 +175,18 @@ JSON `{"error": "<code>"}`:
 
 Подпись: `hex(HMAC_SHA256(key = JWT_SECRET, msg = "unsubscribe:" + user_id))`, функция `handlers.UnsubscribeToken`. Отдельного секрета и таблицы токенов нет — доменное разделение через префикс.
 
-## Заявки (leads)
+## Заявки и «Люди» (leads)
+
+Таблица `leads` – база «Люди» в админке: заявки с форм сайта, оплатившие услуги (автоматически, статус `bought`) и люди, добавленные вручную. У записи: `interest` (gruppa|personal|coaching|course|question|start|other|""), `note`, `next_step`, `next_at` (дата YYYY-MM-DD или null), статусы `new|in_progress|bought|later|no|done`. Ручные источники: `telegram|max|instagram|vk|offline|referral|manual`.
 
 | Эндпоинт | Описание |
 |---|---|
 | `POST /api/leads` | Публичный. `{name, contact, message?, source, consent_pd}` → 201. Валидация: имя и контакт (≥5 симв.) обязательны, `consent_pd` обязателен (400 `consent_pd_required`), лимиты длины (400 `too_long`). Неизвестный `source` → `other`. Rate-limit 10/15мин на IP, CSRF обязателен. Шлёт письмо на `LEAD_NOTIFY_EMAIL`. |
-| `GET /api/admin/leads` | Admin. Последние 500 заявок, новые сверху. |
-| `PATCH /api/admin/leads/{id}` | Admin. `{status: new|in_progress|done}` → 200; иное → 400 `bad_status`. Пишет `audit_log` (`lead_status`). |
+| `GET /api/admin/leads` | Admin. До 3000 записей, новые сверху (все поля, включая interest/note/next_step/next_at). |
+| `POST /api/admin/leads` | Admin. Ручное добавление `{name*, contact?, source?, interest?, note?, next_step?, next_at?, status?}` → 201 `{id}`. Тот же контакт уже есть (без учёта регистра) → 409 `{error:"duplicate", id, name}`. Ошибки 400: `name_required`, `bad_date`, `bad_source`, `bad_interest`, `bad_status`, `too_long`. Audit `lead_create`. |
+| `POST /api/admin/leads/bulk` | Admin. `{text, source?, interest?}` – по человеку на строку: «Имя – контакт» (разделители « – », «,», «;», таб; маркеры списка срезаются; строка-контакт без имени – имя = контакт). Известные контакты пропускаются → 200 `{added, skipped[]}`. Audit `lead_bulk`. |
+| `PATCH /api/admin/leads/{id}` | Admin. Любые поля из POST; не переданные не меняются, `next_at:""` очищает дату → 200 `{ok, lead}`. Audit `lead_status` (если менялся статус) или `lead_update`. |
+| `GET /api/admin/leads.csv` | Admin. Выгрузка всех записей в CSV (UTF-8 с BOM, разделитель «;») для Excel. |
 
 | `GET /api/admin/users/{id}` | Карточка пользователя: профиль+согласия, `courses[]` с прогрессом и поурочной детализацией, `orders[]`. |
 
