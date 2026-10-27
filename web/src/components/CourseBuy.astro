@@ -13,7 +13,8 @@ const isLoggedIn = !!(Astro.locals as any).user;
   const ERRORS = {
     bad_email: 'Проверьте адрес почты.',
     name_required: 'Укажите имя.',
-    consent_pd_required: 'Чтобы продолжить, отметьте согласие.',
+    consent_pd_required: 'Чтобы продолжить, отметьте согласие на обработку персональных данных.',
+    offer_required: 'Чтобы продолжить, примите условия оферты.',
     bad_tariff: 'Неизвестный тариф. Обновите страницу.',
   };
   const cabinet = '/cabinet/' + slug;
@@ -48,11 +49,15 @@ const isLoggedIn = !!(Astro.locals as any).user;
           <label><span>Почта</span><input name="email" type="email" required autocomplete="email" inputmode="email" /></label>
           <label class="cb-check">
             <input type="checkbox" name="consent_pd" required />
-            <span>Даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/legal/offer" target="_blank">оферту</a>.</span>
+            <span>Даю <a href="/legal/consent" target="_blank">согласие на обработку персональных данных</a>.</span>
           </label>
           <label class="cb-check">
-            <input type="checkbox" name="consent_marketing" checked />
-            <span>Присылать полезные письма: практики, разборы, новости о курсах. Отписаться можно в любой момент.</span>
+            <input type="checkbox" name="offer" required />
+            <span>Принимаю условия <a href="/legal/offer" target="_blank">оферты</a>.</span>
+          </label>
+          <label class="cb-check">
+            <input type="checkbox" name="consent_marketing" />
+            <span>Получать письма Алексея о новых практиках и тренировках. Отписаться можно в один клик.</span>
           </label>
           <button class="cb-submit" type="submit">Перейти к оплате</button>
           <div class="cb-msg" hidden></div>
@@ -78,6 +83,7 @@ const isLoggedIn = !!(Astro.locals as any).user;
       if (!name) return say(ERRORS.name_required);
       if (!email.includes('@') || !email.includes('.')) return say(ERRORS.bad_email);
       if (!fd.get('consent_pd')) return say(ERRORS.consent_pd_required);
+      if (!fd.get('offer')) return say(ERRORS.offer_required);
       btn.disabled = true; btn.textContent = 'Открываю оплату…';
       try {
         const res = await quickCheckout({ tariff, name, email, consent_pd: true, consent_marketing: !!fd.get('consent_marketing') });

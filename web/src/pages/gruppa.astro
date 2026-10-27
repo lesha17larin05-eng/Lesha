@@ -56,7 +56,7 @@ const reviews = [
     <div class="gp-hero-text">
       <p class="gp-eyebrow"><span class="dot"></span>Групповое ведение · старт 7 ноября</p>
       <h1>Войти в Новый год <em>сильнее</em></h1>
-      <p class="gp-sub">8 недель тренировок дома – по своему плану, с разбором каждую субботу и поддержкой в чате</p>
+      <p class="gp-sub">8 недель тренировок дома: я составлю план под вас, по субботам разберём неделю на общем созвоне, а в чате я на связи</p>
       <div class="gp-params">
         <div><b>8</b><span>недель</span></div>
         <div><b>до {seats}</b><span>человек в группе</span></div>
@@ -107,7 +107,7 @@ const reviews = [
           <div class="gp-num">1</div>
           <div>
             <h3>План на неделю – под вас</h3>
-            <p>Две силовые тренировки дома (третья – по желанию), прогулки и шаги. Упражнения и нагрузка – под ваш уровень и вашу цель. Нужен только коврик.</p>
+            <p>Я составляю план для каждого: две силовые тренировки дома (третья – по желанию), прогулки и шаги. Упражнения и нагрузка – под ваш уровень и вашу цель. Тренируетесь в удобное время, общих тренировок нет. Нужен только коврик.</p>
           </div>
         </div>
         <div class="gp-step">
@@ -302,7 +302,11 @@ const reviews = [
           </div>
           <label class="gp-consent">
             <input type="checkbox" name="consent_pd" required />
-            <span>Согласен с <a href="/legal/privacy" target="_blank" rel="noopener">обработкой персональных данных</a> и <a href="/legal/offer" target="_blank" rel="noopener">офертой</a></span>
+            <span>Даю <a href="/legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a></span>
+          </label>
+          <label class="gp-consent">
+            <input type="checkbox" name="offer" required />
+            <span>Принимаю условия <a href="/legal/offer" target="_blank" rel="noopener">оферты</a></span>
           </label>
           <button type="submit" class="btn-main btn-full">Оплатить 9 900 ₽</button>
           <p class="gp-note" id="pay-note"></p>
@@ -373,6 +377,7 @@ const reviews = [
       if (!name) return say('Укажите имя', true);
       if (!email.includes('@') || !email.includes('.')) return say('Проверьте адрес почты', true);
       if (!fd.get('consent_pd')) return say('Чтобы продолжить, отметьте согласие', true);
+      if (!fd.get('offer')) return say('Чтобы продолжить, примите условия оферты', true);
       btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Готовим оплату…';
       try {
         const r = await fetch('/api/checkout/service', {
