@@ -23,6 +23,14 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
+# Место на диске: кэш сборок копится с каждым деплоем (27.10.2026 диск забился
+# на 100% и postgres упал). Перед сборкой – чистим, если свободно меньше 8 ГБ.
+FREE_GB=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+if [ "${FREE_GB:-0}" -lt 8 ]; then
+  echo ">> мало места (${FREE_GB} ГБ) – чищу кэш сборок до сборки"
+  docker builder prune -af >/dev/null || true
+fi
+
 echo ">> [2/5] docker compose build (api + web)"
 $COMPOSE --env-file .env build api web
 
@@ -53,7 +61,7 @@ fi
 #  - «висячие» образы без тега: старые версии lesha-web/lesha-api после пересборки.
 # Тома (volumes), рабочие образы, /root/data (база, видео) – не затрагиваются.
 echo ">> уборка: кэш сборок и старые образы"
-docker builder prune -f --keep-storage 5gb >/dev/null || true
+docker builder prune -af --keep-storage 3gb >/dev/null || true
 docker image prune -f >/dev/null || true
 df -h / | tail -1
 
