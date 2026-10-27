@@ -45,6 +45,7 @@ const isLoggedIn = !!(Astro.locals as any).user;
         <h3 id="cb-title">Тариф «${label}»</h3>
         <p class="cb-lead">${price}. Доступ к урокам откроется сразу после оплаты, данные для входа придут на почту.</p>
         <form class="cb-form" novalidate>
+          <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <label><span>Имя</span><input name="name" required autocomplete="name" /></label>
           <label><span>Почта</span><input name="email" type="email" required autocomplete="email" inputmode="email" /></label>
           <label class="cb-check">
@@ -86,7 +87,7 @@ const isLoggedIn = !!(Astro.locals as any).user;
       if (!fd.get('offer')) return say(ERRORS.offer_required);
       btn.disabled = true; btn.textContent = 'Открываю оплату…';
       try {
-        const res = await quickCheckout({ tariff, name, email, consent_pd: true, consent_marketing: !!fd.get('consent_marketing') });
+        const res = await quickCheckout({ tariff, name, email, consent_pd: true, consent_marketing: !!fd.get('consent_marketing'), homepage: String(fd.get('homepage') || '') });
         if (res.ok) return goPay(res.data.payment_url);
         if (res.data.error === 'already_enrolled') {
           say('У этого адреса уже есть доступ к курсу. <a href="/auth/login?next=' + cabinet + '">Войдите</a>, чтобы перейти к урокам.');

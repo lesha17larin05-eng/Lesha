@@ -222,6 +222,7 @@ const reviews = [
       <details class="gp-leave">
         <summary>Нет мессенджеров? <span>Оставьте контакт</span> – я напишу сам</summary>
         <form id="lead-form" class="gp-form" data-source="personal" novalidate>
+          <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <div class="gp-row">
             <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
             <input class="gp-input" name="contact" placeholder="Телефон или почта" required />
@@ -285,7 +286,7 @@ const reviews = [
       try {
         const r = await fetch('/api/leads', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ name, contact, message: String(fd.get('message') || '').trim(), source: 'personal', consent_pd: true }),
+          body: JSON.stringify({ name, contact, message: String(fd.get('message') || '').trim(), source: 'personal', consent_pd: true, homepage: String(fd.get('homepage') || '') }),
         });
         if (r.ok) {
           (window as any).reachGoal?.('lead_submit');

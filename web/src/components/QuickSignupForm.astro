@@ -5,6 +5,7 @@
 // Рассчитана на тёмный (navy) фон. Перенесена из legacy/course.html (2026-09-30).
 ---
     <form class="cta-form" id="quick-signup-form" novalidate>
+      <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <div class="form-row">
         <input type="text" name="name" class="form-input" placeholder="Ваше имя *" autocomplete="name" required>
         <input type="email" name="email" class="form-input" placeholder="Email *" autocomplete="email" required>
@@ -166,7 +167,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, name, phone, consent_pd: true, consent_marketing: consentMarketing }),
+            body: JSON.stringify({ email, name, phone, consent_pd: true, consent_marketing: consentMarketing, homepage: String(fd.get('homepage') || '') }),
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {

@@ -108,8 +108,8 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Use(mw.CSRF)
 	r.Get("/api/health", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(`{"ok":1}`)) })
 	r.Route("/api/auth", func(r chi.Router) {
-		r.Post("/register", app.Register)
-		r.Post("/quick-signup", app.QuickSignup)
+		r.With(mw.Honeypot).Post("/register", app.Register)
+		r.With(mw.Honeypot).Post("/quick-signup", app.QuickSignup)
 		r.Post("/login", app.Login)
 		r.Post("/logout", app.Logout)
 		r.Post("/refresh", app.Refresh)
@@ -128,10 +128,10 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 	r.Get("/api/articles", app.ListArticles)
 	r.Get("/api/articles/{slug}", app.GetArticle)
 	r.Post("/api/articles/{slug}/view", app.TrackArticleView)
-	r.Post("/api/newsletter", app.NewsletterSignup)
-	r.Post("/api/checkout/service", app.ServiceCheckout)
+	r.With(mw.Honeypot).Post("/api/newsletter", app.NewsletterSignup)
+	r.With(mw.Honeypot).Post("/api/checkout/service", app.ServiceCheckout)
 	r.Get("/api/services/{service}/seats", app.ServiceSeats)
-	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
+	r.With(mw.Honeypot).Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/orders/{id}/status", app.OrderStatus)
 	r.Get("/api/orders/{id}/enter", app.OrderEnter)
 	r.Get("/api/settings", app.PublicSettings)
@@ -156,7 +156,7 @@ func setup(t *testing.T) (*httptest.Server, *db.Repo, *config.Config) {
 		r.Post("/api/courses/{slug}/checkout", app.Checkout)
 		r.Get("/api/courses/{slug}/files/{name}", app.CourseFile)
 	})
-	r.Post("/api/leads", app.CreateLead)
+	r.With(mw.Honeypot).Post("/api/leads", app.CreateLead)
 	r.Post("/api/webhooks/prodamus", app.ProdamusWebhook)
 	r.Get("/api/dev/fake-payment", app.FakePayment)
 	r.Group(func(r chi.Router) {
@@ -3793,5 +3793,31 @@ func TestPeople(t *testing.T) {
 	}
 	if r, _ := user.do("GET", "/api/admin/leads.csv", nil); r.StatusCode == 200 {
 		t.Fatalf("csv must be admin-only")
+	}
+}
+
+// TestHoneypotForms – заполненное поле-ловушка: 200 без создания заявки и пользователя.
+func TestHoneypotForms(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	c := newClient(srv)
+	r, body := c.do("POST", "/api/leads", map[string]any{
+		"name": "bot", "contact": "bot@x.ru", "source": "gruppa", "consent_pd": true, "homepage": "http://spam"})
+	if r.StatusCode != 200 {
+		t.Fatalf("honeypot lead: %d %s", r.StatusCode, body)
+	}
+	if leads, _ := repo.ListLeads(ctx, 10); len(leads) != 0 {
+		t.Fatalf("bot lead saved: %+v", leads)
+	}
+	r, _ = c.do("POST", "/api/auth/quick-signup", map[string]any{
+		"name": "bot", "email": "bot2@x.ru", "consent_pd": true, "homepage": "x"})
+	if _, err := repo.GetUserByEmail(ctx, "bot2@x.ru"); r.StatusCode != 200 || err == nil {
+		t.Fatalf("bot user must not be created: %d %v", r.StatusCode, err)
+	}
+	// человек с пустой ловушкой проходит как обычно
+	r, body = c.do("POST", "/api/leads", map[string]any{
+		"name": "Иван", "contact": "ivan@x.ru", "source": "gruppa", "consent_pd": true, "homepage": ""})
+	if r.StatusCode != 201 {
+		t.Fatalf("human lead: %d %s", r.StatusCode, body)
 	}
 }

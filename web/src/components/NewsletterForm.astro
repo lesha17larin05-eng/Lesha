@@ -16,6 +16,7 @@ const {
     <h3 class="nl-title">{title}</h3>
     <p class="nl-text">{text}</p>
     <form class="nl-form" novalidate>
+      <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
       <div class="nl-row">
         <input class="nl-input" type="email" name="email" placeholder="Ваша почта" autocomplete="email" required />
         <button class="nl-btn" type="submit">Подписаться</button>
@@ -101,7 +102,7 @@ const {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ email, consent_pd: true }),
+          body: JSON.stringify({ email, consent_pd: true, homepage: String(fd.get('homepage') || '') }),
         });
         if (r.ok) {
           (window as any).reachGoal?.('newsletter_signup');

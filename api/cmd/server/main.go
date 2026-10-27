@@ -96,8 +96,8 @@ func main() {
 	authRL := middleware.NewRateLimiter(20, 15*time.Minute)
 	r.Route("/api/auth", func(r chi.Router) {
 		r.Use(authRL.Middleware)
-		r.Post("/register", app.Register)
-		r.Post("/quick-signup", app.QuickSignup)
+		r.With(middleware.Honeypot).Post("/register", app.Register)
+		r.With(middleware.Honeypot).Post("/quick-signup", app.QuickSignup)
 		r.Post("/login", app.Login)
 		r.Post("/logout", app.Logout)
 		r.Post("/refresh", app.Refresh)
@@ -127,12 +127,12 @@ func main() {
 	r.Get("/api/subscribe", app.Subscribe)
 	r.Post("/api/subscribe", app.Subscribe)
 	// Форма «получать письма» в блоге и под отзывами.
-	r.Post("/api/newsletter", app.NewsletterSignup)
+	r.With(middleware.Honeypot).Post("/api/newsletter", app.NewsletterSignup)
 	// Оплата услуги без регистрации: «Точка перемен».
-	r.Post("/api/checkout/service", app.ServiceCheckout)
+	r.With(middleware.Honeypot).Post("/api/checkout/service", app.ServiceCheckout)
 	r.Get("/api/services/{service}/seats", app.ServiceSeats)
 	// Покупка курса в один шаг (имя + почта → оплата), без регистрации.
-	r.Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
+	r.With(middleware.Honeypot).Post("/api/courses/{slug}/quick-checkout", app.QuickCheckout)
 	r.Get("/api/orders/{id}/status", app.OrderStatus)
 	r.Get("/api/orders/{id}/enter", app.OrderEnter)
 	r.Get("/api/articles", app.ListArticles)
@@ -155,7 +155,7 @@ func main() {
 
 	// Заявки с маркетинговых страниц: rate-limit против спама (CSRF уже глобально).
 	leadRL := middleware.NewRateLimiter(10, 15*time.Minute)
-	r.With(leadRL.Middleware).Post("/api/leads", app.CreateLead)
+	r.With(leadRL.Middleware, middleware.Honeypot).Post("/api/leads", app.CreateLead)
 
 	r.Post("/api/webhooks/prodamus", app.ProdamusWebhook)
 	r.Get("/api/pay/{order_id}", app.PayShortcut)

@@ -278,6 +278,7 @@ const reviews = [
       <details class="gp-leave">
         <summary>Нет мессенджеров? <span>Оставьте контакт</span> – я напишу сам</summary>
         <form id="lead-form" class="gp-form" data-source="gruppa" novalidate>
+          <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <div class="gp-row">
             <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
             <input class="gp-input" name="contact" placeholder="Телефон или почта" required />
@@ -296,6 +297,7 @@ const reviews = [
       <div class="gp-pay" id="oplata" hidden>
         <h3>Оплата участия – 9 900 ₽</h3>
         <form id="pay-form" novalidate>
+          <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <div class="gp-row">
             <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
             <input class="gp-input" name="email" type="email" placeholder="Почта – на неё придёт анкета" autocomplete="email" required />
@@ -349,7 +351,7 @@ const reviews = [
       try {
         const r = await fetch('/api/leads', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ name, contact, message: String(fd.get('message') || '').trim(), source: 'gruppa', consent_pd: true }),
+          body: JSON.stringify({ name, contact, message: String(fd.get('message') || '').trim(), source: 'gruppa', consent_pd: true, homepage: String(fd.get('homepage') || '') }),
         });
         if (r.ok) {
           (window as any).reachGoal?.('lead_submit');
@@ -382,7 +384,7 @@ const reviews = [
       try {
         const r = await fetch('/api/checkout/service', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ service: 'gruppa', name, email, consent_pd: true }),
+          body: JSON.stringify({ service: 'gruppa', name, email, consent_pd: true, homepage: String(fd.get('homepage') || '') }),
         });
         const d = await r.json().catch(() => ({}));
         if (r.ok && d.url) { (window as any).reachGoal?.('checkout_gruppa'); location.href = d.url; return; }

@@ -150,6 +150,10 @@ API-проверки на бэкенде дублируют — middleware фр�
 
 Счётчик подключается в обоих layout'ах, если задан env `METRIKA_ID` (runtime SSR, прокидывается через docker-compose → web). Пусто — скрипт не грузится. Глобальный helper `window.reachGoal('имя_цели')` — no-op без счётчика. Цели: `lead_submit` (формы заявок coaching/start/gruppa/personal), `messenger_click` (кнопки Telegram/Max на лендингах), `quick_signup` (форма на /courses/myagkiy-start), `checkout_start` (переход к оплате «Здоровой спины»).
 
+## Поле-ловушка для ботов
+
+Во всех публичных формах (QuickSignupForm, регистрация, NewsletterForm, CourseBuy, заявки на /personal, /gruppa, /coaching, оплата группы) – скрытое поле `<input name="homepage" class="hp-field">`; значение уходит в JSON. Стиль `.hp-field` – в site.css (вне экрана). Сервер отклоняет формы с заполненной ловушкой (см. 03-api.md).
+
 ## Согласия в формах (27.10.2026)
 
 Ни одна галочка не стоит заранее – человек ставит сам (152-ФЗ: согласие сознательное; с 01.09.2025 – отдельно от других документов).

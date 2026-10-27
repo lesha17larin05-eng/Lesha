@@ -175,6 +175,10 @@ JSON `{"error": "<code>"}`:
 
 Подпись: `hex(HMAC_SHA256(key = JWT_SECRET, msg = "unsubscribe:" + user_id))`, функция `handlers.UnsubscribeToken`. Отдельного секрета и таблицы токенов нет — доменное разделение через префикс.
 
+## Защита форм от ботов (поле-ловушка)
+
+`middleware.Honeypot` на публичных формах: `POST /api/auth/register`, `/api/auth/quick-signup`, `/api/newsletter`, `/api/checkout/service`, `/api/courses/{slug}/quick-checkout`, `/api/leads`. Если в JSON заполнено скрытое поле `homepage` – ответ 200 `{"ok":1}`, ничего не создаётся и писем нет (в логе `honeypot: bot form submission dropped`). Пустое или отсутствующее поле – запрос проходит как обычно.
+
 ## Заявки и «Люди» (leads)
 
 Таблица `leads` – база «Люди» в админке: заявки с форм сайта, оплатившие услуги (автоматически, статус `bought`) и люди, добавленные вручную. У записи: `interest` (gruppa|personal|coaching|course|question|start|other|""), `note`, `next_step`, `next_at` (дата YYYY-MM-DD или null), статусы `new|in_progress|bought|later|no|done`. Ручные источники: `telegram|max|instagram|vk|offline|referral|manual`.
