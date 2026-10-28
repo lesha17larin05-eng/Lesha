@@ -33,6 +33,7 @@ services:
       - ./api/migrations/028_lesson_texts_2026_10.up.sql:/docker-entrypoint-initdb.d/028_lesson_texts_2026_10.up.sql:ro
       - ./api/migrations/029_hide_weak_articles.up.sql:/docker-entrypoint-initdb.d/029_hide_weak_articles.up.sql:ro
       - ./api/migrations/030_people.up.sql:/docker-entrypoint-initdb.d/030_people.up.sql:ro
+      - ./api/migrations/031_anketa_reminder.up.sql:/docker-entrypoint-initdb.d/031_anketa_reminder.up.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d test"]
       interval: 2s

@@ -824,13 +824,15 @@ func (a *App) gruppaOrderPaid(u *db.User, o *db.Order, svc service) {
 	a.Mail.Async(u.Email, "Вы в группе – групповое ведение с 7 ноября",
 		"<p>Здравствуйте! Оплата получена – вы в группе, я очень рад 🙂</p>"+
 			"<p><b>Первый шаг – анкета и замеры.</b> Минут 10: цель, опыт, здоровье, удобные дни "+
-			"и простые замеры (рост, вес, талия, бёдра, задержка дыхания). По анкете я соберу ваш первый план, "+
+			"и простые замеры (рост, вес, талия, бёдра, задержка дыхания). По анкете я соберу ваш план на первую неделю, "+
 			"а замеры сравним в конце.</p>"+
-			`<p><a href="`+anketa+`" style="display:inline-block;background:#e8652a;color:#fff;text-decoration:none;`+
-			`padding:12px 24px;border-radius:100px;font-weight:600">Заполнить анкету&nbsp;→</a></p>`+
-			"<p>Заполните, пожалуйста, до 5 ноября. После анкеты добавлю вас в чат группы в Telegram.</p>"+
+			mailButton(anketa, "Заполнить анкету")+
+			"<p>Лучше заполнить сразу, сегодня или завтра, – так я спокойно соберу ваш план до старта.</p>"+
+			"<p><b>Фото – по желанию.</b> Если хотите видеть изменения не только в цифрах, пришлите мне лично "+
+			"в <a href=\"https://t.me/larin_lesha\">Телеграм</a> 3 фото – спереди, сбоку и сзади, в купальнике или облегающей одежде, "+
+			"при дневном свете. Их увижу только я.</p>"+
 			"<p>Первый созвон – суббота, 7 ноября, в 10:15 по Москве: знакомимся, и каждый получает свой план. "+
-			"Дальше созвоны – каждую субботу в это же время.</p>"+
+			"Дальше созвоны – каждую субботу в это же время. Ссылку на чат группы пришлю ближе к старту, когда все соберутся.</p>"+
 			"<p>Если что-то непонятно – просто ответьте на это письмо или напишите мне в "+
 			"<a href=\"https://t.me/larin_lesha\">Телеграм</a>.</p>"+
 			"<p>Алексей Ларин</p>")
@@ -840,5 +842,38 @@ func (a *App) gruppaOrderPaid(u *db.User, o *db.Order, svc service) {
 			"<p><b>Что:</b> "+html.EscapeString(svc.Title)+"</p>"+
 			"<p><b>Сумма:</b> "+strconv.Itoa(o.AmountRub)+" ₽</p>"+
 			"<p><b>Заказ:</b> №"+strconv.FormatInt(o.OrderNum, 10)+"</p>"+
-			"<p>Человеку ушло письмо с анкетой и замерами. Ссылка на его анкету: <a href=\""+anketa+"\">"+anketa+"</a></p>")
+			"<p>Человеку ушло письмо с анкетой и замерами. Если за 2 дня не заполнит – сайт сам напомнит письмом. Ссылка на его анкету: <a href=\""+anketa+"\">"+anketa+"</a></p>")
+}
+
+// mailButton – оранжевая кнопка-ссылка для писем.
+func mailButton(href, text string) string {
+	return `<p><a href="` + href + `" style="display:inline-block;background:#e8652a;color:#fff;text-decoration:none;` +
+		`padding:12px 24px;border-radius:100px;font-weight:600">` + text + `&nbsp;→</a></p>`
+}
+
+// anketaRemindAfter – через сколько после оплаты группы напоминать про анкету.
+const anketaRemindAfter = 48 * time.Hour
+
+// checkAnketaReminders – одно письмо-напоминание тем, кто оплатил группу,
+// но за 2 дня не заполнил анкету. Шлём днём (9–21 по Москве), не ночью.
+func (a *App) checkAnketaReminders(ctx context.Context, now time.Time) error {
+	if h := moscowNow(now).Hour(); h < 9 || h >= 21 {
+		return nil
+	}
+	due, err := a.Repo.DueAnketaReminders(ctx, now.Add(-anketaRemindAfter))
+	if err != nil {
+		return err
+	}
+	for _, d := range due {
+		if err := a.Repo.MarkAnketaReminded(ctx, d.OrderID); err != nil {
+			return err
+		}
+		anketa := a.anketaURLKind(d.UserID, "gruppa")
+		a.Mail.Async(d.Email, "Анкета ждёт вас",
+			"<p>Здравствуйте! Напоминаю про анкету – 10 минут, и я смогу собрать ваш план на первую неделю.</p>"+
+				mailButton(anketa, "Заполнить анкету")+
+				"<p>Если что-то неясно – просто ответьте на это письмо.</p><p>Алексей Ларин</p>")
+		a.TG.Async("🔔 Напомнил про анкету группы: " + strings.TrimSpace(d.Name+" "+d.Email))
+	}
+	return nil
 }

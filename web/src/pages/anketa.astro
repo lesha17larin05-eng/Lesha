@@ -73,6 +73,13 @@ for (const qq of questions) {
         <div id="anketa-done" hidden>
           <h1>Спасибо, анкета у меня</h1>
           <p class="lead">{form.done}</p>
+          {data.kind === 'gruppa' && (
+            <div class="anketa-photo">
+              <h2>Фото – по желанию</h2>
+              <p>Если хотите видеть изменения не только в цифрах, пришлите 3 фото – спереди, сбоку и сзади, в купальнике или облегающей одежде, при дневном свете. Их увижу только я, в группе их никто не увидит.</p>
+              <a class="anketa-photo-btn" href="https://t.me/larin_lesha" target="_blank" rel="noopener">Отправить фото в Telegram →</a>
+            </div>
+          )}
           <p>Если что-то вспомните – просто вернитесь по той же ссылке из письма и дополните ответы.</p>
           <p>А пока можно подписаться на <a href="https://t.me/lesha_larin" target="_blank" rel="noopener">Телеграм-канал</a> – там короткие практики и разборы.</p>
         </div>
@@ -86,6 +93,11 @@ for (const qq of questions) {
     .anketa .eyebrow { font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--orange); font-weight: 700; margin-bottom: 10px; }
     .anketa p { font-size: 17px; line-height: 1.7; color: var(--text-mid); margin-bottom: 12px; }
     .anketa .lead { font-size: 18px; }
+    .anketa-photo { margin: 26px 0 22px; padding: 22px 24px; background: #fff; border: 1px solid var(--border, #e3d9c8); border-radius: 16px; }
+    .anketa-photo h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; color: var(--navy); margin: 0 0 8px; }
+    .anketa .anketa-photo-btn { display: inline-block; margin-top: 6px; padding: 13px 24px; border-radius: 100px; background: var(--orange); color: #fff; text-decoration: none; font-weight: 600; font-size: 16px; transition: background .2s, transform .15s; }
+    @media (hover: hover) { .anketa .anketa-photo-btn:hover { background: var(--orange-warm, #f07530); transform: translateY(-1px); } }
+    .anketa .anketa-photo-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 3px; }
     .anketa a { color: var(--orange); }
     fieldset { border: none; padding: 0; margin: 34px 0 0; }
     legend { font-family: 'Cormorant Garamond', serif; font-size: 26px; color: var(--navy); margin-bottom: 14px; }

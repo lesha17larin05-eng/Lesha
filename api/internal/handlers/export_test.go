@@ -59,3 +59,8 @@ func (a *App) TrackURLForTest(campaign string, userID uuid.UUID, link string) st
 func (a *App) DripHTMLForUserTest(step int, userID uuid.UUID) string {
 	return a.dripHTML(dripSteps[step-1], "Анна", userID, true)
 }
+
+// CheckAnketaRemindersForTest – один проход напоминаний про анкету группы.
+func (a *App) CheckAnketaRemindersForTest(ctx context.Context, now time.Time) error {
+	return a.checkAnketaReminders(ctx, now)
+}

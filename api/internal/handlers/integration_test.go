@@ -3821,3 +3821,56 @@ func TestHoneypotForms(t *testing.T) {
 		t.Fatalf("human lead: %d %s", r.StatusCode, body)
 	}
 }
+
+// TestAnketaReminder – напоминание про анкету группы: через 2 дня после
+// оплаты, только без анкеты, один раз, только днём по Москве.
+func TestAnketaReminder(t *testing.T) {
+	_, repo, cfg := setup(t)
+	app := &handlers.App{Cfg: cfg, Repo: repo, Mail: email.New("", "", "", "", ""), TG: notify.New("", "")}
+	ctx := context.Background()
+	mk := func(email string, paidAgo time.Duration) uuid.UUID {
+		uid, err := repo.CreateUser(ctx, email, "x", "Имя", "user")
+		if err != nil {
+			t.Fatal(err)
+		}
+		o, err := repo.CreateServiceOrder(ctx, uid, "gruppa", 9900)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := repo.Pool.Exec(ctx, `UPDATE orders SET status='paid', paid_at=now()-$2::interval WHERE id=$1`, o.ID, strconv.Itoa(int(paidAgo.Seconds()))+" seconds"); err != nil {
+			t.Fatal(err)
+		}
+		return o.ID
+	}
+	old := mk("old@b.ru", 100*time.Hour)
+	fresh := mk("fresh@b.ru", 10*time.Hour)
+	filled := mk("filled@b.ru", 100*time.Hour)
+	fu, _ := repo.GetUserByEmail(ctx, "filled@b.ru")
+	if err := repo.SaveQuestionnaire(ctx, fu.ID, "gruppa", map[string]string{"goal": "x"}); err != nil {
+		t.Fatal(err)
+	}
+	reminded := func(id uuid.UUID) bool {
+		var ok bool
+		_ = repo.Pool.QueryRow(ctx, `SELECT anketa_reminded_at IS NOT NULL FROM orders WHERE id=$1`, id).Scan(&ok)
+		return ok
+	}
+	// ночью по Москве (02:00 MSK = 23:00 UTC) – никому
+	night := time.Date(2026, 10, 28, 23, 0, 0, 0, time.UTC)
+	if err := app.CheckAnketaRemindersForTest(ctx, night); err != nil {
+		t.Fatal(err)
+	}
+	if reminded(old) {
+		t.Fatal("ночью напоминать нельзя")
+	}
+	// днём – только тому, кто оплатил больше 2 дней назад и без анкеты
+	if err := app.CheckAnketaRemindersForTest(ctx, time.Now().UTC().Truncate(24*time.Hour).Add(9*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if !reminded(old) || reminded(fresh) || reminded(filled) {
+		t.Fatalf("reminded: old=%v fresh=%v filled=%v", reminded(old), reminded(fresh), reminded(filled))
+	}
+	due, _ := repo.DueAnketaReminders(ctx, time.Now().Add(-48*time.Hour))
+	if len(due) != 0 {
+		t.Fatalf("повторно напоминать нельзя: %+v", due)
+	}
+}

@@ -66,6 +66,9 @@ func RunStuckPaymentWatcher(ctx context.Context, a *App) {
 			if err := a.checkAbandonedPayments(ctx, time.Now()); err != nil {
 				slog.Warn("abandoned payments check failed", "err", err)
 			}
+			if err := a.checkAnketaReminders(ctx, time.Now()); err != nil {
+				slog.Warn("anketa reminders check failed", "err", err)
+			}
 		}
 	}
 }
