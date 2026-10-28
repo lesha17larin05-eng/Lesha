@@ -6,9 +6,9 @@ const navCourses = await getNavCourses();
 const currentPath = Astro.url.pathname;
 // Подменю «Тренировки со мной»: форматы работы с Алексеем.
 const trainLinks = [
-  { href: '/personal', title: 'Персональные тренировки' },
   { href: '/gruppa', title: 'Групповое ведение' },
   { href: '/coaching', title: 'Личное ведение' },
+  { href: '/personal', title: 'Персональные тренировки' },
 ];
 type NavLink = { href: string; key: string; label: string; keys?: string[]; children?: { href: string; title: string }[]; all?: { href: string; label: string } };
 const links: NavLink[] = [
