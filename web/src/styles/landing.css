@@ -155,3 +155,10 @@ textarea.gp-input { resize: vertical; min-height: 84px; }
   .gp-step { padding: 22px; }
   .gp-author-text { padding: 48px 20px; }
 }
+
+/* Полоса-мысль на тёмном фоне (страница группы: «Вместе путь проходить легче»). */
+.gp-together { background: var(--navy); color: #fff; padding: 80px 24px; text-align: center; }
+.gp-together h2 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(34px, 4vw, 52px); line-height: 1.1; color: #fff; margin: 0 0 18px; }
+.gp-together h2 em { font-style: italic; color: #8bb8f0; }
+.gp-together p { font-size: 19px; line-height: 1.65; color: rgba(255,255,255,.85); max-width: 640px; margin: 0 auto; }
+@media (max-width: 700px) { .gp-together { padding: 60px 20px; } .gp-together p { font-size: 17px; } }
