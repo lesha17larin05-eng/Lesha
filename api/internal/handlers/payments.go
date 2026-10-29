@@ -628,11 +628,16 @@ type service struct {
 	PriceRub int
 	Page     string // страница услуги – туда возвращает «Назад» из Продамуса
 	Seats    int    // сколько мест (0 – без ограничения)
+	// ShowLeftMax – больше скольких свободных мест не показывать на сайте
+	// (0 – показывать как есть). Нужен, когда часть мест обещана в личке,
+	// но ещё не оплачена: счётчик сразу честный, а когда эти люди оплатят,
+	// число не прыгнет вниз второй раз. Оплату не ограничивает.
+	ShowLeftMax int
 }
 
 var services = map[string]service{
 	"start":  {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990, Page: "/start"},
-	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 7},
+	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 7, ShowLeftMax: 4},
 }
 
 // ServiceSeats – GET /api/services/{service}/seats: сколько мест всего и
@@ -651,6 +656,9 @@ func (a *App) ServiceSeats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	left := svc.Seats - n
+	if svc.ShowLeftMax > 0 && left > svc.ShowLeftMax {
+		left = svc.ShowLeftMax
+	}
 	if left < 0 {
 		left = 0
 	}

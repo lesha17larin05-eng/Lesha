@@ -3661,8 +3661,9 @@ func TestGruppa(t *testing.T) {
 		t.Fatalf("admin card: %s", body)
 	}
 
-	// Счётчик мест: пока никто не оплатил – 7 из 7; у услуги без мест – 404
-	if _, body := c.do("GET", "/api/services/gruppa/seats", nil); !strings.Contains(string(body), `"left":7`) || !strings.Contains(string(body), `"seats":7`) {
+	// Счётчик мест: пока никто не оплатил – 7 мест, но на сайте показываем
+	// не больше ShowLeftMax (4 – часть мест обещана в личке); у услуги без мест – 404
+	if _, body := c.do("GET", "/api/services/gruppa/seats", nil); !strings.Contains(string(body), `"left":4`) || !strings.Contains(string(body), `"seats":7`) {
 		t.Fatalf("seats: %s", body)
 	}
 	if r, _ := c.do("GET", "/api/services/start/seats", nil); r.StatusCode != 404 {
