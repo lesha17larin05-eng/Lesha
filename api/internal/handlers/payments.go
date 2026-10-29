@@ -637,7 +637,7 @@ type service struct {
 
 var services = map[string]service{
 	"start":  {Title: "«Точка перемен» – занятие и неделя сопровождения", PriceRub: 2990, Page: "/start"},
-	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 7, ShowLeftMax: 4},
+	"gruppa": {Title: "Групповое ведение – 8 недель (поток с 7 ноября)", PriceRub: 9900, Page: "/gruppa", Seats: 7, ShowLeftMax: 3},
 }
 
 // ServiceSeats – GET /api/services/{service}/seats: сколько мест всего и

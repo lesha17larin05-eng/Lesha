@@ -3662,8 +3662,8 @@ func TestGruppa(t *testing.T) {
 	}
 
 	// Счётчик мест: пока никто не оплатил – 7 мест, но на сайте показываем
-	// не больше ShowLeftMax (4 – часть мест обещана в личке); у услуги без мест – 404
-	if _, body := c.do("GET", "/api/services/gruppa/seats", nil); !strings.Contains(string(body), `"left":4`) || !strings.Contains(string(body), `"seats":7`) {
+	// не больше ShowLeftMax (3 – часть мест обещана в личке); у услуги без мест – 404
+	if _, body := c.do("GET", "/api/services/gruppa/seats", nil); !strings.Contains(string(body), `"left":3`) || !strings.Contains(string(body), `"seats":7`) {
 		t.Fatalf("seats: %s", body)
 	}
 	if r, _ := c.do("GET", "/api/services/start/seats", nil); r.StatusCode != 404 {
