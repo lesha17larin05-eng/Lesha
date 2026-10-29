@@ -129,6 +129,8 @@ textarea.gp-input { resize: vertical; min-height: 84px; }
 .gp-pay { margin-top: 40px; background: white; border: 1.5px solid var(--orange); border-radius: 20px; padding: 28px 24px; scroll-margin-top: 90px; }
 .gp-pay h3 { font-size: 21px; color: var(--navy); margin: 0 0 16px; text-align: center; }
 .gp-pay form { display: flex; flex-direction: column; gap: 12px; }
+.gp-price-ways { text-align: center; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,.85); margin: 12px 0 0; }
+.gp-pay-ways { text-align: center; font-size: 15px; line-height: 1.5; color: var(--text-light, #6e6e6e); margin: 0 0 16px; }
 .gp-pay-safe { text-align: center; font-size: 15px; color: var(--text-light, #6e6e6e); margin: 14px 0 0; }
 
 @media (max-width: 1000px) {
