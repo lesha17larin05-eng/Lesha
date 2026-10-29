@@ -13,7 +13,7 @@ const trainLinks = [
 type NavLink = { href: string; key: string; label: string; keys?: string[]; children?: { href: string; title: string }[]; all?: { href: string; label: string } };
 const links: NavLink[] = [
   { href: '/#so-mnoy', key: 'train', keys: ['train', 'home', 'personal', 'gruppa'], label: 'Тренировки со мной', children: trainLinks },
-  { href: '/courses', key: 'courses', label: 'Курсы', children: navCourses, all: { href: '/courses', label: 'Все курсы →' } },
+  { href: '/courses', key: 'courses', label: 'Курсы', children: navCourses },
   { href: '/blog', key: 'blog', label: 'Статьи' },
   { href: '/results', key: 'results', label: 'Отзывы' },
 ];
