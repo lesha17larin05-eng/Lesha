@@ -212,7 +212,14 @@ func (a *App) AdminTestCampaign(w http.ResponseWriter, r *http.Request) {
 	// с кнопкой подписки вместо ссылки отписки.
 	subscribed := !db.SegmentIsServiceOnly(c.Segment)
 	body := a.campaignHTMLFor(c, u.Name, u.ID, subscribed)
-	if err := a.Mail.Send(to, "[ТЕСТ] "+c.Subject, body); err != nil {
+	// Заголовки отписки – как в настоящей рассылке, чтобы тест на mail-tester
+	// показывал то же, что получат люди.
+	headers := map[string]string{}
+	if subscribed {
+		headers["List-Unsubscribe"] = "<" + a.unsubscribeURL(u.ID) + ">"
+		headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+	}
+	if err := a.Mail.SendWithHeaders(to, "[ТЕСТ] "+c.Subject, body, headers); err != nil {
 		slog.Warn("test campaign send failed", "to", to, "err", err)
 		writeErr(w, 500, "smtp")
 		return
@@ -301,8 +308,10 @@ func (a *App) campaignHTMLFor(c *db.Campaign, name string, userID uuid.UUID, sub
 			`Это письмо про ваш курс на leshalarin.ru – писем с новостями и материалами ` +
 			`вы сейчас не получаете.</p>`)
 	}
-	sb.WriteString(`<img src="` + a.pixelURL(c.ID.String(), userID) +
-		`" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;">`)
+	// Счётчика открытий (1×1 картинки) в рассылках нет с 01.11.2026: в коротком
+	// письме SpamAssassin штрафует за картинку при малом объёме текста
+	// (HTML_IMAGE_ONLY_24, −1,3), Яндекс клал письма в спам. Переходы по
+	// ссылкам по-прежнему считаются.
 	sb.WriteString(`</div></body></html>`)
 	return sb.String()
 }
