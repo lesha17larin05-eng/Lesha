@@ -25,3 +25,7 @@ rkn-uvedomlenie-podano-*.pdf
 plan-alekseya.md
 audit-*.md
 site-audit.md
+
+# файл для импорта паролей – никогда не коммитить
+_пароли*
+.deploy/

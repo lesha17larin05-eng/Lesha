@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import SubscribeInvite from '../../components/SubscribeInvite.astro';
+import VideoQuality from '../../components/VideoQuality.astro';
 import { apiJson } from '../../lib/api';
 
 const user = (Astro.locals as any).user;
@@ -12,17 +13,6 @@ const cookie = Astro.request.headers.get('cookie') || '';
 const { data, status } = await apiJson<any>('/api/courses/myagkiy-start', { cookie });
 if (status !== 200) return Astro.redirect('/courses/myagkiy-start', 302);
 
-// Ссылки на YouTube/ВК для каждого урока (захардкожены, как и на лендинге)
-const videoLinks: Record<string, { youtube: string; vk: string }> = {
-  'vvodnyy':               { youtube: 'https://youtu.be/unnNrpAhZXw', vk: 'https://vkvideo.ru/video-141544391_456239600?list=ln-curpXNJ6WIAAZE4QYq' },
-  'sustavnaya-gimnastika': { youtube: 'https://youtu.be/FmMPe-kj-vc', vk: 'https://vkvideo.ru/video-141544391_456239626?list=ln-0zqbHz4u7E4LIi08BF' },
-  'sheya':                 { youtube: 'https://youtu.be/WkpJ91SuzMQ', vk: 'https://vkvideo.ru/video-141544391_456239602?list=ln-lJenrW8Aw9WvjKOUph' },
-  'zdorovaya-spina':       { youtube: 'https://youtu.be/2SteUTw8W70', vk: 'https://vkvideo.ru/video-141544391_456239603?list=ln-3uhrATQFzcGbPm733E' },
-  'stopy':                 { youtube: 'https://youtu.be/YjBP2ZfncGQ', vk: 'https://vkvideo.ru/video-141544391_456239604?list=ln-gWUMLYyhdzuOpH97Ev' },
-  'tazobedrennyye-sustavy':{ youtube: 'https://youtu.be/EVL0Ptb80Hk', vk: 'https://vkvideo.ru/video-141544391_456239605?list=ln-lzKgZrMzUEtSTRxRxZ' },
-  'meditatsiya':           { youtube: 'https://youtu.be/n__CTTITCzI', vk: 'https://vkvideo.ru/video-141544391_456239606?list=ln-zXzqkZWLYscI6e5vdL' },
-  'itogovyy':              { youtube: 'https://youtu.be/YU806LDeie0', vk: 'https://vkvideo.ru/video-141544391_456239607?list=ln-zj1WZXmZgvtVCnakJ1' },
-};
 
 const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
   id: l.id,
@@ -30,7 +20,6 @@ const lessons = (data.lessons as any[]).map((l: any, i: number) => ({
   slug: l.slug,
   title: l.title,
   desc: l.content_md || '',
-  video: videoLinks[l.slug] ?? { youtube: '', vk: '' },
 }));
 
 // Cross-sell: если бесплатный курс пройден целиком, а «Здоровой спины» ещё нет –
@@ -314,30 +303,13 @@ const myEmail: string = me?.email || '';
             </div>
             {/* 2. Плеер */}
             <div class="ms-cab-video-wrap" data-video-wrap>
-              <video controls preload="metadata" playsinline src={mp4Url} data-lesson-id={l.id}></video>
+              <video controls preload="metadata" playsinline src={mp4Url} data-hls={`/lesson-videos/myagkiy-start/hls/${l.slug}/master.m3u8`} data-lesson-id={l.id}></video>
               <button type="button" class="ms-cab-bigplay" aria-label="Воспроизвести">
                 <svg class="icon-play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="6,3 22,12 6,21"/></svg>
               </button>
             </div>
             {/* 3. Описание */}
             <div class="ms-cab-lesson-desc-block">{l.desc}</div>
-            {/* 3. Кнопки YouTube/ВКонтакте в самом низу */}
-            {(l.video.youtube || l.video.vk) && (
-              <div class="ms-cab-platforms">
-                {l.video.youtube && (
-                  <a href={l.video.youtube} target="_blank" rel="noopener" class="ms-cab-platform ms-cab-platform--yt">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
-                    YouTube
-                  </a>
-                )}
-                {l.video.vk && (
-                  <a href={l.video.vk} target="_blank" rel="noopener" class="ms-cab-platform ms-cab-platform--vk">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
-                    ВКонтакте
-                  </a>
-                )}
-              </div>
-            )}
           </article>
         );
       })}
@@ -473,4 +445,5 @@ const myEmail: string = me?.email || '';
       v.addEventListener('ended', () => { if (!done) { done = true; sendProgress(id, true, v.duration || v.currentTime); } });
     });
   </script>
+  <VideoQuality />
 </SiteLayout>

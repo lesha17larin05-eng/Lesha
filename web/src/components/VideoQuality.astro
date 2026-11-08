@@ -1,0 +1,130 @@
+---
+// Адаптивное качество уроков (HLS), как на YouTube/Геткурсе.
+// У <video> – обычный mp4 (src, 720p: первый кадр как превью и запасной вариант)
+// и data-hls="<url master.m3u8>". Если нарезка урока есть на сервере (HEAD),
+// при первом запуске плеер переключается на HLS: сам выбирает 1080p/720p/480p
+// под скорость интернета, стартует с расчётом на хорошее качество.
+// Кнопка «Качество» – Авто или вручную; выбор запоминается в браузере.
+// Safari/iPhone играют HLS встроенно (качество выбирает система).
+// Нарезка: /var/videos/<курс>/hls/<урок>/master.m3u8; платные – через тот же auth_request.
+---
+<style is:global>
+  .vq-wrap { position: absolute; top: 12px; right: 12px; z-index: 3; font-family: 'Manrope', sans-serif; }
+  .vq-btn {
+    font: 600 13px/1 'Manrope', sans-serif; color: #fff;
+    background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 100px; padding: 7px 12px; cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+  }
+  .vq-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .vq-menu {
+    position: absolute; top: calc(100% + 6px); right: 0; min-width: 132px;
+    background: rgba(20,24,38,0.94); border-radius: 12px; padding: 6px; display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .vq-wrap.is-open .vq-menu { display: block; }
+  .vq-item {
+    display: block; width: 100%; text-align: left; font: 500 14px/1.2 'Manrope', sans-serif;
+    color: #fff; background: none; border: 0; border-radius: 8px; padding: 8px 10px; cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .vq-item.is-on { color: var(--orange, #e8652a); font-weight: 700; }
+  .vq-item:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+  @media (hover: hover) {
+    .vq-btn:hover { background: rgba(0,0,0,0.78); }
+    .vq-item:hover { background: rgba(255,255,255,0.1); }
+  }
+  .is-playing .vq-wrap:not(.is-open) .vq-btn { opacity: 0.45; }
+  .is-playing:hover .vq-btn, .vq-btn:focus-visible { opacity: 1 !important; }
+</style>
+<script>
+  import Hls from 'hls.js';
+
+  const KEY = 'video_quality'; // 'auto' | '1080' | '720' | '480'
+  const readPref = () => { try { return localStorage.getItem(KEY) || 'auto'; } catch { return 'auto'; } };
+  const savePref = (v: string) => { try { localStorage.setItem(KEY, v); } catch {} };
+  const nativeHls = (v: HTMLVideoElement) => !!v.canPlayType('application/vnd.apple.mpegurl') && !Hls.isSupported();
+
+  document.querySelectorAll<HTMLVideoElement>('video[data-hls]').forEach(async (video) => {
+    const src = video.dataset.hls || '';
+    const mp4 = (video.getAttribute('src') || '').split('#')[0];
+    const wrap = video.closest('[data-video-wrap]') as HTMLElement | null;
+    if (!src || !wrap) return;
+    try {
+      const r = await fetch(src, { method: 'HEAD', credentials: 'same-origin' });
+      if (!r.ok) return; // нарезки нет – урок играет как раньше (mp4)
+    } catch { return; }
+
+    let hls: Hls | null = null;
+    let switched = false;
+    let ui: { wrap: HTMLElement; btn: HTMLButtonElement; menu: HTMLElement } | null = null;
+
+    const label = () => {
+      if (!ui || !hls) return;
+      const pref = readPref();
+      const cur = hls.levels[hls.currentLevel]?.height;
+      ui.btn.textContent = pref === 'auto' ? `Авто${cur ? ' · ' + cur + 'p' : ''}` : pref + 'p';
+      ui.menu.querySelectorAll<HTMLButtonElement>('.vq-item').forEach((b) => b.classList.toggle('is-on', b.dataset.q === pref));
+    };
+    const apply = (pref: string) => {
+      if (!hls) return;
+      if (pref === 'auto') { hls.currentLevel = -1; hls.autoLevelCapping = -1; }
+      else {
+        const i = hls.levels.findIndex((l) => String(l.height) === pref);
+        if (i >= 0) hls.currentLevel = i;
+      }
+      label();
+    };
+    const buildMenu = () => {
+      if (!hls || ui) return;
+      const box = document.createElement('div'); box.className = 'vq-wrap';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'vq-btn';
+      btn.setAttribute('aria-haspopup', 'true'); btn.title = 'Качество видео';
+      const menu = document.createElement('div'); menu.className = 'vq-menu'; menu.setAttribute('role', 'menu');
+      const heights = [...new Set(hls.levels.map((l) => l.height))].sort((a, b) => b - a);
+      for (const q of ['auto', ...heights.map(String)]) {
+        const it = document.createElement('button'); it.type = 'button'; it.className = 'vq-item';
+        it.dataset.q = q; it.textContent = q === 'auto' ? 'Авто' : q + 'p'; it.setAttribute('role', 'menuitem');
+        it.addEventListener('click', (e) => { e.stopPropagation(); savePref(q); apply(q); box.classList.remove('is-open'); });
+        menu.appendChild(it);
+      }
+      btn.addEventListener('click', (e) => { e.stopPropagation(); box.classList.toggle('is-open'); });
+      document.addEventListener('click', () => box.classList.remove('is-open'));
+      box.append(btn, menu); wrap.appendChild(box);
+      ui = { wrap: box, btn, menu };
+      label();
+    };
+
+    const toHls = () => {
+      if (switched) return;
+      switched = true;
+      const t = video.currentTime > 0.6 ? video.currentTime : 0;
+      if (nativeHls(video)) {
+        video.src = src; if (t) video.currentTime = t; video.play().catch(() => {});
+        return;
+      }
+      if (!Hls.isSupported()) return;
+      hls = new Hls({ startLevel: -1, abrEwmaDefaultEstimate: 5_000_000, capLevelToPlayerSize: false, startPosition: t });
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        buildMenu();
+        const pref = readPref();
+        if (pref !== 'auto') apply(pref);
+        video.play().catch(() => {});
+      });
+      hls.on(Hls.Events.LEVEL_SWITCHED, label);
+      hls.on(Hls.Events.ERROR, (_e, d) => {
+        if (!d.fatal || !hls) return;
+        if (d.type === Hls.ErrorTypes.NETWORK_ERROR) { hls.startLoad(); return; }
+        if (d.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); return; }
+        // не получилось – возвращаем обычный mp4 с того же места
+        const at = video.currentTime; hls.destroy(); hls = null; ui?.wrap.remove();
+        video.src = mp4; video.currentTime = at; video.play().catch(() => {});
+      });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+    };
+    // Переключаемся при первом запуске: до этого грузится только первый кадр mp4 (лёгкий),
+    // а восемь нарезок разом страница не тянет.
+    video.addEventListener('play', () => { if (!switched) { video.pause(); toHls(); } });
+  });
+</script>

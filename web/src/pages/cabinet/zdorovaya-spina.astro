@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import SubscribeInvite from '../../components/SubscribeInvite.astro';
+import VideoQuality from '../../components/VideoQuality.astro';
 import { apiJson } from '../../lib/api';
 
 const user = (Astro.locals as any).user;
@@ -43,23 +44,6 @@ function getLessonClass(title: string): string {
   return 'zs-cab-lesson-bonus';
 }
 
-// Резервные ссылки на YouTube/VK для каждого урока. Под видео в кабинете
-// появятся две дополнительные кнопки – клик ведёт на полное видео в той
-// платформе. Удобно, если пользователь хочет посмотреть с телефона / Smart TV.
-const videoLinks: Record<string, { youtube: string; vk: string }> = {
-  'vvodnoe':                { youtube: 'https://youtu.be/cfH3IWMr48s',  vk: 'https://vkvideo.ru/video-141544391_456239642' },
-  'nedelya-1-osnovnaya':    { youtube: 'https://youtu.be/4oDpAoX1sFU',  vk: 'https://vkvideo.ru/video-141544391_456239629' },
-  'nedelya-1-korotkaya':    { youtube: 'https://youtu.be/Ykt1qDvwzk4',  vk: 'https://vkvideo.ru/video-141544391_456239611' },
-  'gryzhi-protruzii':       { youtube: 'https://youtu.be/rwC6n24e5vg',  vk: 'https://vkvideo.ru/video-141544391_456239630' },
-  'nedelya-2-osnovnaya':    { youtube: 'https://youtu.be/xkBOuzOBarw',  vk: 'https://vkvideo.ru/video-141544391_456239616' },
-  'nedelya-2-korotkaya':    { youtube: 'https://youtu.be/8icidvUi444',  vk: 'https://vkvideo.ru/video-141544391_456239615' },
-  'osanka':                 { youtube: 'https://youtu.be/vEsY21ZndNI',  vk: 'https://vkvideo.ru/video-141544391_456239637' },
-  'nedelya-3-osnovnaya':    { youtube: 'https://youtu.be/h3hoELWX5qQ',  vk: 'https://vkvideo.ru/video-141544391_456239617' },
-  'nedelya-3-korotkaya':    { youtube: 'https://youtu.be/k3n-tbTcO9E',  vk: 'https://vkvideo.ru/video-141544391_456239612' },
-  'rasslablenie':           { youtube: 'https://youtu.be/ALaNBqpkM9A',  vk: 'https://vkvideo.ru/video-141544391_456239643' },
-  'praktika-rasslableniya': { youtube: 'https://youtu.be/wcUE6y12Jkk',  vk: 'https://vkvideo.ru/video-141544391_456239644' },
-  'itog':                   { youtube: 'https://youtu.be/eKN43kjeqTg',  vk: 'https://vkvideo.ru/video-141544391_456239639' },
-};
 
 // Файлы курса отдаются через защищённый эндпоинт /api/courses/:slug/files/:name –
 // доступ только при наличии enrollment (см. api/internal/handlers/course_files.go).
@@ -435,7 +419,6 @@ const materials = [
             const lessonClass = getLessonClass(l.title);
             // #t=0.5 – браузер показывает первый кадр как превью при preload=metadata
             const mp4Url = `/lesson-videos/zdorovaya-spina/${l.slug}.mp4#t=0.5`;
-            const v = videoLinks[l.slug] ?? { youtube: '', vk: '' };
             return (
               <article class={`zs-cab-lesson ${lessonClass}`} id={l.slug}>
                 <div class="zs-cab-lesson-head">
@@ -447,27 +430,11 @@ const materials = [
                   </div>
                 </div>
                 <div class="zs-cab-video-wrap" data-video-wrap>
-                  <video controls preload="metadata" playsinline src={mp4Url} data-lesson-id={l.id}></video>
+                  <video controls preload="metadata" playsinline src={mp4Url} data-hls={`/lesson-videos/zdorovaya-spina/hls/${l.slug}/master.m3u8`} data-lesson-id={l.id}></video>
                   <button type="button" class="zs-cab-bigplay" aria-label="Воспроизвести">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="6,3 22,12 6,21"/></svg>
                   </button>
                 </div>
-                {(v.youtube || v.vk) && (
-                  <div class="zs-cab-platforms">
-                    {v.youtube && (
-                      <a href={v.youtube} target="_blank" rel="noopener" class="zs-cab-platform zs-cab-platform--yt">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
-                        YouTube
-                      </a>
-                    )}
-                    {v.vk && (
-                      <a href={v.vk} target="_blank" rel="noopener" class="zs-cab-platform zs-cab-platform--vk">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 7.2c.2-.5 0-.9-.7-.9h-2.4c-.6 0-.9.3-1 .7 0 0-1.2 2.9-2.8 4.8-.5.5-.8.7-1 .7-.2 0-.3-.2-.3-.7V7.2c0-.6-.2-.9-.7-.9H9.8c-.4 0-.6.3-.6.6 0 .6.8.7.9 2.2v3.3c0 .8-.1.9-.4.9-.8 0-2.5-2.9-3.6-6.2-.2-.6-.4-.8-1-.8H2.7c-.7 0-.8.3-.8.7 0 .6.8 3.7 3.7 7.7 2 2.7 4.7 4.2 7.2 4.2 1.5 0 1.7-.3 1.7-.9v-2.1c0-.7.1-.8.6-.8.4 0 1 .2 2.5 1.6 1.7 1.7 2 2.5 3 2.5h2.4c.7 0 1-.3.8-.9-.2-.6-1-1.5-2-2.5-.6-.7-1.4-1.4-1.6-1.8-.4-.5-.3-.7 0-1.1 0 0 2.8-3.9 3.1-5.3z"/></svg>
-                        ВКонтакте
-                      </a>
-                    )}
-                  </div>
-                )}
               </article>
             );
           })}
@@ -562,4 +529,5 @@ const materials = [
       v.addEventListener('ended', () => { if (!done) { done = true; sendProgress(id, true, v.duration || v.currentTime); } });
     });
   </script>
+  <VideoQuality />
 </SiteLayout>
