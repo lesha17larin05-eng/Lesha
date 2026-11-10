@@ -5,7 +5,7 @@
 
 import { apiJson } from './api';
 
-export type NavCourse = { href: string; title: string };
+export type NavCourse = { href: string; title: string; free: boolean };
 
 const TTL_MS = 60_000;
 let cache: { at: number; data: NavCourse[] } | null = null;
@@ -19,6 +19,8 @@ export async function getNavCourses(): Promise<NavCourse[]> {
         // Все курсы, включая бесплатный, живут на /courses/<slug>.
         href: `/courses/${c.slug}`,
         title: String(c.title || ''),
+        // бесплатный курс в меню помечается «бесплатно»
+        free: c.kind === 'free',
       }));
       cache = { at: Date.now(), data: list };
       return list;
