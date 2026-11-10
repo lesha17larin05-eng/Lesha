@@ -64,6 +64,7 @@
 .gp-price-note { font-size: 16px; color: rgba(255,255,255,.75); margin: 0 0 22px; line-height: 1.6; }
 .gp-price-seats { text-align: center; font-size: 15px; color: rgba(255,255,255,.75); margin: 14px 0 0; }
 .gp-price-refund { text-align: center; font-size: 15px; color: rgba(255,255,255,.75); margin: 6px 0 0; }
+.gp-price-wait { font-size: 15px; line-height: 1.55; color: white; background: rgba(255,255,255,.08); border-left: 3px solid var(--orange); border-radius: 10px; padding: 10px 14px; margin: -8px 0 20px; }
 
 .gp-author { display: grid; grid-template-columns: 0.8fr 1.2fr; background: var(--navy); color: white; }
 .gp-author-photo { position: relative; min-height: 480px; overflow: hidden; background: #d9dde3; }
@@ -123,6 +124,9 @@ textarea.gp-input { resize: vertical; min-height: 84px; }
 .gp-note.is-error { color: #c53030; }
 .gp-alt { text-align: center; font-size: 16px; color: var(--text-light, #6e6e6e); margin: 18px 0 0; }
 .gp-alt a { color: var(--navy); font-weight: 600; }
+.gp-ask-line { text-align: center; font-size: 16px; color: var(--text-mid, #3a3a3a); margin: 16px 0 0; }
+.gp-ask-line a { color: var(--orange); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(232,101,42,.35); transition: text-decoration-color .2s ease, color .2s ease; }
+.gp-ask-line a:hover, .gp-ask-line a:focus-visible { text-decoration-color: currentColor; color: #c9521d; }
 .gp-success { text-align: center; background: white; border: 1px solid var(--border, #ece8e0); border-radius: 18px; padding: 30px 24px; }
 .gp-success h3 { font-size: 21px; color: var(--navy); margin: 0 0 8px; }
 .gp-success p { margin: 0; color: var(--text-muted, #555); }

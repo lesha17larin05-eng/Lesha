@@ -69,6 +69,7 @@ TEST_DATABASE_URL="postgres://app:app@localhost:5432/test?sslmode=disable" go te
 | `TestAdminEndpointsRequireAdminRole`   | Юзер без `role=admin` → 403 на `/api/admin/stats`. |
 | `TestQuickSignupCreatesAndAuthenticates` | Quick-signup: 201 + `access_granted`, почта не подтверждена, но enrollment в published free выдан сразу и `/api/me` 200 (`can_fix_email:true`); в `/api/me/courses` только published free. Ссылка из письма (`verify-email`) подтверждает почту и логинит в новом браузере. |
 | `TestFixEmailAfterQuickSignup` | `fix-email`: аноним 401, кривой адрес 400, занятый 409, исправление меняет email и пароль (вход с новыми данными), после подтверждения почты – 409. |
+| `TestQuickSignupContactGoesToPeople` | Quick-signup с `contact`: Telegram-ник → запись в «Люди» (`source=myagkiy-start`, `interest=course`, `new`, согласие, следующий шаг про уроки на сегодня+3 дня по Москве, почта в заметке), в телефон профиля ник не пишется; телефон → и запись, и телефон профиля; тот же контакт (другой регистр) второй записи не создаёт; без контакта записи нет. Unit `TestLooksLikePhone` (notify_test.go) – что считается телефоном. |
 | `TestQuickSignupExistingEmailReturnsExists` | Тот же endpoint для уже существующего email → 200 `{exists:true}` без создания сессии. |
 | `TestQuickSignupRejectsBadEmail`       | Невалидный email → 400. |
 | `TestQuickSignupRequiresCSRF`          | Без `X-CSRF-Token` → 403 (защита write-эндпоинта). |

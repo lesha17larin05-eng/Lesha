@@ -18,8 +18,11 @@ func (a *App) notifyAdmin(emoji, subject, htmlBody string) {
 }
 
 // notifySignup – новая регистрация на «Мягкий старт» (только Telegram).
-func (a *App) notifySignup(name, email, source string, marketing bool) {
+func (a *App) notifySignup(name, email, contact, source string, marketing bool) {
 	msg := "🆕 Подписка на «Мягкий старт»\n" + strings.TrimSpace(name+" "+email)
+	if contact != "" {
+		msg += "\nКонтакт: " + contact + " – в «Людях» задача через 3 дня"
+	}
 	if source != "" {
 		msg += "\nОткуда: " + source
 	}

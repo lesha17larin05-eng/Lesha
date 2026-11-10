@@ -648,6 +648,62 @@ func TestFixEmailAfterQuickSignup(t *testing.T) {
 	}
 }
 
+// Telegram или телефон при записи на «Мягкий старт» → человек в «Людях»
+// с задачей через 3 дня; телефон дополнительно сохраняется в профиль,
+// Telegram-ник – нет (он не годится для Продамуса).
+func TestQuickSignupContactGoesToPeople(t *testing.T) {
+	srv, repo, _ := setup(t)
+	ctx := context.Background()
+	want := time.Now().In(time.FixedZone("MSK", 3*60*60)).AddDate(0, 0, 3).Format("2006-01-02")
+
+	r, body := newClient(srv).do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "tg@b.ru", "name": "Тг", "contact": " @tg_person ", "consent_pd": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("quick-signup: %d %s", r.StatusCode, body)
+	}
+	l, err := repo.FindLeadByContact(ctx, "@tg_person")
+	if err != nil {
+		t.Fatalf("lead not created: %v", err)
+	}
+	if l.Source != "myagkiy-start" || l.Interest != "course" || l.Status != "new" || !l.ConsentPD ||
+		l.NextAt == nil || *l.NextAt != want || !strings.Contains(l.NextStep, "уроки") || !strings.Contains(l.Note, "tg@b.ru") {
+		t.Fatalf("unexpected lead: %+v (next_at %v, want %s)", l, l.NextAt, want)
+	}
+	u, _ := repo.GetUserByEmail(ctx, "tg@b.ru")
+	if u.Phone != "" {
+		t.Fatalf("telegram nick must not be saved as phone: %q", u.Phone)
+	}
+
+	r, body = newClient(srv).do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "ph@b.ru", "name": "Тел", "contact": "+7 (999) 123-45-67", "consent_pd": true})
+	if r.StatusCode != 201 {
+		t.Fatalf("quick-signup phone: %d %s", r.StatusCode, body)
+	}
+	u, _ = repo.GetUserByEmail(ctx, "ph@b.ru")
+	if u.Phone != "+7 (999) 123-45-67" {
+		t.Fatalf("phone contact must be saved to profile: %q", u.Phone)
+	}
+	if _, err := repo.FindLeadByContact(ctx, "+7 (999) 123-45-67"); err != nil {
+		t.Fatalf("lead for phone not created: %v", err)
+	}
+
+	// Тот же контакт ещё раз – новая запись не появляется, шаг обновляется.
+	before, _ := repo.ListLeads(ctx, 100)
+	newClient(srv).do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "tg2@b.ru", "name": "Тг2", "contact": "@TG_person", "consent_pd": true})
+	after, _ := repo.ListLeads(ctx, 100)
+	if len(after) != len(before) {
+		t.Fatalf("duplicate contact must not create a second lead: %d → %d", len(before), len(after))
+	}
+
+	// Без контакта – в «Люди» никто не попадает.
+	newClient(srv).do("POST", "/api/auth/quick-signup", map[string]any{
+		"email": "none@b.ru", "name": "Без", "consent_pd": true})
+	if again, _ := repo.ListLeads(ctx, 100); len(again) != len(after) {
+		t.Fatalf("signup without contact must not create a lead")
+	}
+}
+
 func TestQuickSignupExistingEmailReturnsExists(t *testing.T) {
 	srv, _, _ := setup(t)
 	c := newClient(srv)

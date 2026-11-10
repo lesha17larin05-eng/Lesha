@@ -709,7 +709,8 @@ func (r *Repo) FindLeadByContact(ctx context.Context, contact string) (*Lead, er
 }
 
 // CreateLeadManual – запись, добавленная Алексеем вручную (согласие на ПД
-// здесь не собирается: человек сам написал в мессенджер).
+// здесь не собирается: человек сам написал в мессенджер) или сайтом от
+// имени человека (тогда in.ConsentPD = true).
 func (r *Repo) CreateLeadManual(ctx context.Context, in LeadInput) (uuid.UUID, error) {
 	if in.Status == "" {
 		in.Status = "new"
@@ -717,8 +718,8 @@ func (r *Repo) CreateLeadManual(ctx context.Context, in LeadInput) (uuid.UUID, e
 	var id uuid.UUID
 	err := r.Pool.QueryRow(ctx,
 		`INSERT INTO leads(name,contact,message,source,consent_pd,status,interest,note,next_step,next_at)
-		 VALUES($1,$2,'',$3,false,$4,$5,$6,$7,NULLIF($8,'')::date) RETURNING id`,
-		in.Name, in.Contact, in.Source, in.Status, in.Interest, in.Note, in.NextStep, derefStr(in.NextAt)).Scan(&id)
+		 VALUES($1,$2,'',$3,$9,$4,$5,$6,$7,NULLIF($8,'')::date) RETURNING id`,
+		in.Name, in.Contact, in.Source, in.Status, in.Interest, in.Note, in.NextStep, derefStr(in.NextAt), in.ConsentPD).Scan(&id)
 	return id, err
 }
 

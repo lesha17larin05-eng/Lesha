@@ -123,6 +123,9 @@ type Lead struct {
 type LeadInput struct {
 	Name, Contact, Source, Interest, Note, NextStep, Status string
 	NextAt                                                  *string
+	// ConsentPD – человек сам дал согласие на сайте (например, при записи
+	// на «Мягкий старт»); у добавленных вручную – false.
+	ConsentPD bool
 }
 
 // LeadPatch – частичная правка: nil = поле не трогаем. NextAt "" = очистить дату.

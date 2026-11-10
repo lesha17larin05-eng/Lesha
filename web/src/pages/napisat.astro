@@ -1,0 +1,100 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import '../styles/landing.css';
+// «Написать мне» – сюда ведут ссылки из шапок профилей и призыв в роликах
+// («напишите мне «план»»). Человек выбирает ситуацию – Telegram или Max
+// открываются с готовым сообщением. Отвечает Алексей лично, по скрипту
+// переписки (документ проекта «Переписка – скрипт первого разговора»).
+const TG_BASE = 'https://t.me/larin_lesha?text=';
+const MAX_BASE = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=';
+// Когда откроется набор в группу – поменять текст карточки группы.
+const GROUP_NOTE = 'Следующий поток – в январе. Добавлю вас в лист ожидания и сообщу даты первым.';
+const options = [
+  {
+    slug: 'plan', accent: true,
+    title: 'Хочу начать заниматься',
+    text: 'Пришлю 5 коротких вопросов и подскажу, с чего начать именно вам. Бесплатно.',
+    msg: 'Здравствуйте, Алексей! План. Хочу понять, с чего начать',
+  },
+  {
+    slug: 'gruppa',
+    title: 'Хочу в группу',
+    text: GROUP_NOTE,
+    msg: 'Здравствуйте, Алексей! Хочу в следующий поток группового ведения – запишите меня в лист ожидания',
+    more: { href: '/gruppa', label: 'Подробнее о группе' },
+  },
+  {
+    slug: 'vopros',
+    title: 'Есть вопрос',
+    text: 'Про тренировки, форматы работы со мной или курсы – отвечу лично.',
+    msg: 'Здравствуйте, Алексей! У меня вопрос: ',
+  },
+].map((o) => ({ ...o, tg: TG_BASE + encodeURIComponent(o.msg), max: MAX_BASE + encodeURIComponent(o.msg) }));
+---
+<SiteLayout
+  title="Написать мне – Алексей Ларин"
+  description="Напишите тренеру Алексею Ларину в Telegram или Max: подскажу, с чего начать именно вам, запишу в группу или отвечу на вопрос."
+  padTop={true}>
+
+  <section class="nw-top">
+    <div class="nw-inner">
+      <p class="gp-eyebrow"><span class="dot"></span>Написать мне</p>
+      <h1>Напишите – <em>отвечу лично</em></h1>
+      <p class="nw-sub">Выберите, с чем пишете. Сообщение уже готово – откроется Telegram или Max, останется нажать «Отправить». Обычно отвечаю в течение дня.</p>
+    </div>
+  </section>
+
+  <section class="nw-options">
+    <div class="nw-grid">
+      {options.map((o) => (
+        <div class={`nw-card${o.accent ? ' nw-accent' : ''}`} id={o.slug}>
+          <h2>{o.title}</h2>
+          <p class="nw-text">{o.text}{o.more && <> <a href={o.more.href} class="nw-more">{o.more.label}&nbsp;→</a></>}</p>
+          <p class="nw-msg"><span>Сообщение</span>{o.msg.trim()}{o.msg.endsWith(': ') ? ' …' : ''}</p>
+          <div class="nw-actions">
+            <a href={o.tg} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
+            <a href={o.max} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">или в Max</a>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <script>
+    // Нажатия на «Написать в Telegram / Max» – цель Метрики messenger_click.
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+  </script>
+
+  <style>
+    .nw-top { background: var(--navy); color: white; padding: 80px 24px 64px; }
+    .nw-inner { max-width: 1120px; margin: 0 auto; }
+    .nw-top h1 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(40px, 4.4vw, 62px); line-height: 1.08; margin: 0 0 16px; color: white; }
+    .nw-top h1 em { font-style: italic; color: #8bb8f0; }
+    .nw-sub { font-size: 19px; line-height: 1.6; color: rgba(255,255,255,.85); max-width: 700px; margin: 0; }
+
+    .nw-options { background: var(--cream, #f8f5ef); padding: 56px 24px 96px; }
+    .nw-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+    .nw-card { background: white; border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 30px 28px; display: flex; flex-direction: column; scroll-margin-top: 90px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    @media (hover: hover) { .nw-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,39,68,.08); } }
+    .nw-accent { border: 1.5px solid var(--orange); }
+    .nw-card h2 { font-size: 22px; font-weight: 600; color: var(--navy); margin: 0 0 10px; line-height: 1.3; }
+    .nw-text { font-size: 17px; line-height: 1.65; color: var(--text-muted, #555); margin: 0 0 18px; }
+    .nw-msg { font-size: 16px; line-height: 1.55; color: var(--text-mid, #3a3a3a); background: var(--cream, #f8f5ef); border-radius: 12px; padding: 12px 14px; margin: 0 0 22px; }
+    .nw-msg span { display: block; font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange); margin-bottom: 4px; }
+    .nw-actions { margin-top: auto; }
+    .nw-actions .btn-main { font-size: 17px; padding: 16px 24px; }
+    .nw-more { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(26,39,68,.3); white-space: nowrap; transition: color .2s ease, text-decoration-color .2s ease; }
+    .nw-more:hover, .nw-more:focus-visible { color: var(--orange); text-decoration-color: currentColor; }
+
+    @media (max-width: 1000px) {
+      .nw-grid { grid-template-columns: 1fr; max-width: 560px; }
+    }
+    @media (max-width: 700px) {
+      .nw-top { padding: 44px 20px 40px; }
+      .nw-sub { font-size: 17px; }
+      .nw-options { padding: 32px 16px 64px; }
+      .nw-card { padding: 24px 20px; }
+    }
+  </style>
+</SiteLayout>

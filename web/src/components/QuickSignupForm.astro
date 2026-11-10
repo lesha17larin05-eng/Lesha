@@ -1,5 +1,7 @@
 ---
-// Форма быстрой записи на «Мягкий старт»: имя + email → POST /api/auth/quick-signup,
+// Форма быстрой записи на «Мягкий старт»: имя + email (+ по желанию Telegram
+// или телефон – contact: человек попадает в «Люди» с задачей через 3 дня)
+// → POST /api/auth/quick-signup,
 // доступ и сессия выдаются сразу, редирект в /cabinet/myagkiy-start.
 // Подсказка опечаток в домене почты (gmial.com → gmail.com).
 // Рассчитана на тёмный (navy) фон. Перенесена из legacy/course.html (2026-09-30).
@@ -10,7 +12,8 @@
         <input type="text" name="name" class="form-input" placeholder="Ваше имя *" autocomplete="name" required>
         <input type="email" name="email" class="form-input" placeholder="Email *" autocomplete="email" required>
       </div>
-      <input type="tel" name="phone" class="form-input" placeholder="Телефон (по желанию)" autocomplete="tel" style="width:100%; margin-top:8px;">
+      <input type="text" name="contact" class="form-input" placeholder="Telegram или телефон – по желанию" autocomplete="tel" style="width:100%; margin-top:8px;">
+      <p class="qs-contact-hint">Если появятся вопросы по урокам, отвечу лично.</p>
 
       <label class="qs-consent">
         <input type="checkbox" name="consent_pd" id="quick-consent-pd" required>
@@ -44,6 +47,7 @@
   }
   .btn-cta-full:hover, .btn-cta-full:focus-visible { background: var(--orange-warm); transform: translateY(-2px); outline: none; }
   .btn-cta-full:disabled { opacity: 0.7; cursor: default; transform: none; }
+  .qs-contact-hint { font-size: 15px; line-height: 1.5; color: rgba(255,255,255,0.78); margin: 8px 2px 0; text-align: left; }
   .form-note { font-size: 15px; color: rgba(255,255,255,0.78); margin-top: 14px; text-align: center; }
   .qs-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; font-size: 15px; line-height: 1.5; color: rgba(255,255,255,0.9); cursor: pointer; text-align: left; }
   .qs-consent input { margin-top: 2px; flex-shrink: 0; accent-color: var(--orange); width: 16px; height: 16px; cursor: pointer; }
@@ -137,7 +141,7 @@
         const fd = new FormData(form);
         const email = String(fd.get('email') || '').trim().toLowerCase();
         const name = String(fd.get('name') || '').trim();
-        const phone = String(fd.get('phone') || '').trim();
+        const contact = String(fd.get('contact') || '').trim();
         const consentPd = !!fd.get('consent_pd');
         const consentMarketing = !!fd.get('consent_marketing');
         if (!name) {
@@ -167,7 +171,7 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, name, phone, consent_pd: true, consent_marketing: consentMarketing, homepage: String(fd.get('homepage') || '') }),
+            body: JSON.stringify({ email, name, contact, consent_pd: true, consent_marketing: consentMarketing, homepage: String(fd.get('homepage') || '') }),
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.created) {

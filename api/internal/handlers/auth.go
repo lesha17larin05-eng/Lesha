@@ -65,6 +65,9 @@ func (a *App) Register(w http.ResponseWriter, r *http.Request) {
 
 type quickSignupReq struct {
 	Email, Name, Phone string
+	// Contact – Telegram или телефон для Max (по желанию): человек попадает
+	// в «Люди» с задачей через 3 дня спросить, как идут уроки.
+	Contact string
 	ConsentPD          bool `json:"consent_pd"`
 	ConsentMarketing   bool `json:"consent_marketing"`
 }
@@ -113,8 +116,18 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 	// 152-ФЗ: сохраняем факт согласий (consent_pd обязательное, marketing – опциональное).
 	_ = a.Repo.SaveConsent(r.Context(), uid, true, in.ConsentMarketing)
 	a.tagUser(r.Context(), r, uid)
+	in.Contact = strings.TrimSpace(in.Contact)
+	if len(in.Contact) > 200 {
+		in.Contact = in.Contact[:200]
+	}
+	if in.Phone == "" && looksLikePhone(in.Contact) {
+		in.Phone = in.Contact // телефон пригодится и для Продамуса
+	}
 	if in.Phone != "" {
 		_ = a.Repo.SetUserPhone(r.Context(), uid, in.Phone)
+	}
+	if in.Contact != "" {
+		a.addSignupContact(r.Context(), in.Name, in.Email, in.Contact)
 	}
 	// Доступ открываем сразу: выдаём бесплатные курсы и логиним. Подтверждение
 	// почты больше не блокирует уроки – письмо легко теряется в спаме, и
@@ -126,7 +139,7 @@ func (a *App) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	link := a.sendFreeAccessEmail(r.Context(), uid, in.Email, password)
-	a.notifySignup(in.Name, in.Email, trafficSource(r), in.ConsentMarketing)
+	a.notifySignup(in.Name, in.Email, in.Contact, trafficSource(r), in.ConsentMarketing)
 	resp := map[string]any{"created": true, "id": uid, "email": in.Email, "access_granted": true}
 	if a.Cfg.AppEnv != "production" {
 		resp["password_dev"] = password

@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"html"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -29,7 +31,7 @@ type leadReq struct {
 
 // consultation остаётся в списке: страница закрыта и редиректит на /start,
 // но старые ссылки и закладки могут прислать этот источник.
-var leadSources = map[string]bool{"coaching": true, "start": true, "consultation": true, "gruppa": true, "personal": true}
+var leadSources = map[string]bool{"coaching": true, "start": true, "consultation": true, "gruppa": true, "personal": true, "myagkiy-start": true}
 
 func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 	var in leadReq
@@ -67,6 +69,7 @@ func (a *App) CreateLead(w http.ResponseWriter, r *http.Request) {
 		"gruppa":       "Групповое ведение",
 		"personal":     "Персональные тренировки",
 		"consultation": "Консультация (старая страница)",
+		"myagkiy-start": "Мягкий старт",
 		"other":        "Сайт",
 	}[in.Source]
 	a.notifyAdmin("📩 ", "Новая заявка: "+sourceTitle,
@@ -357,4 +360,45 @@ func (a *App) AdminLeadsCSV(w http.ResponseWriter, r *http.Request) {
 			l.NextStep, str(l.NextAt), l.Note, l.Message})
 	}
 	cw.Flush()
+}
+
+// signupContactDays – через сколько дней после записи на «Мягкий старт»
+// спросить человека, как идут уроки (задача в «Людях»).
+const signupContactDays = 3
+
+// looksLikePhone – строка похожа на номер телефона: только цифры, «+»,
+// скобки, дефисы и пробелы, цифр 10–15. Telegram-ник (@name) – не телефон.
+func looksLikePhone(s string) bool {
+	digits := 0
+	for _, r := range s {
+		switch {
+		case r >= '0' && r <= '9':
+			digits++
+		case strings.ContainsRune("+-() ", r):
+		default:
+			return false
+		}
+	}
+	return digits >= 10 && digits <= 15
+}
+
+// addSignupContact – человек оставил Telegram или телефон при записи на
+// «Мягкий старт»: кладём его в «Люди» со следующим шагом «спросить, как идут
+// уроки» через signupContactDays дней. Уже есть такой контакт – обновляем шаг.
+func (a *App) addSignupContact(ctx context.Context, name, email, contact string) {
+	next := time.Now().In(moscow).AddDate(0, 0, signupContactDays).Format("2006-01-02")
+	step := "Спросить, как идут уроки «Мягкого старта»"
+	if l, err := a.Repo.FindLeadByContact(ctx, contact); err == nil {
+		if err := a.Repo.UpdateLead(ctx, l.ID, db.LeadPatch{NextStep: &step, NextAt: &next}); err != nil {
+			slog.Warn("signup contact: update lead", "err", err)
+		}
+		return
+	}
+	if name == "" {
+		name = email
+	}
+	if _, err := a.Repo.CreateLeadManual(ctx, db.LeadInput{Name: name, Contact: contact, Source: "myagkiy-start",
+		Interest: "course", Note: "Почта: " + email, NextStep: step, NextAt: &next, Status: "new", ConsentPD: true}); err != nil {
+		slog.Warn("signup contact: create lead", "err", err)
+	}
 }

@@ -7,8 +7,21 @@ import '../styles/landing.css';
 // контакт, цель); Алексей пишет человеку и присылает ссылку /gruppa#oplata,
 // по ней открывается скрытый блок оплаты (POST /api/checkout/service,
 // service=gruppa). После оплаты – письмо с анкетой и замерами (anketa ?k=gruppa).
-const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
-const TG_JOIN = 'https://t.me/larin_lesha?text=' + encodeURIComponent('Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: ');
+// OPEN – идёт набор в поток (кнопки «записаться», даты в таймлайне).
+// false – между потоками: лист ожидания следующего потока (NEXT), даты не
+// показываем, блок оплаты по-прежнему открывается только по ссылке #oplata.
+const OPEN = false;
+const NEXT = 'в январе';
+const HELLO = OPEN
+  ? 'Здравствуйте, Алексей! Хочу в групповое ведение. Моя цель: '
+  : 'Здравствуйте, Алексей! Хочу в следующий поток группового ведения – запишите меня в лист ожидания';
+const ASK = 'Здравствуйте, Алексей! Хочу узнать про групповое ведение. У меня вопрос: ';
+const MAX_BASE = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=';
+const TG_BASE = 'https://t.me/larin_lesha?text=';
+const MAX = MAX_BASE + encodeURIComponent(HELLO);
+const TG_JOIN = TG_BASE + encodeURIComponent(HELLO);
+const MAX_ASK = MAX_BASE + encodeURIComponent(ASK);
+const TG_ASK = TG_BASE + encodeURIComponent(ASK);
 // Свободные места – по оплаченным заказам (GET /api/services/gruppa/seats).
 let seats = 7, left = 7;
 try {
@@ -19,11 +32,17 @@ const plural = (n: number, one: string, few: string, many: string) => {
   const m10 = n % 10, m100 = n % 100;
   return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
 };
-const seatsText = left <= 0
+const seatsText = !OPEN
+  ? `Первый поток набран · следующий – ${NEXT}`
+  : left <= 0
   ? 'Места закончились – напишите, добавлю в лист ожидания'
   : left === seats
     ? `${seats} мест · набор до 6 ноября`
     : `Осталось ${left} ${plural(left, 'место', 'места', 'мест')} из ${seats} · набор до 6 ноября`;
+// Таймлайн 8 недель: в наборе – даты потока, между потоками – номера недель.
+const tl = OPEN
+  ? ['7 – 29 ноября', '30 ноября – 6 декабря', '7 – 27 декабря', '28 декабря – 3 января']
+  : ['Недели 1–3', 'Неделя 4', 'Недели 5–7', 'Неделя 8'];
 const reviews = [
   { v: 50, name: 'Екатерина', text: 'Оформились мышцы, укрепились суставы, выросла выносливость' },
   { v: 41, name: 'Ксения', text: '−11 кг за 3 месяца и совсем другое внутреннее состояние' },
@@ -48,14 +67,14 @@ const reviews = [
 ---
 <SiteLayout
   title="Групповое ведение – Алексей Ларин"
-  description="8 недель тренировок дома в группе до 7 человек: свой план, разбор каждую субботу и поддержка в чате. Старт 7 ноября, 9 900 ₽."
+  description={`8 недель тренировок дома в группе до 7 человек: свой план, разбор каждую субботу и поддержка в чате. ${OPEN ? 'Старт 7 ноября' : `Следующий поток – ${NEXT}`}, 9 900 ₽.`}
   active="gruppa">
 
   <!-- ПЕРВЫЙ ЭКРАН -->
   <section class="gp-hero">
     <div class="gp-hero-text">
-      <p class="gp-eyebrow"><span class="dot"></span>Групповое ведение · старт 7 ноября</p>
-      <h1>Войти в Новый год <em>сильнее</em></h1>
+      <p class="gp-eyebrow"><span class="dot"></span>Групповое ведение · {OPEN ? 'старт 7 ноября' : `следующий поток – ${NEXT}`}</p>
+      {OPEN ? <h1>Войти в Новый год <em>сильнее</em></h1> : <h1>Начать год <em>сильнее</em></h1>}
       <p class="gp-sub">8 недель тренировок дома: я составлю план под вас, по субботам разберём неделю на общем созвоне, а в чате я на связи</p>
       <div class="gp-params">
         <div><b>8</b><span>недель</span></div>
@@ -63,7 +82,7 @@ const reviews = [
         <div><b>9 900 ₽</b><span>за всё время · можно&nbsp;частями</span></div>
       </div>
       <div class="gp-cta">
-        <a href="#zapis" class="btn-main">Записаться в группу ↓</a>
+        <a href="#zapis" class="btn-main">{OPEN ? 'Записаться в группу ↓' : 'Записаться в лист ожидания ↓'}</a>
       </div>
       <p class="gp-safe">{seatsText}</p>
     </div>
@@ -160,24 +179,24 @@ const reviews = [
       <p class="gp-desc">Три недели тренируемся, неделю восстанавливаемся. Отдых – часть системы: в это время тело и становится сильнее.</p>
       <div class="gp-timeline">
         <div class="gp-tl">
-          <p class="gp-tl-date">7 – 29 ноября</p>
+          <p class="gp-tl-date">{tl[0]}</p>
           <h3>Цикл 1. Осваиваемся</h3>
-          <p>7 ноября – первый созвон: знакомимся, и каждый получает свой план. Дальше учимся технике и находим ритм.</p>
+          <p>{OPEN ? '7 ноября – первый созвон' : 'Первый созвон'}: знакомимся, и каждый получает свой план. Дальше учимся технике и находим ритм.</p>
         </div>
         <div class="gp-tl gp-tl-rest">
-          <p class="gp-tl-date">30 ноября – 6 декабря</p>
+          <p class="gp-tl-date">{tl[1]}</p>
           <h3>Неделя отдыха</h3>
           <p>Восстанавливаемся и подводим итоги первого цикла.</p>
         </div>
         <div class="gp-tl">
-          <p class="gp-tl-date">7 – 27 декабря</p>
+          <p class="gp-tl-date">{tl[2]}</p>
           <h3>Цикл 2. Добавляем</h3>
           <p>Упражнения сложнее, нагрузка выше – вы уже готовы.</p>
         </div>
         <div class="gp-tl gp-tl-rest">
-          <p class="gp-tl-date">28 декабря – 3 января</p>
+          <p class="gp-tl-date">{tl[3]}</p>
           <h3>Финал</h3>
-          <p>Повторяем замеры, сравниваем с началом – и встречаем Новый год с результатом.</p>
+          <p>{OPEN ? 'Повторяем замеры, сравниваем с началом – и встречаем Новый год с результатом.' : 'Повторяем замеры и сравниваем с началом – результат видно в цифрах.'}</p>
         </div>
       </div>
     </div>
@@ -206,7 +225,8 @@ const reviews = [
         </ul>
         <div class="gp-price-sum">9 900 ₽</div>
         <p class="gp-price-note">за 8 недель – около 1 240 ₽ в неделю<br>цена первого потока</p>
-        <a href="#zapis" class="btn-main btn-full">Записаться</a>
+        {!OPEN && <p class="gp-price-wait">Цену следующего потока сообщу вместе с датами. Тем, кто в листе ожидания, – цена первого потока, даже если для остальных она вырастет</p>}
+        <a href="#zapis" class="btn-main btn-full">{OPEN ? 'Записаться' : 'В лист ожидания'}</a>
         <p class="gp-price-seats">{seatsText}</p>
         <p class="gp-price-refund">Не подойдёт после первой недели – верну деньги полностью</p>
         <p class="gp-price-ways">Оплатить можно как удобно – картой, по СБП, частями или в рассрочку. Например, 4 платежа по 2&nbsp;475&nbsp;₽ через «Долями». Оптимальный для себя способ выберете на странице оплаты.</p>
@@ -274,7 +294,9 @@ const reviews = [
       <details><summary>Сколько времени занимает тренировка?</summary><p>Обычно 30–40 минут – зависит от вашего плана. На тяжёлые недели есть короткий план-минимум.</p></details>
       <details><summary>А если не смогу прийти на созвон?</summary><p>Будет запись. Отчёт и вопросы – в чате, я отвечу.</p></details>
       <details><summary>Я живу не в Москве</summary><p>Всё проходит онлайн. Созвон – по субботам в 10:10 по московскому времени.</p></details>
-      <details><summary>Как записаться и оплатить?</summary><p>Напишите мне в Telegram или Max. Я отвечу на вопросы, забронирую место и пришлю ссылку на оплату. После оплаты придёт короткая анкета – по ней я соберу ваш первый план.</p></details>
+      {OPEN
+        ? <details><summary>Как записаться и оплатить?</summary><p>Напишите мне в Telegram или Max. Я отвечу на вопросы, забронирую место и пришлю ссылку на оплату. После оплаты придёт короткая анкета – по ней я соберу ваш первый план.</p></details>
+        : <details><summary>Как записаться?</summary><p>Напишите мне в Telegram или Max – добавлю вас в лист ожидания. Когда появятся даты, сообщу вам первым: отвечу на вопросы, забронирую место и пришлю ссылку на оплату.</p></details>}
       <details><summary>Можно оплатить частями?</summary><p>Да. На странице оплаты можно выбрать «Долями» – 4 платежа по 2&nbsp;475&nbsp;₽, Сплит или рассрочку. Выбирайте, как удобно.</p></details>
       <details><summary>Можно вернуть деньги?</summary><p>Да. Если после первой недели поймёте, что формат не ваш, – верну деньги полностью.</p></details>
     </div>
@@ -283,6 +305,7 @@ const reviews = [
   <!-- ЗАПИСЬ -->
   <section class="gp-section gp-cream" id="zapis">
     <div class="gp-inner gp-form-wrap">
+{OPEN ? <>
       <p class="gp-label gp-center">Запись</p>
       <h2 class="gp-center">Напишите – <em>забронирую место</em></h2>
       <ol class="gp-how">
@@ -290,13 +313,23 @@ const reviews = [
         <li><b>Отвечу на вопросы</b>, забронирую место и пришлю ссылку на оплату</li>
         <li><b>После оплаты</b> придёт короткая анкета – по ней я соберу ваш первый план, а 7 ноября – первый созвон</li>
       </ol>
-      <a href={TG_JOIN} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
-      <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Нет Telegram – написать в Max</a>
-      <p class="gp-alt">Обычно отвечаю в течение дня · можно оплатить частями · {seatsText}</p>
+      </> : <>
+      <p class="gp-label gp-center">Лист ожидания</p>
+      <h2 class="gp-center">Следующий поток – <em>{NEXT}</em></h2>
+      <ol class="gp-how">
+        <li><b>Нажмите кнопку ниже</b> – откроется Telegram (или Max) с готовым сообщением. Останется его отправить, и я добавлю вас в лист ожидания</li>
+        <li><b>Когда появятся даты</b>, сообщу вам первым – до того, как открою запись для всех. Для листа ожидания – цена первого потока</li>
+        <li><b>Отвечу на вопросы</b>, забронирую место и пришлю ссылку на оплату. Это ни к чему не обязывает</li>
+      </ol>
+      </>}
+      <a href={TG_JOIN} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">{OPEN ? 'Написать в Telegram' : 'Записаться в лист ожидания'}</a>
+      <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">{OPEN ? 'Нет Telegram – написать в Max' : 'Нет Telegram – записаться через Max'}</a>
+      {!OPEN && <p class="gp-ask-line">Есть вопросы? Написать в <a href={TG_ASK} target="_blank" rel="noopener" data-goal="messenger_click">Telegram</a> или <a href={MAX_ASK} target="_blank" rel="noopener" data-goal="messenger_click">Max</a></p>}
+      <p class="gp-alt">{OPEN ? <>Обычно отвечаю в течение дня · можно оплатить частями · {seatsText}</> : 'Обычно отвечаю в течение дня'}</p>
 
       <details class="gp-leave">
-        <summary>Нет мессенджеров? <span>Оставьте контакт</span> – я напишу сам</summary>
-        <form id="lead-form" class="gp-form" data-source="gruppa" novalidate>
+        <summary>Нет мессенджеров? <span>Оставьте контакт</span> – {OPEN ? 'я напишу сам' : 'добавлю в лист ожидания и напишу сам'}</summary>
+        <form id="lead-form" class="gp-form" data-source="gruppa" data-open={OPEN ? '1' : '0'} novalidate>
           <input type="text" name="homepage" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <div class="gp-row">
             <input class="gp-input" name="name" placeholder="Ваше имя" autocomplete="name" required />
@@ -377,7 +410,9 @@ const reviews = [
           (window as any).reachGoal?.('lead_submit');
           const box = document.createElement('div');
           box.className = 'gp-success';
-          box.innerHTML = '<h3>Получил, спасибо!</h3><p>Напишу вам в течение дня, отвечу на вопросы и пришлю ссылку на оплату.</p>';
+          box.innerHTML = lead.dataset.open === '1'
+            ? '<h3>Получил, спасибо!</h3><p>Напишу вам в течение дня, отвечу на вопросы и пришлю ссылку на оплату.</p>'
+            : '<h3>Получил, спасибо!</h3><p>Добавил вас в лист ожидания. Напишу, когда появятся даты следующего потока.</p>';
           lead.replaceWith(box);
           return;
         }

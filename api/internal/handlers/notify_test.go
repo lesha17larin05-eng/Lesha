@@ -32,3 +32,14 @@ func TestMailMonitor(t *testing.T) {
 		t.Fatal("recovery only once")
 	}
 }
+
+func TestLooksLikePhone(t *testing.T) {
+	for s, want := range map[string]bool{
+		"+7 (999) 123-45-67": true, "89991234567": true, "@nick": false, "t.me/nick": false,
+		"12345": false, "": false, "+7 999 123 45 67 доб": false,
+	} {
+		if got := looksLikePhone(s); got != want {
+			t.Errorf("looksLikePhone(%q) = %v, want %v", s, got, want)
+		}
+	}
+}
