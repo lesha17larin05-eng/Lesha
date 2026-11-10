@@ -1,62 +1,45 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import '../styles/landing.css';
-// «Написать мне» (/plan, до 10.11.2026 – /napisat) – сюда ведут ссылки из шапок
-// профилей и призыв в роликах («напишите мне «план»»). Человек выбирает ситуацию – Telegram или Max
-// открываются с готовым сообщением. Отвечает Алексей лично, по скрипту
-// переписки (документ проекта «Переписка – скрипт первого разговора»).
+// «Тренировки со мной» (/plan; до 10.11.2026 – /napisat). Сюда ведёт первая
+// ссылка в описании YouTube-видео («Тренировки со мной») и ссылки в шапках
+// профилей. Одно главное действие: Telegram или Max с готовым сообщением
+// (в нём слово «План» – Алексей отвечает по документу проекта «Переписка –
+// скрипт первого разговора»). Группа и вопрос – мелко внизу.
 const TG_BASE = 'https://t.me/larin_lesha?text=';
 const MAX_BASE = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=';
-// Когда откроется набор в группу – поменять текст карточки группы.
-const GROUP_NOTE = 'Следующий поток – в январе. Добавлю вас в лист ожидания и сообщу даты первым.';
-const options = [
-  {
-    slug: 'plan', accent: true,
-    title: 'Хочу начать заниматься',
-    text: 'Пришлю 5 коротких вопросов и подскажу, с чего начать именно вам. Бесплатно.',
-    msg: 'Здравствуйте, Алексей! План. Хочу понять, с чего начать',
-  },
-  {
-    slug: 'gruppa',
-    title: 'Хочу в группу',
-    text: GROUP_NOTE,
-    msg: 'Здравствуйте, Алексей! Хочу в следующий поток группового ведения – запишите меня в лист ожидания',
-    more: { href: '/gruppa', label: 'Подробнее о группе' },
-  },
-  {
-    slug: 'vopros',
-    title: 'Есть вопрос',
-    text: 'Про тренировки, форматы работы со мной или курсы – отвечу лично.',
-    msg: 'Здравствуйте, Алексей! У меня вопрос: ',
-  },
-].map((o) => ({ ...o, tg: TG_BASE + encodeURIComponent(o.msg), max: MAX_BASE + encodeURIComponent(o.msg) }));
+const link = (msg: string) => ({ tg: TG_BASE + encodeURIComponent(msg), max: MAX_BASE + encodeURIComponent(msg) });
+
+const MAIN_MSG = 'Здравствуйте, Алексей! План. Хочу тренироваться с вами – подскажите, с чего начать';
+const main = link(MAIN_MSG);
+// Когда откроется набор в группу – поменять подпись.
+const GROUP_NOTE = 'следующий поток – в январе, запишу в лист ожидания';
+const group = link('Здравствуйте, Алексей! Хочу в следующий поток группового ведения – запишите меня в лист ожидания');
+const ask = link('Здравствуйте, Алексей! У меня вопрос: ');
 ---
 <SiteLayout
-  title="Написать мне – Алексей Ларин"
-  description="Напишите тренеру Алексею Ларину в Telegram или Max: подскажу, с чего начать именно вам, запишу в группу или отвечу на вопрос."
+  title="Тренировки со мной – Алексей Ларин"
+  description="Напишите тренеру Алексею Ларину в Telegram или Max: подберу план под ваш уровень и буду рядом на каждом шаге."
   padTop={true}>
 
-  <section class="nw-top">
+  <section class="nw-top" id="plan">
     <div class="nw-inner">
-      <p class="gp-eyebrow"><span class="dot"></span>Написать мне</p>
-      <h1>Напишите – <em>отвечу лично</em></h1>
-      <p class="nw-sub">Нажмите на подходящий вариант – откроется Telegram или Max с готовым сообщением. Останется его отправить. Обычно отвечаю в течение дня.</p>
+      <p class="gp-eyebrow"><span class="dot"></span>Алексей Ларин</p>
+      <h1>Тренировки <em>со&nbsp;мной</em></h1>
+      <p class="nw-sub">Напишите мне – подберу план под ваш уровень и буду рядом на каждом шаге. Сообщение уже готово: откроется Telegram или Max, останется его отправить.</p>
+      <div class="nw-main">
+        <a href={main.tg} class="btn-main btn-full nw-btn" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
+        <a href={main.max} class="nw-max" target="_blank" rel="noopener" data-goal="messenger_click">или в Max</a>
+        <p class="nw-msg"><span>Сообщение</span>{MAIN_MSG}</p>
+        <p class="nw-note">Обычно отвечаю в течение дня</p>
+      </div>
     </div>
   </section>
 
-  <section class="nw-options">
-    <div class="nw-grid">
-      {options.map((o) => (
-        <div class={`nw-card${o.accent ? ' nw-accent' : ''}`} id={o.slug}>
-          <h2>{o.title}</h2>
-          <p class="nw-text">{o.text}{o.more && <> <a href={o.more.href} class="nw-more">{o.more.label}&nbsp;→</a></>}</p>
-          <p class="nw-msg"><span>Сообщение</span>{o.msg.trim()}{o.msg.endsWith(': ') ? ' …' : ''}</p>
-          <div class="nw-actions">
-            <a href={o.tg} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
-            <a href={o.max} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">или в Max</a>
-          </div>
-        </div>
-      ))}
+  <section class="nw-other">
+    <div class="nw-other-inner">
+      <p id="gruppa"><b>Хочу в группу</b> – {GROUP_NOTE}: <a href={group.tg} target="_blank" rel="noopener" data-goal="messenger_click">Telegram</a> · <a href={group.max} target="_blank" rel="noopener" data-goal="messenger_click">Max</a> · <a href="/gruppa">о&nbsp;группе</a></p>
+      <p id="vopros"><b>Есть вопрос</b> – отвечу лично: <a href={ask.tg} target="_blank" rel="noopener" data-goal="messenger_click">Telegram</a> · <a href={ask.max} target="_blank" rel="noopener" data-goal="messenger_click">Max</a></p>
     </div>
   </section>
 
@@ -67,34 +50,31 @@ const options = [
   </script>
 
   <style>
-    .nw-top { background: var(--navy); color: white; padding: 80px 24px 64px; }
-    .nw-inner { max-width: 1120px; margin: 0 auto; }
-    .nw-top h1 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(40px, 4.4vw, 62px); line-height: 1.08; margin: 0 0 16px; color: white; }
+    .nw-top { background: var(--navy); color: white; padding: 80px 24px 72px; }
+    .nw-inner { max-width: 640px; margin: 0 auto; text-align: center; }
+    .nw-top .gp-eyebrow { justify-content: center; }
+    .nw-top h1 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(44px, 5vw, 66px); line-height: 1.06; margin: 0 0 16px; color: white; }
     .nw-top h1 em { font-style: italic; color: #8bb8f0; }
-    .nw-sub { font-size: 19px; line-height: 1.6; color: rgba(255,255,255,.85); max-width: 700px; margin: 0; }
+    .nw-sub { font-size: 19px; line-height: 1.6; color: rgba(255,255,255,.88); margin: 0 auto 30px; max-width: 560px; }
+    .nw-main { max-width: 440px; margin: 0 auto; }
+    .nw-btn { font-size: 19px; padding: 19px 28px; }
+    .nw-max { display: inline-block; margin: 14px 0 0; font-size: 17px; color: white; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(255,255,255,.4); transition: text-decoration-color .2s ease, color .2s ease; }
+    .nw-max:hover, .nw-max:focus-visible { text-decoration-color: currentColor; color: #f3a37c; }
+    .nw-msg { font-size: 16px; line-height: 1.55; color: rgba(255,255,255,.85); background: rgba(255,255,255,.07); border-radius: 12px; padding: 12px 16px; margin: 24px 0 0; text-align: left; }
+    .nw-msg span { display: block; font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #f3a37c; margin-bottom: 4px; }
+    .nw-note { font-size: 15px; color: rgba(255,255,255,.65); margin: 14px 0 0; }
 
-    .nw-options { background: var(--cream, #f8f5ef); padding: 56px 24px 96px; }
-    .nw-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
-    .nw-card { background: white; border: 1px solid var(--border, #ece8e0); border-radius: 20px; padding: 30px 28px; display: flex; flex-direction: column; scroll-margin-top: 90px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-    @media (hover: hover) { .nw-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(26,39,68,.08); } }
-    .nw-accent { border: 1.5px solid var(--orange); }
-    .nw-card h2 { font-size: 22px; font-weight: 600; color: var(--navy); margin: 0 0 10px; line-height: 1.3; }
-    .nw-text { font-size: 17px; line-height: 1.65; color: var(--text-muted, #555); margin: 0 0 18px; }
-    .nw-msg { font-size: 16px; line-height: 1.55; color: var(--text-mid, #3a3a3a); background: var(--cream, #f8f5ef); border-radius: 12px; padding: 12px 14px; margin: 0 0 22px; }
-    .nw-msg span { display: block; font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange); margin-bottom: 4px; }
-    .nw-actions { margin-top: auto; }
-    .nw-actions .btn-main { font-size: 17px; padding: 16px 24px; }
-    .nw-more { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(26,39,68,.3); white-space: nowrap; transition: color .2s ease, text-decoration-color .2s ease; }
-    .nw-more:hover, .nw-more:focus-visible { color: var(--orange); text-decoration-color: currentColor; }
+    .nw-other { background: var(--cream, #f8f5ef); padding: 36px 24px 72px; }
+    .nw-other-inner { max-width: 640px; margin: 0 auto; text-align: center; }
+    .nw-other p { font-size: 16px; line-height: 1.6; color: var(--text-muted, #555); margin: 0 0 10px; scroll-margin-top: 90px; }
+    .nw-other b { color: var(--navy); font-weight: 600; }
+    .nw-other a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(26,39,68,.3); transition: color .2s ease, text-decoration-color .2s ease; }
+    .nw-other a:hover, .nw-other a:focus-visible { color: var(--orange); text-decoration-color: currentColor; }
 
-    @media (max-width: 1000px) {
-      .nw-grid { grid-template-columns: 1fr; max-width: 560px; }
-    }
     @media (max-width: 700px) {
-      .nw-top { padding: 44px 20px 40px; }
+      .nw-top { padding: 44px 20px 52px; }
       .nw-sub { font-size: 17px; }
-      .nw-options { padding: 32px 16px 64px; }
-      .nw-card { padding: 24px 20px; }
+      .nw-other { padding: 28px 20px 56px; }
     }
   </style>
 </SiteLayout>
