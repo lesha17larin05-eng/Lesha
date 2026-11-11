@@ -3,8 +3,7 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import '../styles/landing.css';
 // Тренировки для сотрудников (/office, с 11.11.2026): занятия в офисе или
 // онлайн, три программы, первое занятие бесплатно. Запись – личные сообщения
-// (Telegram / Max) или почта. В меню нет: ссылку Алексей отправляет сам
-// (знакомым в компаниях, ивент-агентству).
+// (Telegram / Max) или почта. В меню – «Тренировки со мной» → «Для компаний».
 const HELLO = 'Здравствуйте, Алексей! Хотим занятия для сотрудников. Давайте обсудим';
 const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent(HELLO);
 const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent(HELLO);
@@ -12,7 +11,8 @@ const MAIL = 'lesha@leshalarin.ru';
 ---
 <SiteLayout
   title="Тренировки для сотрудников в офисе или онлайн – Алексей Ларин"
-  description="Занятия для сотрудников в вашем офисе или онлайн: здоровая спина, общая тренировка, растяжка и расслабление. Первое занятие бесплатно.">
+  description="Занятия для сотрудников в вашем офисе или онлайн: здоровая спина, общая тренировка, растяжка и расслабление. Первое занятие бесплатно."
+  active="office">
 
   <!-- ПЕРВЫЙ ЭКРАН -->
   <section class="gp-hero">

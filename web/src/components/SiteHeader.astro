@@ -9,10 +9,11 @@ const trainLinks = [
   { href: '/gruppa', title: 'Групповое ведение' },
   { href: '/coaching', title: 'Личное ведение' },
   { href: '/personal', title: 'Персональные тренировки' },
+  { href: '/office', title: 'Для компаний' },
 ];
 type NavLink = { href: string; key: string; label: string; keys?: string[]; children?: { href: string; title: string }[]; all?: { href: string; label: string } };
 const links: NavLink[] = [
-  { href: '/#so-mnoy', key: 'train', keys: ['train', 'home', 'personal', 'gruppa'], label: 'Тренировки со мной', children: trainLinks },
+  { href: '/#so-mnoy', key: 'train', keys: ['train', 'home', 'personal', 'gruppa', 'office'], label: 'Тренировки со мной', children: trainLinks },
   { href: '/courses', key: 'courses', label: 'Курсы', children: navCourses },
   { href: '/blog', key: 'blog', label: 'Статьи' },
   { href: '/results', key: 'results', label: 'Отзывы' },
