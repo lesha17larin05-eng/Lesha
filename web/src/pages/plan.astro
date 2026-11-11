@@ -1,45 +1,44 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import '../styles/landing.css';
-// «Тренировки со мной» (/plan; до 10.11.2026 – /napisat). Сюда ведёт первая
-// ссылка в описании YouTube-видео («Тренировки со мной») и ссылки в шапках
-// профилей. Одно главное действие: Telegram или Max с готовым сообщением
-// (в нём слово «План» – Алексей отвечает по документу проекта «Переписка –
-// скрипт первого разговора»). Группа и вопрос – мелко внизу.
+// «Написать мне» (/plan; до 10.11.2026 – /napisat). Сюда ведёт первая
+// ссылка в описании YouTube-видео и ссылки в шапках профилей: в роликах
+// звучит «напишите мне – в личку или по ссылке». Одно действие: Telegram
+// или Max с готовым сообщением (11.11.2026 – без слова «План», без блока
+// группы). Внизу мелко – ссылка для вопросов и предложений.
 const TG_BASE = 'https://t.me/larin_lesha?text=';
 const MAX_BASE = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=';
 const link = (msg: string) => ({ tg: TG_BASE + encodeURIComponent(msg), max: MAX_BASE + encodeURIComponent(msg) });
 
-const MAIN_MSG = 'Здравствуйте, Алексей! План. Хочу тренироваться с вами – подскажите, с чего начать';
+const MAIN_MSG = 'Здравствуйте, Алексей! Хочу заниматься с вами. С чего начать?';
 const main = link(MAIN_MSG);
-// Когда откроется набор в группу – поменять подпись.
-const GROUP_NOTE = 'следующий поток – в январе, запишу в лист ожидания';
-const group = link('Здравствуйте, Алексей! Хочу в следующий поток группового ведения – запишите меня в лист ожидания');
 const ask = link('Здравствуйте, Алексей! У меня вопрос: ');
 ---
 <SiteLayout
-  title="Тренировки со мной – Алексей Ларин"
-  description="Напишите тренеру Алексею Ларину в Telegram или Max: подберу план под ваш уровень и буду рядом на каждом шаге."
+  title="Написать мне – Алексей Ларин"
+  description="Напишите тренеру Алексею Ларину в Telegram или Max: расскажете о себе, а я предложу, с чего начать и как мы можем заниматься."
   padTop={true}>
 
   <section class="nw-top" id="plan">
     <div class="nw-inner">
+      <picture class="nw-photo">
+        <source type="image/webp" srcset="/img/IMG_3989.webp 1x, /img/IMG_3989@2x.webp 2x" />
+        <img src="/img/IMG_3989.jpg" alt="Алексей Ларин" width="1155" height="1733" loading="eager" />
+      </picture>
       <p class="gp-eyebrow"><span class="dot"></span>Алексей Ларин</p>
-      <h1>Тренировки <em>со&nbsp;мной</em></h1>
-      <p class="nw-sub">Напишите мне – подберу план под ваш уровень и буду рядом на каждом шаге. Сообщение уже готово: откроется Telegram или Max, останется его отправить.</p>
+      <h1>Напишите <em>мне</em></h1>
+      <p class="nw-sub">Хотите заниматься регулярно, но одному не получается? Напишите. Расскажете о себе и о том, чего хочется, а я предложу, с чего начать и как мы можем заниматься.</p>
       <div class="nw-main">
         <a href={main.tg} class="btn-main btn-full nw-btn" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
-        <a href={main.max} class="nw-max" target="_blank" rel="noopener" data-goal="messenger_click">или в Max</a>
-        <p class="nw-msg"><span>Сообщение</span>{MAIN_MSG}</p>
-        <p class="nw-note">Обычно отвечаю в течение дня</p>
+        <a href={main.max} class="nw-max" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Max</a>
+        <p class="nw-note">Откроется чат со мной. Отвечаю обычно в течение дня.</p>
       </div>
     </div>
   </section>
 
   <section class="nw-other">
     <div class="nw-other-inner">
-      <p id="gruppa"><b>Хочу в группу</b> – {GROUP_NOTE}: <a href={group.tg} target="_blank" rel="noopener" data-goal="messenger_click">Telegram</a> · <a href={group.max} target="_blank" rel="noopener" data-goal="messenger_click">Max</a> · <a href="/gruppa">о&nbsp;группе</a></p>
-      <p id="vopros"><b>Есть вопрос</b> – отвечу лично: <a href={ask.tg} target="_blank" rel="noopener" data-goal="messenger_click">Telegram</a> · <a href={ask.max} target="_blank" rel="noopener" data-goal="messenger_click">Max</a></p>
+      <p id="vopros">Есть вопрос или предложение? Напишите <a href={ask.tg} target="_blank" rel="noopener" data-goal="messenger_click">в Telegram</a> или <a href={ask.max} target="_blank" rel="noopener" data-goal="messenger_click">в Max</a></p>
     </div>
   </section>
 
@@ -53,6 +52,7 @@ const ask = link('Здравствуйте, Алексей! У меня вопр
     .nw-top { background: var(--navy); color: white; padding: 80px 24px 72px; }
     .nw-inner { max-width: 640px; margin: 0 auto; text-align: center; }
     .nw-top .gp-eyebrow { justify-content: center; }
+    .nw-photo img { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; object-position: center 12%; display: block; margin: 0 auto 22px; border: 3px solid rgba(255,255,255,.18); }
     .nw-top h1 { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(44px, 5vw, 66px); line-height: 1.06; margin: 0 0 16px; color: white; }
     .nw-top h1 em { font-style: italic; color: #8bb8f0; }
     .nw-sub { font-size: 19px; line-height: 1.6; color: rgba(255,255,255,.88); margin: 0 auto 30px; max-width: 560px; }
@@ -62,7 +62,7 @@ const ask = link('Здравствуйте, Алексей! У меня вопр
     .nw-max:hover, .nw-max:focus-visible { text-decoration-color: currentColor; color: #f3a37c; }
     .nw-msg { font-size: 16px; line-height: 1.55; color: rgba(255,255,255,.85); background: rgba(255,255,255,.07); border-radius: 12px; padding: 12px 16px; margin: 24px 0 0; text-align: left; }
     .nw-msg span { display: block; font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #f3a37c; margin-bottom: 4px; }
-    .nw-note { font-size: 15px; color: rgba(255,255,255,.65); margin: 14px 0 0; }
+    .nw-note { font-size: 16px; color: rgba(255,255,255,.75); margin: 18px 0 0; }
 
     .nw-other { background: var(--cream, #f8f5ef); padding: 36px 24px 72px; }
     .nw-other-inner { max-width: 640px; margin: 0 auto; text-align: center; }

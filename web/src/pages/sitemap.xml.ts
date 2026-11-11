@@ -15,6 +15,7 @@ const BASE: Entry[] = [
   { path: '/coaching', changefreq: 'weekly', priority: '0.9' },
   { path: '/personal', changefreq: 'weekly', priority: '0.9' },
   { path: '/gruppa', changefreq: 'weekly', priority: '0.9' },
+  { path: '/office', changefreq: 'monthly', priority: '0.7' },
   { path: '/courses/myagkiy-start', changefreq: 'weekly', priority: '0.9' },
   { path: '/courses/zdorovaya-spina', changefreq: 'weekly', priority: '0.8' },
   { path: '/results', changefreq: 'monthly', priority: '0.7' },

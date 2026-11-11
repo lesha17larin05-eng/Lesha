@@ -1,0 +1,233 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import '../styles/landing.css';
+// Тренировки для сотрудников (/office, с 11.11.2026): занятия в офисе или
+// онлайн, три программы, первое занятие бесплатно. Запись – личные сообщения
+// (Telegram / Max) или почта. В меню нет: ссылку Алексей отправляет сам
+// (знакомым в компаниях, ивент-агентству).
+const HELLO = 'Здравствуйте, Алексей! Хотим занятия для сотрудников. Давайте обсудим';
+const TG = 'https://t.me/larin_lesha?text=' + encodeURIComponent(HELLO);
+const MAX = 'https://max.ru/u/f9LHodD0cOJK26BnKhvEBfpuj05eZ2Tn1oTqJ7kv0OoP_WfKwTiqDPGe-Nc?text=' + encodeURIComponent(HELLO);
+const MAIL = 'lesha@leshalarin.ru';
+---
+<SiteLayout
+  title="Тренировки для сотрудников в офисе или онлайн – Алексей Ларин"
+  description="Занятия для сотрудников в вашем офисе или онлайн: здоровая спина, общая тренировка, растяжка и расслабление. Первое занятие бесплатно.">
+
+  <!-- ПЕРВЫЙ ЭКРАН -->
+  <section class="gp-hero">
+    <div class="gp-hero-text">
+      <p class="gp-eyebrow"><span class="dot"></span>Для компаний · Москва и онлайн</p>
+      <h1>Тренировки для сотрудников – <em>в офисе или онлайн</em></h1>
+      <p class="gp-sub">Приезжаю к вам и провожу занятие: спина, шея и плечи отдыхают от компьютера, голова – от задач. Первое занятие бесплатно.</p>
+      <div class="gp-params">
+        <div><b>60</b><span>минут занятие</span></div>
+        <div><b>3</b><span>программы на выбор</span></div>
+        <div><b>0 ₽</b><span>первое занятие</span></div>
+      </div>
+      <div class="gp-cta">
+        <a href="#zapis" class="btn-main">Обсудить занятие ↓</a>
+      </div>
+    </div>
+    <div class="gp-hero-photo pt">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_3989.webp 1x, /img/IMG_3989@2x.webp 2x" />
+        <img src="/img/IMG_3989.jpg" srcset="/img/IMG_3989.jpg 1x, /img/IMG_3989@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="eager" fetchpriority="high" />
+      </picture>
+    </div>
+  </section>
+
+  <!-- КОМУ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Кому это нужно</p>
+      <h2>Если это <em>про вашу команду</em></h2>
+      <div class="gp-cards3">
+        <div class="gp-card">
+          <h3>Все много сидят</h3>
+          <p>Команда целый день за компьютером, к вечеру у людей устают спина и шея.</p>
+        </div>
+        <div class="gp-card">
+          <h3>Хочется дать полезное</h3>
+          <p>Что-то для сотрудников, чем они правда будут пользоваться.</p>
+        </div>
+        <div class="gp-card">
+          <h3>Нужна общая активность</h3>
+          <p>Которая подходит всем – и тем, кто в форме, и тем, кто давно не занимался.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ПРОГРАММЫ -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner">
+      <p class="gp-label">Программы</p>
+      <h2>Три программы <em>на выбор</em></h2>
+      <div class="gp-cards3">
+        <div class="gp-card">
+          <h3>Здоровая спина</h3>
+          <p>Мягкие упражнения для спины, шеи и плеч. Для тех, кто целый день за компьютером.</p>
+        </div>
+        <div class="gp-card">
+          <h3>Общая тренировка</h3>
+          <p>Суставная гимнастика и спокойные силовые упражнения на всё тело.</p>
+        </div>
+        <div class="gp-card">
+          <h3>Растяжка и расслабление</h3>
+          <p>Растяжка, дыхание и короткая практика на расслабление. Хорошо в конце рабочего дня.</p>
+        </div>
+      </div>
+      <p class="of-after">Можно выбрать одну или чередовать.</p>
+    </div>
+  </section>
+
+  <!-- КАК ПРОХОДИТ -->
+  <section class="gp-section">
+    <div class="gp-inner of-how">
+      <div class="of-how-text">
+        <p class="gp-label">Как проходит занятие</p>
+        <h2>Переговорная, коврики <em>и 60 минут</em></h2>
+        <p>Занимаемся в переговорной или любой свободной зоне. Нужны коврики и удобная одежда. Если по расписанию удобнее 45 минут – проведу за 45.</p>
+        <p>Подходит любой уровень: для каждого упражнения есть вариант проще.</p>
+        <p>Время выбираете вы – до работы, в обед или после. Если команда в разных городах, провожу онлайн.</p>
+        <p>Коврики – с вашей стороны. Часто сотрудники приносят свои и оставляют в офисе.</p>
+      </div>
+      <figure class="of-photo">
+        <picture>
+          <source type="image/webp" srcset="/img/office-zanyatie.webp" />
+          <img src="/img/office-zanyatie.jpg" alt="Занятие с сотрудниками в офисе" width="961" height="1280" loading="lazy" />
+        </picture>
+        <figcaption>Как это выглядит: занятие в офисе</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- КАК НАЧАТЬ -->
+  <section class="gp-section gp-cream">
+    <div class="gp-inner">
+      <p class="gp-label">Как начать</p>
+      <h2>Первое занятие – <em>бесплатно</em></h2>
+      <div class="gp-steps">
+        <div class="gp-step">
+          <div class="gp-num">1</div>
+          <div>
+            <h3>Вы пишете мне</h3>
+            <p>В Telegram, Max или на почту.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">2</div>
+          <div>
+            <h3>Обсуждаем детали</h3>
+            <p>В переписке или коротким созвоном, как вам удобнее: сколько людей, какое помещение, что хочется получить.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">3</div>
+          <div>
+            <h3>Провожу первое занятие бесплатно</h3>
+            <p>Команда пробует, вы смотрите, как это проходит.</p>
+          </div>
+        </div>
+        <div class="gp-step">
+          <div class="gp-num">4</div>
+          <div>
+            <h3>Понравилось – договариваемся о графике</h3>
+            <p>Выбираем программу, дни и время.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СТОИМОСТЬ -->
+  <section class="gp-section">
+    <div class="gp-inner">
+      <p class="gp-label">Стоимость</p>
+      <h2>Регулярно <em>или один раз</em></h2>
+      <div class="gp-formats">
+        <div class="gp-format">
+          <h3>Регулярные занятия</h3>
+          <p class="gp-format-where">По вашему графику – раз в неделю или чаще. Цена – за занятие для вашей команды.</p>
+          <ul class="gp-prices">
+            <li><span>Первое занятие</span><b>бесплатно</b></li>
+            <li><span>Занятие в офисе<small>60 минут</small></span><b>8 000 ₽</b></li>
+            <li><span>Занятие онлайн<small>60 минут</small></span><b>5 000 ₽</b></li>
+          </ul>
+        </div>
+        <div class="gp-format">
+          <h3>Разовый мастер-класс</h3>
+          <p class="gp-format-where">Занятие под ваше событие: день здоровья, выездная встреча, корпоратив. Сначала коротко и простыми словами объясняю, почему от сидячей работы устают спина и шея и что с этим делать. Потом практика для всех, с любым уровнем подготовки. В конце каждый получает короткий комплекс, который можно делать у рабочего стола. Тему подбираем под вашу команду.</p>
+          <ul class="gp-prices">
+            <li><span>Мастер-класс<small>60–90 минут</small></span><b>12 000 ₽</b></li>
+          </ul>
+        </div>
+      </div>
+      <div class="gp-rules of-rules2">
+        <p class="gp-rule"><b>Договор и оплата</b>Работаю по договору, оплата по счёту.</p>
+        <p class="gp-rule"><b>Где</b>В вашем офисе в Москве или онлайн – для команд в разных городах.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- КТО ВЕДЁТ -->
+  <section class="gp-author">
+    <div class="gp-author-photo">
+      <picture>
+        <source type="image/webp" srcset="/img/IMG_4046.webp 1x, /img/IMG_4046@2x.webp 2x" />
+        <img src="/img/IMG_4046.jpg" srcset="/img/IMG_4046.jpg 1x, /img/IMG_4046@2x.jpg 2x" alt="Алексей Ларин" width="1155" height="1733" loading="lazy" />
+      </picture>
+    </div>
+    <div class="gp-author-text">
+      <p class="gp-label">Кто ведёт</p>
+      <h2>Алексей Ларин</h2>
+      <p class="gp-quote">Тренер по развитию здоровья.</p>
+      <p>Больше 10 лет тренирую детей и взрослых, магистр Российского университета спорта «ГЦОЛИФК». Со мной занимались больше 8 000 человек – на курсах, в лагерях, на групповых и личных занятиях.</p>
+      <p>После занятий мне чаще всего говорят: «стало спокойно и приятно».</p>
+      <p class="gp-more"><a href="/results">Отзывы тех, кто занимался →</a></p>
+    </div>
+  </section>
+
+  <!-- ЗАПИСЬ -->
+  <section class="gp-section gp-cream" id="zapis">
+    <div class="gp-inner gp-form-wrap">
+      <p class="gp-label gp-center">Связаться</p>
+      <h2 class="gp-center">Напишите – <em>обсудим занятие</em></h2>
+      <a href={TG} class="btn-main btn-full" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Telegram</a>
+      <a href={MAX} class="gp-max" target="_blank" rel="noopener" data-goal="messenger_click">Написать в Max</a>
+      <p class="gp-alt">Или напишите на почту: <a href={'mailto:' + MAIL} data-goal="messenger_click">{MAIL}</a></p>
+      <p class="gp-alt">Отвечаю обычно в течение дня</p>
+    </div>
+  </section>
+
+  <style>
+    .gp-hero-photo.pt img { object-position: center top; }
+    .of-after { font-size: 17px; color: var(--text-mid, #3a3a3a); margin: 26px 0 0; }
+    .of-how { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+    .of-how-text p:not(.gp-label) { font-size: 17px; line-height: 1.7; color: var(--text-mid, #3a3a3a); margin: 0 0 14px; }
+    .of-photo { margin: 0; }
+    .of-photo img { width: 100%; height: auto; border-radius: 22px; display: block; }
+    .of-photo figcaption { font-size: 15px; color: var(--text-light, #6e6e6e); margin-top: 10px; text-align: center; }
+    .gp-formats { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 40px; }
+    .gp-format { background: white; border: 1px solid var(--border, #ece8e0); border-radius: 22px; padding: 32px 30px 28px; display: flex; flex-direction: column; }
+    .gp-format h3 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 32px; color: var(--navy); margin: 0 0 6px; }
+    .gp-format-where { font-size: 16px; color: var(--text-muted, #555); line-height: 1.6; margin: 0 0 22px; }
+    .gp-prices { list-style: none; padding: 0; margin: auto 0 0; border-top: 1px solid var(--border, #ece8e0); }
+    .gp-prices li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border, #ece8e0); font-size: 17px; color: var(--text-mid, #3a3a3a); }
+    .gp-prices b { font-size: 20px; color: var(--navy); white-space: nowrap; }
+    .gp-prices small { display: block; font-size: 15px; color: var(--text-light, #6e6e6e); margin-top: 2px; }
+    .gp-rules { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 26px; }
+    .gp-rule { border-left: 3px solid var(--orange); padding: 4px 0 4px 16px; font-size: 17px; line-height: 1.65; color: var(--text-mid, #3a3a3a); }
+    .gp-rule b { display: block; color: var(--navy); margin-bottom: 2px; }
+    .gp-alt a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+    @media (max-width: 1000px) { .of-how { grid-template-columns: 1fr; gap: 28px; } .of-photo { max-width: 420px; margin: 0 auto; } .gp-rules { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { .gp-params { gap: 18px; } .gp-params b { font-size: 24px; white-space: nowrap; } .gp-formats { grid-template-columns: 1fr; } .gp-format { padding: 26px 22px 22px; } .gp-format h3 { font-size: 28px; } }
+  </style>
+
+  <script>
+    // Нажатия на «Написать в Telegram / Max / почту» – цель Метрики messenger_click.
+    document.querySelectorAll<HTMLElement>('[data-goal]').forEach((a) =>
+      a.addEventListener('click', () => (window as any).reachGoal?.(a.dataset.goal)));
+  </script>
+</SiteLayout>
