@@ -1,46 +1,63 @@
 ---
-// Пример настоящего плана на неделю (12.11.2026) – из переписки Алексея с
-// учеником, без имён и личных строк. Смысл блока: план доступный и
-// подбирается под человека. 12.11 вечером выбран план десятой недели.
+// Примеры настоящих планов на неделю (12.11.2026) – скриншоты переписки
+// Алексея с учеником. Смысл блока: план реальный, выполнимый и подбирается
+// под человека; нагрузка растёт от недели к неделе.
+// Из плана 2-й недели убрана личная строка, из 10-й – реакция с аватаркой.
 const { cream = false } = Astro.props as { cream?: boolean };
+const plans = [
+  { img: 'plan-2', w: 958, h: 804, cap: 'Вторая неделя', alt: 'План тренировок на вторую неделю в переписке' },
+  { img: 'plan-3', w: 872, h: 764, cap: 'Третья неделя', alt: 'План тренировок на третью неделю в переписке' },
+  { img: 'plan-10', w: 924, h: 668, cap: 'Десятая неделя', alt: 'План тренировок на десятую неделю в переписке' },
+];
+const [main, ...rest] = plans;
 ---
 <section class={`gp-section${cream ? ' gp-cream' : ''}`}>
   <div class="gp-inner">
     <p class="gp-label">План на неделю</p>
     <h2>Так выглядит <em>ваш план</em></h2>
-    <p class="gp-desc">Вот настоящий план, который я написал ученику на десятую неделю. Упражнения выполнимые и делаются дома, а подбираю я их под вас – под ваш опыт, состояние и цели. В начале нагрузка меньше, дальше растёт понемногу.</p>
-    <div class="pe-wrap">
-      <div class="pe-msg">
-        <p class="pe-title">План на десятую неделю</p>
-        <p><b>1. Силовая тренировка</b></p>
-        <ul>
-          <li>Прыжки – минута</li>
-          <li>Болгарский сплит-присед 12/4/3</li>
-          <li>Отжимания 10/4/3</li>
-          <li>Ласточка 8/8/3</li>
-          <li>Пресс 8/4/3</li>
-        </ul>
-        <p>Выполнить три круга, спокойно и сознательно отдыхая между нагрузкой</p>
-        <p><b>2. Беговая тренировка</b> на 35+ минут в свободном формате</p>
-        <p>После тренировок буду ждать обратную связь по самочувствию</p>
-        <p class="pe-legend">Запись 12/4/3 – это 12 повторений и два удержания: на 4 и на 3 цикла дыхания. Все упражнения сначала разбираем вместе.</p>
+    <p class="gp-desc">Вот настоящие планы, которые я писал ученику: на вторую, третью и десятую неделю. Упражнения выполнимые и делаются дома, а подбираю я их под вас – под ваш опыт, состояние и цели. В начале нагрузка меньше, дальше растёт понемногу.</p>
+    <div class="pe-grid">
+      <figure class="pe-main">
+        <a href={`/img/plans/${main.img}.jpg`} target="_blank" rel="noopener">
+          <picture>
+            <source type="image/webp" srcset={`/img/plans/${main.img}.webp`} />
+            <img src={`/img/plans/${main.img}.jpg`} alt={main.alt} width={main.w} height={main.h} loading="lazy" />
+          </picture>
+        </a>
+        <figcaption>{main.cap}</figcaption>
+      </figure>
+      <div class="pe-rest">
+        {rest.map((p) => (
+          <figure>
+            <a href={`/img/plans/${p.img}.jpg`} target="_blank" rel="noopener">
+              <picture>
+                <source type="image/webp" srcset={`/img/plans/${p.img}.webp`} />
+                <img src={`/img/plans/${p.img}.jpg`} alt={p.alt} width={p.w} height={p.h} loading="lazy" />
+              </picture>
+            </a>
+            <figcaption>{p.cap}</figcaption>
+          </figure>
+        ))}
       </div>
     </div>
+    <p class="pe-note">Нажмите на план, чтобы рассмотреть. Запись 12/4/3 – это 12 повторений и два удержания: на 4 и на 3 цикла дыхания. Все упражнения сначала разбираем вместе.</p>
     <slot />
   </div>
 </section>
 
 <style>
-  .pe-wrap { max-width: 620px; }
-  .pe-msg { background: #eef7e6; border-radius: 20px 20px 20px 6px; padding: 26px 28px; font-size: 17px; line-height: 1.6; color: #1f2a1c; box-shadow: 0 6px 18px rgba(26,39,68,.06); }
-  .pe-msg p { margin: 0 0 12px; }
-  .pe-msg p:last-child { margin-bottom: 0; }
-  .pe-msg ul { list-style: none; padding: 0; margin: 0 0 12px; }
-  .pe-msg li { padding-left: 18px; position: relative; }
-  .pe-msg li::before { content: '–'; position: absolute; left: 0; }
-  .pe-title { font-weight: 700; font-size: 18px; }
-  .pe-legend { font-size: 15px; color: #4d5a48; border-top: 1px solid rgba(31,42,28,.14); padding-top: 12px; margin-top: 14px !important; }
-  .pe-wrap + :global(p) { margin: 28px 0 0; font-size: 17px; color: var(--text-mid, #3a3a3a); }
-  .pe-wrap + :global(p) :global(a) { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-  @media (max-width: 900px) { .pe-msg { padding: 20px; } }
+  .pe-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 22px; align-items: start; }
+  .pe-rest { display: grid; gap: 22px; }
+  .pe-grid figure { margin: 0; }
+  .pe-grid img { width: 100%; height: auto; display: block; border-radius: 16px; border: 1px solid var(--border, #ece8e0); transition: transform .2s, box-shadow .2s; }
+  @media (hover: hover) { .pe-grid a:hover img { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(26,39,68,.1); } }
+  .pe-grid a:focus-visible img { outline: 2px solid var(--orange); outline-offset: 3px; }
+  .pe-grid figcaption { font-size: 15px; color: var(--text-light, #6e6e6e); margin-top: 8px; }
+  .pe-note { font-size: 15px; line-height: 1.6; color: var(--text-light, #6e6e6e); margin: 20px 0 0; max-width: 620px; }
+  .pe-note + :global(p) { margin: 20px 0 0; font-size: 17px; color: var(--text-mid, #3a3a3a); }
+  .pe-note + :global(p) :global(a) { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 900px) {
+    .pe-grid { grid-template-columns: 1fr; }
+    .pe-rest { grid-template-columns: 1fr 1fr; gap: 14px; }
+  }
 </style>
