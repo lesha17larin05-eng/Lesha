@@ -1,14 +1,15 @@
 ---
-// Примеры настоящих планов на неделю (12.11.2026) – из переписки Алексея с
-// учениками, без имён и личных строк (анализы, время следующего занятия убраны).
+// Пример настоящего плана на неделю (12.11.2026, один план с 12.11 вечера) –
+// из переписки Алексея с учеником, без имён и личных строк. Смысл блока:
+// план доступный и подбирается под человека.
 const { cream = false } = Astro.props as { cream?: boolean };
 ---
 <section class={`gp-section${cream ? ' gp-cream' : ''}`}>
   <div class="gp-inner">
     <p class="gp-label">План на неделю</p>
     <h2>Так выглядит <em>ваш план</em></h2>
-    <p class="gp-desc">Два настоящих плана, которые я писал ученикам: на вторую неделю и на десятую. Начинаем с простого, нагрузка растёт постепенно.</p>
-    <div class="pe-grid">
+    <p class="gp-desc">Вот настоящий план, который я написал ученику на вторую неделю. Упражнения простые и выполнимые дома, а подбираю я их под вас – под ваш опыт, состояние и цели. Дальше нагрузка растёт понемногу.</p>
+    <div class="pe-wrap">
       <div class="pe-msg">
         <p class="pe-title">План на вторую неделю</p>
         <p><b>1. Силовая тренировка</b> – в пятницу и понедельник (можно двигать)</p>
@@ -26,37 +27,21 @@ const { cream = false } = Astro.props as { cream?: boolean };
         <p><b>2. Суставная гимнастика</b> – 1 раз и больше. Можно дополнительно во время ментального напряжения</p>
         <p>По любым вопросам сразу пишите</p>
       </div>
-      <div class="pe-msg">
-        <p class="pe-title">План на десятую неделю</p>
-        <p><b>1. Силовая тренировка</b></p>
-        <ul>
-          <li>Прыжки – минута</li>
-          <li>Болгарский сплит-присед 12/4/3</li>
-          <li>Отжимания 10/4/3</li>
-          <li>Ласточка 8/8/3</li>
-          <li>Пресс 8/4/3</li>
-        </ul>
-        <p>Выполнить три круга, спокойно и сознательно отдыхая между нагрузкой</p>
-        <p><b>2. Беговая тренировка</b> на 35+ минут в свободном формате</p>
-        <p>После тренировок буду ждать обратную связь по самочувствию</p>
-        <p class="pe-legend">Запись 12/4/3 – это 12 повторений и два удержания: на 4 и на 3 цикла дыхания. Все упражнения сначала разбираем вместе.</p>
-      </div>
     </div>
     <slot />
   </div>
 </section>
 
 <style>
-  .pe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
-  .pe-msg { background: #eef7e6; border-radius: 20px 20px 20px 6px; padding: 24px 26px; font-size: 17px; line-height: 1.6; color: #1f2a1c; box-shadow: 0 6px 18px rgba(26,39,68,.06); }
+  .pe-wrap { max-width: 620px; }
+  .pe-msg { background: #eef7e6; border-radius: 20px 20px 20px 6px; padding: 26px 28px; font-size: 17px; line-height: 1.6; color: #1f2a1c; box-shadow: 0 6px 18px rgba(26,39,68,.06); }
   .pe-msg p { margin: 0 0 12px; }
   .pe-msg p:last-child { margin-bottom: 0; }
   .pe-msg ul { list-style: none; padding: 0; margin: 0 0 12px; }
   .pe-msg li { padding-left: 18px; position: relative; }
   .pe-msg li::before { content: '–'; position: absolute; left: 0; }
   .pe-title { font-weight: 700; font-size: 18px; }
-  .pe-grid + :global(p) { margin: 28px 0 0; font-size: 17px; color: var(--text-mid, #3a3a3a); }
-  .pe-grid + :global(p) :global(a) { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-  .pe-legend { font-size: 15px; color: #4d5a48; border-top: 1px solid rgba(31,42,28,.14); padding-top: 12px; margin-top: 14px !important; }
-  @media (max-width: 900px) { .pe-grid { grid-template-columns: 1fr; } .pe-msg { padding: 20px; } }
+  .pe-wrap + :global(p) { margin: 28px 0 0; font-size: 17px; color: var(--text-mid, #3a3a3a); }
+  .pe-wrap + :global(p) :global(a) { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 900px) { .pe-msg { padding: 20px; } }
 </style>
