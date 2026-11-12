@@ -82,8 +82,8 @@ const reviews = [
         <div><b>Магистр</b><span>Российского университета спорта «ГЦОЛИФК»</span></div>
       </div>
       <div class="gp-cta">
-        <a href="#so-mnoy" class="btn-main">Тренироваться со мной ↓</a>
-        <a href="/courses/myagkiy-start" class="hm-ghost">Начать бесплатно</a>
+        <a href="/plan" class="btn-main">Написать мне</a>
+        <a href="#so-mnoy" class="hm-ghost">Как можно заниматься ↓</a>
       </div>
     </div>
     <div class="gp-hero-photo">
@@ -98,8 +98,8 @@ const reviews = [
   <section class="gp-section" id="so-mnoy">
     <div class="gp-inner">
       <p class="gp-label">Тренировки со мной</p>
-      <h2>Выберите, <em>как удобнее</em></h2>
-      <p class="gp-desc">Во всех форматах начинаю с вашего уровня и подбираю нагрузку под цель и самочувствие.</p>
+      <h2>Как можно <em>заниматься со мной</em></h2>
+      <p class="gp-desc">Во всех форматах начинаю с вашего уровня и подбираю нагрузку под цель и самочувствие. Не знаете, что подойдёт, – <a href="/plan">напишите мне</a>, подскажу.</p>
       <div class="hm-formats">
         {formats.map((f) => (
           <a href={f.href} class="hm-format">
@@ -196,6 +196,8 @@ const reviews = [
   </section>
 
   <style>
+    .gp-desc a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(26,39,68,.35); }
+    .gp-desc a:hover { color: var(--orange); }
     .hm-ghost { display: inline-flex; align-items: center; padding: 15px 28px; border-radius: 100px; border: 1.5px solid rgba(255,255,255,.55); color: white; text-decoration: none; font-size: 17px; font-weight: 600; transition: border-color .2s, background .2s; }
     .hm-ghost:hover { border-color: white; background: rgba(255,255,255,.08); }
     .hm-ghost:focus-visible { outline: 2px solid white; outline-offset: 3px; }
