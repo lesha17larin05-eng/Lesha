@@ -1,6 +1,8 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ReviewsCarousel from '../components/ReviewsCarousel.astro';
+import StudentStories from '../components/StudentStories.astro';
+import PlanExample from '../components/PlanExample.astro';
 import '../styles/landing.css';
 // Личное ведение: раз в неделю тренировка с Алексеем (онлайн или на дому),
 // план на каждую неделю и связь в рабочие часы; месяц = 3 недели + неделя
@@ -76,6 +78,9 @@ const reviews = [
       </div>
     </div>
   </section>
+
+  <!-- ИСТОРИИ УЧЕНИКОВ -->
+  <StudentStories />
 
   <!-- КАК УСТРОЕНО -->
   <section class="gp-section gp-cream">
@@ -179,33 +184,10 @@ const reviews = [
     </div>
   </section>
 
-  <!-- ФОРМАТЫ -->
-  <section class="gp-section">
-    <div class="gp-inner">
-      <p class="gp-label">Форматы</p>
-      <h2>Чем ведение <em>отличается</em></h2>
-      <div class="gp-compare">
-        <a href="/gruppa" class="gp-cmp">
-          <h3>Групповое ведение</h3>
-          <p>План от меня под каждого, тренируетесь дома сами, по субботам общий созвон с разбором и чат группы. Дешевле и в компании, но без тренировок один на один.</p>
-          <p class="gp-cmp-price">9 900 ₽ за 8 недель</p>
-          <span class="gp-cmp-go">Подробнее →</span>
-        </a>
-        <div class="gp-cmp gp-cmp-here">
-          <p class="gp-cmp-tag">Вы здесь</p>
-          <h3>Личное ведение</h3>
-          <p>Тренировка со мной раз в неделю, план на остальные дни и я на связи. Для тех, кому важен результат и поддержка всю неделю.</p>
-          <p class="gp-cmp-price">16 000 ₽ в месяц</p>
-        </div>
-        <a href="/personal" class="gp-cmp">
-          <h3>Персональные тренировки</h3>
-          <p>Каждое занятие – вместе со мной, сколько раз в неделю удобно. Без плана и поддержки между занятиями.</p>
-          <p class="gp-cmp-price">от 2 700 ₽ за занятие</p>
-          <span class="gp-cmp-go">Подробнее →</span>
-        </a>
-      </div>
-    </div>
-  </section>
+  <!-- ПРИМЕР ПЛАНА (до 12.11.2026 здесь было сравнение трёх форматов) -->
+  <PlanExample>
+    <p>Не уверены, что это ваш формат? <a href="/plan">Напишите мне</a>, подскажу.</p>
+  </PlanExample>
 
   <!-- КТО ВЕДЁТ -->
   <section class="gp-author">

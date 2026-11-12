@@ -1,0 +1,60 @@
+---
+// Истории учеников с фото «до и после» (12.11.2026): Ксения – личное ведение,
+// Анастасия – тренировки и домашняя программа. Цифры – с коллажей и из отзывов;
+// фото и истории ученицы разрешили публиковать.
+const { cream = false } = Astro.props as { cream?: boolean };
+const stories = [
+  {
+    img: '/img/results/ksenia2', alt: 'Ксения: до и после трёх месяцев занятий',
+    from: '76 кг', to: '65 кг', sum: '−11 кг за 3 месяца',
+    text: 'Без изнурительных диет и перегрузок. Попутно – лучше сон и намного больше энергии.',
+    quote: 'Я даже не верила, что без жёстких ограничений возможен такой результат. Внутреннее состояние – совсем другое.',
+    who: 'Ксения · личное ведение · 3 месяца',
+  },
+  {
+    img: '/img/results/Annastasia', alt: 'Анастасия: до и после двух месяцев занятий',
+    from: '60 кг', to: '50 кг', sum: '−10 кг за 2 месяца',
+    text: 'Кроме снижения веса, улучшилось самочувствие и внутреннее состояние.',
+    quote: 'Начинала с 60 кг и стресса. После первого месяца было 54 кг, после второго уже 50 кг! И появилось море энергии! Это чудесно',
+    who: 'Анастасия · тренировки и домашняя программа · 2 месяца',
+  },
+];
+---
+<section class={`gp-section${cream ? ' gp-cream' : ''}`}>
+  <div class="gp-inner">
+    <p class="gp-label">Истории учеников</p>
+    <h2>Как это бывает <em>на деле</em></h2>
+    <div class="ss-grid">
+      {stories.map((s) => (
+        <article class="ss-card">
+          <picture>
+            <source type="image/webp" srcset={`${s.img}.webp 1x, ${s.img}@2x.webp 2x`} />
+            <img src={`${s.img}.jpg`} srcset={`${s.img}.jpg 1x, ${s.img}@2x.jpg 2x`} alt={s.alt} width="1200" height="675" loading="lazy" />
+          </picture>
+          <div class="ss-body">
+            <p class="ss-nums"><span>{s.from}</span><i>→</i><span>{s.to}</span><b>{s.sum}</b></p>
+            <p class="ss-text">{s.text}</p>
+            <p class="ss-quote">«{s.quote}»</p>
+            <p class="ss-who">{s.who}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+    <p class="ss-note">Результаты у всех разные: они зависят от старта, регулярности и образа жизни.</p>
+  </div>
+</section>
+
+<style>
+  .ss-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 36px; }
+  .ss-card { background: white; border: 1px solid var(--border, #ece8e0); border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; }
+  .ss-card img { width: 100%; height: auto; display: block; }
+  .ss-body { padding: 24px 26px 26px; }
+  .ss-nums { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 0 0 12px; font-family: 'Cormorant Garamond', serif; font-size: 30px; color: var(--navy); line-height: 1.1; }
+  .ss-nums i { font-style: normal; color: var(--orange); }
+  .ss-nums b { font-family: inherit; font-size: 16px; font-weight: 600; color: var(--orange); font-family: 'Manrope', sans-serif; margin-left: 4px; }
+  .ss-text { font-size: 17px; line-height: 1.65; color: var(--text-mid, #3a3a3a); margin: 0 0 12px; }
+  .ss-quote { font-size: 17px; line-height: 1.65; color: var(--navy); font-style: italic; margin: 0 0 14px; }
+  .ss-who { font-size: 15px; color: var(--text-light, #6e6e6e); margin: 0; }
+  .ss-note { font-size: 15px; color: var(--text-light, #6e6e6e); margin: 22px 0 0; }
+  @media (max-width: 900px) { .ss-grid { grid-template-columns: 1fr; } .ss-body { padding: 20px 20px 22px; } .ss-nums { font-size: 26px; } }
+</style>

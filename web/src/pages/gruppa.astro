@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ReviewsCarousel from '../components/ReviewsCarousel.astro';
+import PlanExample from '../components/PlanExample.astro';
 import { apiJson } from '../lib/api';
 import '../styles/landing.css';
 // Групповое ведение: 8 недель, до 7 человек. Запись – через заявку (имя,
@@ -170,6 +171,9 @@ const reviews = [
       </div>
     </div>
   </section>
+
+  <!-- ПРИМЕР ПЛАНА -->
+  <PlanExample />
 
   <!-- 8 НЕДЕЛЬ -->
   <section class="gp-section">

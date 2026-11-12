@@ -1,6 +1,7 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ReviewsCarousel from '../components/ReviewsCarousel.astro';
+import StudentStories from '../components/StudentStories.astro';
 import { apiJson } from '../lib/api';
 import '../styles/landing.css';
 // Персональные тренировки: онлайн или выезд на дом (Москва), 60 минут.
@@ -85,6 +86,9 @@ const reviews = [
       </div>
     </div>
   </section>
+
+  <!-- ИСТОРИИ УЧЕНИКОВ -->
+  <StudentStories />
 
   <!-- КАК ПРОХОДИТ -->
   <section class="gp-section gp-cream">
