@@ -9,55 +9,60 @@ const plans = [
   { img: 'plan-3', w: 872, h: 764, cap: 'Третья неделя', alt: 'План тренировок на третью неделю в переписке' },
   { img: 'plan-10', w: 924, h: 668, cap: 'Десятая неделя', alt: 'План тренировок на десятую неделю в переписке' },
 ];
-const [main, ...rest] = plans;
 ---
 <section class={`gp-section${cream ? ' gp-cream' : ''}`}>
   <div class="gp-inner">
     <p class="gp-label">План на неделю</p>
     <h2>Так выглядит <em>ваш план</em></h2>
-    <p class="gp-desc">Вот настоящие планы, которые я писал ученику: на вторую, третью и десятую неделю. Упражнения выполнимые и делаются дома, а подбираю я их под вас – под ваш опыт, состояние и цели. В начале нагрузка меньше, дальше растёт понемногу.</p>
-    <div class="pe-grid">
-      <figure class="pe-main">
-        <a href={`/img/plans/${main.img}.jpg`} target="_blank" rel="noopener">
-          <picture>
-            <source type="image/webp" srcset={`/img/plans/${main.img}.webp`} />
-            <img src={`/img/plans/${main.img}.jpg`} alt={main.alt} width={main.w} height={main.h} loading="lazy" />
-          </picture>
-        </a>
-        <figcaption>{main.cap}</figcaption>
-      </figure>
-      <div class="pe-rest">
-        {rest.map((p) => (
-          <figure>
-            <a href={`/img/plans/${p.img}.jpg`} target="_blank" rel="noopener">
-              <picture>
-                <source type="image/webp" srcset={`/img/plans/${p.img}.webp`} />
-                <img src={`/img/plans/${p.img}.jpg`} alt={p.alt} width={p.w} height={p.h} loading="lazy" />
-              </picture>
-            </a>
-            <figcaption>{p.cap}</figcaption>
-          </figure>
+    <p class="gp-desc">Вот настоящие планы, которые я писал разным ученикам в разное время. Упражнения выполнимые и делаются дома, а подбираю я их под вас – под ваш опыт, состояние и цели. В начале нагрузка меньше, дальше растёт понемногу.</p>
+    <div class="pe" data-pe>
+      <div class="pe-tabs" role="tablist" aria-label="Примеры планов">
+        {plans.map((p, i) => (
+          <button type="button" role="tab" class={`pe-tab${i === 0 ? ' on' : ''}`} data-i={i} aria-selected={i === 0 ? 'true' : 'false'}>{p.cap}</button>
         ))}
       </div>
+      {plans.map((p, i) => (
+        <figure class={`pe-slide${i === 0 ? ' on' : ''}`} data-i={i} role="tabpanel">
+          <a href={`/img/plans/${p.img}.jpg`} target="_blank" rel="noopener">
+            <picture>
+              <source type="image/webp" srcset={`/img/plans/${p.img}.webp`} />
+              <img src={`/img/plans/${p.img}.jpg`} alt={p.alt} width={p.w} height={p.h} loading="lazy" />
+            </picture>
+          </a>
+        </figure>
+      ))}
     </div>
     <p class="pe-note">Нажмите на план, чтобы рассмотреть. Все упражнения и нагрузку сначала разбираем вместе.</p>
     <slot />
   </div>
 </section>
 
+<script>
+  document.querySelectorAll<HTMLElement>('[data-pe]').forEach((root) => {
+    root.classList.add('js');
+    const tabs = root.querySelectorAll<HTMLButtonElement>('.pe-tab');
+    const slides = root.querySelectorAll<HTMLElement>('.pe-slide');
+    tabs.forEach((t) => t.addEventListener('click', () => {
+      const i = t.dataset.i;
+      tabs.forEach((x) => { const on = x.dataset.i === i; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); });
+      slides.forEach((x) => x.classList.toggle('on', x.dataset.i === i));
+    }));
+  });
+</script>
+
 <style>
-  .pe-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 22px; align-items: start; }
-  .pe-rest { display: grid; gap: 22px; }
-  .pe-grid figure { margin: 0; }
-  .pe-grid img { width: 100%; height: auto; display: block; border-radius: 16px; border: 1px solid var(--border, #ece8e0); transition: transform .2s, box-shadow .2s; }
-  @media (hover: hover) { .pe-grid a:hover img { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(26,39,68,.1); } }
-  .pe-grid a:focus-visible img { outline: 2px solid var(--orange); outline-offset: 3px; }
-  .pe-grid figcaption { font-size: 15px; color: var(--text-light, #6e6e6e); margin-top: 8px; }
-  .pe-note { font-size: 15px; line-height: 1.6; color: var(--text-light, #6e6e6e); margin: 20px 0 0; max-width: 620px; }
+  .pe { max-width: 760px; }
+  .pe-tabs { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .pe.js .pe-tabs { display: flex; }
+  .pe-tab { font: inherit; font-size: 15px; padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border, #ece8e0); background: #fff; color: var(--text-mid, #3a3a3a); cursor: pointer; }
+  .pe-tab.on { background: var(--navy, #1a2744); border-color: var(--navy, #1a2744); color: #fff; }
+  .pe-tab:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .pe-slide { margin: 0 0 16px; }
+  .pe.js .pe-slide { display: none; margin: 0; }
+  .pe.js .pe-slide.on { display: block; }
+  .pe-slide img { width: 100%; height: auto; display: block; border-radius: 16px; border: 1px solid var(--border, #ece8e0); }
+  .pe-slide a:focus-visible img { outline: 2px solid var(--orange); outline-offset: 3px; }
+  .pe-note { font-size: 15px; line-height: 1.6; color: var(--text-light, #6e6e6e); margin: 16px 0 0; max-width: 620px; }
   .pe-note + :global(p) { margin: 20px 0 0; font-size: 17px; color: var(--text-mid, #3a3a3a); }
   .pe-note + :global(p) :global(a) { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-  @media (max-width: 900px) {
-    .pe-grid { grid-template-columns: 1fr; }
-    .pe-rest { grid-template-columns: 1fr 1fr; gap: 14px; }
-  }
 </style>
